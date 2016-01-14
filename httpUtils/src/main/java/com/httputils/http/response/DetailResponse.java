@@ -1,0 +1,19 @@
+package com.httputils.http.response;
+
+import java.util.ArrayList;
+
+/**
+ * Created by zfy on 2015/8/24.
+ */
+public class DetailResponse {
+
+    public String message;// success,
+    public String status;// 1,
+    public String page;// 1,
+    public String size;// 10,
+    public String total;// 560,
+    public AlbumDetailResponse data;//
+
+
+
+}

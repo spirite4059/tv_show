@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+<!--     <com.gochinatv.tv.ui.widget.circleprogressbar.CircleProgressBar
+        android:id="@+id/progress"
+        android:layout_width="@dimen/d_90dp"
+        android:layout_height="@dimen/d_90dp"
+        android:layout_gravity="center" /> -->
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="false"
+        android:layout_gravity="center"
+        style="@android:style/Widget.ProgressBar.Large.Inverse"
+        />
+
+    <!-- android:layout_width="@dimen/d_60dp" -->
+    <!-- android:layout_height="@dimen/d_60dp" -->
+    <!-- app:mlpb_progress_stoke_width="@dimen/d_6dp" -->
+
+</LinearLayout>

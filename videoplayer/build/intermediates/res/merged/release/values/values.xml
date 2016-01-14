@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <string name="action_settings">Settings</string>
+    <string name="app_name">OpenYouTubeActivity</string>
+    <string name="defaultYoutubeVideoId">tzgFuUu0oxg</string>
+    <string name="hello">Hello World, OpenYouTubeActivity!</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="viewVideoButton">View Using OpenYouTubeActivity!</string>
+    <string name="youtubevideoid">YouTube Video ID</string>
+</resources>
