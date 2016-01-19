@@ -245,7 +245,7 @@ public class TestActivity extends BaseActivity {
                 try{
                     VideoInfo videoInfo = playVideoTable.get(position);
                     if(!DataUtils.getRawVideoUri(TestActivity.this, R.raw.video_test).equals(videoInfo.videoUrl)){
-                        LogCat.e("添加一次视频播放");
+                        LogCat.e("添加一次视频播放" + videoInfo.videoName);
                         MobclickAgent.onEvent(TestActivity.this, "video_loop_times", videoInfo.videoName);
                     }
                 }catch (Exception e){
@@ -339,7 +339,7 @@ public class TestActivity extends BaseActivity {
                             LogCat.e("过期的视频的vid 。。。。。。。。。" + videoDetailResponse.vid);
                             // 从播放列表删除记录
                             LogCat.e("vid : " + videoAdBean.videoId);
-                            playVideoTable.remove(videoAdBean.videoPath);
+                            playVideoTable.remove(videoAdBean);
                             LogCat.e("从播放列表中删除过期视频。。。。。。。。。" + videoAdBean.videoName);
                             // 提出本地数据记录
                             AdDao.getInstance(this).delete(videoDetailResponse.vid);
@@ -363,7 +363,7 @@ public class TestActivity extends BaseActivity {
                         for(VideoAdBean videoAdBean : localVideoTable){
                             LogCat.e("vid : " + videoAdBean.videoId);
                             if(videoAdBean.videoId.equals(videoDetailResponse.vid)){
-                                playVideoTable.remove(videoAdBean.videoPath);
+                                playVideoTable.remove(videoAdBean);
                                 LogCat.e("从播放列表中删除过期视频。。。。。。。。。" + videoAdBean.videoName);
                             }
                         }
@@ -441,14 +441,17 @@ public class TestActivity extends BaseActivity {
             if (TextUtils.isEmpty(videoAdBean.videoPath)) {
                 AdDao.getInstance(this).delete(videoAdBean.videoId);
                 deleteVideos.add(i);
+                DLManager.getInstance(this).dlCancel(videoAdBean.videoUrl);
                 LogCat.e("文件路径不存在，。。。。。");
                 continue;
             }
             // 本地文件已经删除的
             File file = new File(videoAdBean.videoPath);
             if (!file.exists()) {
+                LogCat.e("不存在的文件的路径： "  + videoAdBean.videoPath);
                 AdDao.getInstance(this).delete(videoAdBean.videoId);
                 deleteVideos.add(i);
+                DLManager.getInstance(this).dlCancel(videoAdBean.videoUrl);
                 LogCat.e("文件不存在，。。。。。");
                 continue;
             }
@@ -457,6 +460,7 @@ public class TestActivity extends BaseActivity {
                 AdDao.getInstance(this).delete(videoAdBean.videoId);
                 new DeleteFileThread(videoAdBean.videoPath).start();
                 deleteVideos.add(i);
+                DLManager.getInstance(this).dlCancel(videoAdBean.videoUrl);
                 LogCat.e("数据已经过期，。。。。。");
                 continue;
             }
@@ -466,6 +470,7 @@ public class TestActivity extends BaseActivity {
                 AdDao.getInstance(this).delete(videoAdBean.videoId);
                 new DeleteFileThread(videoAdBean.videoPath).start();
                 deleteVideos.add(i);
+                DLManager.getInstance(this).dlCancel(videoAdBean.videoUrl);
             }
 
         }
@@ -553,7 +558,7 @@ public class TestActivity extends BaseActivity {
                 }
             }
             playVideo(videoInfo.videoUrl);
-            LogCat.e(videoInfo.videoName + "视频地址。。。。。" + videoInfo.videoUrl);
+            LogCat.e(videoInfo.videoName + "视频地址。。。。。" + videoInfo.videoName);
         }else {
             position = 0;
             VideoInfo videoInfo = new VideoInfo("预置片", DataUtils.getRawVideoUri(this, R.raw.video_test));
@@ -726,6 +731,7 @@ public class TestActivity extends BaseActivity {
         downloadUrl = url;
         LogCat.e("本地文件目录：" + saveDir + downLoadingVideo.videoName + ".mp4");
 
+
         dlManager.dlStart(url, saveDir, downLoadingVideo.videoName + ".mp4", new DownloadListener() {
 
             @Override
@@ -770,6 +776,14 @@ public class TestActivity extends BaseActivity {
         LogCat.e("doHandlerMessage添加新的数据。。。。。。。");
         // 添加到播放列表
         if(state.equals(AdDao.FLAG_DOWNLOAD_FINISHED)){
+            // 如果当第一个视频是默认视频的时候，删除
+            if(playVideoTable != null && playVideoTable.size() == 1){
+                VideoInfo videoInfo = playVideoTable.get(0);
+                if(DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoInfo.videoUrl)){
+                    playVideoTable.remove(0);
+                }
+            }
+
             if(!downLoadingVideo.videoPath.equals(DataUtils.getRawVideoUri(this, R.raw.video_test))){
                 VideoInfo videoInfo = new VideoInfo(downLoadingVideo.videoName , downLoadingVideo.videoPath);
                 playVideoTable.add(videoInfo);
@@ -820,8 +834,10 @@ public class TestActivity extends BaseActivity {
         super.onStop();
         // 停止当前的下载
         if (dlManager != null && !TextUtils.isEmpty(downloadUrl)) {
-            dlManager.dlStop(downloadUrl);
+            dlManager.dlCancel(downloadUrl);
         }
+
+
 
 
         if (timer != null) {
