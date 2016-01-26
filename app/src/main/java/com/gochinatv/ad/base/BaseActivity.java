@@ -157,7 +157,6 @@ public abstract class BaseActivity extends Activity {
 
 
                 getVideoCdnPath(sbUrl.toString());
-                LogCat.e("获取到最后的下载地址。。。。。。" + sbUrl.toString());
 
             }
 
@@ -174,18 +173,36 @@ public abstract class BaseActivity extends Activity {
     protected class DeleteFileThread extends Thread {
 
         private String path;
+        private String name;
 
-        public DeleteFileThread(String path) {
+        public DeleteFileThread(String path, String name) {
+            this.path = path;
+            this.name = name;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            File file = new File(path, name);
+            if (file != null && file.exists()) {
+                file.delete();
+            }
+        }
+    }
+
+    protected class DeleteApkThread extends Thread {
+
+        private String path;
+
+        public DeleteApkThread(String path) {
             this.path = path;
         }
 
         @Override
         public void run() {
             super.run();
-            File file = new File(path);
-            if (file != null && file.exists()) {
-                file.delete();
-            }
+            LogCat.e("删除所有安装文件");
+            delAllFile(path);
         }
     }
 
@@ -343,19 +360,15 @@ public abstract class BaseActivity extends Activity {
                 // 视频的结束时间
                 sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
                 Date endDate = sdf.parse(time);
-                LogCat.e("当前广告的结束时间：" + time);
+//                LogCat.e("当前广告的结束时间：" + time);
 
                 DateFormat formatter = new SimpleDateFormat(FORMAT_VIDEO_AD_TIME);
                 Date date = new Date(localTime);
                 TimeZone srcTimeZone = TimeZone.getDefault();
                 TimeZone destTimeZone = TimeZone.getTimeZone("GMT+8");
-                LogCat.e("当前时间       ： " + dateTransformBetweenTimeZone(date, formatter, srcTimeZone, destTimeZone));
-
-
-
-
-                LogCat.e("当前广告结束时间：" + endDate.getTime());
-                LogCat.e("当前服务器的时间：" + localTime);
+//                LogCat.e("当前时间       ： " + dateTransformBetweenTimeZone(date, formatter, srcTimeZone, destTimeZone));
+//                LogCat.e("当前广告结束时间：" + endDate.getTime());
+//                LogCat.e("当前服务器的时间：" + localTime);
                 // 过期数据
                 if (localTime <= endDate.getTime()) {
                     isExpired = false;
@@ -438,6 +451,74 @@ public abstract class BaseActivity extends Activity {
                 doError();
             }
         });
+    }
+
+
+
+
+    //删除指定文件夹下所有文件
+    //param path 文件夹完整绝对路径
+    public boolean delAllFile(String path) {
+        boolean flag = false;
+        File file = new File(path);
+        if (!file.exists()) {
+            return flag;
+        }
+        if (!file.isDirectory()) {
+            return flag;
+        }
+        String[] tempList = file.list();
+        File temp = null;
+        for (int i = 0; i < tempList.length; i++) {
+            if (path.endsWith(File.separator)) {
+                temp = new File(path + tempList[i]);
+            } else {
+                temp = new File(path + File.separator + tempList[i]);
+            }
+            if (temp.isFile()) {
+                temp.delete();
+            }
+            if (temp.isDirectory()) {
+                delAllFile(path + "/" + tempList[i]);//先删除文件夹里面的文件
+                delFolder(path + "/" + tempList[i]);//再删除空文件夹
+                flag = true;
+            }
+        }
+        return flag;
+    }
+
+    public  void delFolder(String folderPath) {
+        try {
+            delAllFile(folderPath); //删除完里面所有内容
+            String filePath = folderPath;
+            filePath = filePath.toString();
+            java.io.File myFilePath = new java.io.File(filePath);
+            myFilePath.delete(); //删除空文件夹
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 如果服务器不支持中文路径的情况下需要转换url的编码。
+     * @param string
+     * @return
+     */
+    public String encodeGB(String string)
+    {
+        //转换中文编码
+        String split[] = string.split("/");
+        for (int i = 1; i < split.length; i++) {
+            try {
+                split[i] = URLEncoder.encode(split[i], "GB2312");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            split[0] = split[0]+"/"+split[i];
+        }
+        split[0] = split[0].replaceAll("\\+", "%20");//处理空格
+        return split[0];
     }
 
 }

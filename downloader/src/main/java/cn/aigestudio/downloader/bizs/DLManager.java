@@ -22,7 +22,6 @@ import cn.aigestudio.downloader.interfaces.IDListener;
 import static cn.aigestudio.downloader.bizs.DLCons.DEBUG;
 import static cn.aigestudio.downloader.bizs.DLError.ERROR_INVALID_URL;
 import static cn.aigestudio.downloader.bizs.DLError.ERROR_NOT_NETWORK;
-import static cn.aigestudio.downloader.bizs.DLError.ERROR_REPEAT_URL;
 
 /**
  * 下载管理器
@@ -208,47 +207,48 @@ public final class DLManager {
             return;
         }
         if (TASK_DLING.containsKey(url)) {
-            if (null != listener) listener.onError(ERROR_REPEAT_URL, url + " is downloading.");
+            Log.e("TAG", url + " is downloading.");
+//            if (null != listener) listener.onError(ERROR_REPEAT_URL, url + " is downloading.");
+            dlCancel(url);
+        }
+        DLInfo info;
+        if (TASK_STOPPED.containsKey(url)) {
+            if (DEBUG) Log.d(TAG, "Resume task from memory.");
+            info = TASK_STOPPED.remove(url);
         } else {
-            DLInfo info;
-            if (TASK_STOPPED.containsKey(url)) {
-                if (DEBUG) Log.d(TAG, "Resume task from memory.");
-                info = TASK_STOPPED.remove(url);
-            } else {
-                if (DEBUG) Log.d(TAG, "Resume task from database.");
-                info = DLDBManager.getInstance(context).queryTaskInfo(url);
-                if (null != info) {
-                    info.threads.clear();
-                    info.threads.addAll(DLDBManager.getInstance(context).queryAllThreadInfo(url));
-                }
+            if (DEBUG) Log.d(TAG, "Resume task from database.");
+            info = DLDBManager.getInstance(context).queryTaskInfo(url);
+            if (null != info) {
+                info.threads.clear();
+                info.threads.addAll(DLDBManager.getInstance(context).queryAllThreadInfo(url));
             }
-            if (null == info) {
-                if (DEBUG) Log.d(TAG, "New task will be start.");
-                info = new DLInfo();
-                info.baseUrl = url;
-                info.realUrl = url;
-                if (TextUtils.isEmpty(dir)) dir = context.getCacheDir().getAbsolutePath();
-                info.dirPath = dir;
-                info.fileName = name;
-            } else {
-                info.isResume = true;
-                for (DLThreadInfo threadInfo : info.threads) {
-                    threadInfo.isStop = false;
-                }
+        }
+        if (null == info) {
+            if (DEBUG) Log.d(TAG, "New task will be start.");
+            info = new DLInfo();
+            info.baseUrl = url;
+            info.realUrl = url;
+            if (TextUtils.isEmpty(dir)) dir = context.getCacheDir().getAbsolutePath();
+            info.dirPath = dir;
+            info.fileName = name;
+        } else {
+            info.isResume = true;
+            for (DLThreadInfo threadInfo : info.threads) {
+                threadInfo.isStop = false;
             }
-            info.redirect = 0;
-            info.requestHeaders = DLUtil.initRequestHeaders(headers, info);
-            info.listener = listener;
-            info.hasListener = hasListener;
-            if (TASK_DLING.size() >= maxTask) {
-                if (DEBUG) Log.w(TAG, "Downloading urls is out of range.");
-                TASK_PREPARE.add(info);
-            } else {
-                if (DEBUG) Log.d(TAG, "Prepare download from " + info.baseUrl);
-                if (hasListener) listener.onPrepare();
-                TASK_DLING.put(url, info);
-                POOL_TASK.execute(new DLTask(context, info));
-            }
+        }
+        info.redirect = 0;
+        info.requestHeaders = DLUtil.initRequestHeaders(headers, info);
+        info.listener = listener;
+        info.hasListener = hasListener;
+        if (TASK_DLING.size() >= maxTask) {
+            if (DEBUG) Log.w(TAG, "Downloading urls is out of range.");
+            TASK_PREPARE.add(info);
+        } else {
+            if (DEBUG) Log.d(TAG, "Prepare download from " + info.baseUrl);
+            if (hasListener) listener.onPrepare();
+            TASK_DLING.put(url, info);
+            POOL_TASK.execute(new DLTask(context, info));
         }
     }
 
@@ -277,7 +277,7 @@ public final class DLManager {
      * @param url 文件下载地址
      *            Download url.
      */
-    public void dlCancel(String url) {
+    public synchronized void dlCancel(String url) {
         dlStop(url);
         DLInfo info;
         if (TASK_DLING.containsKey(url)) {

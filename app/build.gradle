@@ -13,8 +13,8 @@ android {
         applicationId "com.gochinatv.ad"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 2
-        versionName "1.1.2"
+        versionCode 6
+        versionName "1.1.6"
         // dex突破65535的限制
         multiDexEnabled true
         manifestPlaceholders = [UMENG_APPKEY_VALUE: "5697616167e58e3881002b8e"]

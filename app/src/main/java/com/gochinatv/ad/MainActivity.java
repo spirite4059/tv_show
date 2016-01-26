@@ -410,7 +410,7 @@ public class MainActivity extends BaseActivity {
                         // 删除数据表信息
                         AdDao.getInstance(MainActivity.this).delete(videoAdBean.videoId);
                         // 删除本地文件
-                        new DeleteFileThread(videoAdBean.videoPath).run();
+                        new DeleteFileThread(saveDir, videoAdBean.videoName).run();
                         // 删除本地数据
                         outOfDateVideo.add(j);
                         LogCat.e("当前视频已经过期，需要删除。。。。。。。。。" + videoDetailResponse.name);

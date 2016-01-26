@@ -109,6 +109,7 @@ class DLTask implements Runnable, IDLThreadListener {
                 switch (code) {
                     case HTTP_OK:
                     case HTTP_PARTIAL:
+//                        Log.e("TAG", "+++++++++++++++++++++++");
                         dlInit(conn, code);
                         return;
                     case HTTP_MOVED_PERM:
@@ -198,6 +199,14 @@ class DLTask implements Runnable, IDLThreadListener {
     }
 
     private void dlData(HttpURLConnection conn) throws IOException {
+
+//        URL url = conn.getURL();
+//        Log.e("tAG", "dlData: " + url.getHost() + url.getPath() + url.getAuthority());
+//        Log.e("tAG", "dlData: " + url.getAuthority());
+//        Log.e("tAG", "dlData: " + url.getProtocol());
+//        Log.e("tAG", "dlData: " + url.getContent());
+//        Log.e("tAG", "dlData: " + url.getPort());
+//        Log.e("tAG", "dlData: " + url.toString());
         InputStream is = conn.getInputStream();
         FileOutputStream fos = new FileOutputStream(info.file);
         byte[] b = new byte[4096];
