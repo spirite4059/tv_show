@@ -14,7 +14,7 @@ public class BootCompletedReceiver extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() == Intent.ACTION_BOOT_COMPLETED){
             Log.d("LibraryTestActivity", "recevie boot completed ... ");
-            Intent activityIntent = new Intent(context, TestActivity.class);
+            Intent activityIntent = new Intent(context, ChinaRestaurantActivity.class);
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(activityIntent);
 //            AlertUtils.alert(context, "开机自启动。。。。。。。。。。");

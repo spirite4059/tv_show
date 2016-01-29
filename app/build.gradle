@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 def releaseTime() {
-    return new Date().format("yyyy.MM.dd HH：mm", TimeZone.getTimeZone("Asia/Shanghai"))
+    return new Date().format("yyyy.MM.dd", TimeZone.getTimeZone("Asia/Shanghai"))
 }
 
 
@@ -13,11 +13,12 @@ android {
         applicationId "com.gochinatv.ad"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 6
-        versionName "1.1.6"
+        versionCode 7
+        versionName "1.1.7"
         // dex突破65535的限制
         multiDexEnabled true
-        manifestPlaceholders = [UMENG_APPKEY_VALUE: "5697616167e58e3881002b8e"]
+        //    5697616167e58e3881002b8e
+        manifestPlaceholders = [UMENG_APPKEY_VALUE: "56aad2f3e0f55a8655002111"]
     }
     // 禁用lint报错
     lintOptions {
@@ -44,7 +45,7 @@ android {
                     def outputFile = output.outputFile
                     if (outputFile != null && outputFile.name.endsWith('.apk')) {
                         // 输出apk名称为vego_v1.0_2015.01.15_wandoujia.apk
-                        def fileName = "cr_v${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}.apk"
+                        def fileName = "cr_v${defaultConfig.versionName}_${releaseTime()}.apk"
                         output.outputFile = new File(outputFile.parent, fileName)
                     }
                 }

@@ -32,7 +32,7 @@ import cn.aigestudio.downloader.bizs.DLManager;
 /**
  * Created by fq_mbp on 16/1/8.
  */
-public class TestActivity extends BaseActivity {
+public class ChinaRestaurantActivity extends BaseActivity {
 
     private MeasureVideoView videoView;
 
@@ -248,9 +248,9 @@ public class TestActivity extends BaseActivity {
             @Override
             public void run() {
                 LogCat.e("正在检测是否联网。。。。。");
-                if (DataUtils.isNetworkConnected(TestActivity.this)) {
+                if (DataUtils.isNetworkConnected(ChinaRestaurantActivity.this)) {
                     // 先去请求服务器，查看视频列表
-                    doHttpUpdate(TestActivity.this);
+                    doHttpUpdate(ChinaRestaurantActivity.this);
                     refrushTimer.cancel();
                     refrushTimer = null;
                     LogCat.e("已经联网。。。。。");
@@ -285,9 +285,9 @@ public class TestActivity extends BaseActivity {
                 showLoading();
                 try {
                     VideoAdBean videoAdBean = playVideoTable.get(position);
-                    if (!DataUtils.getRawVideoUri(TestActivity.this, R.raw.video_test).equals(videoAdBean.videoPath)) {
+                    if (!DataUtils.getRawVideoUri(ChinaRestaurantActivity.this, R.raw.video_test).equals(videoAdBean.videoPath)) {
                         LogCat.e("添加一次视频播放" + videoAdBean.videoName);
-                        MobclickAgent.onEvent(TestActivity.this, "video_loop_times", videoAdBean.videoName);
+                        MobclickAgent.onEvent(ChinaRestaurantActivity.this, "video_play_times", videoAdBean.videoName);
                     }
 
 
@@ -321,7 +321,7 @@ public class TestActivity extends BaseActivity {
                     new DeleteFileThread(saveDir, videoAdBean.videoName).start();
 
                     LogCat.e("从本地数据库中删除该记录。。。。。。");
-                    AdDao.getInstance(TestActivity.this).delete(videoAdBean.videoId);
+                    AdDao.getInstance(ChinaRestaurantActivity.this).delete(videoAdBean.videoId);
 
                     LogCat.e("从本地表中删除该记录。。。。。。");
                     for (VideoAdBean videoAdBean1 : localVideoTable) {
@@ -530,7 +530,7 @@ public class TestActivity extends BaseActivity {
                         }
                     });
                 }
-            }, REFRUSH_DURATION, REFRUSH_DURATION);
+            }, 1000 * 10, 1000 * 10);
         }
     }
 
@@ -813,10 +813,10 @@ public class TestActivity extends BaseActivity {
                 LogCat.e("onFinish............");
                 // 提示安装
                 if (dlManager == null) {
-                    dlManager = DLManager.getInstance(TestActivity.this);
+                    dlManager = DLManager.getInstance(ChinaRestaurantActivity.this);
                 }
                 dlManager.dlCancel(saveDir + "chinaRestaurant.apk");
-                installApk(TestActivity.this, file.getAbsolutePath());
+                installApk(ChinaRestaurantActivity.this, file.getAbsolutePath());
                 isUpdateFinish = true;
                 // 关闭当前app
                 finish();
@@ -967,6 +967,7 @@ public class TestActivity extends BaseActivity {
             initDownloadInfo();
         } else {
             LogCat.e("已经全部下载完成了、、、、、、、");
+            downloadUrl = "-1";
         }
 
     }
@@ -993,7 +994,8 @@ public class TestActivity extends BaseActivity {
     protected void onStop() {
         super.onStop();
         // 停止当前的下载
-        if (dlManager != null && !TextUtils.isEmpty(downloadUrl)) {
+        if (dlManager != null && !"-1".equals(downloadUrl)) {
+            LogCat.e(downloadUrl + " is not null, 删除对应的文件");
             dlManager.dlCancel(downloadUrl);
         }
 
@@ -1017,7 +1019,7 @@ public class TestActivity extends BaseActivity {
             long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
             long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
             String str = day + "天" + hour + "小时" + min + "分" + s + "秒";
-            MobclickAgent.onEvent(this, "video_duration", str);
+            MobclickAgent.onEvent(this, "duration", str);
             LogCat.e("上报开机时长。。。。。。。。");
         } catch (Exception e) {
             e.printStackTrace();
@@ -1031,13 +1033,13 @@ public class TestActivity extends BaseActivity {
     public void onResume() {
         super.onResume();
         MobclickAgent.onResume(this);
-        MobclickAgent.onPageStart("TestActivity"); // 统计页面
+        MobclickAgent.onPageStart("ChinaRestaurantActivity"); // 统计页面
     }
 
     public void onPause() {
         super.onPause();
         MobclickAgent.onPause(this);
-        MobclickAgent.onPageEnd("TestActivity"); // 保证 onPageEnd 在onPause
+        MobclickAgent.onPageEnd("ChinaRestaurantActivity"); // 保证 onPageEnd 在onPause
     }
 
 

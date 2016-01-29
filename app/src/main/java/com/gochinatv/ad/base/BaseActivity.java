@@ -57,6 +57,8 @@ public abstract class BaseActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+
 //        MobclickAgent.setCheckDevice(false);
         MobclickAgent.setCatchUncaughtExceptions(true);
         MobclickAgent.setDebugMode(true);
@@ -130,9 +132,9 @@ public abstract class BaseActivity extends Activity {
 
     protected void getVideoCdnPath(String path) {
     }
+
     protected void onVideoCdnError(String path) {
     }
-
 
 
     protected void doHttpGetCdnPath(Context context, final String vid, final Date date) {
@@ -330,19 +332,20 @@ public abstract class BaseActivity extends Activity {
         }
 
     }
+
     public String dateTransformBetweenTimeZone(Date sourceDate, DateFormat formatter,
-                                                      TimeZone sourceTimeZone, TimeZone targetTimeZone) {
+                                               TimeZone sourceTimeZone, TimeZone targetTimeZone) {
         Long targetTime = sourceDate.getTime() - sourceTimeZone.getRawOffset() + targetTimeZone.getRawOffset();
         return getTime(new Date(targetTime), formatter);
     }
 
     public long dateTransformBetweenTimeZoneLong(Date sourceDate,
-                                               TimeZone sourceTimeZone, TimeZone targetTimeZone) {
+                                                 TimeZone sourceTimeZone, TimeZone targetTimeZone) {
         Long targetTime = sourceDate.getTime() - sourceTimeZone.getRawOffset() + targetTimeZone.getRawOffset();
         return targetTime;
     }
 
-    public String getTime(Date date, DateFormat formatter){
+    public String getTime(Date date, DateFormat formatter) {
         return formatter.format(date);
     }
 
@@ -384,6 +387,7 @@ public abstract class BaseActivity extends Activity {
 
 
     protected long timeInterval;
+
     private long getTimeOffset() {
         Date sourceDate = Calendar.getInstance().getTime();
         TimeZone sourceTimeZone = TimeZone.getTimeZone("EST");
@@ -395,7 +399,7 @@ public abstract class BaseActivity extends Activity {
     /**
      * 检查是否有版本更新
      */
-    protected void doHttpGetTime(final  Context context) {
+    protected void doHttpGetTime(final Context context) {
 
         TimeHttpService.doHttpGetTime(context, new OnRequestListener<TimeResponse>() {
             @Override
@@ -425,7 +429,7 @@ public abstract class BaseActivity extends Activity {
 
                         LogCat.e("timeInterval):               " + timeInterval);
                         doHttpGetEpisode();
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                         doError();
                     }
@@ -452,8 +456,6 @@ public abstract class BaseActivity extends Activity {
             }
         });
     }
-
-
 
 
     //删除指定文件夹下所有文件
@@ -487,7 +489,7 @@ public abstract class BaseActivity extends Activity {
         return flag;
     }
 
-    public  void delFolder(String folderPath) {
+    public void delFolder(String folderPath) {
         try {
             delAllFile(folderPath); //删除完里面所有内容
             String filePath = folderPath;
@@ -502,11 +504,11 @@ public abstract class BaseActivity extends Activity {
 
     /**
      * 如果服务器不支持中文路径的情况下需要转换url的编码。
+     *
      * @param string
      * @return
      */
-    public String encodeGB(String string)
-    {
+    public String encodeGB(String string) {
         //转换中文编码
         String split[] = string.split("/");
         for (int i = 1; i < split.length; i++) {
@@ -515,7 +517,7 @@ public abstract class BaseActivity extends Activity {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-            split[0] = split[0]+"/"+split[i];
+            split[0] = split[0] + "/" + split[i];
         }
         split[0] = split[0].replaceAll("\\+", "%20");//处理空格
         return split[0];

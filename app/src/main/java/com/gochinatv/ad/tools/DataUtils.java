@@ -1795,7 +1795,7 @@ public class DataUtils {
 
 
 
-	private static String getMacAddress(Context context) {
+	public static String getMacAddress(Context context) {
 		String macAddress = null;
 		switch (checkNetStatus(context)) {
 			case 1: // 有线
