@@ -13,8 +13,8 @@ android {
         applicationId "com.gochinatv.ad"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 7
-        versionName "1.1.7"
+        versionCode 6
+        versionName "1.1.6"
         // dex突破65535的限制
         multiDexEnabled true
         //    5697616167e58e3881002b8e
@@ -70,5 +70,4 @@ dependencies {
     compile project(':httpUtils')
     compile project(':videoplayer')
     compile project(':downloader')
-
 }

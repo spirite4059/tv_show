@@ -1,8 +1,12 @@
 package com.gochinatv.ad;
 
+import android.app.DownloadManager;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -32,7 +36,8 @@ import cn.aigestudio.downloader.bizs.DLManager;
 /**
  * Created by fq_mbp on 16/1/8.
  */
-public class ChinaRestaurantActivity extends BaseActivity {
+public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
+
 
     private MeasureVideoView videoView;
 
@@ -77,9 +82,11 @@ public class ChinaRestaurantActivity extends BaseActivity {
 
     private LinearLayout loading;
 
-//    private DownloadManager downloadManager;
-//    private SharedPreferences prefs;
-//    private static final String DL_ID = "222";
+    private DownloadManager downloadManager;
+    private SharedPreferences prefs;
+    private static final String DL_ID = "222";
+    DownloadDefine downloadDefine;
+    private MyHandler handler;
 
 
     @Override
@@ -159,33 +166,15 @@ public class ChinaRestaurantActivity extends BaseActivity {
 //        downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 //        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //        registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-//
 //        downloadManagerPro = new DownloadManagerPro(downloadManager);
-//        handler = new MyHandler();
 
+        handler = new MyHandler();
+        downloadDefine = new DownloadDefine();
 
         // 创建播放列表
         playVideoTable = new ArrayList<>();
         // 查询数据库，看是否有播放记录
         localVideoTable = AdDao.getInstance(this).queryVideoAds();
-
-//        if(localVideoTable ==null || localVideoTable.size() == 0){
-//            localVideoTable = new ArrayList<>();
-//            VideoAdBean videoAdBean = new VideoAdBean();
-//            videoAdBean.videoName = "111111";
-//            videoAdBean.videoPath = "111111";
-//            videoAdBean.videoEndTime = "20160202235959";
-//            videoAdBean.videoId = "111111";
-//            localVideoTable.add(videoAdBean);
-//
-//            VideoAdBean videoAdBean1 = new VideoAdBean();
-//            videoAdBean1.videoName = "2222222";
-//            videoAdBean1.videoPath = "2222222";
-//            videoAdBean1.videoEndTime = "20160102235959";
-//            videoAdBean1.videoId = "2222222";
-//            localVideoTable.add(videoAdBean1);
-//        }
-
 
         // 此时需要先播放视频
         if (localVideoTable == null || localVideoTable.size() == 0) {
@@ -229,19 +218,15 @@ public class ChinaRestaurantActivity extends BaseActivity {
         checkNet();
 
         // 删除目录下所有的安装包
-//        new DeleteApkThread(saveDir + "chinaRestaurant").start();
+        new DeleteApkThread(saveDir + "chinaRestaurant").start();
 
     }
 
-    class VideoInfo {
-        public String videoUrl;
-        public String videoName;
+    @Override
+    public void run() {
 
-        public VideoInfo(String videoName, String videoUrl) {
-            this.videoName = videoName;
-            this.videoUrl = videoUrl;
-        }
     }
+
 
     private void checkNet() {
         refrushTimer.schedule(new TimerTask() {
@@ -291,11 +276,6 @@ public class ChinaRestaurantActivity extends BaseActivity {
                     }
 
 
-//                    VideoInfo videoInfo = playVideoTable.get(position);
-//                    if(!DataUtils.getRawVideoUri(TestActivity.this, R.raw.video_test).equals(videoInfo.videoUrl)){
-//                        LogCat.e("添加一次视频播放" + videoInfo.videoName);
-//                        MobclickAgent.onEvent(TestActivity.this, "video_loop_times", videoInfo.videoName);
-//                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -543,8 +523,8 @@ public class ChinaRestaurantActivity extends BaseActivity {
         }
         LogCat.e("开始下载。。。。。。。。" + path);
         // 一个视频一个视频的下载
-
-        download(path);
+        downloadUrl = path;
+        download();
 
 
     }
@@ -651,31 +631,8 @@ public class ChinaRestaurantActivity extends BaseActivity {
             playVideo(videoAdBean.videoPath);
             LogCat.e(videoAdBean.videoName + "视频地址。。。。。" + videoAdBean.videoName);
 
-
-//            VideoInfo videoInfo = playVideoTable.get(position);
-//            if (TextUtils.isEmpty(videoInfo.videoUrl)) {
-//                playVideoTable.remove(videoInfo);
-//                playNext();
-//                LogCat.e("当前视频的path为 null。。。。。");
-//                return;
-//            }
-//
-//            if(!DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoInfo.videoUrl)){
-//                File file = new File(videoInfo.videoUrl);
-//                if (!file.exists()) {
-//                    playVideoTable.remove(videoInfo);
-//                    playNext();
-//                    LogCat.e("当前视频的视频文件不存在。。。。。");
-//                    return;
-//                }
-//            }
-//            playVideo(videoInfo.videoUrl);
-//            LogCat.e(videoInfo.videoName + "视频地址。。。。。" + videoInfo.videoName);
         } else {
             position = 0;
-//            VideoInfo videoInfo = new VideoInfo("预置片", DataUtils.getRawVideoUri(this, R.raw.video_test));
-//            playVideoTable.add(videoInfo);
-
             VideoAdBean videoAdBean = new VideoAdBean();
             videoAdBean.videoName = "预置片";
             videoAdBean.videoPath = DataUtils.getRawVideoUri(this, R.raw.video_test);
@@ -686,6 +643,14 @@ public class ChinaRestaurantActivity extends BaseActivity {
             playVideo(DataUtils.getRawVideoUri(this, R.raw.video_test));
         }
     }
+
+
+
+
+
+
+
+
 
 
     private void addDownloadList(VideoDetailResponse videoDetailResponse) {
@@ -772,9 +737,6 @@ public class ChinaRestaurantActivity extends BaseActivity {
 
     }
 
-    boolean isUpdate;
-    boolean isUpdateFinish;
-
 
     private void downloadApk(final UpdateResponse.UpdateInfoResponse updateInfo) {
         if (dlManager == null) {
@@ -853,19 +815,18 @@ public class ChinaRestaurantActivity extends BaseActivity {
 
     long downloadingId;
 
-    private void download(final String url) {
-
-        downloadUrl = url;
-//        downloadingId = doDownLoad();
+    private void download() {
 
         if (dlManager == null) {
             dlManager = DLManager.getInstance(this);
         }
-        downloadUrl = url;
         LogCat.e("本地文件目录：" + saveDir + downLoadingVideo.videoName);
-        dlManager.dlCancel(url);
+        dlManager.dlStop(downloadUrl);
+        dlManager.dlCancel(downloadUrl);
+        LogCat.e("开启保护线程，防止下载中断。。。。。。。");
+        handler.postDelayed(downloadDefine, 1000 * 30);
 
-        dlManager.dlStart(url, saveDir, downLoadingVideo.videoName, new DownloadListener() {
+        dlManager.dlStart(downloadUrl, saveDir, downLoadingVideo.videoName, new DownloadListener() {
 
             @Override
             public void onPrepare() {
@@ -881,6 +842,9 @@ public class ChinaRestaurantActivity extends BaseActivity {
             public void onProgress(int progress) {
                 super.onProgress(progress);
                 LogCat.e("onProgress............" + ((progress / 1024) / 1024) + "M");
+                handler.removeCallbacks(downloadDefine);
+
+                handler.postDelayed(downloadDefine, 1000 * 30);
             }
 
             @Override
@@ -895,19 +859,26 @@ public class ChinaRestaurantActivity extends BaseActivity {
                     LogCat.e("onFinish............");
                 }
 
-                downloadFinish(url, AdDao.FLAG_DOWNLOAD_FINISHED);
+                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_FINISHED);
             }
 
             @Override
             public void onError(int status, String error) {
                 LogCat.e("onError............" + error);
-                downloadFinish(url, AdDao.FLAG_DOWNLOAD_UNFINISH);
+                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
             }
         });
+
+
+
+
+
+        //        doDownLoad();
     }
 
     private void downloadFinish(String url, String state) {
 //        dlManager.dlCancel(url);
+
         // 将视频信息插入数据库
         insertVideoAdState(state, url);
         // 添加到播放列表
@@ -919,20 +890,10 @@ public class ChinaRestaurantActivity extends BaseActivity {
                 if (DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoAdBean.videoPath)) {
                     playVideoTable.remove(0);
                 }
-//                VideoInfo videoInfo = playVideoTable.get(0);
-//                if(DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoInfo.videoUrl)){
-//                    playVideoTable.remove(0);
-//                }
             }
 
             if (!downLoadingVideo.videoPath.equals(DataUtils.getRawVideoUri(this, R.raw.video_test))) {
-//                VideoInfo videoInfo = new VideoInfo(downLoadingVideo.videoName , downLoadingVideo.videoPath);
-//                playVideoTable.add(videoInfo);
-
-
                 playVideoTable.add(downLoadingVideo);
-
-
                 localVideoTable.add(downLoadingVideo);
             }
             // 查询是否还有未下载的任务，如果有 继续下载
@@ -968,6 +929,8 @@ public class ChinaRestaurantActivity extends BaseActivity {
         } else {
             LogCat.e("已经全部下载完成了、、、、、、、");
             downloadUrl = "-1";
+            downloadingId = -1;
+            handler.removeCallbacks(downloadDefine);
         }
 
     }
@@ -1001,7 +964,7 @@ public class ChinaRestaurantActivity extends BaseActivity {
 
 
 //        unregisterReceiver(receiver);
-//        if (downloadManager != null) {
+//        if (downloadManager != null && downloadingId != -1) {
 //            downloadManager.remove(downloadingId);
 //        }
 
@@ -1082,7 +1045,7 @@ public class ChinaRestaurantActivity extends BaseActivity {
 //                    //清除已下载的内容，重新下载
 //                    LogCat.e("STATUS_FAILED");
 //                    downloadManager.remove(downloadingId);
-//                    downloadingId = doDownLoad();
+//                    doDownLoad();
 //
 //                    break;
 //            }
@@ -1092,45 +1055,22 @@ public class ChinaRestaurantActivity extends BaseActivity {
 //
 //
 //
-//    private long doDownLoad() {
+//    private void doDownLoad() {
 //        LogCat.e("doDownLoad......" + downLoadingVideo.videoName);
-////        if(!prefs.contains(DL_ID)) {
-////        downloadUrl = "http://developer.android.com/shareables/icon_templates-v4.0.zip";
-//        //®
-////        downloadUrl = downloadUrl.split("\\u003F")[0];
 //        LogCat.e("下载地址：" + downloadUrl);
-//
-//
-//
-//        Uri resource = Uri.parse(encodeGB(downloadUrl+ "tttt.mp4"));
+//        Uri resource = Uri.parse(encodeGB(downloadUrl));
 //        DownloadManager.Request request = new DownloadManager.Request(resource);
 //        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI);
 //        request.setAllowedOverRoaming(false);
-//        //设置文件类型
-////        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
-////        String mimeString = mimeTypeMap.getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(downloadUrl));
-////         LogCat.e("mimeString.............." + mimeString);
-////        request.setMimeType(mimeString);
-//
-//
 //        //在通知栏中显示
 //        request.setShowRunningNotification(false);
 //        request.setVisibleInDownloadsUi(false);
 //        //sdcard的目录下的download文件夹
-//
-////                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, fileName);
-////        LogCat.e("file 处理中文： " + encodeGB(downLoadingVideo.videoName));
 //        request.setDestinationInExternalPublicDir(FILE_DIRECTROY, downLoadingVideo.videoName);
-//        long id = downloadManager.enqueue(request);
+//        downloadingId = downloadManager.enqueue(request);
 //        //保存id
-////        prefs.edit().putLong(DL_ID, id).commit();
-//        LogCat.e("开始下载...........141414: " + id);
-//        return id;
-////        } else {
-////            //下载已经开始，检查状态
-////            return queryDownloadStatus();
-////        }
-//
+//        LogCat.e("开始下载...........下载id: " + downloadingId);
+//        handler.postDelayed(downloadDefine, 1000 * 30);
 //    }
 //
 //
@@ -1149,28 +1089,53 @@ public class ChinaRestaurantActivity extends BaseActivity {
 //
 //    private DownloadChangeObserver downloadObserver;
 //    private DownloadManagerPro downloadManagerPro;
-//    private MyHandler handler;
+//
 //
 //    public void updateView() {
 //        int[] bytesAndStatus = downloadManagerPro.getBytesAndStatus(downloadingId);
 //        handler.sendMessage(handler.obtainMessage(0, bytesAndStatus[0], bytesAndStatus[1],
 //                bytesAndStatus[2]));
 //    }
-//
-//
-//    private static class MyHandler extends Handler {
-//        @Override
-//        public void handleMessage(Message msg) {
-//            super.handleMessage(msg);
-//
-//            if (msg.arg2 >= 0) {
-//                int percent = (int) (msg.arg1 * 100 / (float) msg.arg2);
-//                LogCat.e("download_progress..........." + percent + "%");
-//            }
-//
-////            LogCat.e("temp2: " + temp2);
-//        }
-//    }
+
+
+    private class MyHandler extends Handler {
+
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 0:
+//                    if (msg.arg2 >= 0) {
+//                        int percent = (int) (msg.arg1 * 100 / (float) msg.arg2);
+//                        LogCat.e("download_progress..........." + percent + "%");
+//                    }
+                    break;
+                case 1:
+                    removeCallbacks(downloadDefine);
+                    LogCat.e("已经30秒没有下载信息了。。。。。保护线程要起作用了");
+                    // 取消当前下载
+//                    downloadManager.remove(downloadingId);
+                    // 重新下载
+//                    doDownLoad();
+
+                    download();
+
+
+
+                    break;
+            }
+        }
+    }
+
+    private class DownloadDefine implements Runnable{
+
+
+        @Override
+        public void run() {
+            handler.sendMessage(handler.obtainMessage(1));
+        }
+    }
 
 
     @Override
@@ -1191,4 +1156,113 @@ public class ChinaRestaurantActivity extends BaseActivity {
 
 
     }
+
+
+
+
+    boolean isUpdate;
+    boolean isUpdateFinish;
+
+
+
+
+
+
+
+
+//    private BroadcastReceiver receiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            //这里可以取得下载的id，这样就可以知道哪个文件下载完成了。适用与多个下载任务的监听
+//            Log.e("intent", "" + intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0));
+//            queryDownloadStatus();
+//        }
+//    };
+//
+//
+//    private long queryDownloadStatus() {
+//        LogCat.e("queryDownloadStatus........");
+//        DownloadManager.Query query = new DownloadManager.Query();
+//        query.setFilterById(downloadingId);
+//        Cursor c = downloadManager.query(query);
+//
+//        if (c.moveToFirst()) {
+//            int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
+//            LogCat.e("download status................... " + status);
+//            switch (status) {
+//                case DownloadManager.STATUS_PAUSED:
+//                    LogCat.e("STATUS_PAUSED");
+//                case DownloadManager.STATUS_PENDING:
+//                    LogCat.e("STATUS_PENDING");
+//                case DownloadManager.STATUS_RUNNING:
+//                    //正在下载，不做任何事情
+//                    LogCat.e("STATUS_RUNNING");
+//                    break;
+//                case DownloadManager.STATUS_SUCCESSFUL:
+//                    //完成
+//                    LogCat.e("下载完成");
+//
+//                    downloadFinish("", AdDao.FLAG_DOWNLOAD_FINISHED);
+//
+//                    break;
+//                case DownloadManager.STATUS_FAILED:
+//                    //清除已下载的内容，重新下载
+//                    LogCat.e("STATUS_FAILED");
+//                    downloadManager.remove(downloadingId);
+//                    doDownLoad();
+//
+//                    break;
+//            }
+//        }
+//        return downloadingId;
+//    }
+//
+//
+//
+//    private void doDownLoad() {
+//        LogCat.e("doDownLoad......" + downLoadingVideo.videoName);
+//        LogCat.e("下载地址：" + downloadUrl);
+//        Uri resource = Uri.parse(encodeGB(downloadUrl));
+//        DownloadManager.Request request = new DownloadManager.Request(resource);
+//        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI);
+//        request.setAllowedOverRoaming(false);
+//        //在通知栏中显示
+//        request.setShowRunningNotification(false);
+//        request.setVisibleInDownloadsUi(false);
+//        //sdcard的目录下的download文件夹
+//        request.setDestinationInExternalPublicDir(FILE_DIRECTROY, downLoadingVideo.videoName);
+//        downloadingId = downloadManager.enqueue(request);
+//        //保存id
+//        LogCat.e("开始下载...........下载id: " + downloadingId);
+//        handler.postDelayed(downloadDefine, 1000 * 30);
+//    }
+//
+//
+//    class DownloadChangeObserver extends ContentObserver {
+//
+//        public DownloadChangeObserver() {
+//            super(handler);
+//        }
+//
+//        @Override
+//        public void onChange(boolean selfChange) {
+//            updateView();
+//        }
+//
+//    }
+//
+//    private DownloadChangeObserver downloadObserver;
+//    private DownloadManagerPro downloadManagerPro;
+//
+//
+//    public void updateView() {
+//        int[] bytesAndStatus = downloadManagerPro.getBytesAndStatus(downloadingId);
+//        handler.sendMessage(handler.obtainMessage(0, bytesAndStatus[0], bytesAndStatus[1],
+//                bytesAndStatus[2]));
+//    }
+
+
+
+
+
 }

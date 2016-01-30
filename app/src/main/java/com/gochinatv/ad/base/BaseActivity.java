@@ -234,11 +234,16 @@ public abstract class BaseActivity extends Activity {
             ApplicationInfo appInfo = this.getPackageManager().getApplicationInfo(getPackageName(),
                     PackageManager.GET_META_DATA);
             if (appInfo != null) {
-                map.put("brandNumber", appInfo.metaData.getString("UMENG_CHANNEL")); // 品牌
+                String brand = appInfo.metaData.getString("UMENG_CHANNEL");
+                if(TextUtils.isEmpty(brand)){
+                    map.put("brandNumber", "chinarestaurant"); // 品牌
+                }else {
+                    map.put("brandNumber", brand); // 品牌
+                }
             }
         } catch (PackageManager.NameNotFoundException e1) {
             e1.printStackTrace();
-            map.put("brandNumber", "unkown"); // 品牌
+            map.put("brandNumber", "chinarestaurant"); // 品牌
         }
 
         AlbnumHttpService.doHttpUpdateApk(this, map, new OnRequestListener<UpdateResponse>() {
@@ -310,7 +315,7 @@ public abstract class BaseActivity extends Activity {
             @Override
             public void onError(String errorMsg, String url) {
                 // 升级失败
-                LogCat.e("请求接口出错，无法升级。。。。。");
+                LogCat.e("请求接口出错，无法升级。。。。。" + url);
                 doError();
             }
         });
