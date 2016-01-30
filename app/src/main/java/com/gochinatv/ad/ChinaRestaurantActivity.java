@@ -36,7 +36,7 @@ import cn.aigestudio.downloader.bizs.DLManager;
 /**
  * Created by fq_mbp on 16/1/8.
  */
-public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
+public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 
 
     private MeasureVideoView videoView;
@@ -87,7 +87,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
     private static final String DL_ID = "222";
     DownloadDefine downloadDefine;
     private MyHandler handler;
-
+    private boolean isDownLoadApk;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,6 +167,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 //        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //        registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 //        downloadManagerPro = new DownloadManagerPro(downloadManager);
+
 
         handler = new MyHandler();
         downloadDefine = new DownloadDefine();
@@ -295,6 +296,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 
 
                 VideoAdBean videoAdBean = playVideoTable.get(position);
+
                 if (videoAdBean != null) {
                     LogCat.e("onError...........视频播放失败了: " + videoAdBean.videoName);
                     LogCat.e("删除当前视频的本地文件。。。。。。");
@@ -303,7 +305,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
                     LogCat.e("从本地数据库中删除该记录。。。。。。");
                     AdDao.getInstance(ChinaRestaurantActivity.this).delete(videoAdBean.videoId);
 
-                    LogCat.e("从本地表中删除该记录。。。。。。");
+                    LogCat.e("从本地表中删除该记录。。。。。。" + localVideoTable.size());
                     for (VideoAdBean videoAdBean1 : localVideoTable) {
                         if (videoAdBean1.videoId.equals(videoAdBean.videoId)) {
                             LogCat.e("执行删除本地表记录操作。。。。。。");
@@ -312,11 +314,38 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
                         }
                     }
 
-                    LogCat.e("从当前播放列表中删除该视频。。。。。。");
+                    LogCat.e("从当前播放列表中删除该视频。。。。。。" + playVideoTable.size());
                     playVideoTable.remove(position);
+                    position--;
+                    if(position < 0 ){
+                        position = 0;
+
+                    }
+                    LogCat.e("从当前播放列表中删除该视频后的大小。。。。。。" + playVideoTable.size());
+                    VideoDetailResponse videoDetailResponseDown = null;
+                    if (videoDetailResponses != null) {
+                        for (VideoDetailResponse videoDetailResponse : videoDetailResponses) {
+                            if (videoAdBean.videoId.equals(videoDetailResponse.vid)) {
+                                videoDetailResponseDown = videoDetailResponse;
+                                break;
+                            }
+                        }
+                        videoDetailResponseDown.isDownloading = false;
+                        // 当前还有下载就添加到下载列表中
+                        if (downloadViews == null) {
+                            downloadViews = new ArrayList<VideoDetailResponse>();
+                        }
+
+                        addDownloadList(videoDetailResponseDown);
+                        // 添加到下载列表
+                        if (downloadViews.size() <= 1) {
+                            // 已经下载完成,需要重新启动
+                            initDownloadInfo();
+                        }
+
+                    }
+
                 }
-
-
                 playNext();
 
 
@@ -339,7 +368,8 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
     @Override
     protected void onUpdateSuccess(UpdateResponse.UpdateInfoResponse updateInfo) {
         isUpdate = true;
-        downloadApk(updateInfo);
+        this.updateInfo = updateInfo;
+        downloadApk();
     }
 
     @Override
@@ -603,54 +633,124 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 
     private void playNext() {
         LogCat.e("playNext。。。。。");
-        if (playVideoTable != null && playVideoTable.size() > 0) {
-            position++;
-            if (position >= playVideoTable.size()) {
-                position = 0;
-                LogCat.e("此时表示已经将所有视频循环一遍了。。。。。");
-            }
-            LogCat.e("当前播放第   " + position + "   个视频");
 
-            VideoAdBean videoAdBean = playVideoTable.get(position);
-            if (TextUtils.isEmpty(videoAdBean.videoPath)) {
-                playVideoTable.remove(videoAdBean);
-                playNext();
-                LogCat.e("当前视频的path为 null。。。。。");
-                return;
-            }
-
-            if (!DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoAdBean.videoPath)) {
-                File file = new File(saveDir, videoAdBean.videoName);
-                if (!file.exists()) {
-                    playVideoTable.remove(videoAdBean);
-                    playNext();
-                    LogCat.e("当前视频的视频文件不存在。。。。。" + file.getAbsolutePath());
-                    return;
-                }
-            }
-            playVideo(videoAdBean.videoPath);
-            LogCat.e(videoAdBean.videoName + "视频地址。。。。。" + videoAdBean.videoName);
-
-        } else {
+        if (playVideoTable == null || playVideoTable.size() == 0) {
+            LogCat.e("playNext。。。。。");
             position = 0;
             VideoAdBean videoAdBean = new VideoAdBean();
             videoAdBean.videoName = "预置片";
             videoAdBean.videoPath = DataUtils.getRawVideoUri(this, R.raw.video_test);
             videoAdBean.videoId = "0";
             playVideoTable.add(0, videoAdBean);
-
-
             playVideo(DataUtils.getRawVideoUri(this, R.raw.video_test));
+        } else if (playVideoTable != null && playVideoTable.size() == 2) {
+            VideoAdBean videoAdBean = playVideoTable.get(0);
+            if (DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoAdBean.videoPath)) {
+                playVideoTable.remove(0);
+            }
+            position = 0;
+
+            playVideo(videoAdBean.videoPath);
+        } else {
+            position++;
+            if(position >= playVideoTable.size()){
+                position = 0;
+            }
+            VideoAdBean videoAdBean = playVideoTable.get(position);
+            if (TextUtils.isEmpty(videoAdBean.videoPath)) {
+
+                // 添加下载
+                LogCat.e("onError...........视频播放失败了: " + videoAdBean.videoName);
+                LogCat.e("删除当前视频的本地文件。。。。。。");
+                new DeleteFileThread(saveDir, videoAdBean.videoName).start();
+
+                LogCat.e("从本地数据库中删除该记录。。。。。。");
+                AdDao.getInstance(ChinaRestaurantActivity.this).delete(videoAdBean.videoId);
+
+                LogCat.e("从本地表中删除该记录。。。。。。" + localVideoTable.size());
+                for (VideoAdBean videoAdBean1 : localVideoTable) {
+                    if (videoAdBean1.videoId.equals(videoAdBean.videoId)) {
+                        LogCat.e("执行删除本地表记录操作。。。。。。");
+                        localVideoTable.remove(videoAdBean1);
+                        break;
+                    }
+                }
+
+                LogCat.e("从当前播放列表中删除该视频。。。。。。" + playVideoTable.size());
+                playVideoTable.remove(position);
+                LogCat.e("从当前播放列表中删除该视频后的大小。。。。。。" + playVideoTable.size());
+                VideoDetailResponse videoDetailResponseDown = null;
+                if (videoDetailResponses != null) {
+                    for (VideoDetailResponse videoDetailResponse : videoDetailResponses) {
+                        if (videoAdBean.videoId.equals(videoDetailResponse.vid)) {
+                            videoDetailResponseDown = videoDetailResponse;
+                            break;
+                        }
+                    }
+                    videoDetailResponseDown.isDownloading = false;
+                    // 当前还有下载就添加到下载列表中
+                    if (downloadViews == null) {
+                        downloadViews = new ArrayList<VideoDetailResponse>();
+                    }
+
+                    addDownloadList(videoDetailResponseDown);
+                    // 添加到下载列表
+                    if (downloadViews.size() <= 1) {
+                        // 已经下载完成,需要重新启动
+                        initDownloadInfo();
+                    }
+
+                }
+                position--;
+                playNext();
+            }else {
+                LogCat.e("即将播放。。。。。" + videoAdBean.videoName);
+                playVideo(videoAdBean.videoPath);
+            }
         }
+
+
+
+//        if (playVideoTable != null && playVideoTable.size() > 0) {
+//            position++;
+//            if (position >= playVideoTable.size()) {
+//                position = 0;
+////                LogCat.e("此时表示已经将所有视频循环一遍了。。。。。");
+//            }
+//            LogCat.e("当前播放第   " + position + "   个视频");
+//
+//            VideoAdBean videoAdBean = playVideoTable.get(position);
+//            if (TextUtils.isEmpty(videoAdBean.videoPath)) {
+//                playVideoTable.remove(videoAdBean);
+//                playNext();
+//                LogCat.e("当前视频的path为 null。。。。。");
+//                return;
+//            }
+//
+//            if (!DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoAdBean.videoPath)) {
+//                File file = new File(saveDir, videoAdBean.videoName);
+//                if (!file.exists()) {
+//                    playVideoTable.remove(videoAdBean);
+//                    playNext();
+//                    LogCat.e("当前视频的视频文件不存在。。。。。" + file.getAbsolutePath());
+//                    return;
+//                }
+//            }
+//            playVideo(videoAdBean.videoPath);
+////            LogCat.e(videoAdBean.videoName + "视频地址。。。。。" + videoAdBean.videoName);
+//
+//        } else {
+//            position = 0;
+//            VideoAdBean videoAdBean = new VideoAdBean();
+//            videoAdBean.videoName = "预置片";
+//            videoAdBean.videoPath = DataUtils.getRawVideoUri(this, R.raw.video_test);
+//            videoAdBean.videoId = "0";
+//            playVideoTable.add(0, videoAdBean);
+//
+//
+//            playVideo(DataUtils.getRawVideoUri(this, R.raw.video_test));
+//        }
     }
-
-
-
-
-
-
-
-
 
 
     private void addDownloadList(VideoDetailResponse videoDetailResponse) {
@@ -693,7 +793,6 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
         downLoadingVideo.isDownloadFinish = AdDao.FLAG_DOWNLOAD_UNFINISH;
         downLoadingVideo.videoPath = saveDir + videoDetailResponse.name + ".mp4";
 
-
         // 判断是否是继续下载，如果是继续下载使用本地数据库的存放地址
         if (videoDetailResponse.playInfo != null) {
             PlayInfoResponse playInfoResponse = videoDetailResponse.playInfo.get(0);
@@ -714,7 +813,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
                 downloadViews.remove(videoDetailResponse);
                 initDownloadInfo();
             }
-        }else {
+        } else {
             LogCat.e("playinfo null 无法执行下载");
         }
 
@@ -737,16 +836,20 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 
     }
 
+    UpdateResponse.UpdateInfoResponse updateInfo;
 
-    private void downloadApk(final UpdateResponse.UpdateInfoResponse updateInfo) {
+    private void downloadApk() {
         if (dlManager == null) {
             dlManager = DLManager.getInstance(this);
         }
         delAllFile(saveDir + "chinaRestaurant");
 
         downloadUrl = updateInfo.fileUrl;
-
-        dlManager.dlCancel(updateInfo.fileUrl);
+        isDownLoadApk = true;
+        dlManager.dlStop(downloadUrl);
+        dlManager.dlCancel(downloadUrl);
+        LogCat.e("开启保护线程，防止下载中断。。。。。。。");
+        handler.postDelayed(downloadDefine, reLoadTime);
 
         dlManager.dlStart(updateInfo.fileUrl, saveDir + "chinaRestaurant", new DownloadListener() {
             @Override
@@ -763,6 +866,9 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
             public void onProgress(int progress) {
                 super.onProgress(progress);
                 LogCat.e("onProgress............" + ((progress / 1024) / 1024) + "M");
+                handler.removeCallbacks(downloadDefine);
+
+                handler.postDelayed(downloadDefine, reLoadTime);
             }
 
             @Override
@@ -773,6 +879,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
             @Override
             public void onFinish(File file) {
                 LogCat.e("onFinish............");
+                handler.removeCallbacks(downloadDefine);
                 // 提示安装
                 if (dlManager == null) {
                     dlManager = DLManager.getInstance(ChinaRestaurantActivity.this);
@@ -794,13 +901,6 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
     }
 
 
-    private void playLocalVideo() {
-        if (videoView != null && !isFinishing()) {
-            LogCat.e("开始播放本地视频........");
-            playVideo(DataUtils.getRawVideoUri(this, R.raw.video_test));
-        }
-    }
-
     // 播放视频
     private void playVideo(String url) {
         if (!TextUtils.isEmpty(url) && videoView != null) {
@@ -815,8 +915,10 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 
     long downloadingId;
 
-    private void download() {
+    private int reLoadTime = 1000 * 60;
 
+    private void download() {
+        isDownLoadApk = false;
         if (dlManager == null) {
             dlManager = DLManager.getInstance(this);
         }
@@ -824,7 +926,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
         dlManager.dlStop(downloadUrl);
         dlManager.dlCancel(downloadUrl);
         LogCat.e("开启保护线程，防止下载中断。。。。。。。");
-        handler.postDelayed(downloadDefine, 1000 * 30);
+        handler.postDelayed(downloadDefine, reLoadTime);
 
         dlManager.dlStart(downloadUrl, saveDir, downLoadingVideo.videoName, new DownloadListener() {
 
@@ -844,7 +946,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
                 LogCat.e("onProgress............" + ((progress / 1024) / 1024) + "M");
                 handler.removeCallbacks(downloadDefine);
 
-                handler.postDelayed(downloadDefine, 1000 * 30);
+                handler.postDelayed(downloadDefine, reLoadTime);
             }
 
             @Override
@@ -854,8 +956,8 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 
             @Override
             public void onFinish(File file) {
-                if(file.exists()){
-                    LogCat.e("文件创建成功，file:®"+file.getName());
+                if (file.exists()) {
+                    LogCat.e("文件创建成功，file:®" + file.getName());
                     LogCat.e("onFinish............");
                 }
 
@@ -868,12 +970,6 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
                 downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
             }
         });
-
-
-
-
-
-        //        doDownLoad();
     }
 
     private void downloadFinish(String url, String state) {
@@ -884,13 +980,13 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
         // 添加到播放列表
         if (state.equals(AdDao.FLAG_DOWNLOAD_FINISHED)) {
             // 如果当第一个视频是默认视频的时候，删除
-            if (playVideoTable != null && playVideoTable.size() == 1) {
-                VideoAdBean videoAdBean = playVideoTable.get(0);
-                LogCat.e("下载完成视频。。。。。。。" + videoAdBean.videoName);
-                if (DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoAdBean.videoPath)) {
-                    playVideoTable.remove(0);
-                }
-            }
+//            if (playVideoTable != null && playVideoTable.size() == 1) {
+//                VideoAdBean videoAdBean = playVideoTable.get(0);
+//                LogCat.e("下载完成视频。。。。。。。" + videoAdBean.videoName);
+//                if (DataUtils.getRawVideoUri(this, R.raw.video_test).equals(videoAdBean.videoPath)) {
+//                    playVideoTable.remove(0);
+//                }
+//            }
 
             if (!downLoadingVideo.videoPath.equals(DataUtils.getRawVideoUri(this, R.raw.video_test))) {
                 playVideoTable.add(downLoadingVideo);
@@ -904,7 +1000,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
                 }
 
             }
-        }else {
+        } else {
             // 查询是否还有未下载的任务，如果有 继续下载
             Object object = new Object();
             synchronized (object) {
@@ -921,7 +1017,6 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
         }
 
 
-
         if (downloadViews.size() != 0) {
             // 还有需要下载的视频，要继续下载
             LogCat.e("还有下载任务。。。。。。" + downloadViews.size());
@@ -931,9 +1026,19 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
             downloadUrl = "-1";
             downloadingId = -1;
             handler.removeCallbacks(downloadDefine);
+
+            if (videoDetailResponses.size() != playVideoTable.size()) {
+                LogCat.e("当前服务器数据不匹配本地播放列表，重新检测。。。。。。");
+                doHttpGetEpisode();
+            } else {
+                LogCat.e("服务器与本地匹配成功。。。。。。");
+            }
+
+
         }
 
     }
+
 
     private void insertVideoAdState(String state, String url) {
         LogCat.e("准备插入数据。。。。。。。。");
@@ -1104,12 +1209,14 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case 0:
 //                    if (msg.arg2 >= 0) {
 //                        int percent = (int) (msg.arg1 * 100 / (float) msg.arg2);
 //                        LogCat.e("download_progress..........." + percent + "%");
 //                    }
+                    removeCallbacks(downloadDefine);
+                    downloadApk();
                     break;
                 case 1:
                     removeCallbacks(downloadDefine);
@@ -1118,22 +1225,23 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 //                    downloadManager.remove(downloadingId);
                     // 重新下载
 //                    doDownLoad();
-
                     download();
-
-
-
                     break;
             }
         }
     }
 
-    private class DownloadDefine implements Runnable{
+    private class DownloadDefine implements Runnable {
 
 
         @Override
         public void run() {
-            handler.sendMessage(handler.obtainMessage(1));
+            if (isDownLoadApk) {
+                handler.sendMessage(handler.obtainMessage(0));
+            } else {
+                handler.sendMessage(handler.obtainMessage(1));
+            }
+
         }
     }
 
@@ -1141,7 +1249,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
     @Override
     public void showLoading() {
 
-        if(loading != null && loading.getVisibility() != View.VISIBLE){
+        if (loading != null && loading.getVisibility() != View.VISIBLE) {
             loading.setVisibility(View.VISIBLE);
         }
 
@@ -1150,7 +1258,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 
     @Override
     public void hideLoading() {
-        if(loading != null && loading.getVisibility() != View.GONE){
+        if (loading != null && loading.getVisibility() != View.GONE) {
             loading.setVisibility(View.GONE);
         }
 
@@ -1158,16 +1266,8 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
     }
 
 
-
-
     boolean isUpdate;
     boolean isUpdateFinish;
-
-
-
-
-
-
 
 
 //    private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -1260,9 +1360,6 @@ public class ChinaRestaurantActivity extends BaseActivity implements  Runnable{
 //        handler.sendMessage(handler.obtainMessage(0, bytesAndStatus[0], bytesAndStatus[1],
 //                bytesAndStatus[2]));
 //    }
-
-
-
 
 
 }

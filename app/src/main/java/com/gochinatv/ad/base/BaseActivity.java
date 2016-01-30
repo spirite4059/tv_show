@@ -218,6 +218,8 @@ public abstract class BaseActivity extends Activity {
     /**
      * 检查是否有版本更新
      */
+
+    private int reTryTimes;
     protected void doHttpUpdate(final Context context) {
         Map<String, String> map = new HashMap<>();
         map.put("platformId", String.valueOf("22"));
@@ -289,7 +291,7 @@ public abstract class BaseActivity extends Activity {
                         } else {
                             // 不升级
                             LogCat.e("无需升级。。。。。");
-                            doError();
+                            doHttpGetTime(context);
                         }
                     } catch (PackageManager.NameNotFoundException e) {
                         e.printStackTrace();
@@ -307,7 +309,16 @@ public abstract class BaseActivity extends Activity {
             private void doError() {
                 if (!isFinishing()) {
                     // 做不升级处理, 继续请求广告视频列表
-                    doHttpGetTime(context);
+                    reTryTimes ++;
+                    if(reTryTimes > 4){
+                        reTryTimes = 0;
+
+                        doHttpGetTime(context);
+                    }else {
+                        LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
+                        doHttpUpdate(BaseActivity.this);
+
+                    }
                 }
 
             }
