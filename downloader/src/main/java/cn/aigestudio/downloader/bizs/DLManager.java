@@ -286,8 +286,11 @@ public final class DLManager {
             info = DLDBManager.getInstance(context).queryTaskInfo(url);
         }
         if (null != info) {
-            File file = new File(info.dirPath, info.fileName);
-            if (file.exists()) file.delete();
+            if(!TextUtils.isEmpty(info.fileName)){
+                File file = new File(info.dirPath, info.fileName);
+                if (file.exists()) file.delete();
+            }
+
         }
         DLDBManager.getInstance(context).deleteTaskInfo(url);
         DLDBManager.getInstance(context).deleteAllThreadInfo(url);

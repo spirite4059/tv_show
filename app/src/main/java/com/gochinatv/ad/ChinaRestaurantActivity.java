@@ -17,6 +17,7 @@ import com.gochinatv.ad.db.VideoAdBean;
 import com.gochinatv.ad.interfaces.DownloadListener;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
@@ -58,7 +59,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 
     private Timer timer;
 
-    private long startLong;
+    private static long startLong;
     private DLManager dlManager;
 
     /**
@@ -89,6 +90,8 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
     private MyHandler handler;
     private boolean isDownLoadApk;
 
+    private final String SHARE_KEY_DURATION = "SHARE_KEY_DURATION";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,13 +102,29 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
         MobclickAgent.openActivityDurationTrack(false);
         setContentView(R.layout.activity_main);
         initView();
-        init();
-        bindEvent();
 
+        startLong = System.currentTimeMillis();
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(this);
+        sharedPreference.saveDate(SHARE_KEY_DURATION, System.currentTimeMillis());
 
 
 //        LogCat.e("getDeviceInfo: " + getDeviceInfo(this));
     }
+
+
+    public void onResume() {
+        super.onResume();
+        startLong = System.currentTimeMillis();
+
+
+
+        init();
+        bindEvent();
+
+        MobclickAgent.onResume(this);
+        MobclickAgent.onPageStart("ChinaRestaurantActivity"); // 统计页面
+    }
+
 
 
 
@@ -335,17 +354,22 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                                 break;
                             }
                         }
-                        videoDetailResponseDown.isDownloading = false;
-                        // 当前还有下载就添加到下载列表中
-                        if (downloadViews == null) {
-                            downloadViews = new ArrayList<VideoDetailResponse>();
-                        }
 
-                        addDownloadList(videoDetailResponseDown);
-                        // 添加到下载列表
-                        if (downloadViews.size() <= 1) {
-                            // 已经下载完成,需要重新启动
-                            initDownloadInfo();
+                        if(videoDetailResponseDown != null){
+                            videoDetailResponseDown.isDownloading = false;
+                            // 当前还有下载就添加到下载列表中
+                            if (downloadViews == null) {
+                                downloadViews = new ArrayList<VideoDetailResponse>();
+                            }
+
+                            addDownloadList(videoDetailResponseDown);
+                            // 添加到下载列表
+                            if (downloadViews.size() <= 1) {
+                                // 已经下载完成,需要重新启动
+                                initDownloadInfo();
+                            }
+                        }else {
+                            LogCat.e("当前视频播放失败，服务器也没有当前视频，所以直接做删除操作，无需下载");
                         }
 
                     }
@@ -965,6 +989,8 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                     LogCat.e("onFinish............");
                 }
 
+                // 重置重试下载的次数
+                retryDownLoadTimes = 0;
                 downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_FINISHED);
             }
 
@@ -975,6 +1001,9 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
             }
         });
     }
+
+
+    private int retryDownLoadTimes;
 
     private void downloadFinish(String url, String state) {
 //        dlManager.dlCancel(url);
@@ -1002,20 +1031,33 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                 if (downloadViews != null && downloadViews.size() > 0) {
                     downloadViews.remove(0);
                 }
-
             }
         } else {
             // 查询是否还有未下载的任务，如果有 继续下载
             Object object = new Object();
             synchronized (object) {
-                if (downloadViews != null && downloadViews.size() > 0) {
-                    int count = downloadViews.size() - 1;
-                    VideoDetailResponse videoDetailResponse = downloadViews.get(0);
-                    videoDetailResponse.isDownloading = false;
-                    downloadViews.add(count, videoDetailResponse);
-                    downloadViews.remove(0);
-                    new DeleteFileThread(saveDir, videoDetailResponse.name + ".mp4").start();
+                retryDownLoadTimes++;
+                if(retryDownLoadTimes > 4){
+                    retryDownLoadTimes = 0;
+                    Object object1 = new Object();
+                    synchronized (object1) {
+                        if (downloadViews != null && downloadViews.size() > 0) {
+                            downloadViews.remove(0);
+                        }
+                    }
+                    LogCat.e("已经重试4次了，当前视频没救了，死活无法下载了，不管他了，等待全部下载完成后欧的校验吧");
+                }else {
+                    LogCat.e("下载失败，将当前下载任务添加到下载列末尾，后续下载，进行第 " + retryDownLoadTimes + " 次重试");
+                    if (downloadViews != null && downloadViews.size() > 0) {
+                        int count = downloadViews.size() - 1;
+                        VideoDetailResponse videoDetailResponse = downloadViews.get(0);
+                        videoDetailResponse.isDownloading = false;
+                        downloadViews.add(count, videoDetailResponse);
+                        downloadViews.remove(0);
+                        new DeleteFileThread(saveDir, videoDetailResponse.name).start();
+                    }
                 }
+
 
             }
         }
@@ -1076,9 +1118,14 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
             timer.cancel();
             timer = null;
         }
-
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(this);
         // 计算离开的时候总时长
         try {
+
+
+
+            startLong = sharedPreference.getDate(SHARE_KEY_DURATION, startLong);
+
             if(startLong != 0){
                 long duration = System.currentTimeMillis() - startLong;
                 if(duration > 0){
@@ -1097,6 +1144,8 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            sharedPreference.saveDate(SHARE_KEY_DURATION, 0);
         }
 
         super.onStop();
@@ -1104,12 +1153,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 
     }
 
-    public void onResume() {
-        super.onResume();
-        startLong = System.currentTimeMillis();
-        MobclickAgent.onResume(this);
-        MobclickAgent.onPageStart("ChinaRestaurantActivity"); // 统计页面
-    }
+
 
     public void onPause() {
         super.onPause();
