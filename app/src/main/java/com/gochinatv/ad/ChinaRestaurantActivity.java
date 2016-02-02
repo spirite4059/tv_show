@@ -93,6 +93,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MobclickAgent.setDebugMode(false);
+        startLong = System.currentTimeMillis();
         /** 设置是否对日志信息进行加密, 默认false(不加密). */
         AnalyticsConfig.enableEncrypt(true);
         MobclickAgent.openActivityDurationTrack(false);
@@ -101,8 +102,12 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
         init();
         bindEvent();
 
+
+
 //        LogCat.e("getDeviceInfo: " + getDeviceInfo(this));
     }
+
+
 
 
 //    public static String getDeviceInfo(Context context) {
@@ -145,7 +150,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
     private void init() {
         // 以上就显示加载状态，只有开始播放的时候隐藏
         showLoading();
-        startLong = System.currentTimeMillis();
+
         if (android.os.Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             LogCat.e("sd卡状态可用。。。。。。。");
         }
@@ -490,7 +495,6 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                         LogCat.e("过期的视频的vid 。。。。。。。。。" + videoDetailResponse.vid);
                         // 从播放列表删除记录
                         for (VideoAdBean videoAdBean : localVideoTable) {
-                            LogCat.e("vid : " + videoAdBean.videoId);
                             if (videoAdBean.videoId.equals(videoDetailResponse.vid)) {
                                 playVideoTable.remove(videoAdBean);
                                 LogCat.e("从播放列表中删除过期视频。。。。。。。。。" + videoAdBean.videoName);
@@ -1026,13 +1030,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
             downloadUrl = "-1";
             downloadingId = -1;
             handler.removeCallbacks(downloadDefine);
-
-            if (videoDetailResponses.size() != playVideoTable.size()) {
-                LogCat.e("当前服务器数据不匹配本地播放列表，重新检测。。。。。。");
-                doHttpGetEpisode();
-            } else {
-                LogCat.e("服务器与本地匹配成功。。。。。。");
-            }
+            doHttpGetEpisode();
 
 
         }
@@ -1060,7 +1058,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 
     @Override
     protected void onStop() {
-        super.onStop();
+
         // 停止当前的下载
         if (dlManager != null && !"-1".equals(downloadUrl)) {
             LogCat.e(downloadUrl + " is not null, 删除对应的文件");
@@ -1081,25 +1079,34 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 
         // 计算离开的时候总时长
         try {
-            long duration = System.currentTimeMillis() - startLong;
-            long day = duration / (24 * 60 * 60 * 1000);
-            long hour = (duration / (60 * 60 * 1000) - day * 24);
-            long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
-            long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-            String str = day + "天" + hour + "小时" + min + "分" + s + "秒";
-            MobclickAgent.onEvent(this, "duration", str);
-            LogCat.e("上报开机时长。。。。。。。。");
+            if(startLong != 0){
+                long duration = System.currentTimeMillis() - startLong;
+                if(duration > 0){
+                    long day = duration / (24 * 60 * 60 * 1000);
+                    long hour = (duration / (60 * 60 * 1000) - day * 24);
+                    long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
+                    long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
+                    String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
+
+                    LogCat.e(str);
+
+                    MobclickAgent.onEvent(this, "duration", str);
+                    LogCat.e("上报开机时长。。。。。。。。");
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-
+        super.onStop();
 //        getContentResolver().unregisterContentObserver(downloadObserver);
 
     }
 
     public void onResume() {
         super.onResume();
+        startLong = System.currentTimeMillis();
         MobclickAgent.onResume(this);
         MobclickAgent.onPageStart("ChinaRestaurantActivity"); // 统计页面
     }

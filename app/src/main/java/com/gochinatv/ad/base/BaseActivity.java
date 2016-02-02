@@ -139,36 +139,55 @@ public abstract class BaseActivity extends Activity {
 
     protected void doHttpGetCdnPath(Context context, final String vid, final Date date) {
         LogCat.e("获取cdn的真是地址。。。。。。。" + vid);
-        CDNHttpService.doHttpGetCdnPath(context, new OnRequestListener<CdnPathResponse>() {
-
+        Map<String,String> url = new HashMap();
+        url.put("url", SecurityChain.SECURITY_CHAIN_URL + vid);
+        CDNHttpService.doHttpGetCdnPathEncryption(context, url, new OnRequestListener<CdnPathResponse>() {
             @Override
             public void onSuccess(CdnPathResponse response, String url) {
-                LogCat.e("获取到真正地址。。。。。。。" + url);
-                StringBuilder sbUrl = new StringBuilder(SecurityChain.SECURITY_CHAIN_URL);
-                // 添加路径
-                sbUrl.append(vid);
-                sbUrl.append("?");
-                // 添加st 有效期
-                sbUrl.append("st=");
-                String st = SecurityChain.getOutDate(date);
-                sbUrl.append(st);
-                // 添加token
-                sbUrl.append("&token=");
-                String token = SecurityChain.getSecurityTokey(vid, st, response.data.key);
-                sbUrl.append(token);
+                if (isFinishing()) {
+                    return;
+                }
+
+                if (response == null || !(response instanceof CdnPathResponse)) {
+                    LogCat.e("cdn地址请求成功 数据错误1。。。。。。。");
+                    onVideoCdnError(url);
+                    return;
+                }
+                if (response.data == null) {
+                    LogCat.e("cdn地址请求成功 数据错误2。。。。。。。");
+                    onVideoCdnError(url);
+                    return;
+                }
 
 
-                getVideoCdnPath(sbUrl.toString());
+
+                if (TextUtils.isEmpty(response.data.url)) {
+                    LogCat.e("cdn地址为空。。。。。。。");
+                    onVideoCdnError(url);
+                    return;
+                }
+
+                getVideoCdnPath(response.data.url);
+
 
             }
 
             @Override
             public void onError(String errorMsg, String url) {
+
+                if (isFinishing()) {
+                    return;
+                }
+
                 LogCat.e("cdn地址获取失败。。。。。。。");
                 onVideoCdnError(url);
             }
 
+
         });
+
+
+
     }
 
 

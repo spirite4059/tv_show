@@ -13,6 +13,7 @@ public class CdnPathResponse {
     public class PathInfo{
         public String version;
         public String key;
+        public String url;//经过防盗链加密的
     }
 
 }
