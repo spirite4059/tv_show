@@ -924,7 +924,7 @@ public class ChinaRestaurantActivity extends BaseActivity {
     // 播放视频
     private void playVideo(String url) {
         if (!TextUtils.isEmpty(url) && videoView != null) {
-//            videoView.setVideoPath(url);
+            videoView.setVideoPath(url);
 
 
         }
