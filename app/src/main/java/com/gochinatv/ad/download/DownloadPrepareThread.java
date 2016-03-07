@@ -315,4 +315,7 @@ public class DownloadPrepareThread extends Thread {
     public void cancelDownload(){
         isCancel = true;
     }
+
+
+
 }

@@ -34,15 +34,15 @@ public class DownloadThread extends Thread {
      *
      * @param downloadUrl:文件下载地址
      * @param file:文件保存路径
-     * @param blocksize:下载数据长度
+     * @param blockSize:下载数据长度
      * @param threadId:线程ID
      */
-    public DownloadThread(URL downloadUrl, File file, int blocksize,
+    public DownloadThread(URL downloadUrl, File file, int blockSize,
                               int threadId) {
         this.downloadUrl = downloadUrl;
         this.file = file;
         this.threadId = threadId;
-        this.blockSize = blocksize;
+        this.blockSize = blockSize;
     }
 
     private int errorCode;
@@ -61,6 +61,7 @@ public class DownloadThread extends Thread {
         // 如果是请求文件体的conn出错，要继续访问3边，无需重新进行操作
         if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
             int errorConnTimes = 0;
+            // 异常错误处理
             while (errorConnTimes < 3){
                 if(isCancel){
                     return;
@@ -73,6 +74,7 @@ public class DownloadThread extends Thread {
             }
 
             if(errorConnTimes == 3 || connection == null){
+                // 此时放弃该线程的启动
                 errorCode = ErrorCodes.ERROR_DOWNLOAD_CONN;
                 return;
             }
@@ -239,6 +241,13 @@ public class DownloadThread extends Thread {
         return len;
     }
 
+
+    /**
+     * 由于进程运行期间出错，重新启动
+     */
+    private void reStartThread(){
+        run();
+    }
 
 
     /**
