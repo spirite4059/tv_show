@@ -82,7 +82,7 @@ public abstract class BaseActivity extends Activity {
 
     protected abstract void onFailed(String errorMsg, String url);
 
-
+    private int episodeTag = 0;
     /**
      * 请求视频列表数
      */
@@ -90,20 +90,24 @@ public abstract class BaseActivity extends Activity {
         Map<String, String> map = new HashMap<String, String>();
         map.put("albumId", "66371");
         map.put("videoType", "1");
-        map.put("serialType", "1");
+        map.put("serialType", "2");
         AlbnumHttpService.doHttpAlbnumEpisodesList(this, map, isTest, new OnRequestListener<VideoDetailListResponse>() {
             @Override
             public void onSuccess(VideoDetailListResponse response, String url) {
                 onSuccessFul(response, url);
-
             }
 
             @Override
             public void onError(String errorMsg, String url) {
+                LogCat.e("onError........");
+                AlbnumHttpService.cancleHttp(BaseActivity.this);
+                episodeTag++;
+
                 onFailed(errorMsg, url);
             }
-        });
+        }, String.valueOf(episodeTag));
     }
+
 
 
     public class VideoHandler extends Handler {

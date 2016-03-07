@@ -14,6 +14,8 @@ import android.widget.LinearLayout;
 import com.gochinatv.ad.base.BaseActivity;
 import com.gochinatv.ad.db.AdDao;
 import com.gochinatv.ad.db.VideoAdBean;
+import com.gochinatv.ad.download.DLUtils;
+import com.gochinatv.ad.download.OnDownloadStatusListener;
 import com.gochinatv.ad.interfaces.DownloadListener;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
@@ -27,6 +29,7 @@ import com.umeng.analytics.MobclickAgent;
 import com.vego.player.MeasureVideoView;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
@@ -37,7 +40,7 @@ import cn.aigestudio.downloader.bizs.DLManager;
 /**
  * Created by fq_mbp on 16/1/8.
  */
-public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
+public class ChinaRestaurantActivity extends BaseActivity {
 
 
     private MeasureVideoView videoView;
@@ -117,16 +120,12 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
         startLong = System.currentTimeMillis();
 
 
-
         init();
         bindEvent();
 
         MobclickAgent.onResume(this);
         MobclickAgent.onPageStart("ChinaRestaurantActivity"); // 统计页面
     }
-
-
-
 
 
 //    public static String getDeviceInfo(Context context) {
@@ -247,11 +246,6 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 
     }
 
-    @Override
-    public void run() {
-
-    }
-
 
     private void checkNet() {
         refrushTimer.schedule(new TimerTask() {
@@ -341,7 +335,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                     LogCat.e("从当前播放列表中删除该视频。。。。。。" + playVideoTable.size());
                     playVideoTable.remove(position);
                     position--;
-                    if(position < 0 ){
+                    if (position < 0) {
                         position = 0;
 
                     }
@@ -355,7 +349,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                             }
                         }
 
-                        if(videoDetailResponseDown != null){
+                        if (videoDetailResponseDown != null) {
                             videoDetailResponseDown.isDownloading = false;
                             // 当前还有下载就添加到下载列表中
                             if (downloadViews == null) {
@@ -368,7 +362,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                                 // 已经下载完成,需要重新启动
                                 initDownloadInfo();
                             }
-                        }else {
+                        } else {
                             LogCat.e("当前视频播放失败，服务器也没有当前视频，所以直接做删除操作，无需下载");
                         }
 
@@ -681,7 +675,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
             playVideo(videoAdBean.videoPath);
         } else {
             position++;
-            if(position >= playVideoTable.size()){
+            if (position >= playVideoTable.size()) {
                 position = 0;
             }
             VideoAdBean videoAdBean = playVideoTable.get(position);
@@ -731,12 +725,11 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                 }
                 position--;
                 playNext();
-            }else {
+            } else {
                 LogCat.e("即将播放。。。。。" + videoAdBean.videoName);
                 playVideo(videoAdBean.videoPath);
             }
         }
-
 
 
 //        if (playVideoTable != null && playVideoTable.size() > 0) {
@@ -902,6 +895,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
             @Override
             public void onStop(int progress) {
                 LogCat.e("onStop............");
+                doHttpGetEpisode();
             }
 
             @Override
@@ -932,7 +926,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
     // 播放视频
     private void playVideo(String url) {
         if (!TextUtils.isEmpty(url) && videoView != null) {
-            videoView.setVideoPath(url);
+//            videoView.setVideoPath(url);
 
 
         }
@@ -944,62 +938,111 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
     long downloadingId;
 
     private int reLoadTime = 1000 * 60;
+    DLUtils dlUtils;
 
     private void download() {
         isDownLoadApk = false;
-        if (dlManager == null) {
-            dlManager = DLManager.getInstance(this);
-        }
+//        if (dlManager == null) {
+//            dlManager = DLManager.getInstance(this);
+//        }
         LogCat.e("本地文件目录：" + saveDir + downLoadingVideo.videoName);
-        dlManager.dlStop(downloadUrl);
-        dlManager.dlCancel(downloadUrl);
-        LogCat.e("开启保护线程，防止下载中断。。。。。。。");
-        handler.postDelayed(downloadDefine, reLoadTime);
 
-        dlManager.dlStart(downloadUrl, saveDir, downLoadingVideo.videoName, new DownloadListener() {
+        dlUtils = DLUtils.init();
+        dlUtils.download(saveDir, downLoadingVideo.videoName, downloadUrl, 1, new OnDownloadStatusListener() {
+
+            private long fileLength;
 
             @Override
-            public void onPrepare() {
-                LogCat.e("onPrepare............");
+            public void onError(int errorCode, String errorMsg) {
+                LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
             }
 
             @Override
-            public void onStart(String fileName, String realUrl, int fileLength) {
-                LogCat.e("fileSize............" + ((fileLength / 1024) / 1024) + "M");
+            public void onPrepare(long fileSize) {
+                LogCat.e("fileSize............. " + fileSize);
+                fileLength = fileSize;
             }
 
             @Override
-            public void onProgress(int progress) {
-                super.onProgress(progress);
-                LogCat.e("onProgress............" + ((progress / 1024) / 1024) + "M");
-                handler.removeCallbacks(downloadDefine);
-
-                handler.postDelayed(downloadDefine, reLoadTime);
-            }
-
-            @Override
-            public void onStop(int progress) {
-                LogCat.e("onStop............");
-            }
-
-            @Override
-            public void onFinish(File file) {
-                if (file.exists()) {
-                    LogCat.e("文件创建成功，file:®" + file.getName());
-                    LogCat.e("onFinish............");
+            public void onProgress(long progress) {
+                if(fileLength == 0){
+                    return;
                 }
+                double size = (int) (progress / 1024);
+                String sizeStr;
+                int s = (int) (progress * 100 / fileLength);
+                if (size > 1000) {
+                    size = (progress / 1024) / 1024f;
+                    BigDecimal b = new BigDecimal(size);
+                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    sizeStr = String.valueOf(f1 + "MB，  ");
+                } else {
+                    sizeStr = String.valueOf((int)size + "KB，  ");
+                }
+                LogCat.e("progress............. " + sizeStr + s + "%");
 
-                // 重置重试下载的次数
-                retryDownLoadTimes = 0;
-                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_FINISHED);
+
             }
 
             @Override
-            public void onError(int status, String error) {
-                LogCat.e("onError............" + error);
-                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
+            public void onFinish() {
+                LogCat.e("onFinish............. ");
             }
         });
+
+
+//        dlManager.dlStop(downloadUrl);
+//        dlManager.dlCancel(downloadUrl);
+//        LogCat.e("开启保护线程，防止下载中断。。。。。。。");
+//        handler.postDelayed(downloadDefine, reLoadTime);
+//
+//        dlManager.dlStart(downloadUrl, saveDir, downLoadingVideo.videoName, new DownloadListener() {
+//
+//            @Override
+//            public void onPrepare() {
+//                LogCat.e("onPrepare............");
+//            }
+//
+//            @Override
+//            public void onStart(String fileName, String realUrl, int fileLength) {
+//                LogCat.e("fileSize............" + ((fileLength / 1024) / 1024) + "M");
+//            }
+//
+//            @Override
+//            public void onProgress(int progress) {
+//                super.onProgress(progress);
+//                LogCat.e("onProgress............" + ((progress / 1024) / 1024) + "M");
+//                handler.removeCallbacks(downloadDefine);
+//
+//                handler.postDelayed(downloadDefine, reLoadTime);
+//            }
+//
+//            @Override
+//            public void onStop(int progress) {
+//                LogCat.e("onStop............");
+//
+//
+//                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
+//            }
+//
+//            @Override
+//            public void onFinish(File file) {
+//                if (file.exists()) {
+//                    LogCat.e("文件创建成功，file:®" + file.getName());
+//                    LogCat.e("onFinish............");
+//                }
+//
+//                // 重置重试下载的次数
+//                retryDownLoadTimes = 0;
+//                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_FINISHED);
+//            }
+//
+//            @Override
+//            public void onError(int status, String error) {
+//                LogCat.e("onError............" + error);
+//                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
+//            }
+//        });
     }
 
 
@@ -1037,7 +1080,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
             Object object = new Object();
             synchronized (object) {
                 retryDownLoadTimes++;
-                if(retryDownLoadTimes > 4){
+                if (retryDownLoadTimes > 4) {
                     retryDownLoadTimes = 0;
                     Object object1 = new Object();
                     synchronized (object1) {
@@ -1046,7 +1089,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
                         }
                     }
                     LogCat.e("已经重试4次了，当前视频没救了，死活无法下载了，不管他了，等待全部下载完成后欧的校验吧");
-                }else {
+                } else {
                     LogCat.e("下载失败，将当前下载任务添加到下载列末尾，后续下载，进行第 " + retryDownLoadTimes + " 次重试");
                     if (downloadViews != null && downloadViews.size() > 0) {
                         int count = downloadViews.size() - 1;
@@ -1107,11 +1150,19 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
             dlManager.dlCancel(downloadUrl);
         }
 
+        if(dlUtils != null){
+            dlUtils.cancel();
+        }
 
 //        unregisterReceiver(receiver);
 //        if (downloadManager != null && downloadingId != -1) {
 //            downloadManager.remove(downloadingId);
 //        }
+
+
+        if (handler != null) {
+            handler.removeCallbacks(downloadDefine);
+        }
 
 
         if (timer != null) {
@@ -1123,12 +1174,11 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
         try {
 
 
-
             startLong = sharedPreference.getDate(SHARE_KEY_DURATION, startLong);
 
-            if(startLong != 0){
+            if (startLong != 0) {
                 long duration = System.currentTimeMillis() - startLong;
-                if(duration > 0){
+                if (duration > 0) {
                     long day = duration / (24 * 60 * 60 * 1000);
                     long hour = (duration / (60 * 60 * 1000) - day * 24);
                     long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
@@ -1144,7 +1194,7 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             sharedPreference.saveDate(SHARE_KEY_DURATION, 0);
         }
 
@@ -1152,7 +1202,6 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
 //        getContentResolver().unregisterContentObserver(downloadObserver);
 
     }
-
 
 
     public void onPause() {
@@ -1260,6 +1309,9 @@ public class ChinaRestaurantActivity extends BaseActivity implements Runnable {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+            if (isFinishing()) {
+                return;
+            }
             switch (msg.what) {
                 case 0:
 //                    if (msg.arg2 >= 0) {

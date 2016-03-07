@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/chinaRestaurantAd.iml" filepath="$PROJECT_DIR$/chinaRestaurantAd.iml" />
-      <module fileurl="file://$PROJECT_DIR$/downloadPro/downloadPro.iml" filepath="$PROJECT_DIR$/downloadPro/downloadPro.iml" />
       <module fileurl="file://$PROJECT_DIR$/downloader/downloader.iml" filepath="$PROJECT_DIR$/downloader/downloader.iml" />
       <module fileurl="file://$PROJECT_DIR$/httpUtils/httpUtils.iml" filepath="$PROJECT_DIR$/httpUtils/httpUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/videoplayer/videoplayer.iml" filepath="$PROJECT_DIR$/videoplayer/videoplayer.iml" />

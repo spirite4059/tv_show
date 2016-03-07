@@ -185,8 +185,8 @@ public class AlbnumHttpService {
     /**
      * 专辑集数列表
      */
-    public static void doHttpAlbnumEpisodesList(Context context,Map<String,String> map, boolean isTest, OnRequestListener<VideoDetailListResponse> listener){
-        HttpUtils.getInstance(context).doHttpGet(VideoDetailListResponse.class, isTest?URL_VIDEO_LIST_TEST:URL_VIDEO_LIST,map,listener,"episodes");
+    public static void doHttpAlbnumEpisodesList(Context context,Map<String,String> map, boolean isTest, OnRequestListener<VideoDetailListResponse> listener, String tag){
+        HttpUtils.getInstance(context).doHttpGet(VideoDetailListResponse.class, isTest?URL_VIDEO_LIST_TEST:URL_VIDEO_LIST,map,listener, tag);
     }
 
     /**
@@ -314,4 +314,8 @@ public class AlbnumHttpService {
         HttpUtils.getInstance(context).doHttpGet(AlbumListByLabelResponse.class,URL_VIDEO_RETRIEVE,map,listener,"vip");
     }
 
+
+    public static void cancleHttp(Context context){
+        HttpUtils.getInstance(context).cancelPendingRequests("episodes");
+    }
 }
