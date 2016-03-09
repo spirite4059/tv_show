@@ -15,6 +15,7 @@ import com.gochinatv.ad.base.BaseActivity;
 import com.gochinatv.ad.db.AdDao;
 import com.gochinatv.ad.db.VideoAdBean;
 import com.gochinatv.ad.download.DLUtils;
+import com.gochinatv.ad.download.OnDownloadStatusListener;
 import com.gochinatv.ad.interfaces.DownloadListener;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
@@ -28,6 +29,7 @@ import com.umeng.analytics.MobclickAgent;
 import com.vego.player.MeasureVideoView;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
@@ -861,7 +863,7 @@ public class ChinaRestaurantActivity extends BaseActivity {
         if (dlManager == null) {
             dlManager = DLManager.getInstance(this);
         }
-        delAllFile(saveDir + "chinaRestaurant");
+        delAllAPKFile(saveDir + "chinaRestaurant");
 
         downloadUrl = updateInfo.fileUrl;
         isDownLoadApk = true;
@@ -924,7 +926,7 @@ public class ChinaRestaurantActivity extends BaseActivity {
     // 播放视频
     private void playVideo(String url) {
         if (!TextUtils.isEmpty(url) && videoView != null) {
-            videoView.setVideoPath(url);
+//            videoView.setVideoPath(url);
 
 
         }
@@ -943,104 +945,109 @@ public class ChinaRestaurantActivity extends BaseActivity {
 
         LogCat.e("本地文件目录：" + saveDir + downLoadingVideo.videoName);
 
-//        dlUtils = DLUtils.init();
-//        dlUtils.download(saveDir, downLoadingVideo.videoName, downloadUrl, 1, new OnDownloadStatusListener() {
-//
-//            private long fileLength;
-//
-//            @Override
-//            public void onError(int errorCode, String errorMsg) {
-//                LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
-//            }
-//
-//            @Override
-//            public void onPrepare(long fileSize) {
-//                LogCat.e("fileSize............. " + fileSize);
-//                fileLength = fileSize;
-//            }
-//
-//            @Override
-//            public void onProgress(long progress) {
-//                if(fileLength == 0){
-//                    return;
-//                }
-//                double size = (int) (progress / 1024);
-//                String sizeStr;
-//                int s = (int) (progress * 100 / fileLength);
-//                if (size > 1000) {
-//                    size = (progress / 1024) / 1024f;
-//                    BigDecimal b = new BigDecimal(size);
-//                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
-//                    sizeStr = String.valueOf(f1 + "MB，  ");
-//                } else {
-//                    sizeStr = String.valueOf((int)size + "KB，  ");
-//                }
-//                LogCat.e("progress............. " + sizeStr + s + "%");
-//
-//
-//            }
-//
-//            @Override
-//            public void onFinish() {
-//                LogCat.e("onFinish............. ");
-//            }
-//        });
+        dlUtils = DLUtils.init();
+        dlUtils.download(saveDir, downLoadingVideo.videoName, downloadUrl, 1, new OnDownloadStatusListener() {
 
-        if (dlManager == null) {
-            dlManager = DLManager.getInstance(this);
-        }
-        dlManager.dlStop(downloadUrl);
-        dlManager.dlCancel(downloadUrl);
-        LogCat.e("开启保护线程，防止下载中断。。。。。。。");
-        handler.postDelayed(downloadDefine, reLoadTime);
-
-        dlManager.dlStart(downloadUrl, saveDir, downLoadingVideo.videoName, new DownloadListener() {
+            private long fileLength;
 
             @Override
-            public void onPrepare() {
-                LogCat.e("onPrepare............");
+            public void onError(int errorCode, String errorMsg) {
+                LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
             }
 
             @Override
-            public void onStart(String fileName, String realUrl, int fileLength) {
-                LogCat.e("fileSize............" + ((fileLength / 1024) / 1024) + "M");
+            public void onPrepare(long fileSize) {
+                LogCat.e("fileSize............. " + fileSize);
+                fileLength = fileSize;
             }
 
             @Override
-            public void onProgress(int progress) {
-                super.onProgress(progress);
-                LogCat.e("onProgress............" + ((progress / 1024) / 1024) + "M");
-                handler.removeCallbacks(downloadDefine);
+            public void onProgress(long progress) {
+                if(fileLength == 0){
+                    return;
+                }
+                double size = (int) (progress / 1024);
+                String sizeStr;
+                int s = (int) (progress * 100 / fileLength);
+                if (size > 1000) {
+                    size = (progress / 1024) / 1024f;
+                    BigDecimal b = new BigDecimal(size);
+                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    sizeStr = String.valueOf(f1 + "MB，  ");
+                } else {
+                    sizeStr = String.valueOf((int)size + "KB，  ");
+                }
+                LogCat.e("progress............. " + sizeStr + s + "%");
 
-                handler.postDelayed(downloadDefine, reLoadTime);
-            }
 
-            @Override
-            public void onStop(int progress) {
-                LogCat.e("onStop............");
-
-
-                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
             }
 
             @Override
             public void onFinish(File file) {
-                if (file.exists()) {
-                    LogCat.e("文件创建成功，file:®" + file.getName());
-                    LogCat.e("onFinish............");
-                }
-
-                // 重置重试下载的次数
-                retryDownLoadTimes = 0;
-                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_FINISHED);
+                LogCat.e("onFinish............. ");
             }
 
             @Override
-            public void onError(int status, String error) {
-                LogCat.e("onError............" + error);
-                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
+            public void onCancel() {
+
             }
         });
+
+//        if (dlManager == null) {
+//            dlManager = DLManager.getInstance(this);
+//        }
+//        dlManager.dlStop(downloadUrl);
+//        dlManager.dlCancel(downloadUrl);
+//        LogCat.e("开启保护线程，防止下载中断。。。。。。。");
+//        handler.postDelayed(downloadDefine, reLoadTime);
+//
+//        dlManager.dlStart(downloadUrl, saveDir, downLoadingVideo.videoName, new DownloadListener() {
+//
+//            @Override
+//            public void onPrepare() {
+//                LogCat.e("onPrepare............");
+//            }
+//
+//            @Override
+//            public void onStart(String fileName, String realUrl, int fileLength) {
+//                LogCat.e("fileSize............" + ((fileLength / 1024) / 1024) + "M");
+//            }
+//
+//            @Override
+//            public void onProgress(int progress) {
+//                super.onProgress(progress);
+//                LogCat.e("onProgress............" + ((progress / 1024) / 1024) + "M");
+//                handler.removeCallbacks(downloadDefine);
+//
+//                handler.postDelayed(downloadDefine, reLoadTime);
+//            }
+//
+//            @Override
+//            public void onStop(int progress) {
+//                LogCat.e("onStop............");
+//
+//
+//                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
+//            }
+//
+//            @Override
+//            public void onFinish(File file) {
+//                if (file.exists()) {
+//                    LogCat.e("文件创建成功，file:®" + file.getName());
+//                    LogCat.e("onFinish............");
+//                }
+//
+//                // 重置重试下载的次数
+//                retryDownLoadTimes = 0;
+//                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_FINISHED);
+//            }
+//
+//            @Override
+//            public void onError(int status, String error) {
+//                LogCat.e("onError............" + error);
+//                downloadFinish(downloadUrl, AdDao.FLAG_DOWNLOAD_UNFINISH);
+//            }
+//        });
     }
 
 

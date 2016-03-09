@@ -13,4 +13,6 @@ public class VideoAdBean {
     public String videoPath;
     public String videoUrl;
     public String isDownloadFinish;
+
+    public boolean isPre;
 }

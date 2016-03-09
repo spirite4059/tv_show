@@ -33,6 +33,7 @@ public class DLUtils {
     public static final int HANDLER_WHAT_DOWNLOAD_ERROR = 2;
     // 下载完成
     public static final int HANDLER_WHAT_DOWNLOAD_FINISH = 3;
+    public static final int HANDLER_WHAT_DOWNLOAD_CANCEL = 4;
     // 下载出错
     public static final String BUNDLE_KEY_FILE_LENGTH = "BUNDLE_KEY_FILE_LENGTH";
 
@@ -78,7 +79,10 @@ public class DLUtils {
                     onDownloadStatusListener.onError(msg.arg1, getErrorMsg(msg.arg1));
                     break;
                 case HANDLER_WHAT_DOWNLOAD_FINISH:
-                    onDownloadStatusListener.onFinish();
+                    onDownloadStatusListener.onFinish((File) msg.obj);
+                    break;
+                case HANDLER_WHAT_DOWNLOAD_CANCEL:
+                    onDownloadStatusListener.onCancel();
                     break;
             }
 

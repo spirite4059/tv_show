@@ -1373,7 +1373,7 @@
 //        if (dlManager == null) {
 //            dlManager = DLManager.getInstance(this);
 //        }
-//        delAllFile(saveDir + "chinaRestaurant");
+//        delAllAPKFile(saveDir + "chinaRestaurant");
 //
 //        downloadUrl = updateInfo.fileUrl;
 //
@@ -1862,7 +1862,7 @@
 //        if (dlManager == null) {
 //            dlManager = DLManager.getInstance(this);
 //        }
-//        delAllFile(saveDir + "chinaRestaurant");
+//        delAllAPKFile(saveDir + "chinaRestaurant");
 //
 //        downloadUrl = updateInfo.fileUrl;
 //

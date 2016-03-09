@@ -1,5 +1,7 @@
 package com.gochinatv.ad.download;
 
+import java.io.File;
+
 /**
  * Created by fq_mbp on 16/2/29.
  */
@@ -11,7 +13,7 @@ public interface OnDownloadStatusListener {
 
     void onProgress(long progress);
 
-    void onFinish();
+    void onFinish(File file);
 
-
+    void onCancel();
 }

@@ -54,6 +54,8 @@ public class VideoDetailResponse  {
 //    public int dislikeCount;// 不喜欢数量
 
 
+    public String videoPath;// 第三方视频播放地址
+    public boolean isPresetPiece;// 第三方视频播放地址
 
 
     public ArrayList<PlayInfoResponse> playInfo = new ArrayList<PlayInfoResponse>();

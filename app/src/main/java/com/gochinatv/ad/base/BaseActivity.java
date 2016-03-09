@@ -22,6 +22,7 @@ import com.httputils.http.response.CdnPathResponse;
 import com.httputils.http.response.TimeResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
+import com.httputils.http.response.VideoDetailResponse;
 import com.httputils.http.service.AlbnumHttpService;
 import com.httputils.http.service.CDNHttpService;
 import com.httputils.http.service.TimeHttpService;
@@ -35,6 +36,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -65,6 +67,7 @@ public abstract class BaseActivity extends Activity {
     }
 
     public void showLoading() {
+        LogCat.e("showLoading");
         if (loadingDialog == null) {
             loadingDialog = DialogUtils.showLoading(this);
         } else {
@@ -73,6 +76,7 @@ public abstract class BaseActivity extends Activity {
     }
 
     public void hideLoading() {
+        LogCat.e("hideLoading");
         if (loadingDialog != null) {
             loadingDialog.dismiss();
         }
@@ -90,7 +94,7 @@ public abstract class BaseActivity extends Activity {
         Map<String, String> map = new HashMap<String, String>();
         map.put("albumId", "66371");
         map.put("videoType", "1");
-        map.put("serialType", "2");
+        map.put("serialType", "1");
         AlbnumHttpService.doHttpAlbnumEpisodesList(this, map, isTest, new OnRequestListener<VideoDetailListResponse>() {
             @Override
             public void onSuccess(VideoDetailListResponse response, String url) {
@@ -195,6 +199,7 @@ public abstract class BaseActivity extends Activity {
     }
 
 
+
     protected class DeleteFileThread extends Thread {
 
         private String path;
@@ -209,9 +214,32 @@ public abstract class BaseActivity extends Activity {
         public void run() {
             super.run();
             File file = new File(path, name);
-            if (file != null && file.exists()) {
+            if (file.exists()) {
                 file.delete();
             }
+        }
+    }
+
+    protected class DeleteFilesThread extends Thread {
+
+        private ArrayList<VideoDetailResponse> path;
+
+        public DeleteFilesThread(ArrayList<VideoDetailResponse> path) {
+            this.path = path;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            for(VideoDetailResponse filePath : path){
+                File file = new File(filePath.videoPath);
+                if (file.exists() && file.isFile()) {
+                    file.delete();
+                }
+            }
+
+
+
         }
     }
 
@@ -227,7 +255,7 @@ public abstract class BaseActivity extends Activity {
         public void run() {
             super.run();
             LogCat.e("删除所有安装文件");
-            delAllFile(path);
+            delAllAPKFile(path);
         }
     }
 
@@ -497,9 +525,12 @@ public abstract class BaseActivity extends Activity {
     }
 
 
+
+
+
     //删除指定文件夹下所有文件
     //param path 文件夹完整绝对路径
-    public boolean delAllFile(String path) {
+    public boolean delAllAPKFile(String path) {
         boolean flag = false;
         File file = new File(path);
         if (!file.exists()) {
@@ -520,7 +551,7 @@ public abstract class BaseActivity extends Activity {
                 temp.delete();
             }
             if (temp.isDirectory()) {
-                delAllFile(path + "/" + tempList[i]);//先删除文件夹里面的文件
+                delAllAPKFile(path + "/" + tempList[i]);//先删除文件夹里面的文件
                 delFolder(path + "/" + tempList[i]);//再删除空文件夹
                 flag = true;
             }
@@ -530,7 +561,7 @@ public abstract class BaseActivity extends Activity {
 
     public void delFolder(String folderPath) {
         try {
-            delAllFile(folderPath); //删除完里面所有内容
+            delAllAPKFile(folderPath); //删除完里面所有内容
             String filePath = folderPath;
             filePath = filePath.toString();
             java.io.File myFilePath = new java.io.File(filePath);
@@ -561,5 +592,15 @@ public abstract class BaseActivity extends Activity {
         split[0] = split[0].replaceAll("\\+", "%20");//处理空格
         return split[0];
     }
+
+
+    public void deleteFiles(String path, String name){
+        new DeleteFileThread(path, name).start();
+    }
+
+    public void deleteFiles(ArrayList<VideoDetailResponse> path){
+        new DeleteFilesThread(path).start();
+    }
+
 
 }

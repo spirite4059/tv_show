@@ -194,6 +194,13 @@ public class DownloadPrepareThread extends Thread {
             threads[i] = new DownloadThread(url, file, blockSize,
                     (i + 1));
             threads[i].setName("Thread:" + i);
+            threads[i].setOnDownloadErrorListener(new DownloadThread.OnDownloadErrorListener() {
+                @Override
+                public void onDownloadError(int errorCode) {
+                    isCancel = true;
+                    setErrorMsg(errorCode);
+                }
+            });
             threads[i].start();
         }
 
@@ -237,10 +244,12 @@ public class DownloadPrepareThread extends Thread {
 
                 // 是否有子线程出错或者取消下载
                 if (isThreadError || isCancel) {
+                    isFinished = false;
                     if(isThreadError){
                         LogCat.e("下载线程出错......");
                     }else {
                         LogCat.e("主动取消了下载......");
+
                     }
 
                     break;
@@ -260,8 +269,20 @@ public class DownloadPrepareThread extends Thread {
         // 完成所有的下载了
         if (isFinished) {
             Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
+
+            msg.obj = file;
+
             mHandler.sendMessage(msg);
         }
+
+        if(isCancel){
+            Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_CANCEL);
+
+            msg.obj = file;
+
+            mHandler.sendMessage(msg);
+        }
+
     }
 
     private HttpURLConnection getHttpURLConnection(URL url) {
