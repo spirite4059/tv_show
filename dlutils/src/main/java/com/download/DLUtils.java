@@ -1,25 +1,26 @@
-package com.gochinatv.ad.download;
+package com.download;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 
-import com.gochinatv.ad.tools.LogCat;
+import com.download.dllistener.OnDownloadStatusListener;
+import com.download.tools.LogCat;
 
 import java.io.File;
 
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOADING_READ;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_CONN;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_FILE_NULL;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_FILE_SIZE;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_URL;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_DOWNLOAD_WRITE;
-import static com.gochinatv.ad.download.ErrorCodes.ERROR_THREAD_NUMBERS;
+import static com.download.ErrorCodes.ERROR_DOWNLOADING_READ;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_CONN;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_NULL;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_SIZE;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_URL;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_WRITE;
+import static com.download.ErrorCodes.ERROR_THREAD_NUMBERS;
 
 /**
  * Created by fq_mbp on 16/2/29.

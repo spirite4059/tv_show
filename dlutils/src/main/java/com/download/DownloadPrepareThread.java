@@ -1,11 +1,11 @@
-package com.gochinatv.ad.download;
+package com.download;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 
-import com.gochinatv.ad.tools.LogCat;
+import com.download.tools.LogCat;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +13,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import static com.gochinatv.ad.download.ErrorCodes.HTTP_OK;
-import static com.gochinatv.ad.download.ErrorCodes.HTTP_PARTIAL;
+import static com.download.ErrorCodes.HTTP_OK;
+import static com.download.ErrorCodes.HTTP_PARTIAL;
 
 /**
  * Created by fq_mbp on 16/2/29.
@@ -27,6 +27,7 @@ public class DownloadPrepareThread extends Thread {
     private int errorCode;
     private Bundle bundle;
     private boolean isCancel;
+    private static final int CONNECT_TIME_OUT = 10000;
 
 
     public DownloadPrepareThread(String downloadUrl, int threadNum, String filePath, Handler mHandler) {
@@ -289,7 +290,7 @@ public class DownloadPrepareThread extends Thread {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) url.openConnection();
-            connection.setConnectTimeout(10000);
+            connection.setConnectTimeout(CONNECT_TIME_OUT);
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept", "image/gif, image/jpeg, image/pjpeg, image/pjpeg, application/x-shockwave-flash, application/xaml+xml, application/vnd.ms-xpsdocument, application/x-ms-xbap, application/x-ms-application, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*");
             connection.setRequestProperty("Accept-Language", "zh-CN");
@@ -297,7 +298,10 @@ public class DownloadPrepareThread extends Thread {
             connection.setRequestProperty("Charset", "UTF-8");
             connection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)");
             connection.setRequestProperty("Connection", "Keep-Alive");
-            connection.setReadTimeout(10000);
+            connection.setReadTimeout(CONNECT_TIME_OUT);
+
+            System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(CONNECT_TIME_OUT));
+            System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(CONNECT_TIME_OUT));
             connection.connect();
         } catch (IOException e) {
             e.printStackTrace();

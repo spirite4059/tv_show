@@ -1,4 +1,4 @@
-package com.gochinatv.ad.download;
+package com.download;
 
 /**
  * Created by fq_mbp on 16/2/29.

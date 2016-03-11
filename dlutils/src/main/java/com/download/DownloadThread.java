@@ -1,9 +1,8 @@
-package com.gochinatv.ad.download;
+package com.download;
 
 import android.support.annotation.Nullable;
 
-import com.gochinatv.ad.tools.LogCat;
-
+import com.download.tools.LogCat;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -245,7 +244,7 @@ public class DownloadThread extends Thread {
 
                     return null;
                 }
-                LogCat.e("URL connect 出错，进行第 " + (1 + retryTimes) +" 次尝试");
+                LogCat.e("URL connect 出错，进行第 " + (1 + retryTimes) + " 次尝试");
                 connection = getConnection(startPos, endPos);
                 if(connection != null){
                     LogCat.e("URL connect 出错，进行第 " + (1 + retryTimes) +" 次尝试, 已经成功的connect");
@@ -289,6 +288,9 @@ public class DownloadThread extends Thread {
             connection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)");
             connection.setRequestProperty("Connection", "Keep-Alive");
             connection.setReadTimeout(CONNECT_TIME_OUT);
+
+            System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(CONNECT_TIME_OUT));
+            System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(CONNECT_TIME_OUT));
             //设置当前线程下载的起点、终点
             connection.setRequestProperty("Range", "bytes=" + startPos + "-" + endPos);
 
@@ -454,7 +456,6 @@ public class DownloadThread extends Thread {
                 LogCat.e("输出流写入文件异常。。。。。");
                 errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
             }
-
             if(errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
                 // 彻底放弃当前下载
                 // TODO

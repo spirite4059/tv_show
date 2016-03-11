@@ -7,9 +7,9 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.download.DLUtils;
+import com.download.dllistener.OnDownloadStatusListener;
 import com.gochinatv.ad.base.BaseActivity;
-import com.gochinatv.ad.download.DLUtils;
-import com.gochinatv.ad.download.OnDownloadStatusListener;
 import com.gochinatv.ad.tools.AlertUtils;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
