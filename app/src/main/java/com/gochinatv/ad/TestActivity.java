@@ -1,7 +1,5 @@
-package com.gochinatv.ad.ui;
+package com.gochinatv.ad;
 
-import android.app.DownloadManager;
-import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -9,9 +7,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseActivity;
-import com.gochinatv.ad.db.VideoAdBean;
 import com.gochinatv.ad.download.DLUtils;
 import com.gochinatv.ad.download.OnDownloadStatusListener;
 import com.gochinatv.ad.tools.AlertUtils;
@@ -32,8 +28,6 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import cn.aigestudio.downloader.bizs.DLManager;
-
 /**
  * Created by fq_mbp on 16/3/8.
  */
@@ -43,51 +37,26 @@ public class TestActivity extends BaseActivity {
 
 
     private int playVideoPosition;
-    private int downloadPosition;
     private String saveDir;
-
-    private VideoHandler videoHandler;
-
-    private static final String FORMAT_VIDEO_AD_TIME = "yyyyMMddHHmmss";
-    private static final String FILE_DIRECTROY = "gochinatv_ad";
+    private static final String FILE_DIRECTORY = "gochinatv_ad";
 
     private static final String DOWNLOAD_FILE_EXTENSION = ".mp4";
-
-//    private static final int REFRUSH_DURATION = 5 * 60 * 60 * 1000;
-
-    private static final int REFRUSH_DURATION = 5 * 60 * 60 * 1000;
-
-
     private Timer timer;
-
-    private static long startLong;
-    private DLManager dlManager;
-
-    /**
-     * 本地数据表
-     */
+    private long startLong;
+    /** 本地数据表 */
     private ArrayList<VideoDetailResponse> localVideoTable;
 
     private ArrayList<VideoDetailResponse> playVideoTable;
+
     private ArrayList<VideoDetailResponse> deleteVideoTable;
-    /**
-     * 服务器数据表
-     */
+    /** 服务器数据表 */
     private ArrayList<VideoDetailResponse> videoDetailResponses;
-    /**
-     * 下载数据表
-     */
+    /** 下载数据表 */
     private ArrayList<VideoDetailResponse> downloadVideoTable;
 
-    private VideoAdBean downLoadingVideo;
-
-    private Timer refrushTimer;
+    private Timer netStatusTimer;
 
     private LinearLayout loading;
-
-    private DownloadManager downloadManager;
-    private SharedPreferences prefs;
-    private static final String DL_ID = "222";
 
     private final String SHARE_KEY_DURATION = "SHARE_KEY_DURATION";
 
@@ -97,28 +66,25 @@ public class TestActivity extends BaseActivity {
 
     private DLUtils dlUtils;
 
+    private int localPlayPosition;
+
+    private VideoDetailResponse downloadResponse;
+    private int retryTimes;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MobclickAgent.setDebugMode(false);
-        startLong = System.currentTimeMillis();
-        /** 设置是否对日志信息进行加密, 默认false(不加密). */
-        AnalyticsConfig.enableEncrypt(true);
-        MobclickAgent.openActivityDurationTrack(false);
+        initUmeng();
+
         setContentView(R.layout.activity_main);
         initView();
-
-
     }
 
 
     public void onResume() {
         super.onResume();
         // 记录开始时间
-        startLong = System.currentTimeMillis();
-        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(this);
-        sharedPreference.saveDate(SHARE_KEY_DURATION, System.currentTimeMillis());
-        LogCat.e("记录启动app时间。。。。。。。" + startLong);
+        setStartTime();
 
         init();
         bindEvent();
@@ -127,51 +93,39 @@ public class TestActivity extends BaseActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+        MobclickAgent.onPageEnd("ChinaRestaurantActivity"); // 保证 onPageEnd 在onPause
+    }
+
+    @Override
     protected void onStop() {
+        // 删除正在下载的任务
         if(dlUtils != null){
             dlUtils.cancel();
         }
-
+        // 删除正在下载的文件
         if(downloadResponse != null){
-            // 还有下载视频
             deleteFiles(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION);
         }
-
+        // 停止所有的timer
         if (timer != null) {
             timer.cancel();
             timer = null;
         }
-        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(this);
-        // 计算离开的时候总时长
-        try {
 
-
-            startLong = sharedPreference.getDate(SHARE_KEY_DURATION, startLong);
-
-            if (startLong != 0) {
-                long duration = System.currentTimeMillis() - startLong;
-                if (duration > 0) {
-                    long day = duration / (24 * 60 * 60 * 1000);
-                    long hour = (duration / (60 * 60 * 1000) - day * 24);
-                    long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
-                    long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-                    String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
-
-                    LogCat.e(str);
-
-                    MobclickAgent.onEvent(this, "duration", str);
-                    LogCat.e("上报开机时长。。。。。。。。");
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            sharedPreference.saveDate(SHARE_KEY_DURATION, 0);
+        if (netStatusTimer != null) {
+            netStatusTimer.cancel();
+            netStatusTimer = null;
         }
+        // 计算app启动的时间
+        computeTime();
 
         super.onStop();
     }
+
+
 
     private void initView() {
         videoView = (MeasureVideoView) findViewById(R.id.videoView);
@@ -201,7 +155,7 @@ public class TestActivity extends BaseActivity {
         deleteVideoTable = new ArrayList<>();
 
         // 实力化本地下载目录
-        File file = Environment.getExternalStoragePublicDirectory(FILE_DIRECTROY);
+        File file = Environment.getExternalStoragePublicDirectory(FILE_DIRECTORY);
 
         saveDir = file.getAbsolutePath() + "/";
         LogCat.e("现在的下载地址是： " + saveDir);
@@ -216,13 +170,12 @@ public class TestActivity extends BaseActivity {
 
         // 请求接口
         doHttpRequest();
-
-
         // 删除目录下所有的安装包
         new DeleteApkThread(saveDir + "chinaRestaurant").start();
 
     }
 
+    /** 获取初始播放的视频地址 */
     private String getFirstVideoPath(File file) {
         String firstVideoPath = null;
         if ((file.exists() && file.isDirectory())) {
@@ -245,6 +198,11 @@ public class TestActivity extends BaseActivity {
                 }
                 // 开始播放视频
                 if (localVideoTable.size() == 0) {
+                    VideoDetailResponse videoAdBean = new VideoDetailResponse();
+                    videoAdBean.name = "预置片";
+                    videoAdBean.videoPath = getRawVideoUri();
+                    localVideoTable.add(videoAdBean);
+                    firstVideoPath = videoAdBean.videoPath;
                 } else {
                     firstVideoPath = localVideoTable.get(0).videoPath;
                 }
@@ -287,21 +245,66 @@ public class TestActivity extends BaseActivity {
         });
     }
 
-    private int localPlayPosition;
+
+    private void initUmeng() {
+        MobclickAgent.setDebugMode(false);
+        /** 设置是否对日志信息进行加密, 默认false(不加密). */
+        AnalyticsConfig.enableEncrypt(true);
+        MobclickAgent.openActivityDurationTrack(false);
+    }
+
+    private void setStartTime() {
+        startLong = System.currentTimeMillis();
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(this);
+        sharedPreference.saveDate(SHARE_KEY_DURATION, System.currentTimeMillis());
+        LogCat.e("记录启动app时间。。。。。。。" + startLong);
+    }
+
+    private void computeTime() {
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(this);
+        // 计算离开的时候总时长
+        try {
+            startLong = sharedPreference.getDate(SHARE_KEY_DURATION, startLong);
+            if (startLong != 0) {
+                long duration = System.currentTimeMillis() - startLong;
+                if (duration > 0) {
+                    long day = duration / (24 * 60 * 60 * 1000);
+                    long hour = (duration / (60 * 60 * 1000) - day * 24);
+                    long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
+                    long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
+                    String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
+
+                    LogCat.e(str);
+
+                    MobclickAgent.onEvent(this, "duration", str);
+                    LogCat.e("上报开机时长。。。。。。。。");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            sharedPreference.saveDate(SHARE_KEY_DURATION, 0);
+        }
+    }
 
     private void playNext() {
         showLoading();
-
+        // http请求没有结束的时候播放本地视频列表
         if (!isHttpFinish) {
             int lengthL = localVideoTable.size();
+
+            if(lengthL <= 0){
+                VideoDetailResponse videoAdBean = new VideoDetailResponse();
+                videoAdBean.name = "预置片";
+                videoAdBean.videoPath = getRawVideoUri();
+                localVideoTable.add(videoAdBean);
+            }
+
             localPlayPosition++;
 
             if (localPlayPosition >= lengthL) {
-
                 localPlayPosition = 0;
-
             }
-
             VideoDetailResponse videoDetailResponse = localVideoTable.get(localPlayPosition);
 
             playVideo(videoDetailResponse.videoPath);
@@ -310,7 +313,6 @@ public class TestActivity extends BaseActivity {
 
 
         // 需要对视频进行删除操作
-
         if (isDeleteVideo) {
             LogCat.e("需要对本地缓存视频进行处理，删除需要删除的视频。。。");
             isDeleteVideo = false;
@@ -325,7 +327,6 @@ public class TestActivity extends BaseActivity {
             LogCat.e("当前播放列表仍然没有视频内容，继续播放预置片。。。");
             playVideo(getRawVideoUri());
         } else {
-
             VideoDetailResponse videoAdBean = playVideoTable.get(playVideoPosition);
 
             MobclickAgent.onEvent(this, "video_play_times", videoAdBean.name);
@@ -360,6 +361,28 @@ public class TestActivity extends BaseActivity {
             return;
         }
         videoDetailResponses = response.data;
+
+
+        /**
+         * -----------------------测试代码-------------------------
+         */
+//        ArrayList<String> deletes = new ArrayList<>();
+//        deletes.add("683817");
+//        deletes.add("683816");
+//        deletes.add("679615");
+//        int size1 =  videoDetailResponses.size();
+//        for(int i = size1 - 1; i >=0; i--){
+//            VideoDetailResponse videoDetailResponse = videoDetailResponses.get(i);
+//            for(String vid : deletes){
+//                if(vid.equals(videoDetailResponse.vid)){
+//                    videoDetailResponses.remove(videoDetailResponse);
+//                }
+//            }
+//        }
+        /**
+         * -----------------------测试代码-------------------------
+         */
+
 
         downloadVideoTable.addAll(videoDetailResponses);
 
@@ -428,6 +451,7 @@ public class TestActivity extends BaseActivity {
                 if (!isServerUse) { // 服务器不在使用的视频需要进行清除
                     // 判断是否正在播放当前视频
                     isDeleteVideo = true;
+                    LogCat.e("需要从本地进行删除的视频..." + videoDetailResponse.name);
                     deleteVideoTable.add(videoDetailResponse);
                 }
             }
@@ -473,7 +497,7 @@ public class TestActivity extends BaseActivity {
 
     @Override
     protected void onUpdateSuccess(UpdateResponse.UpdateInfoResponse updateInfo) {
-
+        downloadApk(updateInfo);
     }
 
 
@@ -515,8 +539,7 @@ public class TestActivity extends BaseActivity {
 
     }
 
-    private VideoDetailResponse downloadResponse;
-    private int retryTimes;
+
 
     private void getVideoUrl() {
         if(downloadVideoTable.size() == 0){
@@ -576,18 +599,7 @@ public class TestActivity extends BaseActivity {
                 if (fileLength == 0) {
                     return;
                 }
-                double size = (int) (progress / 1024);
-                String sizeStr;
-                int s = (int) (progress * 100 / fileLength);
-                if (size > 1000) {
-                    size = (progress / 1024) / 1024f;
-                    BigDecimal b = new BigDecimal(size);
-                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
-                    sizeStr = String.valueOf(f1 + "MB，  ");
-                } else {
-                    sizeStr = String.valueOf((int) size + "KB，  ");
-                }
-                LogCat.e("progress............. " + sizeStr + s + "%");
+                logProgress(progress);
 
 
             }
@@ -611,8 +623,103 @@ public class TestActivity extends BaseActivity {
             public void onCancel() {
                 LogCat.e("onCancel............. ");
             }
+
+            private void logProgress(long progress){
+                double size = (int) (progress / 1024);
+                String sizeStr;
+                int s = (int) (progress * 100 / fileLength);
+                if (size > 1000) {
+                    size = (progress / 1024) / 1024f;
+                    BigDecimal b = new BigDecimal(size);
+                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    sizeStr = String.valueOf(f1 + "MB，  ");
+                } else {
+                    sizeStr = String.valueOf((int) size + "KB，  ");
+                }
+                LogCat.e("progress............. " + sizeStr + s + "%");
+            }
         });
     }
+
+
+    private void downloadApk(final UpdateResponse.UpdateInfoResponse updateInfo) {
+        LogCat.e("开始下载升级安装包。。。。");
+        dlUtils.download(saveDir + "chinaRestaurant", downloadResponse.name, updateInfo.fileUrl, 1, new OnDownloadStatusListener() {
+
+            private long fileLength;
+
+            @Override
+            public void onError(int errorCode, String errorMsg) {
+                LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
+                // 此时出错，需要判断是否是强制升级，如果是强制升级，说明是接口等重大功能改变，必须优先升级
+                // 强制升级：如果出错，就要循环去做升级操作，直至升级成
+                // 普通升级：如果出错，不再请求，去请求视频接口
+                if("1".equals(updateInfo.type)){
+                    // 强制更新
+                    videoView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogCat.e("5秒后继续尝试，如此循环。。。。");
+                            downloadApk(updateInfo);
+                        }
+                    }, 5000);
+
+                }else {
+                    doHttpGetEpisode();
+                }
+            }
+
+
+            @Override
+            public void onPrepare(long fileSize) {
+                LogCat.e("fileSize............. " + fileSize);
+                fileLength = fileSize;
+
+            }
+
+            @Override
+            public void onProgress(long progress) {
+                if (fileLength == 0) {
+                    return;
+                }
+                logProgress(progress);
+
+            }
+
+            @Override
+            public void onFinish(File file) {
+                LogCat.e("onFinish............. " + file.getName());
+                // 把下载成功的视频添加到播放列表中
+                installApk(TestActivity.this, file.getAbsolutePath());
+                finish();
+            }
+
+            @Override
+            public void onCancel() {
+                LogCat.e("onCancel............. ");
+
+
+            }
+
+            private void logProgress(long progress){
+                double size = (int) (progress / 1024);
+                String sizeStr;
+                int s = (int) (progress * 100 / fileLength);
+                if (size > 1000) {
+                    size = (progress / 1024) / 1024f;
+                    BigDecimal b = new BigDecimal(size);
+                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    sizeStr = String.valueOf(f1 + "MB，  ");
+                } else {
+                    sizeStr = String.valueOf((int) size + "KB，  ");
+                }
+                LogCat.e("progress............. " + sizeStr + s + "%");
+            }
+        });
+
+
+    }
+
 
 
     /**
@@ -643,16 +750,16 @@ public class TestActivity extends BaseActivity {
      * 检测网络，如果链接正常则请求接口
      */
     private void doHttpRequest() {
-        refrushTimer = new Timer();
-        refrushTimer.schedule(new TimerTask() {
+        netStatusTimer = new Timer();
+        netStatusTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 LogCat.e("正在检测是否联网。。。。。");
                 if (DataUtils.isNetworkConnected(TestActivity.this)) {
                     // 先去请求服务器，查看视频列表
                     doHttpUpdate(TestActivity.this);
-                    refrushTimer.cancel();
-                    refrushTimer = null;
+                    netStatusTimer.cancel();
+                    netStatusTimer = null;
                     LogCat.e("已经联网。。。。。");
                 } else {
                     LogCat.e("没有联网。。。。。继续检查");
@@ -660,6 +767,9 @@ public class TestActivity extends BaseActivity {
             }
         }, 100, 10 * 1100);
     }
+
+
+
 
 
     @Override

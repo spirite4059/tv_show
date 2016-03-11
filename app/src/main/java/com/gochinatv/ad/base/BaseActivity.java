@@ -52,7 +52,7 @@ public abstract class BaseActivity extends Activity {
 
     private static final String FORMAT_VIDEO_AD_TIME = "yyyyMMddHHmmss";
 
-    private boolean isTest = false;
+    private boolean isTest = true;
 
 
     @Override
