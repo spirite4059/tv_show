@@ -46,6 +46,7 @@ public class DownloadThread extends Thread {
 
     private static final int MAX_RETRY_DOWNLOAD_TIMES = 3;
     private static final int CONNECT_TIME_OUT = 10000;
+    private static final int READ_TIME_OUT = 30000;
     private static final int BUFFER_IN_SIZE = 2048;
 
     /**
@@ -93,144 +94,6 @@ public class DownloadThread extends Thread {
 
     }
 
-//    private int retryReader(int startPos, HttpURLConnection connection, BufferedInputStream bis, RandomAccessFile raf) {
-//        // 关闭流
-//        if (bis != null) {
-//            try {
-//                bis.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if (raf != null) {
-//            try {
-//                raf.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        // 重新打开
-//        bis = getBufferedInputStream(connection);
-//        if (bis == null) {
-//            // 彻底放弃当前下载
-//            // TODO
-//
-//            return -1;
-//        }
-//
-//        // 还原数据状态
-//        retryTimes = 0;
-//
-//
-//        byte[] buffer = new byte[1024];
-//
-//        raf = getRandomAccessFile();
-//        if (raf == null) {
-//            // 彻底放弃当前下载
-//            // TODO
-//
-//            return -1;
-//        }
-//
-//        // 还原数据状态
-//        retryTimes = 0;
-//
-//
-//        try {
-//            raf.seek(startPos);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            errorCode = ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;   // 整个下载中断的code
-//        }
-//
-//        if(errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK){   // 整个下载中断的code
-//            return -1;
-//        }
-//
-//
-//        int len = -1;
-//        try {
-//            len = bis.read(buffer, 0, 1024);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
-//        }
-//
-//        if(len < 0 && retryReadTimes < 3){
-//            retryReadTimes++;
-//            len = retryReader(startPos, connection, bis, raf);
-//        }
-//
-//        return len;
-//    }
-
-//    @Nullable
-//    private RandomAccessFile getRandomAccessFile() {
-//
-//        RandomAccessFile raf = obtainRandomAccessFile();
-//
-//
-//        if(raf == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM){
-//            while (retryTimes < 3){
-//                if(isCancel){
-//                    return null;
-//                }
-//                raf = obtainRandomAccessFile();
-//                if(raf != null){
-//                    break;
-//                }
-//                retryTimes += 1;
-//            }
-//
-//            if(retryTimes == 3 || raf == null){
-//                // 此时放弃该线程的启动
-//                errorCode = ErrorCodes.ERROR_DOWNLOAD_RANDOM;
-//                // 彻底放弃当前下载
-//                // TODO
-//
-//                return null;
-//            }
-//        }
-//        return raf;
-//    }
-//
-//    private RandomAccessFile obtainRandomAccessFile() {
-//        RandomAccessFile raf = null;
-//        try {
-//            raf = new RandomAccessFile(file, "rwd");
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//            errorCode = ErrorCodes.ERROR_DOWNLOAD_RANDOM;   // 整个下载中断的code
-//        }
-//        return raf;
-//    }
-//
-//    @Nullable
-//    private BufferedInputStream getBufferedInputStream(HttpURLConnection connection) {
-//        BufferedInputStream bis;
-//        bis = obtainBufferedInputStream(connection);
-//
-//        if(bis == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN){
-//            // 重试3次
-//            while (retryTimes < 3){
-//                if(isCancel){
-//                    return null;
-//                }
-//                bis = obtainBufferedInputStream(connection);
-//                if(bis != null){
-//                    break;
-//                }
-//                retryTimes += 1;
-//            }
-//
-//            if(retryTimes == 3 || bis == null){
-//                // 此时放弃该线程的启动
-//                errorCode = ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
-//                return null;
-//            }
-//        }
-//        return bis;
-//    }
 
     @Nullable
     private HttpURLConnection getHttpURLConnection(int startPos, int endPos) {
@@ -263,18 +126,6 @@ public class DownloadThread extends Thread {
         return connection;
     }
 
-//    private BufferedInputStream obtainBufferedInputStream(HttpURLConnection connection) {
-//        BufferedInputStream bis = null;
-//        try {
-//            bis = new BufferedInputStream(connection.getInputStream());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            // 此时出错就是代表整个下载中断
-//            errorCode = ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;   // 整个下载中断的code
-//        }
-//        return bis;
-//    }
-
     private HttpURLConnection getConnection(int startPos, int endPos) {
         HttpURLConnection connection = null;
         try {
@@ -287,10 +138,10 @@ public class DownloadThread extends Thread {
             connection.setRequestProperty("Charset", "UTF-8");
             connection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.2; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)");
             connection.setRequestProperty("Connection", "Keep-Alive");
-            connection.setReadTimeout(CONNECT_TIME_OUT);
+            connection.setReadTimeout(READ_TIME_OUT);
 
             System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(CONNECT_TIME_OUT));
-            System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(CONNECT_TIME_OUT));
+            System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(READ_TIME_OUT));
             //设置当前线程下载的起点、终点
             connection.setRequestProperty("Range", "bytes=" + startPos + "-" + endPos);
 
@@ -304,35 +155,18 @@ public class DownloadThread extends Thread {
         return connection;
     }
 
-//    private int retryReadTimes;
-//    private int readFileBuffer(byte[] buffer, BufferedInputStream bis){
-//        int len = 0;
-//        try {
-//            len = bis.read(buffer, 0, 1024);
-//            retryReadTimes = 0;
-//        }catch (Exception e) {
-//            if(retryReadTimes < 3){
-//                // 出错就继续读取
-//                readFileBuffer(buffer, bis);
-//                retryReadTimes++;
-//            }else{
-//                retryReadTimes = 0;
-//                errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
-//            }
-//        }
-//        return len;
-//    }
 
 
     private  boolean isException;
+    private int retryDownload;
     private void downloadFile(HttpURLConnection connection){
         if(isException){
-            if(retryTimes < MAX_RETRY_DOWNLOAD_TIMES){
-                retryTimes++;
+            if(retryDownload < MAX_RETRY_DOWNLOAD_TIMES){
+                retryDownload++;
                 LogCat.e("下载过程出现异常，进行第 " + retryTimes +" 次尝试");
             }else {
                 LogCat.e("下载过程出现异常，多次尝试后仍然无法继续，放弃此次下载");
-                retryTimes = 0;
+                retryDownload = 0;
                 if(onDownloadErrorListener != null){
                     onDownloadErrorListener.onDownloadError(errorCode);
                 }
@@ -414,13 +248,13 @@ public class DownloadThread extends Thread {
             len = bis.read(buffer, 0, BUFFER_IN_SIZE);
         } catch (IOException e) {
             e.printStackTrace();
+            LogCat.e("输出流写入文件异常。。。。。" + e.getMessage());
             errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
         }
 
         if(len < 0 || errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
             // 此时多次读取数据出错，应该停止下载了
             isException = true;
-            LogCat.e("输出流写入文件异常。。。。。");
             downloadFile(connection);
             return;
         }
@@ -434,6 +268,7 @@ public class DownloadThread extends Thread {
                 raf.write(buffer, 0, len);
             } catch (Exception e) {
                 e.printStackTrace();
+
                 // 写入过程出错，此过程就对于多线程来说是最难处理的
                 // 简单处理就是从开头位置重新写入，能避免不出错，但是可能会导致已经下载的流量浪费
                 errorCode = ErrorCodes.ERROR_DOWNLOAD_WRITE;
@@ -453,7 +288,7 @@ public class DownloadThread extends Thread {
                 len = bis.read(buffer, 0, BUFFER_IN_SIZE);
             } catch (IOException e) {
                 e.printStackTrace();
-                LogCat.e("输出流写入文件异常。。。。。");
+                LogCat.e("输出流写入文件异常。。。。。" + e.getMessage());
                 errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
             }
             if(errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
