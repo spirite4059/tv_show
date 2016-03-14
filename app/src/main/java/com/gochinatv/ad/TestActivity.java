@@ -653,8 +653,8 @@ public class TestActivity extends BaseActivity {
             }
 
             @Override
-            public void onFinish(File file) {
-                LogCat.e("onFinish............. " + file.getName());
+            public void onFinish(String filePath) {
+                LogCat.e("onFinish............. " + filePath);
                 // 把下载成功的视频添加到播放列表中
                 playVideoTable.add(downloadResponse);
 
@@ -735,10 +735,10 @@ public class TestActivity extends BaseActivity {
             }
 
             @Override
-            public void onFinish(File file) {
-                LogCat.e("onFinish............. " + file.getName());
+            public void onFinish(String filePath) {
+                LogCat.e("onFinish............. " + filePath);
                 // 把下载成功的视频添加到播放列表中
-                installApk(TestActivity.this, file.getAbsolutePath());
+                installApk(TestActivity.this, filePath);
                 finish();
             }
 

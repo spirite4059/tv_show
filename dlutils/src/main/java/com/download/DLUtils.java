@@ -80,7 +80,7 @@ public class DLUtils {
                     onDownloadStatusListener.onError(msg.arg1, getErrorMsg(msg.arg1));
                     break;
                 case HANDLER_WHAT_DOWNLOAD_FINISH:
-                    onDownloadStatusListener.onFinish((File) msg.obj);
+                    onDownloadStatusListener.onFinish(String.valueOf(msg.obj));
                     break;
                 case HANDLER_WHAT_DOWNLOAD_CANCEL:
                     onDownloadStatusListener.onCancel();

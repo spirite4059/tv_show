@@ -283,7 +283,7 @@ public class DownloadPrepareThread extends Thread {
                 LogCat.e("文件完整下载......");
                 Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
 
-                msg.obj = file;
+                msg.obj = file.getAbsolutePath();
 
                 mHandler.sendMessage(msg);
             }else {

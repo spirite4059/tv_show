@@ -1,8 +1,5 @@
 package com.download.dllistener;
 
-import java.io.File;
-
-
 public interface OnDownloadStatusListener {
 
     void onError(int errorCode, String errorMsg);
@@ -11,7 +8,7 @@ public interface OnDownloadStatusListener {
 
     void onProgress(long progress);
 
-    void onFinish(File file);
+    void onFinish(String filePath);
 
     void onCancel();
 }
