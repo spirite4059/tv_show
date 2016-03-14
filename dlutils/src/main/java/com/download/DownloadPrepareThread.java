@@ -13,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
 import static com.download.ErrorCodes.HTTP_OK;
 import static com.download.ErrorCodes.HTTP_PARTIAL;
 
@@ -94,22 +95,8 @@ public class DownloadPrepareThread extends Thread {
         HttpURLConnection connection = getHttpURLConnection(url);
         // 如果是请求文件体的conn出错，要继续访问3边，无需重新进行操作
         if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
-            int errorConnTimes = 0;
-            while (errorConnTimes < 3){
-                if(isCancel){
-                    return;
-                }
-                connection = getHttpURLConnection(url);
-                if(connection != null){
-                    break;
-                }
-                errorConnTimes += 1;
-            }
-
-            if(errorConnTimes == 3){
-                setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_CONN);
-                return;
-            }
+            setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_CONN);
+            return;
         }
 
         if(isCancel){
@@ -123,6 +110,12 @@ public class DownloadPrepareThread extends Thread {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            errorCode = ErrorCodes.ERROR_DOWNLOAD_CONN;
+        }
+
+        if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
+            setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_CONN);
+            return;
         }
 
         if(isCancel){
@@ -212,7 +205,7 @@ public class DownloadPrepareThread extends Thread {
         if(isCancel){
             return;
         }
-
+        int downloadSize = 0;
         try{
             while (!isFinished) {
                 isFinished = true;
@@ -241,7 +234,7 @@ public class DownloadPrepareThread extends Thread {
                         }
                     }
                 }
-
+                downloadSize = downloadedAllSize;
 
                 // 是否有子线程出错或者取消下载
                 if (isThreadError || isCancel) {
@@ -264,16 +257,7 @@ public class DownloadPrepareThread extends Thread {
             }
         }catch (Exception e){
             e.printStackTrace();
-        }
-
-
-        // 完成所有的下载了
-        if (isFinished) {
-            Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
-
-            msg.obj = file;
-
-            mHandler.sendMessage(msg);
+            errorCode = ErrorCodes.ERROR_DOWNLOAD_UNKNOWN;
         }
 
         if(isCancel){
@@ -282,7 +266,33 @@ public class DownloadPrepareThread extends Thread {
             msg.obj = file;
 
             mHandler.sendMessage(msg);
+
+            return;
         }
+
+        if(errorCode == ErrorCodes.ERROR_DOWNLOAD_UNKNOWN){
+            setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_UNKNOWN);
+            return;
+        }
+
+
+        // 完成所有的下载了
+        if (isFinished) {
+
+            if(downloadSize == fileSize){
+                Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
+
+                msg.obj = file;
+
+                mHandler.sendMessage(msg);
+            }else {
+                setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+            }
+        }else {
+            setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+        }
+
+
 
     }
 

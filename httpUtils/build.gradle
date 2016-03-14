@@ -10,4 +10,5 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.0.0'
     compile 'com.google.code.gson:gson:2.3'
     compile 'com.mcxiaoke.volley:library:1.0.18'
+    compile 'com.umeng.analytics:analytics:5.6.4'
 }

@@ -1,1 +1,1 @@
-include ':app', ':httpUtils', ':videoplayer', ':downloader', ':dlutils'
+include ':app', ':httpUtils', ':videoplayer', ':dlutils', ':ad_one', ':ad_two'

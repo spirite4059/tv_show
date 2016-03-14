@@ -72,6 +72,16 @@ final class ErrorCodes {
      */
     public static final int ERROR_DOWNLOAD_RANDOM_SEEK = 1013;
 
+    /**
+     * 随机流定为出错
+     */
+    public static final int ERROR_DOWNLOAD_UNKNOWN = 1014;
+
+    /**
+     *  下载文件大小出错
+     */
+    public static final int ERROR_DOWNLOAD_FILE_UNKNOWN = 1015;
+
 
     static final int HTTP_OK = 200;
     static final int HTTP_CREATED = 201;

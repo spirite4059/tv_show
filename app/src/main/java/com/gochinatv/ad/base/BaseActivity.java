@@ -271,6 +271,7 @@ public abstract class BaseActivity extends Activity {
      */
 
     private int reTryTimes;
+    private boolean isHttpUpdateSuccess;
     protected void doHttpUpdate(final Context context) {
         Map<String, String> map = new HashMap<>();
         map.put("platformId", String.valueOf("22"));
@@ -324,6 +325,8 @@ public abstract class BaseActivity extends Activity {
                     doError();
                     return;
                 }
+
+
                 UpdateResponse.UpdateInfoResponse updateInfo = response.resultForApk;
                 // 获取当前最新版本号
                 if (TextUtils.isEmpty(updateInfo.versionCode) == false) {

@@ -25,6 +25,7 @@ import com.vego.player.MeasureVideoView;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -228,6 +229,25 @@ public class TestActivity extends BaseActivity {
                 hideLoading();
                 LogCat.e("video_onPrepared....");
                 videoView.start();
+            }
+        });
+
+        videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                if(what == 1){
+                    // 继续播放下一个
+                    // 删除当前的视频
+                    // 继续下载播放失败的
+
+
+
+                }
+
+
+
+
+                return false;
             }
         });
 
@@ -458,7 +478,10 @@ public class TestActivity extends BaseActivity {
 
             LogCat.e("不需要此视频，等当前视频播放结束后，将其删除..." + downloadVideoTable.size());
             // 删除无需下载的视频
+
+            Collections.sort(deleteIndexs);
             int size = deleteIndexs.size();
+            LogCat.e("deleteIndexs..." + deleteIndexs);
             for(int i = size - 1; i >= 0; i--){
                 int index = deleteIndexs.get(i);
                 downloadVideoTable.remove(index);
@@ -518,12 +541,20 @@ public class TestActivity extends BaseActivity {
         LogCat.e("当前视频的下载地址获取失败。。。。");
 
 
-        int size = downloadVideoTable.size();
+        final int size = downloadVideoTable.size();
         if (size > 1) {
             LogCat.e("将当前下载地址获取失败的视频放到最后一个，继续下载后续的视频。。。。");
-            downloadVideoTable.add(size, downloadResponse);
-            downloadVideoTable.remove(0);
-            getVideoUrl();
+
+            videoView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    downloadVideoTable.add(size, downloadResponse);
+                    downloadVideoTable.remove(0);
+                    getVideoUrl();
+                }
+            }, 50000);
+
+
         }else {
             LogCat.e("只剩最后一个视频。。。。");
             if(retryTimes < 2){
@@ -556,9 +587,13 @@ public class TestActivity extends BaseActivity {
         }
     }
 
+    private int retryDownloadTimes;
 
     private void download(final String url) {
         LogCat.e("开始下载。。。。");
+        // 每次开始前都取消其他下载，保证只有一个下载
+        dlUtils.cancel();
+
         dlUtils.download(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION, url, 1, new OnDownloadStatusListener() {
 
             private long fileLength;
@@ -567,13 +602,26 @@ public class TestActivity extends BaseActivity {
             public void onError(int errorCode, String errorMsg) {
                 LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
                 // 出错就放弃当前下载任务，继续下载下一个任务，并将当前任务放到最后一个，如果已经是最后一个，再重试2边
-                int size = downloadVideoTable.size();
-
+                final int size = downloadVideoTable.size();
                 if (size > 1) {
-                    LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
-                    downloadVideoTable.add(size, downloadResponse);
-                    downloadVideoTable.remove(0);
-                    getVideoUrl();
+                    videoView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogCat.e("5秒后继续尝试，如此循环。。。。");
+                            if(retryDownloadTimes < 3){
+                                retryDownloadTimes++;
+                                LogCat.e("继续重试3次下载，此时是第" + retryDownloadTimes + "次尝试。。。。");
+                                download(url);
+                            }else {
+                                retryDownloadTimes = 0;
+                                LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
+                                downloadVideoTable.add(size, downloadResponse);
+                                downloadVideoTable.remove(0);
+                                getVideoUrl();
+                            }
+                        }
+                    }, 5000);
+
                 } else {
                     LogCat.e("只剩最后一个视频。。。。");
                     videoView.postDelayed(new Runnable() {

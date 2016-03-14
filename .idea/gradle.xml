@@ -10,9 +10,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/ad_one" />
+            <option value="$PROJECT_DIR$/ad_two" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/dlutils" />
-            <option value="$PROJECT_DIR$/downloader" />
             <option value="$PROJECT_DIR$/httpUtils" />
             <option value="$PROJECT_DIR$/videoplayer" />
           </set>

@@ -1,8 +1,7 @@
 package com.download;
 
-import android.support.annotation.Nullable;
-
 import com.download.tools.LogCat;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,18 +30,12 @@ public class DownloadThread extends Thread {
     private int blockSize;
     private boolean isCancel;
     private int errorCode;
-    /** 线程下载异常重试次数 */
-    private int retryTimes;
     /** 下载无法恢复的监听 */
     private OnDownloadErrorListener onDownloadErrorListener;
     /** 缓冲流 */
     private BufferedInputStream bis;
     /** 随机流 */
     private  RandomAccessFile raf;
-    /** 线程下载的起始位置 */
-    private int startPos;
-    /** 线程下载的结束位置 */
-    private int endPos;
 
     private static final int MAX_RETRY_DOWNLOAD_TIMES = 3;
     private static final int CONNECT_TIME_OUT = 10000;
@@ -69,62 +62,19 @@ public class DownloadThread extends Thread {
 
     @Override
     public void run() {
+        int startPos = blockSize * (threadId - 1);//开始位置
+        int endPos = blockSize * threadId - 1;//结束位置
 
-        startPos = blockSize * (threadId - 1);//开始位置
-        endPos = blockSize * threadId - 1;//结束位置
-
-
-        HttpURLConnection connection = getHttpURLConnection(startPos, endPos);
-        if (connection == null) {
+        HttpURLConnection connection = getConnection(startPos, endPos);
+        if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
             // 彻底放弃当前下载
-            if(onDownloadErrorListener != null){
-                onDownloadErrorListener.onDownloadError(errorCode);
-            }
+            setErrorCode();
             return;
         }
-            
-            
-        // 还原数据状态
-        retryTimes = 0;
 
-
-        downloadFile(connection);
-
-
-
+        downloadFile(connection, startPos);
     }
 
-
-    @Nullable
-    private HttpURLConnection getHttpURLConnection(int startPos, int endPos) {
-        HttpURLConnection connection = getConnection(startPos, endPos);
-
-        // 如果是请求文件体的conn出错，要继续访问3边，无需重新进行操作
-        if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
-            // 异常错误处理
-            while (retryTimes < MAX_RETRY_DOWNLOAD_TIMES){
-                if(isCancel){
-
-                    return null;
-                }
-                LogCat.e("URL connect 出错，进行第 " + (1 + retryTimes) + " 次尝试");
-                connection = getConnection(startPos, endPos);
-                if(connection != null){
-                    LogCat.e("URL connect 出错，进行第 " + (1 + retryTimes) +" 次尝试, 已经成功的connect");
-                    break;
-                }
-                retryTimes += 1;
-            }
-
-            if(retryTimes == MAX_RETRY_DOWNLOAD_TIMES || connection == null){
-                // 此时放弃该线程的启动
-                LogCat.e("进行多次尝试后，仍然无法URL connect，放弃此次下载。。。。");
-                errorCode = ErrorCodes.ERROR_DOWNLOAD_CONN;
-                return null;
-            }
-        }
-        return connection;
-    }
 
     private HttpURLConnection getConnection(int startPos, int endPos) {
         HttpURLConnection connection = null;
@@ -157,42 +107,7 @@ public class DownloadThread extends Thread {
 
 
 
-    private  boolean isException;
-    private int retryDownload;
-    private void downloadFile(HttpURLConnection connection){
-        if(isException){
-            if(retryDownload < MAX_RETRY_DOWNLOAD_TIMES){
-                retryDownload++;
-                LogCat.e("下载过程出现异常，进行第 " + retryTimes +" 次尝试");
-            }else {
-                LogCat.e("下载过程出现异常，多次尝试后仍然无法继续，放弃此次下载");
-                retryDownload = 0;
-                if(onDownloadErrorListener != null){
-                    onDownloadErrorListener.onDownloadError(errorCode);
-                }
-                return;
-            }
-
-
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (raf != null) {
-                try {
-                    raf.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            // 重置状态
-            isException = false;
-        }
-
-
+    private void downloadFile(HttpURLConnection connection, int startPos){
         try {
             bis = new BufferedInputStream(connection.getInputStream());
         } catch (IOException e) {
@@ -200,14 +115,10 @@ public class DownloadThread extends Thread {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
         }
         if (bis == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN) {
-            isException = true;
             LogCat.e("缓冲流获取异常。。。。。");
-            downloadFile(connection);
+            setErrorCode();
             return;
         }
-
-        // 还原数据状态
-        retryTimes = 0;
 
 
         byte[] buffer = new byte[BUFFER_IN_SIZE];
@@ -219,14 +130,10 @@ public class DownloadThread extends Thread {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_RANDOM;
         }
         if (raf == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM) {
-            isException = true;
             LogCat.e("随机流获取异常。。。。。");
-            downloadFile(connection);
+            setErrorCode();
             return;
         }
-
-        // 还原数据状态
-        retryTimes = 0;
 
         try {
             raf.seek(startPos);
@@ -236,13 +143,11 @@ public class DownloadThread extends Thread {
         }
 
         if(errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK){   // 整个下载中断的code
-            isException = true;
             LogCat.e("随机流定为异常。。。。。");
-            downloadFile(connection);
+            setErrorCode();
             return;
         }
 
-        retryTimes = 0;
         int len = -1;
         try {
             len = bis.read(buffer, 0, BUFFER_IN_SIZE);
@@ -254,11 +159,9 @@ public class DownloadThread extends Thread {
 
         if(len < 0 || errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
             // 此时多次读取数据出错，应该停止下载了
-            isException = true;
-            downloadFile(connection);
+            setErrorCode();
             return;
         }
-        retryTimes = 0;
 
         downloadLength = 0;
 
@@ -278,8 +181,7 @@ public class DownloadThread extends Thread {
                 // 彻底放弃当前下载
                 // TODO
                 LogCat.e("写入文件异常。。。。。");
-                isException = true;
-                downloadFile(connection);
+                setErrorCode();
                 break;
             }
 
@@ -294,14 +196,14 @@ public class DownloadThread extends Thread {
             if(errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
                 // 彻底放弃当前下载
                 // TODO
-                isException = true;
-                downloadFile(connection);
+                setErrorCode();
 
                 break;
             }
 
             downloadLength += len;
         }
+
 
         if (bis != null) {
             try {
@@ -363,5 +265,12 @@ public class DownloadThread extends Thread {
 
     public void setOnDownloadErrorListener(OnDownloadErrorListener onDownloadErrorListener) {
         this.onDownloadErrorListener = onDownloadErrorListener;
+    }
+
+
+    private void setErrorCode(){
+        if(onDownloadErrorListener != null){
+            onDownloadErrorListener.onDownloadError(errorCode);
+        }
     }
 }

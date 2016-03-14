@@ -16,6 +16,7 @@ import static com.download.ErrorCodes.ERROR_DOWNLOAD_CONN;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_NULL;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_SIZE;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_URL;
@@ -76,7 +77,6 @@ public class DLUtils {
                     break;
                 case HANDLER_WHAT_DOWNLOAD_ERROR:
                     //
-
                     onDownloadStatusListener.onError(msg.arg1, getErrorMsg(msg.arg1));
                     break;
                 case HANDLER_WHAT_DOWNLOAD_FINISH:
@@ -176,6 +176,9 @@ public class DLUtils {
                 break;
             case ERROR_DOWNLOAD_RANDOM_SEEK:
                 errorMsg = "error：随机流定为异常";
+                break;
+            case ERROR_DOWNLOAD_FILE_UNKNOWN:
+                errorMsg = "error：下载文件大小出错";
                 break;
             default:
                 errorMsg = "error：未知的异常";
