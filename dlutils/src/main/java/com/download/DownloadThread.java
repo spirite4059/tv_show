@@ -108,6 +108,8 @@ public class DownloadThread extends Thread {
 
 
     private void downloadFile(HttpURLConnection connection, int startPos){
+        downloadLength = 0;
+
         try {
             bis = new BufferedInputStream(connection.getInputStream());
         } catch (IOException e) {
@@ -163,7 +165,7 @@ public class DownloadThread extends Thread {
             return;
         }
 
-        downloadLength = 0;
+        downloadLength = len;
 
         while (len != -1 && !isCancel) {
 

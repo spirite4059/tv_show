@@ -209,7 +209,7 @@ public class DownloadPrepareThread extends Thread {
         try{
             while (!isFinished) {
                 isFinished = true;
-                int downloadedAllSize = 0;
+                int downloadedAllSize = threadNum;
                 boolean isThreadError = false;
                 // 当前所有线程下载总量
                 for (DownloadThread downloadThread : threads) {
@@ -278,17 +278,20 @@ public class DownloadPrepareThread extends Thread {
 
         // 完成所有的下载了
         if (isFinished) {
-
+            LogCat.e("文件下载完成......fileSize: " + fileSize);
             if(downloadSize == fileSize){
+                LogCat.e("文件完整下载......");
                 Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
 
                 msg.obj = file;
 
                 mHandler.sendMessage(msg);
             }else {
+                LogCat.e("文件下载大小出错......downloadSize:" + downloadSize);
                 setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
             }
         }else {
+            LogCat.e("文件下载尚未完成......");
             setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
         }
 
