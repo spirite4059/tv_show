@@ -35,8 +35,6 @@ import java.util.TimerTask;
 public class TestActivity extends BaseActivity {
 
     private MeasureVideoView videoView;
-
-
     private int playVideoPosition;
     private String saveDir;
     private static final String FILE_DIRECTORY = "gochinatv_ad";
