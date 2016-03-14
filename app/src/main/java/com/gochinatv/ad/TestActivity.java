@@ -202,6 +202,7 @@ public class TestActivity extends BaseActivity {
                     VideoDetailResponse videoAdBean = new VideoDetailResponse();
                     videoAdBean.name = "预置片";
                     videoAdBean.videoPath = getRawVideoUri();
+                    videoAdBean.isPresetPiece = true;
                     localVideoTable.add(videoAdBean);
                     firstVideoPath = videoAdBean.videoPath;
                 } else {
@@ -235,16 +236,13 @@ public class TestActivity extends BaseActivity {
         videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                if(what == 1){
+                if (what == 1) {
                     // 继续播放下一个
                     // 删除当前的视频
                     // 继续下载播放失败的
 
 
-
                 }
-
-
 
 
                 return false;
@@ -317,6 +315,7 @@ public class TestActivity extends BaseActivity {
                 VideoDetailResponse videoAdBean = new VideoDetailResponse();
                 videoAdBean.name = "预置片";
                 videoAdBean.videoPath = getRawVideoUri();
+                videoAdBean.isPresetPiece = true;
                 localVideoTable.add(videoAdBean);
             }
 
@@ -608,11 +607,11 @@ public class TestActivity extends BaseActivity {
                         @Override
                         public void run() {
                             LogCat.e("5秒后继续尝试，如此循环。。。。");
-                            if(retryDownloadTimes < 3){
+                            if (retryDownloadTimes < 3) {
                                 retryDownloadTimes++;
                                 LogCat.e("继续重试3次下载，此时是第" + retryDownloadTimes + "次尝试。。。。");
                                 download(url);
-                            }else {
+                            } else {
                                 retryDownloadTimes = 0;
                                 LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
                                 downloadVideoTable.add(size, downloadResponse);

@@ -1,6 +1,6 @@
 [
     {
-        "outputFile": "/Users/fq_mbp/develop/git_work_ad/chinaRestaurantAd/videoplayer/build/intermediates/res/merged/debug/values-w820dp-v13/values-w820dp-v13.xml",
+        "outputFile": "E:\\Dev\\AS_workspace\\chinarestaurant\\tv_chinarestaurant\\videoplayer\\build\\intermediates\\res\\merged\\debug\\values-w820dp-v13\\values-w820dp-v13.xml",
         "map": [
             {
                 "to": {
@@ -11,7 +11,7 @@
                     "endOffset": 108
                 },
                 "from": {
-                    "file": "/Users/fq_mbp/develop/git_work_ad/chinaRestaurantAd/videoplayer/build/intermediates/exploded-aar/chinaRestaurantAd/httpUtils/unspecified/res/values-w820dp-v13/values-w820dp-v13.xml",
+                    "file": "E:\\Dev\\AS_workspace\\chinarestaurant\\tv_chinarestaurant\\videoplayer\\build\\intermediates\\exploded-aar\\tv_chinarestaurant\\httpUtils\\unspecified\\res\\values-w820dp-v13\\values-w820dp-v13.xml",
                     "position": {
                         "startLine": 2,
                         "startColumn": 4,
