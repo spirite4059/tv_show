@@ -1,14 +1,14 @@
 [
     {
-        "merged": "/Users/fq_mbp/develop/git_work_ad/chinaRestaurantAd/videoplayer/build/intermediates/res/merged/debug/layout/activity_main.xml",
-        "source": "/Users/fq_mbp/develop/git_work_ad/chinaRestaurantAd/videoplayer/src/main/res/layout/activity_main.xml"
+        "merged": "E:\\Dev\\AS_workspace\\chinarestaurant\\tv_chinarestaurant\\videoplayer\\build\\intermediates\\res\\merged\\debug\\layout\\activity_main.xml",
+        "source": "E:\\Dev\\AS_workspace\\chinarestaurant\\tv_chinarestaurant\\videoplayer\\src\\main\\res\\layout\\activity_main.xml"
     },
     {
-        "merged": "/Users/fq_mbp/develop/git_work_ad/chinaRestaurantAd/videoplayer/build/intermediates/res/merged/debug/layout/activity_main1.xml",
-        "source": "/Users/fq_mbp/develop/git_work_ad/chinaRestaurantAd/videoplayer/src/main/res/layout/activity_main1.xml"
+        "merged": "E:\\Dev\\AS_workspace\\chinarestaurant\\tv_chinarestaurant\\videoplayer\\build\\intermediates\\res\\merged\\debug\\layout\\sample.xml",
+        "source": "E:\\Dev\\AS_workspace\\chinarestaurant\\tv_chinarestaurant\\videoplayer\\src\\main\\res\\layout\\sample.xml"
     },
     {
-        "merged": "/Users/fq_mbp/develop/git_work_ad/chinaRestaurantAd/videoplayer/build/intermediates/res/merged/debug/layout/sample.xml",
-        "source": "/Users/fq_mbp/develop/git_work_ad/chinaRestaurantAd/videoplayer/src/main/res/layout/sample.xml"
+        "merged": "E:\\Dev\\AS_workspace\\chinarestaurant\\tv_chinarestaurant\\videoplayer\\build\\intermediates\\res\\merged\\debug\\layout\\activity_main1.xml",
+        "source": "E:\\Dev\\AS_workspace\\chinarestaurant\\tv_chinarestaurant\\videoplayer\\src\\main\\res\\layout\\activity_main1.xml"
     }
 ]
