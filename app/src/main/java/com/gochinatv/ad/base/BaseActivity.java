@@ -17,17 +17,16 @@ import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.dialog.DialogLoading;
 import com.gochinatv.ad.ui.dialog.DialogUtils;
-import com.httputils.http.OnRequestListener;
 import com.httputils.http.response.CdnPathResponse;
 import com.httputils.http.response.TimeResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
 import com.httputils.http.response.VideoDetailResponse;
 import com.httputils.http.service.AlbnumHttpService;
-import com.httputils.http.service.CDNHttpService;
-import com.httputils.http.service.TimeHttpService;
+import com.okhtttp.OkHttpCallBack;
+import com.okhtttp.OkHttpUtils;
+import com.tools.HttpUrls;
 import com.umeng.analytics.MobclickAgent;
-import com.vego.player.SecurityChain;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -87,31 +86,34 @@ public abstract class BaseActivity extends Activity {
     protected abstract void onFailed(String errorMsg, String url);
 
     private int episodeTag = 0;
+
     /**
      * 请求视频列表数
      */
     protected void doHttpGetEpisode() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("albumId", "66371");
         map.put("videoType", "1");
         map.put("serialType", "1");
-        AlbnumHttpService.doHttpAlbnumEpisodesList(this, map, isTest, new OnRequestListener<VideoDetailListResponse>() {
+
+        String url = isTest ? HttpUrls.URL_VIDEO_LIST_TEST : HttpUrls.URL_VIDEO_LIST;
+
+        OkHttpUtils.getInstance().doHttpGet(url, map, new OkHttpCallBack<VideoDetailListResponse>() {
             @Override
-            public void onSuccess(VideoDetailListResponse response, String url) {
+            public void onSuccess(String url, VideoDetailListResponse response) {
+                LogCat.e("onSuccess........" + url);
                 onSuccessFul(response, url);
             }
 
             @Override
-            public void onError(String errorMsg, String url) {
+            public void onError(String url, String errorMsg) {
                 LogCat.e("onError........");
                 AlbnumHttpService.cancleHttp(BaseActivity.this);
                 episodeTag++;
-
                 onFailed(errorMsg, url);
             }
-        }, String.valueOf(episodeTag));
+        });
     }
-
 
 
     public class VideoHandler extends Handler {
@@ -147,15 +149,16 @@ public abstract class BaseActivity extends Activity {
 
     protected void doHttpGetCdnPath(Context context, final String vid, final Date date) {
         LogCat.e("获取cdn的真是地址。。。。。。。" + vid);
-        Map<String,String> url = new HashMap();
-        url.put("url", SecurityChain.SECURITY_CHAIN_URL + vid);
-        CDNHttpService.doHttpGetCdnPathEncryption(context, url, new OnRequestListener<CdnPathResponse>() {
+        Map<String, String> url = new HashMap();
+        url.put("url", HttpUrls.SECURITY_CHAIN_URL + vid);
+
+        OkHttpUtils.getInstance().doHttpGet(HttpUrls.HTTP_URL_CDN_PATH, url, new OkHttpCallBack<CdnPathResponse>() {
             @Override
-            public void onSuccess(CdnPathResponse response, String url) {
+            public void onSuccess(String url, CdnPathResponse response) {
                 if (isFinishing()) {
                     return;
                 }
-
+                LogCat.e("onSuccess。。。。。。。" + url);
                 if (response == null || !(response instanceof CdnPathResponse)) {
                     LogCat.e("cdn地址请求成功 数据错误1。。。。。。。");
                     onVideoCdnError(url);
@@ -168,7 +171,6 @@ public abstract class BaseActivity extends Activity {
                 }
 
 
-
                 if (TextUtils.isEmpty(response.data.url)) {
                     LogCat.e("cdn地址为空。。。。。。。");
                     onVideoCdnError(url);
@@ -177,27 +179,20 @@ public abstract class BaseActivity extends Activity {
 
                 getVideoCdnPath(response.data.url);
 
-
             }
 
             @Override
-            public void onError(String errorMsg, String url) {
-
+            public void onError(String url, String errorMsg) {
                 if (isFinishing()) {
                     return;
                 }
 
-                LogCat.e("cdn地址获取失败。。。。。。。");
+                LogCat.e("cdn地址获取失败。。。。。。。" + url);
                 onVideoCdnError(url);
             }
-
-
         });
 
-
-
     }
-
 
 
     protected class DeleteFileThread extends Thread {
@@ -231,13 +226,12 @@ public abstract class BaseActivity extends Activity {
         @Override
         public void run() {
             super.run();
-            for(VideoDetailResponse filePath : path){
+            for (VideoDetailResponse filePath : path) {
                 File file = new File(filePath.videoPath);
                 if (file.exists() && file.isFile()) {
                     file.delete();
                 }
             }
-
 
 
         }
@@ -272,6 +266,7 @@ public abstract class BaseActivity extends Activity {
 
     private int reTryTimes;
     private boolean isHttpUpdateSuccess;
+
     protected void doHttpUpdate(final Context context) {
         Map<String, String> map = new HashMap<>();
         map.put("platformId", String.valueOf("22"));
@@ -289,9 +284,9 @@ public abstract class BaseActivity extends Activity {
                     PackageManager.GET_META_DATA);
             if (appInfo != null) {
                 String brand = appInfo.metaData.getString("UMENG_CHANNEL");
-                if(TextUtils.isEmpty(brand)){
+                if (TextUtils.isEmpty(brand)) {
                     map.put("brandNumber", "chinarestaurant"); // 品牌
-                }else {
+                } else {
                     map.put("brandNumber", brand); // 品牌
                 }
             }
@@ -300,90 +295,94 @@ public abstract class BaseActivity extends Activity {
             map.put("brandNumber", "chinarestaurant"); // 品牌
         }
 
-        AlbnumHttpService.doHttpUpdateApk(this, map, new OnRequestListener<UpdateResponse>() {
-            @Override
-            public void onSuccess(UpdateResponse response, String url) {
-                if (isFinishing()) {
-                    return;
-                }
+        OkHttpUtils.getInstance().
+
+                doHttpGet(HttpUrls.URL_CHECK_UPDATE, map, new OkHttpCallBack<UpdateResponse>() {
+                    @Override
+                    public void onSuccess(String url, UpdateResponse response) {
+                        LogCat.e("onSuccess url: " + url);
+                        if (isFinishing()) {
+                            return;
+                        }
 
 
-                if (response == null || !(response instanceof UpdateResponse)) {
-                    LogCat.e("升级数据出错，无法正常升级1。。。。。");
-                    doError();
-                    return;
-                }
+                        if (response == null || !(response instanceof UpdateResponse)) {
+                            LogCat.e("升级数据出错，无法正常升级1。。。。。");
+                            doError();
+                            return;
+                        }
 
-                if (response.resultForApk == null || !(response.resultForApk instanceof UpdateResponse.UpdateInfoResponse)) {
-                    LogCat.e("升级数据出错，无法正常升级2。。。。。");
-                    doError();
-                    return;
-                }
+                        if (response.resultForApk == null || !(response.resultForApk instanceof UpdateResponse.UpdateInfoResponse)) {
+                            LogCat.e("升级数据出错，无法正常升级2。。。。。");
+                            doError();
+                            return;
+                        }
 
-                if ("1".equals(response.status) == false) {
-                    LogCat.e("升级接口的status == 0。。。。。");
-                    doError();
-                    return;
-                }
-
-
-                UpdateResponse.UpdateInfoResponse updateInfo = response.resultForApk;
-                // 获取当前最新版本号
-                if (TextUtils.isEmpty(updateInfo.versionCode) == false) {
-                    double netVersonCode = Integer.parseInt(updateInfo.versionCode);
-                    // 检测是否要升级
-                    try {
-                        if (DataUtils.getAppVersion(context) < netVersonCode) { // 升级
-                            // 升级
-                            // 下载最新安装包，下载完成后，提示安装
-                            LogCat.e("需要升级。。。。。");
-
-                            // 去下载当前的apk
-                            onUpdateSuccess(updateInfo);
+                        if ("1".equals(response.status) == false) {
+                            LogCat.e("升级接口的status == 0。。。。。");
+                            doError();
+                            return;
+                        }
 
 
+                        UpdateResponse.UpdateInfoResponse updateInfo = response.resultForApk;
+                        // 获取当前最新版本号
+                        if (TextUtils.isEmpty(updateInfo.versionCode) == false) {
+                            double netVersonCode = Integer.parseInt(updateInfo.versionCode);
+                            // 检测是否要升级
+                            try {
+                                if (DataUtils.getAppVersion(context) < netVersonCode) { // 升级
+                                    // 升级
+                                    // 下载最新安装包，下载完成后，提示安装
+                                    LogCat.e("需要升级。。。。。");
+
+                                    // 去下载当前的apk
+                                    onUpdateSuccess(updateInfo);
+
+
+                                } else {
+                                    // 不升级
+                                    LogCat.e("无需升级。。。。。");
+                                    doHttpGetTime(context);
+                                }
+                            } catch (PackageManager.NameNotFoundException e) {
+                                e.printStackTrace();
+                                LogCat.e("判断升级过程中出错。。。。。");
+                                doError();
+                            }
                         } else {
                             // 不升级
-                            LogCat.e("无需升级。。。。。");
-                            doHttpGetTime(context);
+                            LogCat.e("升级版本为null。。。。。");
+                            doError();
                         }
-                    } catch (PackageManager.NameNotFoundException e) {
-                        e.printStackTrace();
-                        LogCat.e("判断升级过程中出错。。。。。");
+
+                    }
+
+                    private void doError() {
+                        if (!isFinishing()) {
+                            // 做不升级处理, 继续请求广告视频列表
+                            reTryTimes++;
+                            if (reTryTimes > 4) {
+                                reTryTimes = 0;
+
+                                doHttpGetTime(context);
+                            } else {
+                                LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
+                                doHttpUpdate(BaseActivity.this);
+
+                            }
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(String url, String errorMsg) {
+                        LogCat.e("请求接口出错，无法升级。。。。。" + url);
                         doError();
                     }
-                } else {
-                    // 不升级
-                    LogCat.e("升级版本为null。。。。。");
-                    doError();
-                }
+                });
 
-            }
 
-            private void doError() {
-                if (!isFinishing()) {
-                    // 做不升级处理, 继续请求广告视频列表
-                    reTryTimes ++;
-                    if(reTryTimes > 4){
-                        reTryTimes = 0;
-
-                        doHttpGetTime(context);
-                    }else {
-                        LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
-                        doHttpUpdate(BaseActivity.this);
-
-                    }
-                }
-
-            }
-
-            @Override
-            public void onError(String errorMsg, String url) {
-                // 升级失败
-                LogCat.e("请求接口出错，无法升级。。。。。" + url);
-                doError();
-            }
-        });
     }
 
 
@@ -470,10 +469,9 @@ public abstract class BaseActivity extends Activity {
      * 检查是否有版本更新
      */
     protected void doHttpGetTime(final Context context) {
-
-        TimeHttpService.doHttpGetTime(context, new OnRequestListener<TimeResponse>() {
+        OkHttpUtils.getInstance().doHttpGet(HttpUrls.URL_GET_SERVER_TIMELONG, new OkHttpCallBack<TimeResponse>() {
             @Override
-            public void onSuccess(TimeResponse response, String url) {
+            public void onSuccess(String url, TimeResponse response) {
                 if (isFinishing()) {
                     return;
                 }
@@ -506,9 +504,15 @@ public abstract class BaseActivity extends Activity {
 
 
                 }
-
-
             }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                // 升级失败
+                LogCat.e("获取当前时间。。。。。。onError");
+                doError();
+            }
+
 
             private void doError() {
                 if (!isFinishing()) {
@@ -517,18 +521,9 @@ public abstract class BaseActivity extends Activity {
                 }
 
             }
-
-            @Override
-            public void onError(String errorMsg, String url) {
-                // 升级失败
-                LogCat.e("获取当前时间。。。。。。onError");
-                doError();
-            }
         });
+
     }
-
-
-
 
 
     //删除指定文件夹下所有文件
@@ -597,11 +592,11 @@ public abstract class BaseActivity extends Activity {
     }
 
 
-    public void deleteFiles(String path, String name){
+    public void deleteFiles(String path, String name) {
         new DeleteFileThread(path, name).start();
     }
 
-    public void deleteFiles(ArrayList<VideoDetailResponse> path){
+    public void deleteFiles(ArrayList<VideoDetailResponse> path) {
         new DeleteFilesThread(path).start();
     }
 

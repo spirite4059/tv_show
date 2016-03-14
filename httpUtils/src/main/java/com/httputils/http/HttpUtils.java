@@ -8,16 +8,15 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Volley;
-import com.httputils.http.okHttp.OkHttpStack;
 import com.httputils.http.request.GetRequest;
 import com.httputils.http.request.JsonPostRequest;
 import com.httputils.http.request.StatisticalPostRequest;
 import com.httputils.http.request.StringGetRequest;
 import com.httputils.http.request.StringPostRequest;
-import com.squareup.okhttp.OkHttpClient;
 
 import java.util.Map;
+
+import okhttp3.OkHttpClient;
 
 /**
  * Created by fq_mbp on 15/7/30.
@@ -49,11 +48,12 @@ public class HttpUtils {
         }
         return instance;
     }
-
+    OkHttpClient okHttpClient;
 
     public RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(context, new OkHttpStack(new OkHttpClient()));
+            okHttpClient = new OkHttpClient();
+//            mRequestQueue = Volley.newRequestQueue(context, new OkHttpStack(new OkHttpClient()));
         }
         return mRequestQueue;
     }

@@ -15,7 +15,6 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/dlutils" />
             <option value="$PROJECT_DIR$/httpUtils" />
-            <option value="$PROJECT_DIR$/videoplayer" />
           </set>
         </option>
       </GradleProjectSettings>

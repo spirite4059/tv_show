@@ -14,13 +14,13 @@ import com.gochinatv.ad.tools.AlertUtils;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
+import com.gochinatv.ad.video.MeasureVideoView;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
 import com.httputils.http.response.VideoDetailResponse;
 import com.umeng.analytics.AnalyticsConfig;
 import com.umeng.analytics.MobclickAgent;
-import com.vego.player.MeasureVideoView;
 
 import java.io.File;
 import java.math.BigDecimal;
