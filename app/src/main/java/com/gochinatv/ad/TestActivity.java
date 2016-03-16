@@ -19,6 +19,7 @@ import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
 import com.httputils.http.response.VideoDetailResponse;
+import com.okhtttp.OkHttpUtils;
 import com.umeng.analytics.AnalyticsConfig;
 import com.umeng.analytics.MobclickAgent;
 
@@ -42,15 +43,21 @@ public class TestActivity extends BaseActivity {
     private static final String DOWNLOAD_FILE_EXTENSION = ".mp4";
     private Timer timer;
     private long startLong;
-    /** 本地数据表 */
+    /**
+     * 本地数据表
+     */
     private ArrayList<VideoDetailResponse> localVideoTable;
 
     private ArrayList<VideoDetailResponse> playVideoTable;
 
     private ArrayList<VideoDetailResponse> deleteVideoTable;
-    /** 服务器数据表 */
+    /**
+     * 服务器数据表
+     */
     private ArrayList<VideoDetailResponse> videoDetailResponses;
-    /** 下载数据表 */
+    /**
+     * 下载数据表
+     */
     private ArrayList<VideoDetailResponse> downloadVideoTable;
 
     private Timer netStatusTimer;
@@ -101,18 +108,20 @@ public class TestActivity extends BaseActivity {
     @Override
     protected void onStop() {
         // 删除正在下载的任务
-        if(dlUtils != null){
+        if (dlUtils != null) {
             dlUtils.cancel();
         }
         // 删除正在下载的文件
-        if(downloadResponse != null){
-            deleteFiles(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION);
+        if (downloadResponse != null) {
+//            deleteFiles(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION);
         }
         // 停止所有的timer
         if (timer != null) {
             timer.cancel();
             timer = null;
         }
+
+//        OkHttpUtils.getInstance().cancelFileDownloading();
 
         if (netStatusTimer != null) {
             netStatusTimer.cancel();
@@ -123,8 +132,6 @@ public class TestActivity extends BaseActivity {
 
         super.onStop();
     }
-
-
 
     private void initView() {
         videoView = (MeasureVideoView) findViewById(R.id.videoView);
@@ -174,7 +181,9 @@ public class TestActivity extends BaseActivity {
 
     }
 
-    /** 获取初始播放的视频地址 */
+    /**
+     * 获取初始播放的视频地址
+     */
     private String getFirstVideoPath(File file) {
         String firstVideoPath = null;
         if ((file.exists() && file.isDirectory())) {
@@ -309,7 +318,7 @@ public class TestActivity extends BaseActivity {
         if (!isHttpFinish) {
             int lengthL = localVideoTable.size();
 
-            if(lengthL <= 0){
+            if (lengthL <= 0) {
                 VideoDetailResponse videoAdBean = new VideoDetailResponse();
                 videoAdBean.name = "预置片";
                 videoAdBean.videoPath = getRawVideoUri();
@@ -479,7 +488,7 @@ public class TestActivity extends BaseActivity {
             Collections.sort(deleteIndexs);
             int size = deleteIndexs.size();
             LogCat.e("deleteIndexs..." + deleteIndexs);
-            for(int i = size - 1; i >= 0; i--){
+            for (int i = size - 1; i >= 0; i--) {
                 int index = deleteIndexs.get(i);
                 downloadVideoTable.remove(index);
             }
@@ -521,7 +530,6 @@ public class TestActivity extends BaseActivity {
     }
 
 
-
     @Override
     protected void getVideoCdnPath(String url) {
         if (isFinishing()) {
@@ -552,13 +560,13 @@ public class TestActivity extends BaseActivity {
             }, 50000);
 
 
-        }else {
+        } else {
             LogCat.e("只剩最后一个视频。。。。");
-            if(retryTimes < 2){
+            if (retryTimes < 2) {
                 retryTimes++;
                 LogCat.e("第 " + retryTimes + " 次重新尝试获取下载地址");
                 getVideoUrl();
-            }else {
+            } else {
                 retryTimes = 0;
                 LogCat.e("经过尝试后，仍无法获取到当前视频的下载地址，放弃此次下载");
             }
@@ -568,12 +576,11 @@ public class TestActivity extends BaseActivity {
     }
 
 
-
     private void getVideoUrl() {
-        if(downloadVideoTable.size() == 0){
+        if (downloadVideoTable.size() == 0) {
             LogCat.e("所有视频下载完成。。。。。。。。");
             downloadResponse = null;
-        }else {
+        } else {
             LogCat.e("获取下载列表第一个视频，并开始下载。。。。。。。。 还剩余下载任务：" + downloadVideoTable.size());
             downloadResponse = downloadVideoTable.get(0);
             downloadResponse.videoPath = saveDir + downloadResponse.name + DOWNLOAD_FILE_EXTENSION;
@@ -588,50 +595,117 @@ public class TestActivity extends BaseActivity {
 
     private void download(final String url) {
         LogCat.e("开始下载。。。。");
-        // 每次开始前都取消其他下载，保证只有一个下载
-        dlUtils.cancel();
 
-        dlUtils.download(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION, url, 1, new OnDownloadStatusListener() {
+        okDownload(url);
+        // 每次开始前都取消其他下载，保证只有一个下载
+//        dlUtils.cancel();
+//
+//        dlUtils.download(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION, url, 1, new OnDownloadStatusListener() {
+//
+//            private long fileLength;
+//
+//            @Override
+//            public void onError(int errorCode, String errorMsg) {
+//                LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
+//                // 出错就放弃当前下载任务，继续下载下一个任务，并将当前任务放到最后一个，如果已经是最后一个，再重试2边
+//                final int size = downloadVideoTable.size();
+//                if (size > 1) {
+//                    videoView.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            LogCat.e("5秒后继续尝试，如此循环。。。。");
+//                            if (retryDownloadTimes < 3) {
+//                                retryDownloadTimes++;
+//                                LogCat.e("继续重试3次下载，此时是第" + retryDownloadTimes + "次尝试。。。。");
+//                                download(url);
+//                            } else {
+//                                retryDownloadTimes = 0;
+//                                LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
+//                                downloadVideoTable.add(size, downloadResponse);
+//                                downloadVideoTable.remove(0);
+//                                getVideoUrl();
+//                            }
+//                        }
+//                    }, 5000);
+//
+//                } else {
+//                    LogCat.e("只剩最后一个视频。。。。");
+//                    videoView.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            LogCat.e("5秒后继续尝试，如此循环。。。。");
+//                            download(url);
+//
+//                        }
+//                    }, 5000);
+//                }
+//            }
+//
+//
+//            @Override
+//            public void onPrepare(long fileSize) {
+//                LogCat.e("fileSize............. " + fileSize);
+//                fileLength = fileSize;
+//            }
+//
+//            @Override
+//            public void onProgress(long progress) {
+//                if (fileLength == 0) {
+//                    return;
+//                }
+//                logProgress(progress);
+//
+//
+//            }
+//
+//            @Override
+//            public void onFinish(String filePath) {
+//                LogCat.e("onFinish............. " + filePath);
+//                // 把下载成功的视频添加到播放列表中
+//                playVideoTable.add(downloadResponse);
+//
+//                // 把当前下载的任务从播放列删除
+//                downloadVideoTable.remove(downloadResponse);
+//
+//                // 继续进行下载任务
+//                getVideoUrl();
+//
+//
+//            }
+//
+//            @Override
+//            public void onCancel() {
+//                LogCat.e("onCancel............. ");
+//            }
+//
+//            private void logProgress(long progress){
+//                double size = (int) (progress / 1024);
+//                String sizeStr;
+//                int s = (int) (progress * 100 / fileLength);
+//                if (size > 1000) {
+//                    size = (progress / 1024) / 1024f;
+//                    BigDecimal b = new BigDecimal(size);
+//                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+//                    sizeStr = String.valueOf(f1 + "MB，  ");
+//                } else {
+//                    sizeStr = String.valueOf((int) size + "KB，  ");
+//                }
+//                LogCat.e("progress............. " + sizeStr + s + "%");
+//            }
+//        });
+    }
+
+
+    private void okDownload(final String url) {
+        LogCat.e("okDownload开始下载。。。。");
+        OkHttpUtils.getInstance().doFileDownload(url, saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION, new com.okhtttp.OnDownloadStatusListener() {
 
             private long fileLength;
 
             @Override
             public void onError(int errorCode, String errorMsg) {
-                LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
-                // 出错就放弃当前下载任务，继续下载下一个任务，并将当前任务放到最后一个，如果已经是最后一个，再重试2边
-                final int size = downloadVideoTable.size();
-                if (size > 1) {
-                    videoView.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            LogCat.e("5秒后继续尝试，如此循环。。。。");
-                            if (retryDownloadTimes < 3) {
-                                retryDownloadTimes++;
-                                LogCat.e("继续重试3次下载，此时是第" + retryDownloadTimes + "次尝试。。。。");
-                                download(url);
-                            } else {
-                                retryDownloadTimes = 0;
-                                LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
-                                downloadVideoTable.add(size, downloadResponse);
-                                downloadVideoTable.remove(0);
-                                getVideoUrl();
-                            }
-                        }
-                    }, 5000);
 
-                } else {
-                    LogCat.e("只剩最后一个视频。。。。");
-                    videoView.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            LogCat.e("5秒后继续尝试，如此循环。。。。");
-                            download(url);
-
-                        }
-                    }, 5000);
-                }
             }
-
 
             @Override
             public void onPrepare(long fileSize) {
@@ -645,31 +719,19 @@ public class TestActivity extends BaseActivity {
                     return;
                 }
                 logProgress(progress);
-
-
             }
 
             @Override
             public void onFinish(String filePath) {
-                LogCat.e("onFinish............. " + filePath);
-                // 把下载成功的视频添加到播放列表中
-                playVideoTable.add(downloadResponse);
-
-                // 把当前下载的任务从播放列删除
-                downloadVideoTable.remove(downloadResponse);
-
-                // 继续进行下载任务
-                getVideoUrl();
-
-
+                LogCat.e("filePath............. " + filePath);
             }
 
             @Override
             public void onCancel() {
-                LogCat.e("onCancel............. ");
+
             }
 
-            private void logProgress(long progress){
+            private void logProgress(long progress) {
                 double size = (int) (progress / 1024);
                 String sizeStr;
                 int s = (int) (progress * 100 / fileLength);
@@ -699,7 +761,7 @@ public class TestActivity extends BaseActivity {
                 // 此时出错，需要判断是否是强制升级，如果是强制升级，说明是接口等重大功能改变，必须优先升级
                 // 强制升级：如果出错，就要循环去做升级操作，直至升级成
                 // 普通升级：如果出错，不再请求，去请求视频接口
-                if("1".equals(updateInfo.type)){
+                if ("1".equals(updateInfo.type)) {
                     // 强制更新
                     videoView.postDelayed(new Runnable() {
                         @Override
@@ -709,7 +771,7 @@ public class TestActivity extends BaseActivity {
                         }
                     }, 5000);
 
-                }else {
+                } else {
                     doHttpGetEpisode();
                 }
             }
@@ -746,7 +808,7 @@ public class TestActivity extends BaseActivity {
 
             }
 
-            private void logProgress(long progress){
+            private void logProgress(long progress) {
                 double size = (int) (progress / 1024);
                 String sizeStr;
                 int s = (int) (progress * 100 / fileLength);
@@ -764,7 +826,6 @@ public class TestActivity extends BaseActivity {
 
 
     }
-
 
 
     /**
@@ -812,9 +873,6 @@ public class TestActivity extends BaseActivity {
             }
         }, 100, 10 * 1100);
     }
-
-
-
 
 
     @Override

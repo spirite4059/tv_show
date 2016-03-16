@@ -9,7 +9,11 @@ import com.google.gson.Gson;
 import com.httputils.utils.LogCat;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +44,9 @@ public class OkHttpUtils {
 
     private static final String APP_NAME = "VegoPlus";
     private static final String CACHE_DIRECTORY = "cache";
+
+    private long downloadProgress;
+    private boolean isDownloadFinish;
 
 
     private OkHttpUtils() {
@@ -123,6 +130,43 @@ public class OkHttpUtils {
     }
 
 
+    public void doFileDownload(final String url, final String path, final String fileName, final OnDownloadStatusListener listener) {
+        final Request request = new Request.Builder()
+                .url(url)
+                .build();
+        final Call call = mOkHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                new DownLoadStatusThread(path, fileName, response, listener).start();
+            }
+        });
+
+    }
+
+    private boolean isCancelDL;
+
+    public void cancelFileDownloading() {
+        isCancelDL = true;
+    }
+
+
+    private boolean isCancel(OnDownloadStatusListener listener) {
+        if (isCancelDL) {
+            if (listener != null) {
+                listener.onCancel();
+            }
+            return true;
+        }
+        return false;
+    }
+
+
     public void cancelCall(String url) {
         final Request request = new Request.Builder()
                 .url(url)
@@ -194,8 +238,8 @@ public class OkHttpUtils {
     }
 
 
-    private String getParamsUrl(String url, Map params){
-        if(params == null || params.size() == 0){
+    private String getParamsUrl(String url, Map params) {
+        if (params == null || params.size() == 0) {
             return url;
         }
         StringBuilder sbUrl = new StringBuilder(url);
@@ -203,17 +247,218 @@ public class OkHttpUtils {
         Set<String> keySet = params.keySet();
         int size = keySet.size();
         Iterator<String> iterator = keySet.iterator();
-        for(int i = 0; i < size; i++){
+        for (int i = 0; i < size; i++) {
             String key = iterator.next();
             sbUrl.append(key);
             sbUrl.append("=");
             sbUrl.append(params.get(key));
-            if(i < size - 1){
+            if (i < size - 1) {
                 sbUrl.append("&");
             }
 
         }
         return sbUrl.toString();
+    }
+
+
+    private class DownLoadStatusThread extends Thread {
+
+        private Response response;
+        private String path;
+        private String fileName;
+        private OnDownloadStatusListener listener;
+
+        public DownLoadStatusThread(String path, String fileName, Response response, OnDownloadStatusListener listener) {
+            this.path = path;
+            this.fileName = fileName;
+            this.response = response;
+            this.listener = listener;
+        }
+
+        @Override
+        public void run() {
+            int len = 0;
+            InputStream is = null;
+            FileOutputStream fos = null;
+            if (isCancel(listener)) {
+                return;
+            }
+            byte[] buf = new byte[2048];
+            if (isCancel(listener)) {
+                return;
+            }
+            try {
+                is = response.body().byteStream();
+
+                if (isCancel(listener)) {
+                    return;
+                }
+
+                final long total = response.body().contentLength();
+
+
+                if (isCancel(listener)) {
+                    return;
+                }
+
+
+                if (listener != null) {
+                    listener.onPrepare(total);
+                }
+
+                long sum = 0;
+                File dir = new File(path);
+                LogCat.e("path: " + path);
+                if (!dir.exists() && !dir.isDirectory()) {
+                    LogCat.e("文件目录不存在 " + path);
+                    if (dir.mkdirs()) {
+                        LogCat.e("文件目录创建成功 " + path);
+                    }
+
+                } else {
+                    LogCat.e("文件目录存在 " + path);
+                }
+
+                if (isCancel(listener)) {
+                    return;
+                }
+
+                File file = new File(dir, fileName);
+                if (!file.exists()) {
+                    LogCat.e("文件不存在: " + fileName);
+                    if (file.createNewFile()) {
+                        LogCat.e("文件创建成功: " + fileName);
+                    }
+                } else {
+                    LogCat.e("文件已经存在: " + fileName);
+                }
+
+
+                if (isCancel(listener)) {
+                    return;
+                }
+
+                fos = new FileOutputStream(file);
+
+                if (isCancel(listener)) {
+                    return;
+                }
+
+                // 回调当前下载进度
+                new DownloadProgressThread(listener).start();
+
+                while ((len = is.read(buf)) != -1) {
+                    if (isCancel(listener)) {
+                        break;
+                    }
+
+                    sum += len;
+                    fos.write(buf, 0, len);
+                    downloadProgress = sum;
+
+                    if (isCancel(listener)) {
+                        break;
+                    }
+
+                }
+
+
+                if (isCancelDL) {
+                    isCancel(listener);
+                } else {
+                    isDownloadFinish = true;
+                    if (listener != null) {
+                        listener.onFinish(path + fileName);
+                    }
+                }
+                fos.flush();
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (is != null) is.close();
+                } catch (IOException e) {
+                }
+                try {
+                    if (fos != null) fos.close();
+                } catch (IOException e) {
+                }
+
+            }
+
+
+        }
+    }
+
+
+    private class DownloadProgressThread extends Thread {
+
+        private OnDownloadStatusListener listener;
+
+        public DownloadProgressThread(OnDownloadStatusListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            while (!isDownloadFinish && !isCancelDL) {
+                mDelivery.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (listener != null) {
+                            listener.onProgress(downloadProgress);
+                        }
+                    }
+                });
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
+
+    //文件下载线程
+    class DownloadThread extends Thread {
+        long start;
+        long end;
+        int threadId;
+        File file = null;
+        InputStream inStream = null;
+
+        public DownloadThread(int threadId, long block, File file, InputStream is) {
+            this.threadId = threadId;
+            start = block * threadId;
+            end = block * (threadId + 1) - 1;
+            this.file = file;
+            this.inStream = is;
+        }
+
+        public void run() {
+            try {
+                //此步骤是关键。
+                RandomAccessFile raf = new RandomAccessFile(file, "rw");
+                //移动指针至该线程负责写入数据的位置。
+                raf.seek(start);
+                //读取数据并写入
+                byte[] b = new byte[1024];
+                int len = 0;
+                while ((len = inStream.read(b)) != -1) {
+                    raf.write(b, 0, len);
+                }
+                System.out.println("线程" + threadId + "下载完毕");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }
