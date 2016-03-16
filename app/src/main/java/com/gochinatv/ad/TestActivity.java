@@ -113,7 +113,7 @@ public class TestActivity extends BaseActivity {
         }
         // 删除正在下载的文件
         if (downloadResponse != null) {
-//            deleteFiles(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION);
+            deleteFiles(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION);
         }
         // 停止所有的timer
         if (timer != null) {
