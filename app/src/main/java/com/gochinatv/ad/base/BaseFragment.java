@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-public class BaseFragment extends Fragment {
+public abstract class BaseFragment extends Fragment {
 
 
 
@@ -31,24 +31,22 @@ public class BaseFragment extends Fragment {
 	/**
 	 * 初始化控件，比如findViewById
 	 */
-	protected View initLayout(LayoutInflater inflater, ViewGroup container) {
-		return null;
-	}
+	protected abstract View initLayout(LayoutInflater inflater, ViewGroup container);
 
 	/**
 	 * 初始化控件，比如findViewById
 	 */
-	protected void initView(View rootView){};
+	protected abstract void initView(View rootView);
 
 	/**
 	 * 初始化参数，比如一次必要的数据设置
 	 */
-	protected void init(){};
+	protected abstract void init();
 
 	/**
 	 * 绑定控件的事件，比如button的onclick事件
 	 */
-	protected void bindEvent(){}
+	protected abstract void bindEvent();
 
 
 
