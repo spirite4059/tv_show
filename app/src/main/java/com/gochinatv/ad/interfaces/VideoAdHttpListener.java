@@ -1,4 +1,4 @@
-package com.gochinatv.ad;
+package com.gochinatv.ad.interfaces;
 
 import com.httputils.http.response.VideoDetailListResponse;
 
