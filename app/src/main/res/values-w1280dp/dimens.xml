@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="d_25sp">20.00sp</dimen>
+    <dimen name="d_28sp">24.00sp</dimen>
+    <dimen name="d_45sp">33.00sp</dimen>
+    
+    <dimen name="d_299dp">340.00dp</dimen>
+    <dimen name="d_180dp">230.00dp</dimen>
+	<dimen name="d_50dp">43.00dp</dimen>
+    <dimen name="d_40dp">40.00dp</dimen>
+    <dimen name="d_15dp">15.00dp</dimen>
+
+    <!--    <dimen name="d_230dp">184.00dp</dimen>
+        <dimen name="d_115dp">92.00dp</dimen>
+
+        <dimen name="d_820dp">656.00dp</dimen>
+        <dimen name="d_460dp">368.00dp</dimen>-->
+    <dimen name="d_30sp">24.00sp</dimen>
+
+    <dimen name="d_450dp">380.00dp</dimen>
+    
+     <dimen name="d_26sp">20.00sp</dimen>
+    <dimen name="d_22sp">18.00sp</dimen>
+</resources>

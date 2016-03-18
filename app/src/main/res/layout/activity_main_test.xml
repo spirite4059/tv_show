@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <!--广告1-视频广告 -->
+    <LinearLayout
+        android:id="@+id/ad_one"
+        android:layout_width="@dimen/d_720dp"
+        android:layout_height="@dimen/d_60dp"
+        android:orientation="horizontal"
+        >
+    </LinearLayout>
+
+    <!--广告2-新闻广告-->
+
+    <LinearLayout
+        android:id="@+id/ad_two"
+        android:layout_width="@dimen/d_200dp"
+        android:layout_height="@dimen/d_400dp"
+        android:orientation="horizontal"
+        android:layout_alignParentRight="true"
+        >
+    </LinearLayout>
+
+
+
+    <!--广告3-图片广告-->
+
+    <LinearLayout
+        android:id="@+id/ad_three"
+        android:layout_width="@dimen/d_200dp"
+        android:layout_height="@dimen/d_400dp"
+        android:orientation="horizontal"
+        android:layout_below="@id/ad_two"
+        android:layout_alignParentRight="true"
+        >
+    </LinearLayout>
+
+
+
+    <!--广告4-文本广告-->
+    <LinearLayout
+        android:id="@+id/ad_four"
+        android:layout_width="@dimen/d_720dp"
+        android:layout_height="@dimen/d_60dp"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true">
+    </LinearLayout>
+
+
+</RelativeLayout>
