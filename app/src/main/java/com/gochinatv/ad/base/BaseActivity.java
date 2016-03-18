@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -107,7 +108,7 @@ public abstract class BaseActivity extends Activity {
 
             @Override
             public void onError(String url, String errorMsg) {
-                LogCat.e("onError........");
+                LogCat.e("onDownloadApkError........");
                 AlbnumHttpService.cancleHttp(BaseActivity.this);
                 episodeTag++;
                 onFailed(errorMsg, url);
@@ -482,7 +483,6 @@ public abstract class BaseActivity extends Activity {
                     doError();
                     return;
                 }
-
                 if (TextUtils.isEmpty(response.serverTime)) {
                     doError();
                 } else {
@@ -509,7 +509,7 @@ public abstract class BaseActivity extends Activity {
             @Override
             public void onError(String url, String errorMsg) {
                 // 升级失败
-                LogCat.e("获取当前时间。。。。。。onError");
+                LogCat.e("获取当前时间。。。。。。onDownloadApkError");
                 doError();
             }
 

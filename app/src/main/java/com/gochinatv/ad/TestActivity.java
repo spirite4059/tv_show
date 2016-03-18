@@ -82,7 +82,7 @@ public class TestActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         initUmeng();
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_test);
         initView();
     }
 
@@ -419,7 +419,6 @@ public class TestActivity extends BaseActivity {
 
         isHttpFinish = true;
 
-
         LogCat.e("开始匹配服务器视频列表。。。。。。。");
         // 处理本地视频与服务器视频列表
         if (localVideosSize == 1) { // 如果有，则需要先判断
@@ -606,7 +605,7 @@ public class TestActivity extends BaseActivity {
 
             @Override
             public void onError(int errorCode, String errorMsg) {
-                LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
+                LogCat.e("onDownloadApkError............. " + errorCode + ",  " + errorMsg);
                 // 出错就放弃当前下载任务，继续下载下一个任务，并将当前任务放到最后一个，如果已经是最后一个，再重试2边
                 final int size = downloadVideoTable.size();
                 if (size > 1) {
@@ -757,7 +756,7 @@ public class TestActivity extends BaseActivity {
 
             @Override
             public void onError(int errorCode, String errorMsg) {
-                LogCat.e("onError............. " + errorCode + ",  " + errorMsg);
+                LogCat.e("onDownloadApkError............. " + errorCode + ",  " + errorMsg);
                 // 此时出错，需要判断是否是强制升级，如果是强制升级，说明是接口等重大功能改变，必须优先升级
                 // 强制升级：如果出错，就要循环去做升级操作，直至升级成
                 // 普通升级：如果出错，不再请求，去请求视频接口

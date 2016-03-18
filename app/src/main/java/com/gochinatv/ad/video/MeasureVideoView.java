@@ -498,7 +498,7 @@ public class MeasureVideoView extends SurfaceView implements MediaPlayerControl 
 				 * (com.android.internal.R.string.VideoView_error_button, new
 				 * DialogInterface.OnClickListener() { public void
 				 * onClick(DialogInterface dialog, int whichButton) { If we get
-				 * here, there is no onError listener, so at least inform them
+				 * here, there is no onDownloadApkError listener, so at least inform them
 				 * that the video is over. if (mOnCompletionListener != null) {
 				 * mOnCompletionListener.onCompletion(mMediaPlayer); } } })
 				 * .setCancelable(false) .show();
