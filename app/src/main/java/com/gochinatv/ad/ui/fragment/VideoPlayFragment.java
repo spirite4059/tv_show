@@ -13,7 +13,6 @@ import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
-import com.gochinatv.ad.tools.DownloadApk;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.video.MeasureVideoView;
@@ -445,7 +444,8 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
                 @Override
                 public void run() {
                     LogCat.e("5秒后继续尝试，如此循环。。。。");
-                    DownloadApk.download(updateInfo, VideoPlayFragment.this);
+                    isDownloadVideo = false;
+                    DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, VideoPlayFragment.this);
                 }
             }, 5000);
 
