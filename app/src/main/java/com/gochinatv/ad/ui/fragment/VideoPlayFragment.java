@@ -101,11 +101,11 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
 
         //
         // servierList 去除本地缓存中需要用到的就是都要下载的
-        ArrayList<VideoDetailResponse> downloadLists = null;
+        ArrayList<VideoDetailResponse> downloadLists = new ArrayList<>();
         // 本地缓存中还有用的视频，或者预置片
-        ArrayList<VideoDetailResponse> playLists = null;
+        ArrayList<VideoDetailResponse> playLists = new ArrayList<>();
         // 本地缓存中已经无用的视频
-        ArrayList<VideoDetailResponse> deteleLists = null;
+        ArrayList<VideoDetailResponse> deteleLists = new ArrayList<>();
 
         ArrayList<VideoDetailResponse> bufferUserdLists = new ArrayList<>();
         ArrayList<VideoDetailResponse> bufferUserlessLists = new ArrayList<>();
@@ -113,7 +113,33 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
 
 
         // 判断当前缓存视频是否是
+        if(localVideoTable.size() == 1){
+            VideoDetailResponse videoDetailResponse = localVideoTable.get(0);
+            if(videoDetailResponse.isPresetPiece){ // 预置片
+                // 此时说明所有的视频都要下载没有预置片
+                downloadLists.addAll(videoDetailResponses);
+            } else {
+                // 此时只有一个缓存视频，判断当前视频是否需要下载
+                boolean isUsefully =false;
+                for(VideoDetailResponse detailResponse : videoDetailResponses){
+                    if(videoDetailResponse.name.equals(detailResponse.name)){
+                        isUsefully = true;
+                        // 将当前视频加入播放列表
+                        detailResponse.videoPath = videoDetailResponse.videoPath;
+                        playLists.add(detailResponse);
+                    }else { // 加入到下载列表
+                        downloadLists.add(detailResponse);
+                    }
+                }
+                // 不在使用了，需要将当前视频删除
+                if(!isUsefully){
+                    deteleLists.add(videoDetailResponse);
+                }
+            }
 
+        } else { // 有缓存视频的存在
+
+        }
 
 
 

@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 
+import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.VideoPlayFragment;
 
 /**
@@ -22,6 +23,9 @@ public class MainActivity extends Activity {
         FragmentTransaction ft = fm.beginTransaction();
 
         ft.add(R.id.root_main, new VideoPlayFragment());
+
+        ft.add(R.id.root_main, new ADFourFragment());
+
 
         ft.commit();
 
