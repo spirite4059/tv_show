@@ -61,7 +61,7 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
 
             @Override
             public void onError(String url, String errorMsg) {
-                LogCat.e("onDownloadApkError........");
+                LogCat.e("onDownloadFileError........");
                 onGetVideoListFailed(errorMsg, url);
             }
         });
@@ -276,7 +276,7 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
             @Override
             public void onError(String url, String errorMsg) {
                 // 升级失败
-                LogCat.e("获取当前时间。。。。。。onDownloadApkError");
+                LogCat.e("获取当前时间。。。。。。onDownloadFileError");
                 doError();
             }
 

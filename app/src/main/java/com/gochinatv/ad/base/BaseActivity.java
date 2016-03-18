@@ -108,7 +108,7 @@ public abstract class BaseActivity extends Activity {
 
             @Override
             public void onError(String url, String errorMsg) {
-                LogCat.e("onDownloadApkError........");
+                LogCat.e("onDownloadFileError........");
                 AlbnumHttpService.cancleHttp(BaseActivity.this);
                 episodeTag++;
                 onFailed(errorMsg, url);
@@ -509,7 +509,7 @@ public abstract class BaseActivity extends Activity {
             @Override
             public void onError(String url, String errorMsg) {
                 // 升级失败
-                LogCat.e("获取当前时间。。。。。。onDownloadApkError");
+                LogCat.e("获取当前时间。。。。。。onDownloadFileError");
                 doError();
             }
 

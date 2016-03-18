@@ -3,18 +3,19 @@ package com.gochinatv.ad.tools;
 import com.download.DLUtils;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.httputils.http.response.UpdateResponse;
 
 import java.math.BigDecimal;
 
 /**
  * Created by fq_mbp on 16/3/17.
  */
-public class DownloadApk {
+public class DownloadUtils {
 
+    private static final int MAX_THREAD_NUMBER = 2;
 
-    public static void download(final UpdateResponse.UpdateInfoResponse updateInfo, final OnUpgradeStatusListener listener){
-        DLUtils.init().download(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, 1, new OnDownloadStatusListener() {
+    public static void download(String dir, String fileName, final String fileUrl, final OnUpgradeStatusListener listener){
+        String path = DataUtils.getSdCardFileDirectory() + dir;
+        DLUtils.init().download(path, fileName, fileUrl, MAX_THREAD_NUMBER, new OnDownloadStatusListener() {
 
             private long fileLength;
 
