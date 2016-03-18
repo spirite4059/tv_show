@@ -83,6 +83,56 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
 
     @Override
     protected void onGetVideoListSuccessful(VideoDetailListResponse response, String url) {
+        if (!isAdded()) {
+            return;
+        }
+
+        if(response == null){
+            // TODO 默认继续播放之前的缓存文件
+            return;
+        }
+
+        ArrayList<VideoDetailResponse> videoDetailResponses = response.data;
+
+        if (videoDetailResponses == null || videoDetailResponses.size() == 0) {
+            // TODO 默认继续播放之前的缓存文件
+            return;
+        }
+
+        //
+        // servierList 去除本地缓存中需要用到的就是都要下载的
+        ArrayList<VideoDetailResponse> downloadLists = null;
+        // 本地缓存中还有用的视频，或者预置片
+        ArrayList<VideoDetailResponse> playLists = null;
+        // 本地缓存中已经无用的视频
+        ArrayList<VideoDetailResponse> deteleLists = null;
+
+        ArrayList<VideoDetailResponse> bufferUserdLists = new ArrayList<>();
+        ArrayList<VideoDetailResponse> bufferUserlessLists = new ArrayList<>();
+
+
+
+        // 判断当前缓存视频是否是
+
+
+
+
+
+
+        for(VideoDetailResponse localVideoResponse : localVideoTable){
+
+            for(VideoDetailResponse videoDetailResponse : videoDetailResponses){
+                if(videoDetailResponse.name.equals(localVideoResponse.name)){
+                    bufferUserdLists.add(videoDetailResponse);
+                    continue;
+                }
+            }
+
+            // 当前视频不在缓存列表中，需要下载
+
+        }
+
+
 
     }
 

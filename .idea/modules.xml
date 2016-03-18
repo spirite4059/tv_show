@@ -5,8 +5,10 @@
       <module fileurl="file://$PROJECT_DIR$/ad_one/ad_one.iml" filepath="$PROJECT_DIR$/ad_one/ad_one.iml" />
       <module fileurl="file://$PROJECT_DIR$/ad_two/ad_two.iml" filepath="$PROJECT_DIR$/ad_two/ad_two.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/chinaRestaurantAd.iml" filepath="$PROJECT_DIR$/chinaRestaurantAd.iml" />
       <module fileurl="file://$PROJECT_DIR$/dlutils/dlutils.iml" filepath="$PROJECT_DIR$/dlutils/dlutils.iml" />
       <module fileurl="file://$PROJECT_DIR$/httpUtils/httpUtils.iml" filepath="$PROJECT_DIR$/httpUtils/httpUtils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
       <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
       <module fileurl="file://$PROJECT_DIR$/tv_chinarestaurant.iml" filepath="$PROJECT_DIR$/tv_chinarestaurant.iml" />
     </modules>
