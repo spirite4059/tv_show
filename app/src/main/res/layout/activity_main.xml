@@ -5,4 +5,51 @@
     android:layout_height="match_parent"
     >
 
+
+    <!--&lt;!&ndash;广告1-视频广告 &ndash;&gt;-->
+    <!--<LinearLayout-->
+        <!--android:id="@+id/ad_one"-->
+        <!--android:layout_width="@dimen/d_1024dp"-->
+        <!--android:layout_height="@dimen/d_576dp"-->
+        <!--android:orientation="horizontal"-->
+        <!-->-->
+    <!--</LinearLayout>-->
+
+    <!--&lt;!&ndash;广告2-新闻广告&ndash;&gt;-->
+
+    <!--<LinearLayout-->
+        <!--android:id="@+id/ad_two"-->
+        <!--android:layout_width="@dimen/d_256dp"-->
+        <!--android:layout_height="@dimen/d_360dp"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!-->-->
+    <!--</LinearLayout>-->
+
+
+
+    <!--&lt;!&ndash;广告3-图片广告&ndash;&gt;-->
+
+    <!--<LinearLayout-->
+        <!--android:id="@+id/ad_three"-->
+        <!--android:layout_width="@dimen/d_256dp"-->
+        <!--android:layout_height="@dimen/d_360dp"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:layout_below="@id/ad_two"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!-->-->
+    <!--</LinearLayout>-->
+
+
+
+    <!--&lt;!&ndash;广告4-文本广告&ndash;&gt;-->
+    <!--<LinearLayout-->
+        <!--android:id="@+id/ad_four"-->
+        <!--android:layout_width="@dimen/d_1024dp"-->
+        <!--android:layout_height="@dimen/d_60dp"-->
+        <!--android:orientation="horizontal"-->
+        <!--android:layout_alignParentBottom="true">-->
+    <!--</LinearLayout>-->
+
+
 </RelativeLayout>

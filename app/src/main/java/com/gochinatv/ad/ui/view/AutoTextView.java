@@ -43,7 +43,7 @@ public class AutoTextView extends TextSwitcher implements
         super(context, attrs);
         // TODO Auto-generated constructor stub
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.auto3d);
-        mHeight = a.getDimension(R.styleable.auto3d_textSize, R.dimen.d_28sp);
+        mHeight = a.getDimension(R.styleable.auto3d_textSize, R.dimen.d_30sp);
         a.recycle();
         mContext = context;
         init();

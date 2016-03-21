@@ -66,7 +66,7 @@ public class ADThreeFragment extends BaseFragment implements BaseSliderView.OnSl
         mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
         mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
         mDemoSlider.setCustomAnimation(null);
-        mDemoSlider.setDuration(4000);
+        mDemoSlider.setDuration(10000);
         mDemoSlider.addOnPageChangeListener(this);
 
 

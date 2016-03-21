@@ -43,7 +43,7 @@ public class ADFourFragment extends BaseFragment {
         stringList = new ArrayList<>();
         stringList.add("死神");
         stringList.add("海贼王");
-        stringList.add("灌篮高手");
+        stringList.add("灌篮高手AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         stringList.add("火影忍者");
         stringList.add("银魂");
 
