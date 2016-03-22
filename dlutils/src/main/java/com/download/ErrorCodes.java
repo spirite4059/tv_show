@@ -3,7 +3,7 @@ package com.download;
 /**
  * Created by fq_mbp on 16/2/29.
  */
-final class ErrorCodes {
+public final class ErrorCodes {
 
     /**
      * 中断下载
@@ -81,6 +81,16 @@ final class ErrorCodes {
      *  下载文件大小出错
      */
     public static final int ERROR_DOWNLOAD_FILE_UNKNOWN = 1015;
+
+    /**
+     *  SdCard挂载失败
+     */
+    public static final int ERROR_DOWNLOAD_SDCARD_USESLESS = 1016;
+
+    /**
+     *  SdCard空间不足
+     */
+    public static final int ERROR_DOWNLOAD_SDCARD_SPACE = 1017;
 
 
     static final int HTTP_OK = 200;

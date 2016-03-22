@@ -1,8 +1,12 @@
 package com.download;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StatFs;
 import android.text.TextUtils;
 
 import com.download.tools.LogCat;
@@ -39,9 +43,10 @@ public class DownloadPrepareThread extends Thread {
         errorCode = 0;
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void run() {
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
@@ -49,7 +54,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
@@ -58,7 +63,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
@@ -68,7 +73,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
@@ -79,7 +84,7 @@ public class DownloadPrepareThread extends Thread {
             e.printStackTrace();
             errorCode = ErrorCodes.ERROR_DOWNLOAD_URL;
         }
-        if(isCancel){
+        if (isCancel) {
             return;
         }
         if (url == null || errorCode != 0) {
@@ -87,7 +92,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
@@ -99,7 +104,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
         boolean isConnectSuccess = false;
@@ -118,16 +123,16 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
-        if(!isConnectSuccess){
+        if (!isConnectSuccess) {
             setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_CONN);
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
@@ -135,7 +140,7 @@ public class DownloadPrepareThread extends Thread {
         int fileSize = connection.getContentLength();
 
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
@@ -146,14 +151,47 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
+
+
+        // 可用空间检查
+
+        //获得SD卡空间的信息
+        File path = Environment.getExternalStorageDirectory();
+        StatFs statFs = new StatFs(path.getPath());
+        long blockSizeLong = 0;
+        long totalBlocksLong = 0;
+        long availableBlocksLong = 0;
+        if(Build.VERSION.SDK_INT >= 18){
+            blockSizeLong = statFs.getBlockSizeLong();
+            totalBlocksLong = statFs.getFreeBlocksLong();
+            availableBlocksLong = statFs.getAvailableBlocksLong();
+        }else {
+            blockSizeLong = statFs.getBlockSizeLong();
+            totalBlocksLong = statFs.getFreeBlocksLong();
+            availableBlocksLong = statFs.getAvailableBlocksLong();
+        }
+
+
+        //计算SD卡的空间大小
+        long totalsize = blockSizeLong * totalBlocksLong;
+        long availablesize = availableBlocksLong * blockSizeLong;
+        long preSpace = 10 * 1024 * 1024; // 10k的预留空间
+        if(availablesize < (fileSize + preSpace)){
+            // sdcard空间不足，无法下载当前视频
+            setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE);
+            return;
+
+        }
+
+
 
         LogCat.e("fileSize: " + fileSize);
         setDownloadMsg(DLUtils.HANDLER_WHAT_FILE_SIZE, fileSize);
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
         // 计算每条线程下载的数据长度
@@ -161,7 +199,7 @@ public class DownloadPrepareThread extends Thread {
                 : fileSize / threadNum + 1;
 
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
@@ -172,13 +210,14 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
 
         File file = new File(filePath);
 
-        if(isCancel){
+
+        if (isCancel) {
             return;
         }
 
@@ -202,11 +241,11 @@ public class DownloadPrepareThread extends Thread {
 
         int threadErrorCode;
 
-        if(isCancel){
+        if (isCancel) {
             return;
         }
         int downloadSize = 0;
-        try{
+        try {
             while (!isFinished) {
                 isFinished = true;
                 int downloadedAllSize = threadNum;
@@ -214,7 +253,7 @@ public class DownloadPrepareThread extends Thread {
                 // 当前所有线程下载总量
                 for (DownloadThread downloadThread : threads) {
                     if (downloadThread != null) {
-                        if(isCancel){
+                        if (isCancel) {
                             downloadThread.cancel();
                             continue;
                         }
@@ -228,7 +267,7 @@ public class DownloadPrepareThread extends Thread {
                             if (!downloadThread.isCompleted()) {
                                 isFinished = false;
                                 downloadedAllSize += downloadThread.getDownloadLength();
-                            }else {
+                            } else {
                                 downloadedAllSize += downloadThread.getDownloadLength();
                             }
                         }
@@ -239,9 +278,9 @@ public class DownloadPrepareThread extends Thread {
                 // 是否有子线程出错或者取消下载
                 if (isThreadError || isCancel) {
                     isFinished = false;
-                    if(isThreadError){
+                    if (isThreadError) {
                         LogCat.e("下载线程出错......");
-                    }else {
+                    } else {
                         LogCat.e("主动取消了下载......");
 
                     }
@@ -255,12 +294,12 @@ public class DownloadPrepareThread extends Thread {
                 Thread.sleep(1000);// 休息1秒后再读取下载进度
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             errorCode = ErrorCodes.ERROR_DOWNLOAD_UNKNOWN;
         }
 
-        if(isCancel){
+        if (isCancel) {
             Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_CANCEL);
 
             msg.obj = file;
@@ -270,7 +309,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        if(errorCode == ErrorCodes.ERROR_DOWNLOAD_UNKNOWN){
+        if (errorCode == ErrorCodes.ERROR_DOWNLOAD_UNKNOWN) {
             setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_UNKNOWN);
             return;
         }
@@ -279,22 +318,21 @@ public class DownloadPrepareThread extends Thread {
         // 完成所有的下载了
         if (isFinished) {
             LogCat.e("文件下载完成......fileSize: " + fileSize);
-            if(downloadSize == fileSize){
+            if (downloadSize == fileSize) {
                 LogCat.e("文件完整下载......");
                 Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
 
                 msg.obj = file.getAbsolutePath();
 
                 mHandler.sendMessage(msg);
-            }else {
+            } else {
                 LogCat.e("文件下载大小出错......downloadSize:" + downloadSize);
                 setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
             }
-        }else {
+        } else {
             LogCat.e("文件下载尚未完成......");
             setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
         }
-
 
 
     }
@@ -327,12 +365,12 @@ public class DownloadPrepareThread extends Thread {
     private void setDownloadMsg(int type, long code) {
         if (mHandler != null) {
             Message msg = mHandler.obtainMessage(type);
-            if(bundle == null){
+            if (bundle == null) {
                 bundle = new Bundle();
             }
-            if(type == DLUtils.HANDLER_WHAT_FILE_SIZE){
+            if (type == DLUtils.HANDLER_WHAT_FILE_SIZE) {
                 bundle.putLong(DLUtils.BUNDLE_KEY_FILE_LENGTH, code);
-            }else {
+            } else {
                 bundle.putLong(DLUtils.BUNDLE_KEY_FILE_DOWNLOAD_SIZE, code);
             }
 
@@ -350,10 +388,9 @@ public class DownloadPrepareThread extends Thread {
     }
 
 
-    public void cancelDownload(){
+    public void cancelDownload() {
         isCancel = true;
     }
-
 
 
 }

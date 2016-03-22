@@ -1,6 +1,7 @@
 package com.download;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -103,11 +104,22 @@ public class DLUtils {
 
 
     public void download(String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
+        
         if (downLoadHandler == null) {
             downLoadHandler = new DownLoadHandler();
         }
         downLoadHandler.setOnDownloadStatusListener(listener);
+        // sdcard 检查
+        if(!isExistSDCard()){
+            Message msg = downLoadHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_ERROR);
+            msg.arg1 = ErrorCodes.ERROR_DOWNLOAD_SDCARD_USESLESS;
+            downLoadHandler.sendMessage(msg);
+            return;
+        }
 
+
+
+        // 文件路径检查
         if (TextUtils.isEmpty(path)) {
             Message msg = downLoadHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_ERROR);
             msg.arg1 = ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
@@ -188,6 +200,20 @@ public class DLUtils {
 
         return errorMsg;
     }
+
+
+    /**
+     * 判断是否存在sdcard
+     *
+     * @return
+     */
+    private boolean isExistSDCard() {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            return true;
+        } else
+            return false;
+    }
+
 
 
 }

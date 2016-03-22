@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.VideoHttpBaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
@@ -383,7 +384,12 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
     public void onDownloadFileError(int errorCode, String errorMsg) {
         if (isDownloadVideo) {
             LogCat.e("onDownloadFileError............. " + errorCode + ",  " + errorMsg);
-            downVideoError();
+            if(errorCode == ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE){ // 如果是空间不足的错误，就不在进行下载
+                // TODO 上报情况
+            }else {
+                downVideoError();
+            }
+
 
         } else {
             downloadApkError();
