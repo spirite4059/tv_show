@@ -132,6 +132,7 @@ public class ScreenShotThread extends Thread{
 
             boolean isScreenShot = resultBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
 
+
             if (isScreenShot) {
                 //截图成功
                 LogCat.e("截屏成功......");
@@ -146,6 +147,7 @@ public class ScreenShotThread extends Thread{
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }finally {
+
             try {
                 if(fos != null){
                     fos.flush();
@@ -162,6 +164,29 @@ public class ScreenShotThread extends Thread{
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+
+            if(b1 != null){
+                b1.recycle();
+                b1 = null;
+            }
+            if(bitmap != null){
+                bitmap.recycle();
+                bitmap = null;
+            }
+
+            if(videoBitmap != null){
+                videoBitmap.recycle();
+                videoBitmap = null;
+            }
+
+
+            if(resultBitmap != null){
+                resultBitmap.recycle();
+                resultBitmap = null;
+            }
+
+
         }
 
     }

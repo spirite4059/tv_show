@@ -171,13 +171,18 @@ public class OkHttpUtils {
                 .post(requestBody)
                 .build();
         final Call call = mOkHttpClient.newCall(request);
-        Response response = call.execute();
-        if(response.isSuccessful()){
-            // 成功上传
-            LogCat.e("上传成功。。。。。");
-        }else {
-            LogCat.e("上传失败。。。。。");
-        }
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                LogCat.e("上传失败。。。。。");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                LogCat.e("上传成功。。。。。");
+            }
+        });
+
     }
 
 
