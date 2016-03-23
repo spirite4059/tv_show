@@ -6,7 +6,6 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
-
 import com.download.DLUtils;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.gochinatv.ad.base.BaseActivity;
@@ -22,24 +21,20 @@ import com.httputils.http.response.VideoDetailResponse;
 import com.okhtttp.OkHttpUtils;
 import com.umeng.analytics.AnalyticsConfig;
 import com.umeng.analytics.MobclickAgent;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
-
 /**
  * Created by fq_mbp on 16/3/8.
  */
 public class TestActivity extends BaseActivity {
-
     private MeasureVideoView videoView;
     private int playVideoPosition;
     private String saveDir;
     private static final String FILE_DIRECTORY = "gochinatv_ad";
-
     private static final String DOWNLOAD_FILE_EXTENSION = ".mp4";
     private Timer timer;
     private long startLong;
@@ -47,9 +42,7 @@ public class TestActivity extends BaseActivity {
      * 本地数据表
      */
     private ArrayList<VideoDetailResponse> localVideoTable;
-
     private ArrayList<VideoDetailResponse> playVideoTable;
-
     private ArrayList<VideoDetailResponse> deleteVideoTable;
     /**
      * 服务器数据表
@@ -59,52 +52,37 @@ public class TestActivity extends BaseActivity {
      * 下载数据表
      */
     private ArrayList<VideoDetailResponse> downloadVideoTable;
-
     private Timer netStatusTimer;
-
     private LinearLayout loading;
-
     private final String SHARE_KEY_DURATION = "SHARE_KEY_DURATION";
-
     private boolean isDeleteVideo;
-
     private boolean isHttpFinish;
-
     private DLUtils dlUtils;
-
     private int localPlayPosition;
-
     private VideoDetailResponse downloadResponse;
     private int retryTimes;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initUmeng();
-
         setContentView(R.layout.activity_test);
         initView();
     }
-
-
     public void onResume() {
         super.onResume();
         // 记录开始时间
         setStartTime();
-
         init();
         bindEvent();
         MobclickAgent.onResume(this);
         MobclickAgent.onPageStart("ChinaRestaurantActivity"); // 统计页面
     }
-
     @Override
     protected void onPause() {
         super.onPause();
         MobclickAgent.onPause(this);
         MobclickAgent.onPageEnd("ChinaRestaurantActivity"); // 保证 onPageEnd 在onPause
     }
-
     @Override
     protected void onStop() {
         // 删除正在下载的任务
@@ -120,7 +98,6 @@ public class TestActivity extends BaseActivity {
             timer.cancel();
             timer = null;
         }
-
 //        OkHttpUtils.getInstance().cancelFileDownloading();
 
         if (netStatusTimer != null) {
@@ -129,16 +106,12 @@ public class TestActivity extends BaseActivity {
         }
         // 计算app启动的时间
         computeTime();
-
         super.onStop();
     }
-
     private void initView() {
         videoView = (MeasureVideoView) findViewById(R.id.videoView);
-
         loading = (LinearLayout) findViewById(R.id.loading);
     }
-
     private void init() {
         // 以上就显示加载状态，只有开始播放的时候隐藏
         showLoading();
@@ -149,7 +122,6 @@ public class TestActivity extends BaseActivity {
             playVideo(getRawVideoUri());
             return;
         }
-
         dlUtils = DLUtils.init();
         // 实例化本地视频集合
         localVideoTable = new ArrayList<>();
@@ -159,28 +131,22 @@ public class TestActivity extends BaseActivity {
         downloadVideoTable = new ArrayList<>();
         // 实例化需要删除视频视频集合
         deleteVideoTable = new ArrayList<>();
-
         // 实力化本地下载目录
         File file = Environment.getExternalStoragePublicDirectory(FILE_DIRECTORY);
-
         saveDir = file.getAbsolutePath() + "/";
         LogCat.e("现在的下载地址是： " + saveDir);
         // 文件目录存在，查询当前文件夹下的视频文件
         String firstVideoPath = getFirstVideoPath(file);
-
         if (TextUtils.isEmpty(firstVideoPath)) {
             playVideo(getRawVideoUri());
         } else {
             playVideo(firstVideoPath);
         }
-
         // 请求接口
         doHttpRequest();
         // 删除目录下所有的安装包
         new DeleteApkThread(saveDir + "chinaRestaurant").start();
-
     }
-
     /**
      * 获取初始播放的视频地址
      */
@@ -189,7 +155,6 @@ public class TestActivity extends BaseActivity {
         if ((file.exists() && file.isDirectory())) {
             File[] files = file.listFiles();
             if (files.length == 0) {
-
             } else {
                 for (File fileItem : files) {
                     if (fileItem.isFile()) {
@@ -215,18 +180,14 @@ public class TestActivity extends BaseActivity {
                 } else {
                     firstVideoPath = localVideoTable.get(0).videoPath;
                 }
-
             }
 
         } else {
             LogCat.e("当前文件路径不存在，主动创建");
             file.mkdirs();
         }
-
         return firstVideoPath;
     }
-
-
     private void bindEvent() {
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
@@ -239,7 +200,6 @@ public class TestActivity extends BaseActivity {
                 videoView.start();
             }
         });
-
         videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
@@ -247,16 +207,10 @@ public class TestActivity extends BaseActivity {
                     // 继续播放下一个
                     // 删除当前的视频
                     // 继续下载播放失败的
-
-
                 }
-
-
                 return false;
             }
         });
-
-
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -269,22 +223,18 @@ public class TestActivity extends BaseActivity {
             }
         });
     }
-
-
     private void initUmeng() {
         MobclickAgent.setDebugMode(false);
         /** 设置是否对日志信息进行加密, 默认false(不加密). */
         AnalyticsConfig.enableEncrypt(true);
         MobclickAgent.openActivityDurationTrack(false);
     }
-
     private void setStartTime() {
         startLong = System.currentTimeMillis();
         SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(this);
         sharedPreference.saveDate(SHARE_KEY_DURATION, System.currentTimeMillis());
         LogCat.e("记录启动app时间。。。。。。。" + startLong);
     }
-
     private void computeTime() {
         SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(this);
         // 计算离开的时候总时长
@@ -298,9 +248,7 @@ public class TestActivity extends BaseActivity {
                     long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
                     long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
                     String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
-
                     LogCat.e(str);
-
                     MobclickAgent.onEvent(this, "duration", str);
                     LogCat.e("上报开机时长。。。。。。。。");
                 }
@@ -311,13 +259,11 @@ public class TestActivity extends BaseActivity {
             sharedPreference.saveDate(SHARE_KEY_DURATION, 0);
         }
     }
-
     private void playNext() {
         showLoading();
         // http请求没有结束的时候播放本地视频列表
         if (!isHttpFinish) {
             int lengthL = localVideoTable.size();
-
             if (lengthL <= 0) {
                 VideoDetailResponse videoAdBean = new VideoDetailResponse();
                 videoAdBean.name = "预置片";
@@ -325,19 +271,14 @@ public class TestActivity extends BaseActivity {
                 videoAdBean.isPresetPiece = true;
                 localVideoTable.add(videoAdBean);
             }
-
             localPlayPosition++;
-
             if (localPlayPosition >= lengthL) {
                 localPlayPosition = 0;
             }
             VideoDetailResponse videoDetailResponse = localVideoTable.get(localPlayPosition);
-
             playVideo(videoDetailResponse.videoPath);
             return;
         }
-
-
         // 需要对视频进行删除操作
         if (isDeleteVideo) {
             LogCat.e("需要对本地缓存视频进行处理，删除需要删除的视频。。。");
@@ -345,10 +286,7 @@ public class TestActivity extends BaseActivity {
             // 删除所有的需要删除的视频文件
             deleteFiles(deleteVideoTable);
         }
-
-
         int length = playVideoTable.size();
-
         if (length == 0) {
             LogCat.e("当前播放列表仍然没有视频内容，继续播放预置片。。。");
             playVideo(getRawVideoUri());
