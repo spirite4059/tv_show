@@ -9,7 +9,6 @@
       <module fileurl="file://$PROJECT_DIR$/dlutils/dlutils.iml" filepath="$PROJECT_DIR$/dlutils/dlutils.iml" />
       <module fileurl="file://$PROJECT_DIR$/httpUtils/httpUtils.iml" filepath="$PROJECT_DIR$/httpUtils/httpUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tv_chinarestaurant.iml" filepath="$PROJECT_DIR$/tv_chinarestaurant.iml" />
     </modules>
   </component>
 </project>

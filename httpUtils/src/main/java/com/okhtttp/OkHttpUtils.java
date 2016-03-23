@@ -22,8 +22,11 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
@@ -148,6 +151,35 @@ public class OkHttpUtils {
         });
 
     }
+
+
+
+
+
+
+    public void doUploadFile(File file, String url) throws IOException {
+        RequestBody fileBody = RequestBody.create(MediaType.parse("application/octet-stream"), file);
+
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addPart(fileBody)
+                .addFormDataPart("file", file.getName(), fileBody)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build();
+        final Call call = mOkHttpClient.newCall(request);
+        Response response = call.execute();
+        if(response.isSuccessful()){
+            // 成功上传
+            LogCat.e("上传成功。。。。。");
+        }else {
+            LogCat.e("上传失败。。。。。");
+        }
+    }
+
 
     private boolean isCancelDL;
 

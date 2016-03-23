@@ -4,13 +4,11 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.StatFs;
-import android.text.format.Formatter;
 
-import com.gochinatv.ad.tools.LogCat;
-
-import java.io.File;
+import com.gochinatv.ad.ui.fragment.ADFourFragment;
+import com.gochinatv.ad.ui.fragment.ADThreeFragment;
+import com.gochinatv.ad.ui.fragment.ADTwoFragment;
+import com.gochinatv.ad.ui.fragment.VideoPlayFragment;
 
 /**
  * Created by fq_mbp on 16/3/17.
@@ -26,11 +24,11 @@ public class MainActivity extends Activity {
 
         FragmentTransaction ft = fm.beginTransaction();
 
-//        ft.add(R.id.root_main, new VideoPlayFragment());
-//        ft.add(R.id.root_main, new ADTwoFragment());
-//        ft.add(R.id.root_main, new ADThreeFragment());
-//        ft.add(R.id.root_main, new ADFourFragment());
-//        ft.commit();
+        ft.add(R.id.root_main, new VideoPlayFragment());
+        ft.add(R.id.root_main, new ADTwoFragment());
+        ft.add(R.id.root_main, new ADThreeFragment());
+        ft.add(R.id.root_main, new ADFourFragment());
+        ft.commit();
 
 //        //添加图片广告
 //        ADThreeFragment fragmentThree = new  ADThreeFragment();
@@ -47,24 +45,11 @@ public class MainActivity extends Activity {
 //        ft4.add(R.id.ad_four,fragmentFour);
 //        ft4.commit();
 
-        File path = Environment.getExternalStorageDirectory();
-        StatFs statFs = new StatFs(path.getPath());
-        long blockSize = statFs.getBlockSize();
-        long totalBlocks = statFs.getFreeBlocks();
-        long availableBlocks = statFs.getAvailableBlocks();
 
-        //计算SD卡的空间大小
-        long totalsize = blockSize * totalBlocks;
-        long availablesize = availableBlocks * blockSize;
-        LogCat.e("totalsize: " + totalsize);
-        LogCat.e("availablesize: " + availablesize);
-        //转化为可以显示的字符串
-        String totalsize_str = Formatter.formatFileSize(this, totalsize);
-        String availablesize_strString = Formatter.formatFileSize(this, availablesize);
+//        new ScreenShotThread(MainActivity.this, 60000000, 0.5f, 0.3f, "【二轮】春节轮播e23美丽中国一【1'04''】.mp4").start();
 
 
-        LogCat.e("totalsize_str: " + totalsize_str);
-        LogCat.e("availablesize_strString: " + availablesize_strString);
+
     }
 
 

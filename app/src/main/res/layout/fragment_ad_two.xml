@@ -10,15 +10,18 @@
     >
 
 
-    <com.daimajia.slider.library.SliderLayout
-        android:id="@+id/slider"
+    <!--<com.daimajia.slider.library.SliderLayout-->
+        <!--android:id="@+id/slider"-->
+        <!--android:layout_width="match_parent"-->
+        <!--custom:pager_animation="Accordion"-->
+        <!--custom:auto_cycle="true"-->
+        <!--custom:indicator_visibility="visible"-->
+        <!--custom:pager_animation_span="1100"-->
+        <!--android:layout_height="match_parent"/>-->
+    <WebView
+        android:id="@+id/webview"
         android:layout_width="match_parent"
-        custom:pager_animation="Accordion"
-        custom:auto_cycle="true"
-        custom:indicator_visibility="visible"
-        custom:pager_animation_span="1100"
-        android:layout_height="match_parent"/>
-
+        android:layout_height="match_parent"></WebView>
 
 
 </LinearLayout>

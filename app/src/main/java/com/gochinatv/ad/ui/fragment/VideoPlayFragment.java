@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.download.DLUtils;
 import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.VideoHttpBaseFragment;
@@ -196,6 +197,20 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
         });
     }
 
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        if(httpTimer != null){
+            httpTimer.cancel();
+            httpTimer = null;
+        }
+
+        DLUtils.init().cancel();
+
+
+    }
 
     @Override
     protected void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo) {

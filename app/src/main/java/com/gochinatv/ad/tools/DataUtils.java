@@ -533,6 +533,17 @@ public class DataUtils {
 	}
 
 
+	public static String getScreenShotDirectory(){
+		String rootPath = getSdCardFileDirectory() + Constants.FILE_DIRECTORY_SCREEN_SHOT;
+		return rootPath;
+	}
+
+	public static String getVideoDirectory(){
+		String rootPath = getSdCardFileDirectory() + Constants.FILE_DIRECTORY_VIDEO;
+		return rootPath;
+	}
+
+
 
 	public static int dip2px(Context context, float dpValue) {
 		final float scale = context.getResources().getDisplayMetrics().density;
@@ -546,5 +557,8 @@ public class DataUtils {
 		final float scale = context.getResources().getDisplayMetrics().density;
 		return (int) (pxValue / scale + 0.5f);
 	}
+
+
+
 
 }
