@@ -553,6 +553,11 @@ public class DataUtils {
 		return rootPath;
 	}
 
+	public static String getApkDirectory(){
+		String rootPath = getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK;
+		return rootPath;
+	}
+
 
 	/**
 	 * 从指定文件中读取内容
