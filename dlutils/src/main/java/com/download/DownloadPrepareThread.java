@@ -32,7 +32,7 @@ public class DownloadPrepareThread extends Thread {
     private int errorCode;
     private Bundle bundle;
     private boolean isCancel;
-    private static final int CONNECT_TIME_OUT = 10000;
+    private static final int CONNECT_TIME_OUT = 60000;
 
 
     public DownloadPrepareThread(String downloadUrl, int threadNum, String filePath, Handler mHandler) {

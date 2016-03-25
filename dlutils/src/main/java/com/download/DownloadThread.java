@@ -34,8 +34,8 @@ public class DownloadThread extends Thread {
     /** 随机流 */
     private  RandomAccessFile raf;
     private static final int MAX_RETRY_DOWNLOAD_TIMES = 3;
-    private static final int CONNECT_TIME_OUT = 10000;
-    private static final int READ_TIME_OUT = 30000;
+    private static final int CONNECT_TIME_OUT = 60000;
+    private static final int READ_TIME_OUT = 60000;
     private static final int BUFFER_IN_SIZE = 2048;
     /**
      *
