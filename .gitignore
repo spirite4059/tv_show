@@ -1,4 +1,5 @@
 *.iml
+
 .gradle
 /local.properties
 /.idea/workspace.xml
@@ -27,6 +28,9 @@ gen/
 
 # idea files
 idea/
+# idea files
+.idea/
+
 
 # Gradle files
 .gradle/

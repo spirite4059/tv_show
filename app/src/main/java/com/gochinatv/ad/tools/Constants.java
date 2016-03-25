@@ -47,7 +47,7 @@ public class Constants {
 
 
     /**
-     * --------------------------other-------------------------------
+     * --------------------------other-------------------------------是方法三
      */
 
     public static final String FORMAT_VIDEO_AD_TIME = "yyyyMMddHHmmss";
