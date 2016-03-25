@@ -18,6 +18,7 @@ import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.video.MeasureVideoView;
+import com.google.gson.Gson;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
@@ -32,7 +33,7 @@ import java.util.TimerTask;
 /**
  * Created by zfy on 2016/3/16.
  */
-public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgradeStatusListener {
+public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeStatusListener {
 
     private MeasureVideoView videoView;
     private LinearLayout loading;
@@ -163,13 +164,13 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
                         // 删除当前的视频文件
                         DeleteFileUtils.getInstance().deleteFile(videoDetailResponse.videoPath);
                         // 添加重新下载当前文件
-                        if(downloadLists != null) {
+                        if (downloadLists != null) {
                             // 仍有任务没有下载完成，将当前任务添加到最后一个
                             downloadLists.add(videoDetailResponse);
-                            if(downloadLists.size() == 1){ // 此时表示已经没有下载任务，需要主动开启下载，否则表示下载还在进行中
+                            if (downloadLists.size() == 1) { // 此时表示已经没有下载任务，需要主动开启下载，否则表示下载还在进行中
                                 prepareDownloading();
                             }
-                        }else {
+                        } else {
                             downloadLists = new ArrayList<VideoDetailResponse>();
                             downloadLists.add(videoDetailResponse);
                             prepareDownloading();
@@ -246,8 +247,18 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
         // 本地缓存中已经无用的视频
         deleteLists = new ArrayList<>();
 
-        ArrayList<VideoDetailResponse> bufferUserdLists = new ArrayList<>();
-        ArrayList<VideoDetailResponse> bufferUserlessLists = new ArrayList<>();
+
+
+        // 拿到2天的列表，先处理当天的视频列表
+
+        // 拿到当天的列表去匹对prepareVideo的文件列表内容
+
+        // 匹对成功的添加到playVideo列表，
+
+        // 匹对大于等于2个，删除video目录所有视频和preVideo目录多余视频，并将匹对的视频移动到video目录
+
+        // 匹对小于2个，判断当前prepareVideo视频个数，如果超过2个，删除video的内容，如果不足2个，删除不匹对的prepareVideo视频
+
 
 
         downloadLists.addAll(videoDetailResponses);
@@ -466,7 +477,7 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
                 public void run() {
                     LogCat.e("5秒后继续尝试，如此循环。。。。");
                     isDownloadVideo = false;
-                    DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, VideoPlayFragment.this);
+                    DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, AdOneFragment.this);
                 }
             }, 5000);
 
@@ -585,49 +596,141 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
 
     // 初始化本地缓存表
     private void initLocalBufferList() {
-        String videoPath = DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_VIDEO;
-        LogCat.e("当前视频缓存的路径：" + videoPath);
-        File videoFiles = new File(videoPath);
-        if (videoFiles.exists()) { // 有就要查询当前目录下的所有文件
-            if (videoFiles.isDirectory()) {
-                addLocalList(videoFiles);
-            } else {
-                reBuildDirectory(videoPath);
+        if(isPlayPrepareVideos()){
+            // 播放第一个视频
+            for(VideoDetailResponse videoDetailResponse : localVideoList){
+                if(!TextUtils.isEmpty(videoDetailResponse.videoPath)){
+                    playVideo(videoDetailResponse.videoPath);
+                    break;
+                }
             }
-        } else { // 没有当前目录，要进行创建
-            if (videoFiles.mkdirs()) {
-                LogCat.e("sdcard文件目录创建成功......");
+        } else {
+            String videoPath = DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_VIDEO;
+            LogCat.e("当前视频缓存的路径：" + videoPath);
+            File videoFiles = new File(videoPath);
+            if (videoFiles.exists()) { // 有就要查询当前目录下的所有文件
+                if (videoFiles.isDirectory()) {
+                    localVideoList.addAll(getLocalList(videoFiles));
+                } else {
+                    reBuildDirectory(videoPath);
+                }
+            } else { // 没有当前目录，要进行创建
+                if (videoFiles.mkdirs()) {
+                    LogCat.e("sdcard文件目录创建成功......");
 
-            } else {
-                // TODO 上报问题，sdcard无法创建文件目录
-                LogCat.e("sdcard文件目录创建失败......");
+                } else {
+                    // TODO 上报问题，sdcard无法创建文件目录
+                    LogCat.e("sdcard文件目录创建失败......");
+                }
             }
+
+            // 文件数量少于2就播放预置片
+            if (localVideoList.size() < 2) {
+                localVideoList.clear();
+
+                VideoDetailResponse videoAdBean = new VideoDetailResponse();
+                videoAdBean.name = "预置片";
+                videoAdBean.videoPath = getRawVideoUri();
+                videoAdBean.isPresetPiece = true;
+                videoAdBean.index = 0;
+                localVideoList.add(videoAdBean);
+            }
+
+
         }
 
-        // 如果没有缓存文件，添加本地视频
-        if (localVideoList.size() == 0) {
-            VideoDetailResponse videoAdBean = new VideoDetailResponse();
-            videoAdBean.name = "预置片";
-            videoAdBean.videoPath = getRawVideoUri();
-            videoAdBean.isPresetPiece = true;
-            localVideoList.add(videoAdBean);
+
+    }
+
+
+    /**
+     * 检查是否要播放预下载视频内容，如果有预下载视频内容将其加入local表中
+     * @return
+     */
+    private boolean isPlayPrepareVideos() {
+        boolean isPlayPrepareVideo = false;
+        try {
+            // 优先检测prepareVideo缓存视频数量
+            File filePrepare = new File(DataUtils.getPrepareVideoDirectory());
+            if(filePrepare.exists()){
+                LogCat.e("prepareVideo文件目录存在.....");
+                File[] fileVideos = filePrepare.listFiles();
+                if(fileVideos.length < 2){
+                    LogCat.e("prepareVideo文件内部视频缓存文件不足2个.....");
+                    // 检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
+                }else {
+                    LogCat.e("prepareVideo文件内部视频缓存文件超过2个.....");
+                    // 检测cache中的视频列表，获取缓存文件，如果有，读取列表，如果没有，直接去检测video视频目录
+                    String cachePath = DataUtils.getCacheDirectory();
+                    File fileCache = new File(cachePath);
+                    if(!fileCache.exists()){
+                        LogCat.e("cache文件目录不存在，进行创建.....");
+                        fileCache.mkdirs();
+                    }
+                    File fileCacheVideo = new File(cachePath, Constants.FILE_CACHE_NAME);
+                    if(fileCacheVideo.exists() && fileCacheVideo.isFile()){
+                        LogCat.e("准备读取cache的内容.....");
+                        // 读取缓存文件
+                        String json = DataUtils.readFileFromSdCard(fileCacheVideo);
+                        if(TextUtils.isEmpty(json)){
+                            LogCat.e("cache文件内容为null.....");
+                            // 检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
+                        }else {
+                            // 将其转换成实体类
+                            Gson gson = new Gson();
+                            VideoDetailListResponse videoDetailListResponse = gson.fromJson(json, VideoDetailListResponse.class);
+                            if(videoDetailListResponse == null || videoDetailListResponse.data == null || videoDetailListResponse.data.size() < 2){
+                                // 检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
+                                LogCat.e("cache文件内视频列表的数量小于2.....");
+                            }else {
+                                LogCat.e("开始匹配cache的列表和prepareVideo的文件列表.....");
+                                // 检测prepareVideo目录下的视频，跟上面的列表进行配对，如果有则加入Local列表
+                                ArrayList<VideoDetailResponse> fileVideoList = getLocalList(fileCacheVideo);
+                                // 匹配视频列表，获取有用的视频
+                                int fileVideoSize = fileVideoList.size();
+
+                                int prepareVideoSize = videoDetailListResponse.data.size();
+                                for(int i = 0; i < fileVideoSize; i++){
+                                    VideoDetailResponse fileVideoResponse = fileVideoList.get(i);
+                                    for(int j = 0; j < prepareVideoSize; j ++){
+                                        VideoDetailResponse prepareVideoResponse = videoDetailListResponse.data.get(j);
+                                        if(prepareVideoResponse.name.equals(fileVideoResponse.name)){
+                                            // 当前视频可以使用
+                                            prepareVideoResponse.videoPath = fileVideoResponse.videoPath;
+                                            // 加入本地视频列表
+                                            localVideoList.add(prepareVideoResponse.index, prepareVideoResponse);
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if(localVideoList.size() < 2){
+                                    localVideoList.clear();
+                                    // 检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
+                                    LogCat.e("匹配后的结果集数量不足2个，情况local，准备播放昨天的内容.....");
+                                }else {
+                                    // 播放缓存列表的视频内容
+                                    isPlayPrepareVideo = true;
+                                    LogCat.e("匹配到合适的结果，准备播放.....");
+                                }
+                            }
+                        }
+                    }else {
+                        // 检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
+                        LogCat.e("cache文件不存在或不是个文件.....");
+                    }
+                }
+            }else {
+                filePrepare.mkdirs();
+                LogCat.e("prepareVideo目录不存在.....");
+                // 检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
 
-
-
-
-        // 检测cache中的视频列表，获取缓存文件，如果有，读取列表，如果没有，直接去检测video视频目录
-
-        // 检测prepareVideo目录下的视频，跟上面的列表进行配对，如果有则加入Local列表
-
-        // 如果local数量没有超过2个，则检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
-
-
-
-
-
-
+        return isPlayPrepareVideo;
     }
 
     private void reBuildDirectory(String videoPath) {
@@ -650,7 +753,26 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
         }
     }
 
-    private void addLocalList(File videoFiles) {
+//    private void addLocalList(File videoFiles) {
+//        File[] files = videoFiles.listFiles();
+//        for (File file : files) {
+//            if (file.isFile()) {
+//                VideoDetailResponse videoAdBean = new VideoDetailResponse();
+//                String name = file.getName();
+//                int index = name.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
+//                name = name.substring(0, index);
+//                videoAdBean.name = name;
+//                videoAdBean.videoPath = file.getAbsolutePath();
+//                localVideoList.add(videoAdBean);
+//                LogCat.e("找到本地缓存文件：" + videoAdBean.name);
+//            } else {
+//                DeleteFileUtils.getInstance().deleteFile(file.getAbsolutePath());
+//            }
+//        }
+//    }
+
+    private ArrayList<VideoDetailResponse> getLocalList(File videoFiles) {
+        ArrayList<VideoDetailResponse> videoDetailResponses = new ArrayList<>();
         File[] files = videoFiles.listFiles();
         for (File file : files) {
             if (file.isFile()) {
@@ -660,13 +782,15 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
                 name = name.substring(0, index);
                 videoAdBean.name = name;
                 videoAdBean.videoPath = file.getAbsolutePath();
-                localVideoList.add(videoAdBean);
+                videoDetailResponses.add(videoAdBean);
                 LogCat.e("找到本地缓存文件：" + videoAdBean.name);
             } else {
                 DeleteFileUtils.getInstance().deleteFile(file.getAbsolutePath());
             }
         }
+        return videoDetailResponses;
     }
+
 
     /**
      * 播放本地视频

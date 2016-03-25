@@ -21,8 +21,8 @@ public class Constants {
      *       --video                需要播放的视频文件
      *       --apk                  升级文件包
      *       --cache                缓存文件
-     *       --screen_shot          屏幕截图
-     *       --pre_download_video   预下载的视频文件
+     *       --screenShot          屏幕截图
+     *       --prepareVideo   预下载的视频文件
      *       --picture              图片文件
      *
      *
@@ -31,10 +31,11 @@ public class Constants {
     public static final String FILE_DIRECTORY_VIDEO = "video" + File.separator;
     public static final String FILE_DIRECTORY_APK = "apk" + File.separator;
     public static final String FILE_DIRECTORY_CACHE = "cache" + File.separator;
-    public static final String FILE_DIRECTORY_SCREEN_SHOT = "screen_shot" + File.separator;
-    public static final String FILE_DIRECTORY_PRE_VIDEO = "pre_download_video" + File.separator;
+    public static final String FILE_DIRECTORY_SCREEN_SHOT = "screenShot" + File.separator;
+    public static final String FILE_DIRECTORY_PRE_VIDEO = "prepareVideo" + File.separator;
     public static final String FILE_DIRECTORY_PICTURE = "picture" + File.separator;
     public static final String FILE_SCREEN_SHOT_NAME = "screenShot.png";
+    public static final String FILE_CACHE_NAME = "cacheVideo.json";
 
     public static final String FILE_DOWNLOAD_EXTENSION = ".mp4";
     public static final String FILE_APK_NAME = "VegoPlus.apk";

@@ -543,19 +543,44 @@ public class DataUtils {
 		return rootPath;
 	}
 
-
-
-	public static int dip2px(Context context, float dpValue) {
-		final float scale = context.getResources().getDisplayMetrics().density;
-		return (int) (dpValue * scale + 0.5f);
+	public static String getCacheDirectory(){
+		String rootPath = getSdCardFileDirectory() + Constants.FILE_DIRECTORY_CACHE;
+		return rootPath;
 	}
 
+	public static String getPrepareVideoDirectory(){
+		String rootPath = getSdCardFileDirectory() + Constants.FILE_DIRECTORY_PRE_VIDEO;
+		return rootPath;
+	}
+
+
 	/**
-	 * 根据手机的分辨率从 px(像素) 的单位 转成为 dp
+	 * 从指定文件中读取内容
+	 * @param file
+	 * @return
 	 */
-	public static int px2dip(Context context, float pxValue) {
-		final float scale = context.getResources().getDisplayMetrics().density;
-		return (int) (pxValue / scale + 0.5f);
+	public static String readFileFromSdCard(File file){
+		BufferedReader bufferedReader = null;
+		StringBuffer sb = new StringBuffer();
+		try{
+			bufferedReader = new BufferedReader(new FileReader(file));
+			String readLine = "";
+			while ((readLine = bufferedReader.readLine()) != null){
+				sb.append(readLine);
+			}
+
+		}catch (Exception e){
+			e.printStackTrace();
+		}finally {
+			if(bufferedReader != null){
+				try {
+					bufferedReader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return String.valueOf(sb.toString());
 	}
 
 

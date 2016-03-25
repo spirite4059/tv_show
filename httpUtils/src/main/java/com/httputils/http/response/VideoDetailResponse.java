@@ -62,7 +62,7 @@ public class VideoDetailResponse  {
 
 
 
-
+    public int index;
 
     public boolean isUseLocalUrl;
 
