@@ -1,6 +1,7 @@
 package com.gochinatv.ad.tools;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -18,6 +19,7 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 
@@ -588,6 +590,15 @@ public class DataUtils {
 		return String.valueOf(sb.toString());
 	}
 
+
+	/**
+	 * 获取设备分辨率
+	 */
+	public static void getDisplayMetrics(Activity context){
+		DisplayMetrics metrics = new DisplayMetrics();
+		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		//context.getApplication().getSystemService(getApplication().WINDOW_SERVICE);
+	}
 
 
 

@@ -1,5 +1,7 @@
 package com.gochinatv.ad.ui.fragment;
 
+import android.content.res.Resources;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,8 @@ import android.widget.RelativeLayout;
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
 import com.daimajia.slider.library.Tricks.ViewPagerEx;
 import com.gochinatv.ad.base.BaseFragment;
+import com.gochinatv.ad.tools.DataUtils;
+import com.gochinatv.ad.tools.LogCat;
 
 /**
  *
@@ -25,8 +29,19 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
 
+
+        DisplayMetrics metric = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metric);
+        int width = (int) (metric.widthPixels*metric.density);  // 宽度（PX）
+        int height = (int) (metric.heightPixels*metric.density);  // 高度（PX）
+
+        LogCat.e("width: "+width +" height:"+ height);
+
         RelativeLayout relativeLayout = new RelativeLayout(getActivity());
-        RelativeLayout.LayoutParams layoutParams1 = new RelativeLayout.LayoutParams(500,500);
+        Resources resources = getResources();
+        DataUtils.dpToPx(resources,500);
+
+        RelativeLayout.LayoutParams layoutParams1 = new RelativeLayout.LayoutParams(DataUtils.dpToPx(resources,500),DataUtils.dpToPx(resources,500));
         //layoutParams1.addRule(RelativeLayout.CENTER_IN_PARENT);
         layoutParams1.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
         layoutParams1.topMargin = 100;
