@@ -151,8 +151,8 @@ public class AlbnumHttpService {
     /**
      * 频道最热专辑列表,分类进去
      */
-//    public static void doHttpAlbnumList(Context context,String url,Map<String,String> map,OnRequestListener<AlbumListByLabelResponse> listener){
-//        HttpUtils.getInstance(context).doHttpGet(AlbumListByLabelResponse.class,url,map,listener,"hot");
+//    public static void doHttpAlbnumList(Context context,String adVideoUrl,Map<String,String> map,OnRequestListener<AlbumListByLabelResponse> listener){
+//        HttpUtils.getInstance(context).doHttpGet(AlbumListByLabelResponse.class,adVideoUrl,map,listener,"hot");
 //    }
 
     /**

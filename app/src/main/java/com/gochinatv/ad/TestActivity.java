@@ -17,7 +17,7 @@ import com.gochinatv.ad.video.MeasureVideoView;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
-import com.httputils.http.response.VideoDetailResponse;
+import com.httputils.http.response.AdDetailResponse;
 import com.okhtttp.OkHttpUtils;
 import com.umeng.analytics.AnalyticsConfig;
 import com.umeng.analytics.MobclickAgent;
@@ -41,17 +41,17 @@ public class TestActivity extends BaseActivity {
     /**
      * 本地数据表
      */
-    private ArrayList<VideoDetailResponse> localVideoTable;
-    private ArrayList<VideoDetailResponse> playVideoTable;
-    private ArrayList<VideoDetailResponse> deleteVideoTable;
+    private ArrayList<AdDetailResponse> localVideoTable;
+    private ArrayList<AdDetailResponse> playVideoTable;
+    private ArrayList<AdDetailResponse> deleteVideoTable;
     /**
      * 服务器数据表
      */
-    private ArrayList<VideoDetailResponse> videoDetailResponses;
+    private ArrayList<AdDetailResponse> adDetailResponses;
     /**
      * 下载数据表
      */
-    private ArrayList<VideoDetailResponse> downloadVideoTable;
+    private ArrayList<AdDetailResponse> downloadVideoTable;
     private Timer netStatusTimer;
     private LinearLayout loading;
     private final String SHARE_KEY_DURATION = "SHARE_KEY_DURATION";
@@ -59,7 +59,7 @@ public class TestActivity extends BaseActivity {
     private boolean isHttpFinish;
     private DLUtils dlUtils;
     private int localPlayPosition;
-    private VideoDetailResponse downloadResponse;
+    private AdDetailResponse downloadResponse;
     private int retryTimes;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +91,7 @@ public class TestActivity extends BaseActivity {
         }
         // 删除正在下载的文件
         if (downloadResponse != null) {
-            deleteFiles(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION);
+            deleteFiles(saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION);
         }
         // 停止所有的timer
         if (timer != null) {
@@ -159,20 +159,20 @@ public class TestActivity extends BaseActivity {
                 for (File fileItem : files) {
                     if (fileItem.isFile()) {
                         // 添加到本地视频集合
-                        VideoDetailResponse videoAdBean = new VideoDetailResponse();
+                        AdDetailResponse videoAdBean = new AdDetailResponse();
                         String name = fileItem.getName();
                         int index = name.lastIndexOf(DOWNLOAD_FILE_EXTENSION);
                         name = name.substring(0, index);
-                        videoAdBean.name = name;
+                        videoAdBean.adVideoName = name;
                         videoAdBean.videoPath = fileItem.getAbsolutePath();
                         localVideoTable.add(videoAdBean);
-                        LogCat.e("找到本地缓存文件：" + videoAdBean.name);
+                        LogCat.e("找到本地缓存文件：" + videoAdBean.adVideoName);
                     }
                 }
                 // 开始播放视频
                 if (localVideoTable.size() == 0) {
-                    VideoDetailResponse videoAdBean = new VideoDetailResponse();
-                    videoAdBean.name = "预置片";
+                    AdDetailResponse videoAdBean = new AdDetailResponse();
+                    videoAdBean.adVideoName = "预置片";
                     videoAdBean.videoPath = getRawVideoUri();
                     videoAdBean.isPresetPiece = true;
                     localVideoTable.add(videoAdBean);
@@ -265,8 +265,8 @@ public class TestActivity extends BaseActivity {
         if (!isHttpFinish) {
             int lengthL = localVideoTable.size();
             if (lengthL <= 0) {
-                VideoDetailResponse videoAdBean = new VideoDetailResponse();
-                videoAdBean.name = "预置片";
+                AdDetailResponse videoAdBean = new AdDetailResponse();
+                videoAdBean.adVideoName = "预置片";
                 videoAdBean.videoPath = getRawVideoUri();
                 videoAdBean.isPresetPiece = true;
                 localVideoTable.add(videoAdBean);
@@ -275,8 +275,8 @@ public class TestActivity extends BaseActivity {
             if (localPlayPosition >= lengthL) {
                 localPlayPosition = 0;
             }
-            VideoDetailResponse videoDetailResponse = localVideoTable.get(localPlayPosition);
-            playVideo(videoDetailResponse.videoPath);
+            AdDetailResponse adDetailResponse = localVideoTable.get(localPlayPosition);
+            playVideo(adDetailResponse.videoPath);
             return;
         }
         // 需要对视频进行删除操作
@@ -291,11 +291,11 @@ public class TestActivity extends BaseActivity {
             LogCat.e("当前播放列表仍然没有视频内容，继续播放预置片。。。");
             playVideo(getRawVideoUri());
         } else {
-            VideoDetailResponse videoAdBean = playVideoTable.get(playVideoPosition);
+            AdDetailResponse videoAdBean = playVideoTable.get(playVideoPosition);
 
-            MobclickAgent.onEvent(this, "video_play_times", videoAdBean.name);
+            MobclickAgent.onEvent(this, "video_play_times", videoAdBean.adVideoName);
 
-            LogCat.e("添加一次视频播放" + videoAdBean.name);
+            LogCat.e("添加一次视频播放" + videoAdBean.adVideoName);
 
             playVideoPosition++;
 
@@ -305,9 +305,9 @@ public class TestActivity extends BaseActivity {
 
             }
 
-            VideoDetailResponse videoDetailResponse = playVideoTable.get(playVideoPosition);
-            LogCat.e("即将播放视频。。。" + videoDetailResponse.name + "  " + playVideoPosition);
-            playVideo(videoDetailResponse.videoPath);
+            AdDetailResponse adDetailResponse = playVideoTable.get(playVideoPosition);
+            LogCat.e("即将播放视频。。。" + adDetailResponse.adVideoName + "  " + playVideoPosition);
+            playVideo(adDetailResponse.videoPath);
         }
 
 
@@ -324,7 +324,7 @@ public class TestActivity extends BaseActivity {
         if (response == null || response.data == null || response.data.size() == 0) {
             return;
         }
-        videoDetailResponses = response.data;
+        adDetailResponses = response.data;
 
 
         /**
@@ -348,9 +348,9 @@ public class TestActivity extends BaseActivity {
          */
 
 
-        downloadVideoTable.addAll(videoDetailResponses);
+        downloadVideoTable.addAll(adDetailResponses);
 
-        int length = videoDetailResponses.size();
+        int length = adDetailResponses.size();
 
         // 判断是否有本地缓存视频
         int localVideosSize = localVideoTable.size();
@@ -360,7 +360,7 @@ public class TestActivity extends BaseActivity {
         LogCat.e("开始匹配服务器视频列表。。。。。。。");
         // 处理本地视频与服务器视频列表
         if (localVideosSize == 1) { // 如果有，则需要先判断
-            VideoDetailResponse videoAdBean = localVideoTable.get(0);
+            AdDetailResponse videoAdBean = localVideoTable.get(0);
             if (videoAdBean.isPresetPiece) {
                 // 当前的视频是预置片，此时表示没有本地缓存文件，所有视频都需要下载
                 LogCat.e("当前的视频是预置片，此时表示没有本地缓存文件，所有视频都需要下载");
@@ -368,26 +368,26 @@ public class TestActivity extends BaseActivity {
                 // 此时有本地视频了，要检测当前视频是否仍在服务器列表中
                 LogCat.e("此时有本地视频了，要检测当前视频是否仍在服务器列表中");
                 boolean isServerUse = false;
-                VideoDetailResponse downloadDeleteResponse = null;
-                for (VideoDetailResponse videoDetailResponse : videoDetailResponses) {
-                    if (videoAdBean.name.equals(videoDetailResponse.name)) {
+                AdDetailResponse downloadDeleteResponse = null;
+                for (AdDetailResponse adDetailResponse : adDetailResponses) {
+                    if (videoAdBean.adVideoName.equals(adDetailResponse.adVideoName)) {
                         isServerUse = true;
 
-                        videoDetailResponse.videoPath = videoAdBean.videoPath;
-                        downloadDeleteResponse = videoDetailResponse;
+                        adDetailResponse.videoPath = videoAdBean.videoPath;
+                        downloadDeleteResponse = adDetailResponse;
                         break;
                     }
                 }
 
                 if (isServerUse) { // 仍需要继续使用此视频
                     // 直接添加到播放列表
-                    LogCat.e("仍需要继续使用此视频，将该视频添加到播放列表，并从下载列表中删除..." + videoAdBean.name);
+                    LogCat.e("仍需要继续使用此视频，将该视频添加到播放列表，并从下载列表中删除..." + videoAdBean.adVideoName);
                     playVideoTable.add(videoAdBean);
                     // 此视频无需下载
                     downloadVideoTable.remove(downloadDeleteResponse);
                 } else { // 不需要此视频
                     // 当前一定在播放此视频，需要等到视频播放完后进行删除
-                    LogCat.e(" 不需要此视频，等当前视频播放结束后，将其删除..." + videoAdBean.name);
+                    LogCat.e(" 不需要此视频，等当前视频播放结束后，将其删除..." + videoAdBean.adVideoName);
                     isDeleteVideo = true;
                     deleteVideoTable.add(videoAdBean);
                 }
@@ -395,18 +395,18 @@ public class TestActivity extends BaseActivity {
         } else {
             ArrayList<Integer> deleteIndexs = new ArrayList<>();
             for (int i = 0; i < localVideosSize; i++) {
-                VideoDetailResponse videoDetailResponse = localVideoTable.get(i);
+                AdDetailResponse adDetailResponse = localVideoTable.get(i);
                 boolean isServerUse = false;
                 // 检测服务器还用到的视频
                 for (int j = 0; j < length; j++) {
-                    VideoDetailResponse playVideoResponse = videoDetailResponses.get(j);
-                    if (videoDetailResponse.name.equals(playVideoResponse.name)) {
-                        playVideoResponse.videoPath = videoDetailResponse.videoPath;
+                    AdDetailResponse playVideoResponse = adDetailResponses.get(j);
+                    if (adDetailResponse.adVideoName.equals(playVideoResponse.adVideoName)) {
+                        playVideoResponse.videoPath = adDetailResponse.videoPath;
                         isServerUse = true;
                         // 将不需要下载的视频删除掉
                         deleteIndexs.add(j);
-                        LogCat.e("当前视频仍然需要使用。。。。。。。" + videoDetailResponse.name + "  " + videoDetailResponse.videoPath);
-                        playVideoTable.add(videoDetailResponse);
+                        LogCat.e("当前视频仍然需要使用。。。。。。。" + adDetailResponse.adVideoName + "  " + adDetailResponse.videoPath);
+                        playVideoTable.add(adDetailResponse);
                         break;
                     }
                 }
@@ -414,8 +414,8 @@ public class TestActivity extends BaseActivity {
                 if (!isServerUse) { // 服务器不在使用的视频需要进行清除
                     // 判断是否正在播放当前视频
                     isDeleteVideo = true;
-                    LogCat.e("需要从本地进行删除的视频..." + videoDetailResponse.name);
-                    deleteVideoTable.add(videoDetailResponse);
+                    LogCat.e("需要从本地进行删除的视频..." + adDetailResponse.adVideoName);
+                    deleteVideoTable.add(adDetailResponse);
                 }
             }
 
@@ -433,8 +433,8 @@ public class TestActivity extends BaseActivity {
         }
 
         // 开启下载
-        for (VideoDetailResponse videoDetailResponse : downloadVideoTable) {
-            LogCat.e("需要下载的视频..." + videoDetailResponse.name);
+        for (AdDetailResponse adDetailResponse : downloadVideoTable) {
+            LogCat.e("需要下载的视频..." + adDetailResponse.adVideoName);
         }
 
 
@@ -520,7 +520,7 @@ public class TestActivity extends BaseActivity {
         } else {
             LogCat.e("获取下载列表第一个视频，并开始下载。。。。。。。。 还剩余下载任务：" + downloadVideoTable.size());
             downloadResponse = downloadVideoTable.get(0);
-            downloadResponse.videoPath = saveDir + downloadResponse.name + DOWNLOAD_FILE_EXTENSION;
+            downloadResponse.videoPath = saveDir + downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION;
             if (downloadResponse.playInfo != null && downloadResponse.playInfo.size() != 0) {
                 PlayInfoResponse playInfoResponse = downloadResponse.playInfo.get(0);
                 doHttpGetCdnPath(this, playInfoResponse.remotevid, null);
@@ -533,11 +533,11 @@ public class TestActivity extends BaseActivity {
     private void download(final String url) {
         LogCat.e("开始下载。。。。");
 
-        // okDownload(url);
+        // okDownload(adVideoUrl);
         // 每次开始前都取消其他下载，保证只有一个下载
         dlUtils.cancel();
 
-        dlUtils.download(saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION, url, 1, new OnDownloadStatusListener() {
+        dlUtils.download(saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION, url, 1, new OnDownloadStatusListener() {
 
             private long fileLength;
 
@@ -635,7 +635,7 @@ public class TestActivity extends BaseActivity {
 
     private void okDownload(final String url) {
         LogCat.e("okDownload开始下载。。。。");
-        OkHttpUtils.getInstance().doFileDownload(url, saveDir, downloadResponse.name + DOWNLOAD_FILE_EXTENSION, new com.okhtttp.OnDownloadStatusListener() {
+        OkHttpUtils.getInstance().doFileDownload(url, saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION, new com.okhtttp.OnDownloadStatusListener() {
 
             private long fileLength;
 
@@ -688,7 +688,7 @@ public class TestActivity extends BaseActivity {
 
     private void downloadApk(final UpdateResponse.UpdateInfoResponse updateInfo) {
         LogCat.e("开始下载升级安装包。。。。");
-        dlUtils.download(saveDir + "chinaRestaurant", downloadResponse.name, updateInfo.fileUrl, 1, new OnDownloadStatusListener() {
+        dlUtils.download(saveDir + "chinaRestaurant", downloadResponse.adVideoName, updateInfo.fileUrl, 1, new OnDownloadStatusListener() {
 
             private long fileLength;
 

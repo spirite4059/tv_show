@@ -48,20 +48,20 @@
 ////
 ////        com.squareup.okhttp.Request.Builder okHttpRequestBuilder =
 ////                new com.squareup.okhttp.Request.Builder();
-////        okHttpRequestBuilder.url(request.getUrl());
+////        okHttpRequestBuilder.adVideoUrl(request.getUrl());
 ////
 ////        Map<String, String> headers = request.getHeaders();
 ////
 ////        if(headers != null){
 ////
-////            for (final String name : headers.keySet())
+////            for (final String adVideoName : headers.keySet())
 ////            {
-////                okHttpRequestBuilder.addHeader(name, headers.get(name));
+////                okHttpRequestBuilder.addHeader(adVideoName, headers.get(adVideoName));
 ////            }
 ////
-////            for (final String name : additionalHeaders.keySet())
+////            for (final String adVideoName : additionalHeaders.keySet())
 ////            {
-////                okHttpRequestBuilder.addHeader(name, additionalHeaders.get(name));
+////                okHttpRequestBuilder.addHeader(adVideoName, additionalHeaders.get(adVideoName));
 ////            }
 ////        }
 ////
@@ -88,11 +88,11 @@
 ////
 ////        for (int i = 0, len = responseHeaders.size(); i < len; i++)
 ////        {
-////            final String name = responseHeaders.name(i), value = responseHeaders.value(i);
+////            final String adVideoName = responseHeaders.adVideoName(i), value = responseHeaders.value(i);
 ////
-////            if (name != null)
+////            if (adVideoName != null)
 ////            {
-////                response.addHeader(new BasicHeader(name, value));
+////                response.addHeader(new BasicHeader(adVideoName, value));
 ////            }
 ////        }
 ////

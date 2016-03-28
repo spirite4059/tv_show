@@ -11,19 +11,19 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
 
-//        String url = "http://api.vego.tv" + "/focus_v1/focusList";
+//        String adVideoUrl = "http://api.vego.tv" + "/focus_v1/focusList";
 //        Map<String, String> params = new HashMap<String, String>();
 //        params.put("focusId", "19");
-//        HttpUtils.doHttpGet(FocusListResponse.class, url, params, new OnRequestListener<FocusListResponse>() {
+//        HttpUtils.doHttpGet(FocusListResponse.class, adVideoUrl, params, new OnRequestListener<FocusListResponse>() {
 //            @Override
-//            public void onSuccess(FocusListResponse response, String url) {
+//            public void onSuccess(FocusListResponse response, String adVideoUrl) {
 //                if (response instanceof FocusListResponse) {
-//                    Log.e("Tag", "success -> url: " + url);
+//                    Log.e("Tag", "success -> adVideoUrl: " + adVideoUrl);
 //                }
 //            }
 //
 //            @Override
-//            public void onError(String errorMsg, String url) {
+//            public void onError(String errorMsg, String adVideoUrl) {
 //                Log.e("Tag", "fali -> errorMsg: " + errorMsg);
 //            }
 //        }, "test");

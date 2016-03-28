@@ -16,7 +16,7 @@ public class VideoDetailListResponse implements Serializable {
     //public String ok;// 1,
     public String size;// 10,
     public String total;// 560,
-    public ArrayList<VideoDetailResponse> data;//
+    public ArrayList<AdDetailResponse> data;//
 
 
 }

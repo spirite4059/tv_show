@@ -569,7 +569,7 @@ public class DataUtils {
 		StringBuffer sb = new StringBuffer();
 		try{
 			bufferedReader = new BufferedReader(new FileReader(file));
-			String readLine = "";
+			String readLine;
 			while ((readLine = bufferedReader.readLine()) != null){
 				sb.append(readLine);
 			}

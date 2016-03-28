@@ -57,19 +57,19 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 //
 //
 //
-//        for(String name : url_maps.keySet()){
+//        for(String adVideoName : url_maps.keySet()){
 //            TextSliderView textSliderView = new TextSliderView(getActivity());
 //            // initialize a SliderLayout
 //            textSliderView
-//                    .description(name)
-//                    .image(url_maps.get(name))
+//                    .description(adVideoName)
+//                    .image(url_maps.get(adVideoName))
 //                    .setScaleType(BaseSliderView.ScaleType.Fit)
 //                    .setOnSliderClickListener(this);
 //
 //            //add your extra information
 //            textSliderView.bundle(new Bundle());
 //            textSliderView.getBundle()
-//                    .putString("extra",name);
+//                    .putString("extra",adVideoName);
 //
 //            mDemoSlider.addSlider(textSliderView);
 //        }

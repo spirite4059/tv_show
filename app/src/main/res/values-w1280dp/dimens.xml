@@ -11,11 +11,11 @@
     <dimen name="d_40dp">40.00dp</dimen>
     <dimen name="d_15dp">15.00dp</dimen>
 
-    <!--    <dimen name="d_230dp">184.00dp</dimen>
-        <dimen name="d_115dp">92.00dp</dimen>
+    <!--    <dimen adVideoName="d_230dp">184.00dp</dimen>
+        <dimen adVideoName="d_115dp">92.00dp</dimen>
 
-        <dimen name="d_820dp">656.00dp</dimen>
-        <dimen name="d_460dp">368.00dp</dimen>-->
+        <dimen adVideoName="d_820dp">656.00dp</dimen>
+        <dimen adVideoName="d_460dp">368.00dp</dimen>-->
     <dimen name="d_30sp">24.00sp</dimen>
 
     <dimen name="d_450dp">380.00dp</dimen>

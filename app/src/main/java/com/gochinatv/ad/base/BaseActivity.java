@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -22,7 +21,7 @@ import com.httputils.http.response.CdnPathResponse;
 import com.httputils.http.response.TimeResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
-import com.httputils.http.response.VideoDetailResponse;
+import com.httputils.http.response.AdDetailResponse;
 import com.httputils.http.service.AlbnumHttpService;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
@@ -151,7 +150,7 @@ public abstract class BaseActivity extends Activity {
     protected void doHttpGetCdnPath(Context context, final String vid, final Date date) {
         LogCat.e("获取cdn的真是地址。。。。。。。" + vid);
         Map<String, String> url = new HashMap();
-        url.put("url", HttpUrls.SECURITY_CHAIN_URL + vid);
+        url.put("adVideoUrl", HttpUrls.SECURITY_CHAIN_URL + vid);
 
         OkHttpUtils.getInstance().doHttpGet(HttpUrls.HTTP_URL_CDN_PATH, url, new OkHttpCallBack<CdnPathResponse>() {
             @Override
@@ -218,16 +217,16 @@ public abstract class BaseActivity extends Activity {
 
     protected class DeleteFilesThread extends Thread {
 
-        private ArrayList<VideoDetailResponse> path;
+        private ArrayList<AdDetailResponse> path;
 
-        public DeleteFilesThread(ArrayList<VideoDetailResponse> path) {
+        public DeleteFilesThread(ArrayList<AdDetailResponse> path) {
             this.path = path;
         }
 
         @Override
         public void run() {
             super.run();
-            for (VideoDetailResponse filePath : path) {
+            for (AdDetailResponse filePath : path) {
                 File file = new File(filePath.videoPath);
                 if (file.exists() && file.isFile()) {
                     file.delete();
@@ -301,7 +300,7 @@ public abstract class BaseActivity extends Activity {
                 doHttpGet(HttpUrls.URL_CHECK_UPDATE, map, new OkHttpCallBack<UpdateResponse>() {
                     @Override
                     public void onSuccess(String url, UpdateResponse response) {
-                        LogCat.e("onSuccess url: " + url);
+                        LogCat.e("onSuccess adVideoUrl: " + url);
                         if (isFinishing()) {
                             return;
                         }
@@ -596,7 +595,7 @@ public abstract class BaseActivity extends Activity {
         new DeleteFileThread(path, name).start();
     }
 
-    public void deleteFiles(ArrayList<VideoDetailResponse> path) {
+    public void deleteFiles(ArrayList<AdDetailResponse> path) {
         new DeleteFilesThread(path).start();
     }
 
