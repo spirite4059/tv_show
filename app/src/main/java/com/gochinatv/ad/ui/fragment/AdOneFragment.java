@@ -235,6 +235,11 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         ArrayList<AdDetailResponse> adDetailResponses = response.data;
 
+        for(AdDetailResponse adDetailResponse : response.data){
+            adDetailResponse.adVideoName = adDetailResponse.name;
+        }
+
+
         if (adDetailResponses == null || adDetailResponses.size() == 0) {
             // TODO 默认继续播放之前的缓存文件
             return;
@@ -745,6 +750,11 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                             playDirectoryVideo(fileVideo);
                             LogCat.e("播放Video文件目录的视频内容.....");
                         } else {
+                            // TODO
+                            for(AdDetailResponse adDetailResponse : adDetailResponses){
+                                adDetailResponse.adVideoName = adDetailResponse.name;
+                            }
+
                             LogCat.e("开始匹配cache的列表和video的文件列表.....");
                             // 检测prepareVideo目录下的视频，跟上面的列表进行配对，如果有则加入Local列表
                             ArrayList<AdDetailResponse> fileVideoList = getLocalList(fileVideo);

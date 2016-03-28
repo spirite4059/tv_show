@@ -8,6 +8,9 @@ import java.util.ArrayList;
 public class AdDetailResponse {
 
     public String adVideoName; // 视频名称
+    public String name; // 视频名称
+
+
 
     public String tag; // 标签
 
