@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.download.ErrorCodes;
@@ -17,6 +18,8 @@ import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.RootUtils;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.video.MeasureVideoView;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
@@ -450,7 +453,18 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
 
     private void downloadApkSuccess(String filePath) {
         updateInfo = null;
-        DataUtils.installApk(getActivity(), filePath);
+
+        //新包下载完成得安装
+         if(RootUtils.hasRootPerssion()){
+             //RootUtils.clientInstall("/sdcard/Music/test.apk");
+             SharedPreference.getSharedPreferenceUtils(getActivity()).saveDate("isClientInstall",true);
+             RootUtils.clientInstall(DataUtils.getApkDirectory()+Constants.FILE_APK_NAME);
+             Toast.makeText(getActivity(), "有root权限，静默安装方式", Toast.LENGTH_LONG).show();
+        }else{
+             Toast.makeText(getActivity(),"没有root权限，普通安装方式",Toast.LENGTH_LONG).show();
+             //RootUtils.installApk(CustomActivity.this,"/sdcard/Music/test.apk");
+             DataUtils.installApk(getActivity(), filePath);
+        }
         getActivity().finish();
     }
 

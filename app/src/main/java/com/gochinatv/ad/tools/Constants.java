@@ -53,7 +53,9 @@ public class Constants {
     public static final String FORMAT_VIDEO_AD_TIME = "yyyyMMddHHmmss";
 
 
-
-
+    /**
+     * --------------------------是否是静默安装-------------------------------
+     */
+    public static boolean isClientInstall;
 
 }

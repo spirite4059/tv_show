@@ -5,10 +5,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.RelativeLayout;
 
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
 import com.daimajia.slider.library.Tricks.ViewPagerEx;
-import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 
 /**
@@ -24,13 +24,26 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
-        return inflater.inflate(R.layout.fragment_ad_two,container,false);
+
+        RelativeLayout relativeLayout = new RelativeLayout(getActivity());
+        RelativeLayout.LayoutParams layoutParams1 = new RelativeLayout.LayoutParams(500,500);
+        //layoutParams1.addRule(RelativeLayout.CENTER_IN_PARENT);
+        layoutParams1.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+        layoutParams1.topMargin = 100;
+        layoutParams1.rightMargin = 50;
+        relativeLayout.setLayoutParams(layoutParams1);
+
+        webView = new WebView(getActivity());
+        RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
+        relativeLayout.addView(webView,layoutParams2);
+        //return inflater.inflate(R.layout.fragment_ad_two,container,false);
+        return relativeLayout;
     }
 
     @Override
     protected void initView(View rootView) {
 //        mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
-        webView = (WebView) rootView.findViewById(R.id.webview);
+
     }
 
     @Override
