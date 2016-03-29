@@ -6,8 +6,8 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
-import com.gochinatv.ad.ui.fragment.ADThreeFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
+import com.gochinatv.ad.ui.fragment.AdFiveFragment;
 
 /**
  * Created by fq_mbp on 16/3/17.
@@ -25,7 +25,8 @@ public class MainActivity extends Activity {
 
 //        ft.add(R.id.root_main, new AdOneFragment());
         ft.add(R.id.root_main, new ADTwoFragment());
-        ft.add(R.id.root_main, new ADThreeFragment());
+//        ft.add(R.id.root_main, new ADThreeFragment());
+        ft.add(R.id.root_main, new AdFiveFragment());
         ft.add(R.id.root_main, new ADFourFragment());
         ft.commit();
 //        //添加图片广告

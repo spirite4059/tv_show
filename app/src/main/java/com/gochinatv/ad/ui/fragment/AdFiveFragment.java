@@ -1,10 +1,6 @@
 package com.gochinatv.ad.ui.fragment;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
-import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +11,11 @@ import com.gochinatv.ad.adapter.EpisodeAdapter;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.recycler.EpisodeLayoutManager;
 import com.gochinatv.ad.recycler.NoTouchRecyclerView;
+import com.okhtttp.response.AdImgResponse;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by fq_mbp on 16/3/29.
@@ -26,24 +25,9 @@ public class AdFiveFragment extends BaseFragment {
 
     public RelativeLayout relEpisodeRoot;
     private NoTouchRecyclerView recyclerView;
-    // 按键时的当前时间
-    private long clickDownTime = 0;
-    // 屏蔽长按事件导致的翻页频繁的阈值
-    private int clickLimit;
-    // 判断是否是长按的阈值
-    private int longClickDuration = 600;
-    // 长按是最多屏蔽次数
-    private static final int MAX_LIMIT_KEY_DOWN_TIMES = 3;
-
     private EpisodeLayoutManager episodeLayoutManager;
-
-//    private int scrollY;
-
-    private int firstVisiblyPosition;
-    // 移动动画是否结束
-    private boolean isAnimateEnd;
-
-
+    private Timer flushTimer;
+    private int position = 2;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -58,29 +42,44 @@ public class AdFiveFragment extends BaseFragment {
 
     @Override
     protected void init() {
+
+        initData();
+
+
         episodeLayoutManager = new EpisodeLayoutManager(getActivity(), LinearLayoutManager.VERTICAL);
 
         recyclerView.setLayoutManager(episodeLayoutManager);
 
-        EpisodeAdapter episodeAdapter = new EpisodeAdapter(getActivity(), episodeBeans);
+        EpisodeAdapter episodeAdapter = new EpisodeAdapter(getActivity(), imgResponses);
 
         recyclerView.setAdapter(episodeAdapter);
 
+        flushTimer = new Timer();
+
+        flushTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                episodeLayoutManager.smoothScrollTop(recyclerView, position);
+                position++;
+            }
+        }, 5000, 5000);
 
     }
 
 
 
-
-//    protected void initData() {
-//        episodeBeans = new ArrayList<>();
-//        for (int i = 'A'; i < 'Z'; i++) {
-//            EpisodeItemResponse episodeBean = new EpisodeItemResponse();
-//            episodeBean.name = "category " + ((int) i - 65);
-//            episodeBean.installment = String.valueOf((int) i - 65);
-//            episodeBeans.add(episodeBean);
-//        }
-//    }
+    private ArrayList<AdImgResponse> imgResponses;
+    protected void initData() {
+        imgResponses = new ArrayList<>();
+        for (int i = 'A'; i < 'Z'; i++) {
+            AdImgResponse adImgResponse = new AdImgResponse();
+            adImgResponse.adImgName = "category " + ((int) i - 65);
+            adImgResponse.adImgPrice = String.valueOf((int) i - 65);
+            adImgResponse.adImgUrl = String.valueOf((int) i - 65);
+            imgResponses.add(adImgResponse);
+        }
+    }
 
     @Override
     protected void bindEvent() {

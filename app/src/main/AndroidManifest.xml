@@ -15,9 +15,7 @@
     <!-- 在sdcard中创建/删除文件的权限 -->
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
 
-
-
-
+    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name=".base.MyApplication"
@@ -46,30 +44,31 @@
             android:name="UMENG_APPKEY"
             android:value="${UMENG_APPKEY_VALUE}" />
 
-
         <activity android:name=".MainTestActivity" >
-            <!--<intent-filter>-->
-                <!--<action android:adVideoName="android.intent.action.MAIN" />-->
 
-                <!--<category android:adVideoName="android.intent.category.LAUNCHER" />-->
-                <!--<category android:adVideoName="android.intent.category.HOME" />-->
-                <!--<category android:adVideoName="android.intent.category.DEFAULT" />-->
-            <!--</intent-filter>-->
+            <!-- <intent-filter> -->
+            <!-- <action android:adVideoName="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:adVideoName="android.intent.category.LAUNCHER" /> -->
+            <!-- <category android:adVideoName="android.intent.category.HOME" /> -->
+            <!-- <category android:adVideoName="android.intent.category.DEFAULT" /> -->
+            <!-- </intent-filter> -->
         </activity>
 
-
-        <receiver android:name=".AppInstallReceiver"
-            >
+        <receiver android:name=".AppInstallReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_ADDED" />
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />
+
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
 
-
-
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>
