@@ -67,7 +67,15 @@ public class AdFiveFragment extends BaseFragment {
 
     }
 
+    @Override
+    public void onStop() {
+        if(flushTimer != null){
+            flushTimer.cancel();
+            flushTimer = null;
+        }
 
+        super.onStop();
+    }
 
     private ArrayList<AdImgResponse> imgResponses;
     protected void initData() {
