@@ -3,12 +3,45 @@
     android:id="@+id/root_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/black"
     >
+
     <ImageView
-        android:id="@+id/iv"
-        android:layout_width="500dp"
-        android:layout_height="300dp"
-        android:background="@color/colorPrimary"/>
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/d_60dp"
+        android:src="@mipmap/logo"
+        android:scaleType="fitCenter"/>
+
+    <!--<Button-->
+        <!--android:id="@+id/bbb"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="720dp"-->
+        <!--android:background="@android:color/black"-->
+        <!--android:text="aaaaaaaaaaa"/>-->
+
+    <!--<Button-->
+        <!--android:id="@+id/aaa"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="672dp"-->
+        <!--android:background="@android:color/black"-->
+        <!--android:layout_toRightOf="@id/bbb"-->
+        <!--android:layout_marginLeft="20dp"-->
+        <!--android:text="aaaaaaaaaaa"/>-->
+
+    <!--<Button-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="@dimen/d_672dp"-->
+        <!--android:background="@android:color/black"-->
+        <!--android:layout_toRightOf="@id/aaa"-->
+        <!--android:layout_marginLeft="20dp"-->
+        <!--android:text="aaaaaaaaaaa"/>-->
+
+
+    <!--<ImageView-->
+        <!--android:id="@+id/iv"-->
+        <!--android:layout_width="500dp"-->
+        <!--android:layout_height="300dp"-->
+        <!--android:background="@color/colorPrimary"/>-->
 
     <!--&lt;!&ndash;广告1-视频广告 &ndash;&gt;-->
     <!--<LinearLayout-->

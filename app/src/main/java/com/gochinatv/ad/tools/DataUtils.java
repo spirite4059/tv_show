@@ -592,14 +592,40 @@ public class DataUtils {
 
 
 	/**
-	 * 获取设备分辨率
+	 * 获取设备分辨率--宽--widthPixels
 	 */
-	public static void getDisplayMetrics(Activity context){
+	public static int getDisplayMetricsWidth(Activity context){
 		DisplayMetrics metrics = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		//context.getApplication().getSystemService(getApplication().WINDOW_SERVICE);
+         return metrics.widthPixels;
 	}
 
 
+	/**
+	 * 获取设备分辨率--高--heightPixels
+	 */
+	public static int getDisplayMetricsHeight(Activity context){
+		DisplayMetrics metrics = new DisplayMetrics();
+		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		return metrics.heightPixels+getNavigationBarHeight(context);
+	}
+
+
+
+
+
+	/**
+	 * NavigationBar的高度
+	 * @param activity
+	 * @return
+	 */
+	public static int getNavigationBarHeight(Activity activity) {
+		Resources resources = activity.getResources();
+		int resourceId = resources.getIdentifier("navigation_bar_height",
+				"dimen", "android");
+		//获取NavigationBar的高度
+		int height = resources.getDimensionPixelSize(resourceId);
+		return height;
+	}
 
 }

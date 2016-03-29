@@ -3,6 +3,7 @@ package com.gochinatv.ad.ui.view;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Camera;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -76,9 +77,10 @@ public class AutoTextView extends TextSwitcher implements
     public View makeView() {
         // TODO Auto-generated method stub
         TextView t = new TextView(mContext);
+        t.setTextColor(Color.WHITE);
         t.setGravity(Gravity.CENTER);
         t.setTextSize(mHeight);
-        t.setMaxLines(2);
+        t.setMaxLines(1);
         return t;
     }
     //定义动作，向下滚动翻页

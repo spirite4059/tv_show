@@ -1,31 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_width="@dimen/d_256dp"
-    android:layout_height="@dimen/d_360dp"
+    android:layout_width="@dimen/d_216dp"
+    android:layout_height="@dimen/d_432dp"
     android:layout_alignParentRight="true"
     android:layout_alignParentBottom="true"
+    android:background="@android:color/white"
     >
 
 
-    <!--<com.facebook.drawee.view.SimpleDraweeView-->
-        <!--android:id="@+id/drawee_view"-->
+    <!--<com.daimajia.slider.library.SliderLayout-->
+        <!--android:id="@+id/slider"-->
         <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--fresco:placeholderImage="@mipmap/icon"-->
-        <!--/>-->
+        <!--custom:pager_animation="Accordion"-->
+        <!--custom:auto_cycle="true"-->
+        <!--custom:indicator_visibility="visible"-->
+        <!--custom:pager_animation_span="1100"-->
+        <!--android:layout_height="match_parent"/>-->
+     <ScrollView
+         android:layout_width="match_parent"
+         android:layout_height="match_parent">
 
-    <com.daimajia.slider.library.SliderLayout
-        android:id="@+id/slider"
-        android:layout_width="match_parent"
-        custom:pager_animation="Accordion"
-        custom:auto_cycle="true"
-        custom:indicator_visibility="visible"
-        custom:pager_animation_span="1100"
-        android:layout_height="match_parent"/>
+         <com.gochinatv.ad.ui.view.RecycleUpAnimationView
+             android:id="@+id/ad_three_lin"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:orientation="vertical"
+             >
 
+         </com.gochinatv.ad.ui.view.RecycleUpAnimationView>
+
+     </ScrollView>
 
 
 
