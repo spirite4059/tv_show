@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_fragment_episode"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#cf000000"
+    android:orientation="vertical">
+
+
+    <com.gochinatv.ad.recycler.NoTouchRecyclerView
+        android:id="@+id/recycler_episodes"
+        android:layout_width="@dimen/d_650dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true" />
+
+
+</RelativeLayout>

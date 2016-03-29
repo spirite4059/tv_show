@@ -138,7 +138,7 @@ public class ScreenShotThread extends Thread{
                 LogCat.e("截屏成功......");
 
                 try {
-                    OkHttpUtils.getInstance().doUploadFile(file, "http://apk.gochinatv.com/api/quear");
+                    OkHttpUtils.getInstance().doUploadFile(activity, file, "http://210.14.151.100:8090/api/device_v1/uploadImage");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

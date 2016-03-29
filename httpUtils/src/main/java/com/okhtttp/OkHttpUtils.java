@@ -1,5 +1,6 @@
 package com.okhtttp;
 
+import android.content.Context;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -7,6 +8,7 @@ import android.text.TextUtils;
 
 import com.google.gson.Gson;
 import com.httputils.utils.LogCat;
+import com.tools.MacUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -157,13 +159,14 @@ public class OkHttpUtils {
 
 
 
-    public void doUploadFile(File file, String url) throws IOException {
+    public void doUploadFile(Context context, File file, String url) throws IOException {
         RequestBody fileBody = RequestBody.create(MediaType.parse("application/octet-stream"), file);
 
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addPart(fileBody)
                 .addFormDataPart("file", file.getName(), fileBody)
+                .addFormDataPart("mac", MacUtils.getMacAddress(context))
                 .build();
 
         Request request = new Request.Builder()
