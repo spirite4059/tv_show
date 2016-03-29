@@ -21,10 +21,10 @@ import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.video.MeasureVideoView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.httputils.http.response.AdDetailResponse;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
-import com.httputils.http.response.AdDetailResponse;
 import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;

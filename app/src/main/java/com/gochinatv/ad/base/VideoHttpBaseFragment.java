@@ -46,7 +46,8 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
      */
     protected void doHttpGetEpisode() {
         Map<String, String> map = new HashMap<>();
-        map.put("albumId", "66371");
+        map.put("albumId", "63272");    // 测试用
+//        map.put("albumId", "66371");
         map.put("videoType", "1");
         map.put("serialType", "1");
 

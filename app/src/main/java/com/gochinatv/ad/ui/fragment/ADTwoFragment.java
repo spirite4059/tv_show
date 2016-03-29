@@ -32,8 +32,8 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
         DisplayMetrics metric = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metric);
-        int width = (int) (metric.widthPixels*metric.density);  // 宽度（PX）
-        int height = (int) (metric.heightPixels*metric.density);  // 高度（PX）
+        int width = (int) (metric.widthPixels);  // 宽度（PX）
+        int height = (int) (metric.heightPixels);  // 高度（PX）
 
         LogCat.e("width: "+width +" height:"+ height);
 
