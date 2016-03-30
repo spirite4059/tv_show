@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fresco="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -14,113 +15,39 @@
         android:scaleType="fitCenter"/>
 
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:layout_marginTop="@dimen/d_80dp"
-        >
-
-        <ImageView
-            android:layout_width="@dimen/d_216dp"
-            android:layout_height="@dimen/d_288dp"
-            android:layout_marginLeft="@dimen/d_20dp"
-            android:src="@drawable/adtwo"
-            android:scaleType="fitXY"/>
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/d_20dp"
-            android:src="@drawable/adtwo"
-            android:scaleType="fitXY"/>
-        <ImageView
-            android:layout_width="@dimen/d_216dp"
-            android:layout_height="@dimen/d_288dp"
-            android:layout_marginLeft="@dimen/d_20dp"
-            android:src="@drawable/news2"
-            android:scaleType="fitXY"/>
-
-    </LinearLayout>
-
-
-
-
-    <!--<Button-->
-        <!--android:id="@+id/bbb"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="720dp"-->
-        <!--android:background="@android:color/black"-->
-        <!--android:text="aaaaaaaaaaa"/>-->
-
-    <!--<Button-->
-        <!--android:id="@+id/aaa"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="672dp"-->
-        <!--android:background="@android:color/black"-->
-        <!--android:layout_toRightOf="@id/bbb"-->
-        <!--android:layout_marginLeft="20dp"-->
-        <!--android:text="aaaaaaaaaaa"/>-->
-
-    <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="@dimen/d_672dp"-->
-        <!--android:background="@android:color/black"-->
-        <!--android:layout_toRightOf="@id/aaa"-->
-        <!--android:layout_marginLeft="20dp"-->
-        <!--android:text="aaaaaaaaaaa"/>-->
-
-
-    <!--<ImageView-->
-        <!--android:id="@+id/iv"-->
-        <!--android:layout_width="500dp"-->
-        <!--android:layout_height="300dp"-->
-        <!--android:background="@color/colorPrimary"/>-->
-
-    <!--&lt;!&ndash;广告1-视频广告 &ndash;&gt;-->
     <!--<LinearLayout-->
-        <!--android:id="@+id/ad_one"-->
-        <!--android:layout_width="@dimen/d_1024dp"-->
-        <!--android:layout_height="@dimen/d_576dp"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
         <!--android:orientation="horizontal"-->
+        <!--android:layout_marginTop="@dimen/d_80dp"-->
         <!-->-->
-    <!--</LinearLayout>-->
 
-    <!--&lt;!&ndash;广告2-新闻广告&ndash;&gt;-->
+        <!--<ImageView-->
+            <!--android:layout_width="@dimen/d_216dp"-->
+            <!--android:layout_height="@dimen/d_288dp"-->
+            <!--android:layout_marginLeft="@dimen/d_20dp"-->
+            <!--android:src="@drawable/adtwo"-->
+            <!--android:scaleType="fitXY"/>-->
 
-    <!--<LinearLayout-->
-        <!--android:id="@+id/ad_two"-->
-        <!--android:layout_width="@dimen/d_256dp"-->
-        <!--android:layout_height="@dimen/d_360dp"-->
-        <!--android:orientation="horizontal"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!-->-->
-    <!--</LinearLayout>-->
+        <!--<ImageView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginLeft="@dimen/d_20dp"-->
+            <!--android:src="@drawable/adtwo"-->
+            <!--android:scaleType="fitXY"/>-->
+        <!--<com.facebook.drawee.view.SimpleDraweeView-->
+            <!--android:id="@+id/mSimpleDraweeView"-->
+            <!--android:layout_width="@dimen/d_216dp"-->
+            <!--android:layout_height="@dimen/d_288dp"-->
+            <!--android:layout_marginLeft="@dimen/d_20dp"-->
+            <!--android:src="@drawable/news2"-->
+            <!--android:scaleType="fitXY"/>-->
 
-
-
-    <!--&lt;!&ndash;广告3-图片广告&ndash;&gt;-->
-
-    <!--<LinearLayout-->
-        <!--android:id="@+id/ad_three"-->
-        <!--android:layout_width="@dimen/d_256dp"-->
-        <!--android:layout_height="@dimen/d_360dp"-->
-        <!--android:orientation="horizontal"-->
-        <!--android:layout_below="@id/ad_two"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!-->-->
     <!--</LinearLayout>-->
 
 
 
-    <!--&lt;!&ndash;广告4-文本广告&ndash;&gt;-->
-    <!--<LinearLayout-->
-        <!--android:id="@+id/ad_four"-->
-        <!--android:layout_width="@dimen/d_1024dp"-->
-        <!--android:layout_height="@dimen/d_60dp"-->
-        <!--android:orientation="horizontal"-->
-        <!--android:layout_alignParentBottom="true">-->
-    <!--</LinearLayout>-->
+
 
 
 </RelativeLayout>

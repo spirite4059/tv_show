@@ -5,19 +5,12 @@
     android:layout_width="@dimen/d_216dp"
     android:layout_height="@dimen/d_216dp">
 
-    <com.facebook.drawee.view.SimpleDraweeView
+    <ImageView
         android:id="@+id/ad_three_img"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
         android:scaleType="fitXY"
-        fresco:placeholderImage="@drawable/news"
-        fresco:retryImage="@drawable/news"
-        fresco:failureImage="@drawable/news"
-        fresco:failureImageScaleType="fitXY"
-        fresco:actualImageScaleType="fitXY"
-        fresco:placeholderImageScaleType="fitXY"
-        fresco:retryImageScaleType="fitXY"
         android:layout_gravity="center_horizontal"
         />
     <LinearLayout
@@ -33,7 +26,6 @@
             android:layout_weight="2"
             android:layout_gravity="center_vertical"
             android:maxLines="2"
-            android:text="辣子鸡"
             android:textColor="@android:color/black"
             android:paddingLeft="@dimen/d_10dp"
             android:textSize="@dimen/d_14sp"
@@ -46,7 +38,6 @@
             android:layout_weight="1"
             android:layout_gravity="center_vertical"
             android:maxLines="1"
-            android:text="25元"
             android:textColor="@android:color/black"
             android:gravity="center"
             android:textSize="@dimen/d_14sp"

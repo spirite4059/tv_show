@@ -15,6 +15,8 @@ import com.gochinatv.ad.ui.fragment.AdOneFragment;
  */
 public class MainActivity extends Activity {
 
+    //SimpleDraweeView mSimpleDraweeView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,26 +25,48 @@ public class MainActivity extends Activity {
         FragmentManager fm = getFragmentManager();
 
         FragmentTransaction ft = fm.beginTransaction();
-          ft.add(R.id.root_main, new AdOneFragment());
-          ft.add(R.id.root_main, new ADTwoFragment());
+        ft.add(R.id.root_main, new AdOneFragment());
+        ft.add(R.id.root_main, new ADTwoFragment());
 ////        ft.add(R.id.root_main, new ADThreeFragment());
-           ft.add(R.id.root_main, new AdFiveFragment());
-          ft.add(R.id.root_main, new ADFourFragment());
-          ft.commit();
-//        //添加图片广告
-//        ADThreeFragment fragmentThree = new  ADThreeFragment();
-//        FragmentManager fm3 = getFragmentManager();
-//        FragmentTransaction ft3 = fm3.beginTransaction();
-//        ft3.add(R.id.ad_three,fragmentThree);
-//        ft3.commit();
+        ft.add(R.id.root_main, new AdFiveFragment());
+        ft.add(R.id.root_main, new ADFourFragment());
+        ft.commit();
+
+
+//        mSimpleDraweeView = (SimpleDraweeView) findViewById(R.id.mSimpleDraweeView);
+//        ControllerListener controllerListener = new BaseControllerListener(){
 //
+//            @Override
+//            public void onFailure(String id, Throwable throwable) {
+//                super.onFailure(id, throwable);
+//                LogCat.e("onFailure");
+//            }
 //
-//        //添加文本广告
-//        ADFourFragment fragmentFour = new  ADFourFragment();
-//        FragmentManager fm4 = getFragmentManager();
-//        FragmentTransaction ft4 = fm4.beginTransaction();
-//        ft4.add(R.id.ad_four,fragmentFour);
-//        ft4.commit();
+//            @Override
+//            public void onFinalImageSet(String id, Object imageInfo, Animatable animatable) {
+//                super.onFinalImageSet(id, imageInfo, animatable);
+//                LogCat.e("onFinalImageSet");
+//            }
+//
+//            @Override
+//            public void onIntermediateImageFailed(String id, Throwable throwable) {
+//                super.onIntermediateImageFailed(id, throwable);
+//            }
+//
+//            @Override
+//            public void onIntermediateImageSet(String id, Object imageInfo) {
+//                super.onIntermediateImageSet(id, imageInfo);
+//            }
+//        };
+//
+//        Uri uri = Uri.parse("http://img9.gochinatv.com/common/20160330/4461047e35b7b2b4c6f05d7ac10fa725_original.jpg");
+//        DraweeController controller = Fresco.newDraweeControllerBuilder()
+//                .setControllerListener(controllerListener)
+//                .setUri(uri)
+//        .build();
+//        mSimpleDraweeView.setController(controller);
+
+
 
 //      Timer timer = new Timer();
 //        timer.schedule(new TimerTask() {

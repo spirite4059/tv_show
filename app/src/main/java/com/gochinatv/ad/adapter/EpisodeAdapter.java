@@ -1,16 +1,20 @@
 package com.gochinatv.ad.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.facebook.drawee.view.SimpleDraweeView;
 import com.gochinatv.ad.R;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.okhtttp.response.AdImgResponse;
 
 import java.util.ArrayList;
@@ -28,6 +32,15 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
     public EpisodeAdapter(Context context, ArrayList<AdImgResponse> imgResponses) {
         mLayoutInflater = LayoutInflater.from(context);
         this.imgResponses = imgResponses;
+
+        imageLoader = ImageLoader.getInstance();
+        options = new DisplayImageOptions.Builder().cacheInMemory(false).cacheOnDisc(true)
+                .imageScaleType(ImageScaleType.IN_SAMPLE_POWER_OF_2)
+                .showImageOnLoading(R.drawable.ad_three_loading1)
+                .showImageOnFail(R.drawable.ad_three_loading1).bitmapConfig(Bitmap.Config.RGB_565)
+                .displayer(new FadeInBitmapDisplayer(1000, true, false, false)).build();
+
+
 //        imageLoader = ImageLoader.getInstance();
 //        imageLoader.init(MyApplication.initImageLoader(context).build());
 //        options = new DisplayImageOptions.Builder().cacheInMemory(false).cacheOnDisc(true)
@@ -47,10 +60,36 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
         int curPosition = position % imgResponses.size();
         AdImgResponse episodeBean = imgResponses.get(curPosition);
         holder.tvTitle.setText(episodeBean.adImgName);
-        holder.tvPrice.setText(episodeBean.adImgPrice);
+
+        if(!TextUtils.isEmpty(episodeBean.adImgPrice)){
+            holder.tvPrice.setText(episodeBean.adImgPrice + "元");
+        }
+
+        if("localPicture".equals(episodeBean.adImgUrl)){
+            imageLoader.displayImage("drawable://" + R.drawable.ad_three_loading1,holder.iv,options);
+        }else {
+            imageLoader.displayImage(episodeBean.adImgUrl,holder.iv,options);
+        }
 
 
-        //holder.iv.setBackgroundResource(R.drawable.hannibal);
+
+
+//        //Uri uri = Uri.parse("res://com.gochinatv.ad/" + R.drawable.news3);
+//        Uri uri = Uri.parse(episodeBean.adImgUrl);
+//        //holder.iv.setBackgroundResource(R.drawable.hannibal);
+//
+//        //创建DraweeController
+//        DraweeController controller = Fresco.newDraweeControllerBuilder()
+//                //加载的图片URI地址
+//                .setUri(uri)
+//                        //设置点击重试是否开启
+//                .setTapToRetryEnabled(true)
+//                        //设置旧的Controller
+//                .setOldController(holder.iv.getController())
+//                        //构建
+//                .build();
+//
+//        holder.iv.setController(controller);
     }
 
 
@@ -64,13 +103,13 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
 
         TextView tvTitle;
         TextView tvPrice;
-        SimpleDraweeView iv;
+        ImageView iv;
 
         public MyViewHolder(View itemView) {
             super(itemView);
             tvTitle = (TextView) itemView.findViewById(R.id.ad_three_text_name);
             tvPrice = (TextView) itemView.findViewById(R.id.ad_three_text_price);
-            iv = (SimpleDraweeView) itemView.findViewById(R.id.ad_three_img);
+            iv = (ImageView) itemView.findViewById(R.id.ad_three_img);
         }
     }
 

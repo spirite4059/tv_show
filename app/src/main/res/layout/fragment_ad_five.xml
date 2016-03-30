@@ -16,4 +16,12 @@
         android:layout_alignParentRight="true" />
 
 
+    <ImageView
+        android:id="@+id/ad_three_bg_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/ad_three_bg"
+        android:scaleType="fitXY"
+        />
+
 </RelativeLayout>
