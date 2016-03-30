@@ -13,6 +13,7 @@ import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.okhtttp.OkHttpUtils;
+import com.tools.HttpUrls;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -99,7 +100,7 @@ public class ScreenShotRunnable implements Runnable{
                 LogCat.e("截屏成功......");
 
                 try {
-                    OkHttpUtils.getInstance().doUploadFile(activity, file, "http://210.14.151.100:8090/api/device_v1/uploadImage");
+                    OkHttpUtils.getInstance().doUploadFile(activity, file, HttpUrls.URL_SCREEN_SHOT);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

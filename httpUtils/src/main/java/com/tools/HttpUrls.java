@@ -47,4 +47,8 @@ public class HttpUrls {
     public static final String URL_GET_AD_THREE = "http://210.14.151.100:8090/api/ad_v1/getImageAdList";
 
 
+    /**
+     * 广告三
+     */
+    public static final String URL_SCREEN_SHOT = "http://210.14.151.100:8090/api/device_v1/uploadImage";
 }
