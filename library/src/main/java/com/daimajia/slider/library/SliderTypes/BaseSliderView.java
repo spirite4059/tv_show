@@ -212,11 +212,11 @@ public abstract class BaseSliderView {
         Picasso p = (mPicasso != null) ? mPicasso : Picasso.with(mContext);
         RequestCreator rq = null;
         if(mUrl!=null){
-            rq = p.load(mUrl).placeholder(R.drawable.hannibal);
+            rq = p.load(mUrl).placeholder(R.drawable.adtwo);
         }else if(mFile != null){
-            rq = p.load(mFile).placeholder(R.drawable.hannibal);
+            rq = p.load(mFile).placeholder(R.drawable.adtwo);
         }else if(mRes != 0){
-            rq = p.load(mRes).placeholder(R.drawable.hannibal);
+            rq = p.load(mRes).placeholder(R.drawable.adtwo);
         }else{
             return;
         }

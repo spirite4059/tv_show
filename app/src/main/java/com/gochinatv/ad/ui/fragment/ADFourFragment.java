@@ -39,14 +39,12 @@ public class ADFourFragment extends BaseFragment {
 
     @Override
     protected void init() {
-        autoTextView.setText("东方嘉禾");
+        autoTextView.setText("2016/03/31 19:00 Tuesday,Washington DC      内容合作Contact us:Service@gochinatv.com");
         stringList = new ArrayList<>();
-        stringList.add("死神");
-        stringList.add("海贼王");
-        stringList.add("灌篮高手AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-        stringList.add("火影忍者");
-        stringList.add("银魂");
 
+        stringList.add("2016/03/31 19:00 Tuesday,Washington DC");
+        stringList.add("内容合作Contact us:Service@gochinatv.com");
+        stringList.add("2016/03/31 19:00 Tuesday,Washington DC      内容合作Contact us:Service@gochinatv.com");
         cycleTextTimer = new Timer();
         cycleTextTimer.schedule(new CycleText(),10000,10000);
     }

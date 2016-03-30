@@ -1,17 +1,22 @@
 package com.gochinatv.ad.ui.fragment;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
+import com.daimajia.slider.library.Indicators.PagerIndicator;
+import com.daimajia.slider.library.SliderLayout;
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
+import com.daimajia.slider.library.SliderTypes.TextSliderView;
 import com.daimajia.slider.library.Tricks.ViewPagerEx;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
+
+import java.util.HashMap;
 
 /**
  *
@@ -20,7 +25,7 @@ import com.gochinatv.ad.tools.LogCat;
 public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSliderClickListener, ViewPagerEx.OnPageChangeListener{
 
 
-//    private SliderLayout mDemoSlider;
+    private SliderLayout mDemoSlider;
 
     private WebView webView;
 
@@ -47,63 +52,59 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
     @Override
     protected void initView(View rootView) {
-//        mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);\
-        webView = (WebView) rootView.findViewById(R.id.webview);
+        mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
+        //webView = (WebView) rootView.findViewById(R.id.webview);
 
     }
 
     @Override
     protected void init() {
 
-//        HashMap<String,String> url_maps = new HashMap<String, String>();
-//        url_maps.put("Hannibal", "http://static2.hypable.com/wp-content/uploads/2013/12/hannibal-season-2-release-date.jpg");
-//        //url_maps.put("Big Bang Theory", "http://tvfiles.alphacoders.com/100/hdclearart-10.png");
-//        //url_maps.put("House of Cards", "http://cdn3.nflximg.net/images/3093/2043093.jpg");
-//        //url_maps.put("Game of Thrones", "http://images.boomsbeat.com/data/images/full/19640/game-of-thrones-season-4-jpg.jpg");
-//
-//
-//
-//        for(String adVideoName : url_maps.keySet()){
-//            TextSliderView textSliderView = new TextSliderView(getActivity());
-//            // initialize a SliderLayout
-//            textSliderView
-//                    .description(adVideoName)
-//                    .image(url_maps.get(adVideoName))
-//                    .setScaleType(BaseSliderView.ScaleType.Fit)
-//                    .setOnSliderClickListener(this);
-//
-//            //add your extra information
-//            textSliderView.bundle(new Bundle());
-//            textSliderView.getBundle()
-//                    .putString("extra",adVideoName);
-//
-//            mDemoSlider.addSlider(textSliderView);
-//        }
-//        mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
-//        mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
-//        mDemoSlider.setCustomAnimation(null);
-//        mDemoSlider.setDuration(10000);
-//        mDemoSlider.addOnPageChangeListener(this);
-//        //当只有一张照片时，不显示小点和动画
-//        mDemoSlider.stopAutoCycle();
-//        mDemoSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
+        HashMap<String,Integer> url_maps = new HashMap<String, Integer>();
+        url_maps.put("Hannibal", R.drawable.adtwo);
+        url_maps.put("Big Bang Theory", R.drawable.news);
+        url_maps.put("House of Cards", R.drawable.news2);
+        url_maps.put("Game of Thrones", R.drawable.news3);
+        for(String adVideoName : url_maps.keySet()){
+            TextSliderView textSliderView = new TextSliderView(getActivity());
+            // initialize a SliderLayout
+            textSliderView
+                    .description(adVideoName)
+                    .image(url_maps.get(adVideoName))
+                    .setScaleType(BaseSliderView.ScaleType.Fit)
+                    .setOnSliderClickListener(this);
+
+            //add your extra information
+            textSliderView.bundle(new Bundle());
+            textSliderView.getBundle()
+                    .putString("extra",adVideoName);
+
+            mDemoSlider.addSlider(textSliderView);
+        }
+        mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
+        mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
+        mDemoSlider.setCustomAnimation(null);
+        mDemoSlider.setDuration(10000);
+        mDemoSlider.addOnPageChangeListener(this);
+        //当只有一张照片时，不显示小点和动画
+        mDemoSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
 
 
 
-        webView.loadUrl("http://blog.csdn.net/woshinia/article/details/11520403");
+        //webView.loadUrl("http://blog.csdn.net/woshinia/article/details/11520403");
     }
 
     @Override
     protected void bindEvent() {
-        webView.setWebViewClient(new WebViewClient(){
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // TODO Auto-generated method stub
-                //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
-                view.loadUrl(url);
-                return true;
-            }
-        });
+//        webView.setWebViewClient(new WebViewClient(){
+//            @Override
+//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//                // TODO Auto-generated method stub
+//                //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
+//                view.loadUrl(url);
+//                return true;
+//            }
+//        });
     }
 
 

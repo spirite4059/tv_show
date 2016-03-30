@@ -6,7 +6,7 @@
 
     <ImageView
         android:id="@+id/ad_three_img"
-        android:layout_width="@dimen/d_162dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
         android:scaleType="fitXY"
@@ -26,10 +26,10 @@
             android:layout_weight="2"
             android:layout_gravity="center_vertical"
             android:maxLines="2"
-            android:text="辣子鸡aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            android:text="辣子鸡"
             android:textColor="@android:color/black"
             android:paddingLeft="@dimen/d_10dp"
-            android:background="@android:color/darker_gray"
+            android:textSize="@dimen/d_14sp"
             />
 
         <TextView
@@ -42,7 +42,7 @@
             android:text="25元"
             android:textColor="@android:color/black"
             android:gravity="center"
-            android:background="@android:color/holo_red_light"
+            android:textSize="@dimen/d_14sp"
             />
     </LinearLayout>
 

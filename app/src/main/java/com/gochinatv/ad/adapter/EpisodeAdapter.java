@@ -50,7 +50,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
         holder.tvPrice.setText(episodeBean.adImgPrice);
 
 
-        holder.iv.setBackgroundResource(R.drawable.hannibal);
+        //holder.iv.setBackgroundResource(R.drawable.hannibal);
     }
 
 

@@ -12,10 +12,10 @@
         android:id="@+id/auto_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        auto3d:textSize="@dimen/d_30sp"
+        auto3d:textSize="@dimen/d_24sp"
         android:background="@android:color/black"
-        android:paddingTop="@dimen/d_10dp"
-        android:paddingBottom="@dimen/d_10dp"
+        android:padding="@dimen/d_10dp"
+
 
         >
     </com.gochinatv.ad.ui.view.AutoTextView>
