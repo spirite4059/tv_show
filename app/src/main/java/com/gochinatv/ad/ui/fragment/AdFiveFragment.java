@@ -11,7 +11,11 @@ import com.gochinatv.ad.adapter.EpisodeAdapter;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.recycler.EpisodeLayoutManager;
 import com.gochinatv.ad.recycler.NoTouchRecyclerView;
+import com.okhtttp.OkHttpCallBack;
+import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.AdImgResponse;
+import com.okhtttp.response.AdThreeDataResponse;
+import com.tools.HttpUrls;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -28,6 +32,7 @@ public class AdFiveFragment extends BaseFragment {
     private EpisodeLayoutManager episodeLayoutManager;
     private Timer flushTimer;
     private int position = 2;
+    private ArrayList<AdImgResponse> imgResponses;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -77,7 +82,7 @@ public class AdFiveFragment extends BaseFragment {
         super.onStop();
     }
 
-    private ArrayList<AdImgResponse> imgResponses;
+
     protected void initData() {
         imgResponses = new ArrayList<>();
         for (int i = 'A'; i < 'Z'; i++) {
@@ -87,6 +92,70 @@ public class AdFiveFragment extends BaseFragment {
             adImgResponse.adImgUrl = String.valueOf((int) i - 65);
             imgResponses.add(adImgResponse);
         }
+
+//        //请求图片
+        OkHttpUtils.getInstance().doHttpGet(HttpUrls.URL_GET_AD_THREE, new OkHttpCallBack<AdThreeDataResponse>() {
+            @Override
+            public void onSuccess(String url, AdThreeDataResponse response) {
+                if(!isAdded()){
+                    return;
+                }
+                if(response == null ||!(response instanceof AdThreeDataResponse)){
+                    //再次请求
+                }
+
+                if(response.data == null || !(response.data instanceof ArrayList)){
+                    //再次请求
+                }
+                imgResponses = response.data;
+                int totalSize = imgResponses.size();
+                if(totalSize == 0){
+
+
+
+                }else if(totalSize == 1){
+
+
+
+
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+
+            }
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
     @Override
