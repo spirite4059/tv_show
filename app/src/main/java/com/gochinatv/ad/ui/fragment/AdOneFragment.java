@@ -111,26 +111,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         DeleteFileUtils.getInstance().deleteFile(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
 
 
-        if(downloadLists == null){
-            downloadLists = new ArrayList<>();
-        }
-
-        // 本地缓存中还有用的视频，或者预置片
-        if(playVideoLists == null){
-            playVideoLists = new ArrayList<>();
-        }
-
-        // 本地缓存中已经无用的视频
-        if(deleteLists == null){
-            deleteLists = new ArrayList<>();
-        }
-
-        // 预下载视频列表
-        if(prepareDownloadLists == null){
-            prepareDownloadLists = new ArrayList<>();
-        }
-
-
         // 请求视频列表
         httpRequest();
 
@@ -321,7 +301,16 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     private void matchVideos(ArrayList<AdDetailResponse> todayVideos, ArrayList<AdDetailResponse> tomorrowVideos) {
         // serverList 去除本地缓存中需要用到的就是都要下载的
 
+        downloadLists = new ArrayList<>();
 
+        // 本地缓存中还有用的视频，或者预置片
+        playVideoLists = new ArrayList<>();
+
+        // 本地缓存中已经无用的视频
+        deleteLists = new ArrayList<>();
+
+        // 预下载视频列表
+        prepareDownloadLists = new ArrayList<>();
 
         // 默认全部视频都需要下载
         downloadLists.addAll(todayVideos);
