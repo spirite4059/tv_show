@@ -71,7 +71,7 @@ public class ScreenShotRunnable implements Runnable{
             fileRoot.mkdirs();
         }
 
-        File file = new File(rootPath, fileName + Constants.FILE_SCREEN_SHOT_NAME);
+        File file = new File(rootPath, Constants.FILE_SCREEN_SHOT_NAME);
         if(!file.exists()){
             try {
                 file.createNewFile();
