@@ -7,7 +7,7 @@ public class LogCat {
 
 	public static boolean isDebug = true; // 是否开启了debug模式,在menifast.xml中定义.
 	public static final String DIVIDER = " ---> "; // 日志追踪默认的位置
-	public static final String TAG = "StatisticalAnalusis";
+	public static final String TAG = "CHINA_RESTAURANT";
 	
 	public static String getDefMsg(String msg) {
 		return LogCat.DIVIDER + msg;

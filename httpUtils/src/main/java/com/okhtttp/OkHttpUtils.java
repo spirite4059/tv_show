@@ -126,6 +126,8 @@ public class OkHttpUtils {
             public void onResponse(Call call, Response response) throws IOException {
                 if (response != null && response.body() != null) {
                     String json = response.body().string();
+//                    LogCat.e("json: " + json);
+//                    LogCat.e("realUrl: " + realUrl);
                     if (!TextUtils.isEmpty(json)) {
                         sendSuccessResultCallback(realUrl, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
                     }
@@ -174,18 +176,13 @@ public class OkHttpUtils {
                 .post(requestBody)
                 .build();
         final Call call = mOkHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                LogCat.e("上传失败。。。。。");
-            }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                LogCat.e("上传成功。。。。。");
-            }
-        });
-
+        Response response = call.execute();
+        if(response.isSuccessful()){
+            LogCat.e("上传成功。。。。。");
+        }else {
+            LogCat.e("截屏上传失败。。。。。");
+        }
     }
 
 

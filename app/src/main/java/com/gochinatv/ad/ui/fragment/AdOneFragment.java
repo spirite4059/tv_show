@@ -18,6 +18,7 @@ import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.ScreenShotUtils;
 import com.gochinatv.ad.video.MeasureVideoView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -55,7 +56,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     /**
      * 下载重试次数
      */
-    private int retryGetVIdeoListTimes;
+    private int retryGetVideoListTimes;
 
     /**
      * 下载info
@@ -74,6 +75,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     private boolean isDownloadVideo;
 
     private String videoUrl;
+
+    private Timer screenShotTimer;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -108,6 +111,31 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         DeleteFileUtils.getInstance().deleteFile(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
         // 请求视频列表
         httpRequest();
+
+
+        // 开启上传截图
+        screenShotTimer = new Timer();
+        screenShotTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // 开始截屏
+                // 当前正在播放的视频
+                AdDetailResponse videoAdBean = null;
+                if (playVideoLists == null || playVideoLists.size() < 2) {
+                    videoAdBean = localVideoList.get(playVideoIndex);
+                } else {
+                    videoAdBean = playVideoLists.get(playVideoIndex);
+                }
+                if(videoAdBean == null){
+                    return;
+                }
+                if(videoView == null){
+                    return;
+                }
+                ScreenShotUtils.screenShot(getActivity(), videoView.getCurrentPosition(), 0.5f, 0.5f, videoAdBean.name + Constants.FILE_DOWNLOAD_EXTENSION);
+            }
+        }, 1000 * 60, 1000 * 60);
+
     }
 
 
@@ -122,6 +150,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 hideLoading();
                 LogCat.e("video_onPrepared....");
                 videoView.start();
+
+
+
             }
         });
 
@@ -211,7 +242,13 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         DLUtils.init().cancel();
 
+        ScreenShotUtils.shutdown();
 
+
+        if(screenShotTimer != null){
+            screenShotTimer.cancel();
+
+        }
     }
 
     @Override
@@ -471,7 +508,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             return;
         }
         this.videoUrl = url;
-        retryGetVIdeoListTimes = 0;
+        retryGetVideoListTimes = 0;
         LogCat.e("获取到当前视频的下载地址。。。。。。。。" + url);
         download(url);
 
@@ -497,12 +534,12 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         } else {
             LogCat.e("只剩最后一个视频。。。。");
-            if (retryGetVIdeoListTimes < 2) {
-                retryGetVIdeoListTimes++;
-                LogCat.e("第 " + retryGetVIdeoListTimes + " 次重新尝试获取下载地址");
+            if (retryGetVideoListTimes < 2) {
+                retryGetVideoListTimes++;
+                LogCat.e("第 " + retryGetVideoListTimes + " 次重新尝试获取下载地址");
                 prepareDownloading();
             } else {
-                retryGetVIdeoListTimes = 0;
+                retryGetVideoListTimes = 0;
                 LogCat.e("经过尝试后，仍无法获取到当前视频的下载地址，放弃此次下载");
             }
         }
@@ -551,12 +588,12 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 @Override
                 public void run() {
                     LogCat.e("5秒后继续尝试，如此循环。。。。");
-                    if (retryGetVIdeoListTimes < 3) {
-                        retryGetVIdeoListTimes++;
-                        LogCat.e("继续重试3次下载，此时是第" + retryGetVIdeoListTimes + "次尝试。。。。");
+                    if (retryGetVideoListTimes < 3) {
+                        retryGetVideoListTimes++;
+                        LogCat.e("继续重试3次下载，此时是第" + retryGetVideoListTimes + "次尝试。。。。");
                         download(videoUrl);
                     } else {
-                        retryGetVIdeoListTimes = 0;
+                        retryGetVideoListTimes = 0;
                         LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
                         downloadLists.add(size, downloadingVideoResponse);
                         downloadLists.remove(0);
