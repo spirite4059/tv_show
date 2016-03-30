@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.media.MediaMetadataRetriever;
-import android.util.Log;
 import android.view.View;
 
 import com.gochinatv.ad.tools.Constants;
@@ -71,7 +70,8 @@ public class ScreenShotRunnable implements Runnable{
         if(!fileRoot.exists()){
             fileRoot.mkdirs();
         }
-        File file = new File(rootPath, Constants.FILE_SCREEN_SHOT_NAME);
+
+        File file = new File(rootPath, fileName + Constants.FILE_SCREEN_SHOT_NAME);
         if(!file.exists()){
             try {
                 file.createNewFile();
@@ -105,6 +105,8 @@ public class ScreenShotRunnable implements Runnable{
                     e.printStackTrace();
                 }
 
+            }else {
+                LogCat.e("截屏失败......");
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -170,16 +172,21 @@ public class ScreenShotRunnable implements Runnable{
         Bitmap videoBitmap = null;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {// MODE_CAPTURE_FRAME_ONLY
-            retriever.setDataSource(DataUtils.getVideoDirectory() + fileName);
+            retriever.setDataSource(fileName);
             String timeString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            long time = Long.parseLong(timeString) * 1000;
-            Log.i("TAG", "time = " + time); // 64160000
-            videoBitmap = retriever.getFrameAtTime(currentTime); //按视频长度比例选择帧
+            long time = Long.parseLong(timeString);
+//            LogCat.e("获取到的视频长度：" + time);
+//            LogCat.e("获取到的视频长度：" + retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
+//            LogCat.e("获取到的视频名称：" + fileName);
+//            LogCat.e("currentTime：" + (currentTime));
+            // 时间参数是微妙
+            videoBitmap = retriever.getFrameAtTime(currentTime * 1000,MediaMetadataRetriever.OPTION_CLOSEST_SYNC); //按视频长度比例选择帧
             Matrix videoMatrix = new Matrix();
             videoMatrix.postScale(videoScale, videoScale); //长和宽放大缩小的比例
             videoBitmap = Bitmap.createBitmap(videoBitmap, 0, 0, width, height, videoMatrix, true);
         } catch (IllegalArgumentException ex) {
             // Assume this is a corrupt video file
+            ex.printStackTrace();
         } finally {
             try {
                 retriever.release();

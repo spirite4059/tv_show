@@ -72,7 +72,7 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
     protected void doHttpGetCdnPath(final String vid) {
         LogCat.e("获取cdn的真是地址。。。。。。。" + vid);
         Map<String, String> url = new HashMap();
-        url.put("adVideoUrl", HttpUrls.SECURITY_CHAIN_URL + vid);
+        url.put("url", HttpUrls.SECURITY_CHAIN_URL + vid);
 
         OkHttpUtils.getInstance().doHttpGet(HttpUrls.HTTP_URL_CDN_PATH, url, new OkHttpCallBack<CdnPathResponse>() {
             @Override

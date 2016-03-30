@@ -27,14 +27,15 @@ public class ScreenShotUtils {
      * @param videoName：当前播放视频的文件名称
      */
     public static void screenShot(Activity activity, int currentTime, float bgScale, float videoScale, String videoName){
-        if(service == null){
-            service = Executors.newSingleThreadScheduledExecutor();
+        if(service != null){
+            service.shutdown();
+            service = null;
         }
-        service.shutdown();
+        service = Executors.newSingleThreadScheduledExecutor();
 
         ScreenShotRunnable screenShotRunnable = new ScreenShotRunnable(activity, currentTime, bgScale, videoScale, videoName);
 
-        service.submit(screenShotRunnable);
+        service.execute(screenShotRunnable);
     }
 
 
