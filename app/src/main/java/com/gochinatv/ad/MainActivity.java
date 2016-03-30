@@ -5,10 +5,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 
-import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
-import com.gochinatv.ad.ui.fragment.AdFiveFragment;
-import com.gochinatv.ad.ui.fragment.AdOneFragment;
 
 /**
  * Created by fq_mbp on 16/3/17.
@@ -23,13 +20,13 @@ public class MainActivity extends Activity {
         FragmentManager fm = getFragmentManager();
 
         FragmentTransaction ft = fm.beginTransaction();
-
-        ft.add(R.id.root_main, new AdOneFragment());
-        ft.add(R.id.root_main, new ADTwoFragment());
-//        ft.add(R.id.root_main, new ADThreeFragment());
-        ft.add(R.id.root_main, new AdFiveFragment());
-        ft.add(R.id.root_main, new ADFourFragment());
-        ft.commit();
+//
+//        ft.add(R.id.root_main, new AdOneFragment());
+          ft.add(R.id.root_main, new ADTwoFragment());
+////        ft.add(R.id.root_main, new ADThreeFragment());
+//        ft.add(R.id.root_main, new AdFiveFragment());
+//        ft.add(R.id.root_main, new ADFourFragment());
+          ft.commit();
 //        //添加图片广告
 //        ADThreeFragment fragmentThree = new  ADThreeFragment();
 //        FragmentManager fm3 = getFragmentManager();
