@@ -98,7 +98,7 @@ public class AdFiveFragment extends BaseFragment {
                     initData();
                 }
                 imgResponses = response.data;
-                imgResponses.addAll(imgResponses);
+                //imgResponses.addAll(imgResponses);
                 int totalSize = imgResponses.size();
                 if(totalSize == 0){
 
