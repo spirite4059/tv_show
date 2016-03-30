@@ -5,9 +5,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.gochinatv.ad.R;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -50,7 +50,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
         holder.tvPrice.setText(episodeBean.adImgPrice);
 
 
-        holder.iv.setBackgroundResource(R.drawable.hannibal);
+        //holder.iv.setBackgroundResource(R.drawable.hannibal);
     }
 
 
@@ -64,13 +64,13 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
 
         TextView tvTitle;
         TextView tvPrice;
-        ImageView iv;
+        SimpleDraweeView iv;
 
         public MyViewHolder(View itemView) {
             super(itemView);
             tvTitle = (TextView) itemView.findViewById(R.id.ad_three_text_name);
             tvPrice = (TextView) itemView.findViewById(R.id.ad_three_text_price);
-            iv = (ImageView) itemView.findViewById(R.id.ad_three_img);
+            iv = (SimpleDraweeView) itemView.findViewById(R.id.ad_three_img);
         }
     }
 

@@ -23,13 +23,12 @@ public class MainActivity extends Activity {
         FragmentManager fm = getFragmentManager();
 
         FragmentTransaction ft = fm.beginTransaction();
-
-        ft.add(R.id.root_main, new AdOneFragment());
-        ft.add(R.id.root_main, new ADTwoFragment());
-//        ft.add(R.id.root_main, new ADThreeFragment());
-        ft.add(R.id.root_main, new AdFiveFragment());
-        ft.add(R.id.root_main, new ADFourFragment());
-        ft.commit();
+          ft.add(R.id.root_main, new AdOneFragment());
+          ft.add(R.id.root_main, new ADTwoFragment());
+////        ft.add(R.id.root_main, new ADThreeFragment());
+           ft.add(R.id.root_main, new AdFiveFragment());
+          ft.add(R.id.root_main, new ADFourFragment());
+          ft.commit();
 //        //添加图片广告
 //        ADThreeFragment fragmentThree = new  ADThreeFragment();
 //        FragmentManager fm3 = getFragmentManager();

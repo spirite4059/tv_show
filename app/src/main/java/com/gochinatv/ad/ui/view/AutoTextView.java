@@ -6,7 +6,6 @@ import android.graphics.Camera;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
@@ -44,7 +43,7 @@ public class AutoTextView extends TextSwitcher implements
         super(context, attrs);
         // TODO Auto-generated constructor stub
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.auto3d);
-        mHeight = a.getDimension(R.styleable.auto3d_textSize, R.dimen.d_30sp);
+        mHeight = a.getDimension(R.styleable.auto3d_textSize, R.dimen.d_24sp);
         a.recycle();
         mContext = context;
         init();
@@ -78,7 +77,7 @@ public class AutoTextView extends TextSwitcher implements
         // TODO Auto-generated method stub
         TextView t = new TextView(mContext);
         t.setTextColor(Color.WHITE);
-        t.setGravity(Gravity.CENTER);
+
         t.setTextSize(mHeight);
         t.setMaxLines(1);
         return t;

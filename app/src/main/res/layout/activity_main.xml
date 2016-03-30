@@ -9,8 +9,42 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="@dimen/d_60dp"
+        android:layout_marginLeft="@dimen/d_20dp"
         android:src="@mipmap/logo"
         android:scaleType="fitCenter"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/d_80dp"
+        >
+
+        <ImageView
+            android:layout_width="@dimen/d_216dp"
+            android:layout_height="@dimen/d_288dp"
+            android:layout_marginLeft="@dimen/d_20dp"
+            android:src="@drawable/adtwo"
+            android:scaleType="fitXY"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/d_20dp"
+            android:src="@drawable/adtwo"
+            android:scaleType="fitXY"/>
+        <ImageView
+            android:layout_width="@dimen/d_216dp"
+            android:layout_height="@dimen/d_288dp"
+            android:layout_marginLeft="@dimen/d_20dp"
+            android:src="@drawable/news2"
+            android:scaleType="fitXY"/>
+
+    </LinearLayout>
+
+
+
 
     <!--<Button-->
         <!--android:id="@+id/bbb"-->

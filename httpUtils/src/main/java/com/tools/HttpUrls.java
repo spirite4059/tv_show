@@ -40,4 +40,11 @@ public class HttpUrls {
      */
     public static final String URL_GET_SERVER_TIMELONG = "http://cloudapi.vego.tv/device-tv/sys/time";
 
+
+    /**
+     * 广告三
+     */
+    public static final String URL_GET_AD_THREE = "http://210.14.151.100:8090/api/ad_v1/getImageAdList";
+
+
 }
