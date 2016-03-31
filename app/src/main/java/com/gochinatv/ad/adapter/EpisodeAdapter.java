@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.gochinatv.ad.R;
+import com.gochinatv.ad.tools.LogCat;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -28,6 +29,8 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
     private ArrayList<AdImgResponse> imgResponses;
     private DisplayImageOptions options;
     private ImageLoader imageLoader;
+
+
 
     public EpisodeAdapter(Context context, ArrayList<AdImgResponse> imgResponses) {
         mLayoutInflater = LayoutInflater.from(context);
@@ -57,22 +60,27 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        int curPosition = position % imgResponses.size();
-        AdImgResponse episodeBean = imgResponses.get(curPosition);
-        holder.tvTitle.setText(episodeBean.adImgName);
+        if(imgResponses != null && imgResponses.size()>0 ){
+            int curPosition = position % imgResponses.size();
+            AdImgResponse episodeBean = imgResponses.get(curPosition);
+            holder.tvTitle.setText(episodeBean.adImgName);
 
-        if(!TextUtils.isEmpty(episodeBean.adImgPrice)){
-            holder.tvPrice.setText(episodeBean.adImgPrice + "元");
+            if(!TextUtils.isEmpty(episodeBean.adImgPrice)){
+                holder.tvPrice.setText(episodeBean.adImgPrice + "元");
+            }else{
+                holder.tvPrice.setText(episodeBean.adImgPrice);
+            }
+
+            if("localPicture".equals(episodeBean.adImgUrl)){
+                imageLoader.displayImage("drawable://" + R.drawable.ad_three_loading1,holder.iv,options);
+            }else {
+                imageLoader.displayImage(episodeBean.adImgUrl,holder.iv,options);
+            }
+
+            for(AdImgResponse adImgResponse :imgResponses){
+                LogCat.e("%%%%%%%%%%%  EpisodeAdapter %%%%%%%%%%轮循请求图片    " + adImgResponse.adImgName);
+            }
         }
-
-        if("localPicture".equals(episodeBean.adImgUrl)){
-            imageLoader.displayImage("drawable://" + R.drawable.ad_three_loading1,holder.iv,options);
-        }else {
-            imageLoader.displayImage(episodeBean.adImgUrl,holder.iv,options);
-        }
-
-
-
 
 //        //Uri uri = Uri.parse("res://com.gochinatv.ad/" + R.drawable.news3);
 //        Uri uri = Uri.parse(episodeBean.adImgUrl);
@@ -97,6 +105,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
     @Override
     public int getItemCount() {
         return Integer.MAX_VALUE;
+        //return imgResponses.size();
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -112,6 +121,18 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
             iv = (ImageView) itemView.findViewById(R.id.ad_three_img);
         }
     }
+
+
+    /**
+     * 刷新数据
+     */
+
+    public void referenceData(ArrayList<AdImgResponse> imgResponses){
+        this.imgResponses = imgResponses;
+        notifyDataSetChanged();
+    }
+
+
 
 
 

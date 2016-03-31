@@ -14,6 +14,7 @@ import com.gochinatv.ad.adapter.EpisodeAdapter;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.recycler.EpisodeLayoutManager;
 import com.gochinatv.ad.recycler.NoTouchRecyclerView;
+import com.gochinatv.ad.tools.LogCat;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.AdImgResponse;
@@ -33,10 +34,14 @@ public class AdFiveFragment extends BaseFragment {
     public RelativeLayout relEpisodeRoot;
     private NoTouchRecyclerView recyclerView;
     private EpisodeLayoutManager episodeLayoutManager;
+    private EpisodeAdapter episodeAdapter;
     private Timer flushTimer;
     private int position = 2;
     private ArrayList<AdImgResponse> imgResponses;
     private ImageView adThreeBg;
+
+    private Timer getImageTimer;//请求图片广告timer
+
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -67,59 +72,64 @@ public class AdFiveFragment extends BaseFragment {
             flushTimer = null;
         }
 
+        if(getImageTimer != null){
+            getImageTimer.cancel();
+            getImageTimer = null;
+        }
+
+
         super.onStop();
     }
 
 
     protected void initData() {
-//        imgResponses = new ArrayList<>();
-//        for (int i = 'A'; i < 'Z'; i++) {
-//            AdImgResponse adImgResponse = new AdImgResponse();
-//            adImgResponse.adImgName = "category " + ((int) i - 65);
-//            adImgResponse.adImgPrice = String.valueOf((int) i - 65);
-//            adImgResponse.adImgUrl = String.valueOf((int) i - 65);
-//            imgResponses.add(adImgResponse);
-//        }
 
 //        //请求图片
         OkHttpUtils.getInstance().doHttpGet(HttpUrls.URL_GET_AD_THREE, new OkHttpCallBack<AdThreeDataResponse>() {
             @Override
             public void onSuccess(String url, AdThreeDataResponse response) {
-                if(!isAdded()){
+                if (!isAdded()) {
                     return;
                 }
-                if(response == null ||!(response instanceof AdThreeDataResponse)){
+                if (response == null || !(response instanceof AdThreeDataResponse)) {
                     //再次请求
                     initData();
                 }
 
-                if(response.data == null || !(response.data instanceof ArrayList)){
+                if (response.data == null || !(response.data instanceof ArrayList)) {
                     //再次请求
+                    LogCat.e(" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     initData();
                 }
                 imgResponses = response.data;
-                //imgResponses.addAll(imgResponses);
                 int totalSize = imgResponses.size();
-                if(totalSize == 0){
+                if (totalSize == 0) {
+                    LogCat.e(" totalSize == 0  totalSize == 0 没有广告图片");
 
-
-
-                }else if(totalSize == 1){
+                } else if (totalSize == 1) {
                     AdImgResponse adImgResponse = new AdImgResponse();
                     adImgResponse.adImgName = "";
                     adImgResponse.adImgPrice = "";
                     adImgResponse.adImgUrl = "localPicture";
                     imgResponses.add(adImgResponse);
                     setAdapter(totalSize);
-                }else{
+                } else {
                     setAdapter(totalSize);
                 }
 
+                //开启定时器每隔3分钟请求接口
+                getImageTimer = new Timer();
+                getImageTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        getImageRequest();
+                    }
+                }, 120000, 120000);
             }
 
             @Override
             public void onError(String url, String errorMsg) {
-                if(!isAdded()){
+                if (!isAdded()) {
                     return;
                 }
                 initData();
@@ -134,13 +144,13 @@ public class AdFiveFragment extends BaseFragment {
 
     private void setAdapter(final int totalSize){
 
-        ObjectAnimator objectAnimator = new ObjectAnimator().ofFloat(adThreeBg, "x", 0f, 300f).setDuration(3000);
+        ObjectAnimator objectAnimator = new ObjectAnimator().ofFloat(adThreeBg, "alpha", 1.0f, 0f).setDuration(3000);
         objectAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
                 episodeLayoutManager = new EpisodeLayoutManager(getActivity(), LinearLayoutManager.VERTICAL);
                 recyclerView.setLayoutManager(episodeLayoutManager);
-                EpisodeAdapter episodeAdapter = new EpisodeAdapter(getActivity(), imgResponses);
+                episodeAdapter = new EpisodeAdapter(getActivity(), imgResponses);
                 recyclerView.setAdapter(episodeAdapter);
             }
 
@@ -195,7 +205,121 @@ public class AdFiveFragment extends BaseFragment {
     }
 
 
+    /**
+     * 请求广告图片
+     */
+     private void getImageRequest(){
+         OkHttpUtils.getInstance().doHttpGet(HttpUrls.URL_GET_AD_THREE, new OkHttpCallBack<AdThreeDataResponse>() {
+             @Override
+             public void onSuccess(String url, AdThreeDataResponse response) {
+                 if (!isAdded()) {
+                     return;
+                 }
+                 if (response == null || !(response instanceof AdThreeDataResponse)) {
+                     //再次请求
+                     getImageRequest();
+                 }
+                 if (response.data == null || !(response.data instanceof ArrayList)) {
+                     //再次请求
+                     getImageRequest();
+                 }
+                 LogCat.e("轮循请求图片");
+                 imgResponses = response.data;
+                 int totalSize = imgResponses.size();
+                 if(totalSize != 0){
+                     for(AdImgResponse adImgResponse :imgResponses){
+                         LogCat.e("#################轮循请求图片    " +adImgResponse.adImgName );
+                     }
+                 }
+                 if(totalSize == 0){
+                     LogCat.e(" totalSize == 0  totalSize == 0 没有广告图片");
+                     adThreeBg.setAlpha(1.0f);
+                     adThreeBg.setVisibility(View.VISIBLE);//隐藏bg
+                     if(flushTimer != null ){
+                         flushTimer.cancel();
+                         flushTimer = null;
+                     }
+                     if(episodeAdapter != null){
+                         episodeAdapter.referenceData(imgResponses);
+                     }
 
+                 }else if(totalSize == 1){
+                     hideBGImage();
+                     AdImgResponse adImgResponse = new AdImgResponse();
+                     adImgResponse.adImgName = "";
+                     adImgResponse.adImgPrice = "";
+                     adImgResponse.adImgUrl = "localPicture";
+                     imgResponses.add(adImgResponse);
+                     if(flushTimer != null ){
+                         flushTimer.cancel();
+                         flushTimer = null;
+                     }
+                     if(episodeAdapter != null){
+                         episodeAdapter.referenceData(imgResponses);
+                     }
+                 }else{
+                     hideBGImage();
+                     if(episodeAdapter != null){
+                         episodeAdapter.referenceData(imgResponses);
+                     }
+                     if(flushTimer == null && totalSize>2){
+                         flushTimer = new Timer();
+                         flushTimer.schedule(new TimerTask() {
+                             @Override
+                             public void run() {
+                                 episodeLayoutManager.smoothScrollTop(recyclerView, position);
+                                 position++;
+                             }
+                         }, 5000, 5000);
+                     }else{
+
+                     }
+                 }
+
+             }
+
+             @Override
+             public void onError(String url, String errorMsg) {
+                 if (!isAdded()) {
+                     return;
+                 }
+                 getImageRequest();
+             }
+         });
+
+
+     }
+
+    /**
+     * 隐藏BG图
+     */
+    private void hideBGImage(){
+        if(adThreeBg != null){
+            ObjectAnimator animator = new ObjectAnimator().ofFloat(adThreeBg, "alpha", 1.0f, 0f).setDuration(3000);
+            animator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    adThreeBg.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    adThreeBg.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            animator.start();
+        }
+    }
 
 
 }

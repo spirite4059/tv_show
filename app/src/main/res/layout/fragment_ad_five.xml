@@ -5,15 +5,19 @@
     android:layout_height="@dimen/d_432dp"
     android:layout_alignParentRight="true"
     android:layout_alignParentBottom="true"
-    android:background="@android:color/white"
-    android:orientation="vertical">
+
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/d_4dp"
+    >
 
 
     <com.gochinatv.ad.recycler.NoTouchRecyclerView
         android:id="@+id/recycler_episodes"
         android:layout_width="@dimen/d_650dp"
         android:layout_height="match_parent"
-        android:layout_alignParentRight="true" />
+        android:layout_alignParentRight="true"
+        android:background="@android:color/white"
+        />
 
 
     <ImageView

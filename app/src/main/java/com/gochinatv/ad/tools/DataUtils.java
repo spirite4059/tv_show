@@ -597,6 +597,8 @@ public class DataUtils {
 	public static int getDisplayMetricsWidth(Activity context){
 		DisplayMetrics metrics = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		//metrics.density
+		LogCat.e("metrics.density  "+ metrics.density +" metrics.densityDpi "+metrics.densityDpi);
          return metrics.widthPixels;
 	}
 
