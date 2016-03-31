@@ -122,7 +122,7 @@ public class TestActivity extends BaseActivity {
             playVideo(getRawVideoUri());
             return;
         }
-        dlUtils = DLUtils.init();
+        dlUtils = DLUtils.init(this);
         // 实例化本地视频集合
         localVideoTable = new ArrayList<>();
         // 实例化播放列表集合
@@ -615,6 +615,11 @@ public class TestActivity extends BaseActivity {
                 LogCat.e("onCancel............. ");
             }
 
+            @Override
+            public void onDownloading(String fileName) {
+
+            }
+
             private void logProgress(long progress){
                 double size = (int) (progress / 1024);
                 String sizeStr;
@@ -742,6 +747,11 @@ public class TestActivity extends BaseActivity {
             public void onCancel() {
                 LogCat.e("onCancel............. ");
 
+
+            }
+
+            @Override
+            public void onDownloading(String fileName) {
 
             }
 

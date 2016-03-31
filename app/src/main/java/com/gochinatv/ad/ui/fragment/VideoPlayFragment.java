@@ -210,7 +210,7 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
             httpTimer = null;
         }
 
-        DLUtils.init().cancel();
+        DLUtils.init(getActivity()).cancel();
 
 
     }
@@ -219,7 +219,7 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
     protected void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo) {
         this.updateInfo = updateInfo;
         isDownloadVideo = false;
-        DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, this);
+        DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, this);
 
     }
 
@@ -480,7 +480,7 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
                 public void run() {
                     LogCat.e("5秒后继续尝试，如此循环。。。。");
                     isDownloadVideo = false;
-                    DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, VideoPlayFragment.this);
+                    DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, VideoPlayFragment.this);
                 }
             }, 5000);
 
@@ -513,7 +513,7 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
     private void download(String url) {
         isDownloadVideo = true;
         // 一个视频一个视频的下载
-        DownloadUtils.download(Constants.FILE_DIRECTORY_VIDEO, downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
+        DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_VIDEO, downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
 

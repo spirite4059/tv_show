@@ -11,4 +11,6 @@ public interface OnDownloadStatusListener {
     void onFinish(String filePath);
 
     void onCancel();
+
+    void onDownloading(String fileName);
 }

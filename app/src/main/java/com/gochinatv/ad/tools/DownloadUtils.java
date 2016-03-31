@@ -1,5 +1,7 @@
 package com.gochinatv.ad.tools;
 
+import android.content.Context;
+
 import com.download.DLUtils;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
@@ -13,9 +15,9 @@ public class DownloadUtils {
 
     private static final int MAX_THREAD_NUMBER = 2;
 
-    public static void download(String dir, String fileName, final String fileUrl, final OnUpgradeStatusListener listener){
+    public static void download(Context context, String dir, String fileName, final String fileUrl, final OnUpgradeStatusListener listener){
         String path = DataUtils.getSdCardFileDirectory() + dir;
-        DLUtils.init().download(path, fileName, fileUrl, MAX_THREAD_NUMBER, new OnDownloadStatusListener() {
+        DLUtils.init(context).download(path, fileName, fileUrl, MAX_THREAD_NUMBER, new OnDownloadStatusListener() {
 
             private long fileLength;
 
@@ -53,6 +55,11 @@ public class DownloadUtils {
                 LogCat.e("onCancel............. ");
 
 
+            }
+
+            @Override
+            public void onDownloading(String fileName) {
+                LogCat.e("当前下载正在进行中............. " + fileName);
             }
 
             private void logProgress(long progress) {

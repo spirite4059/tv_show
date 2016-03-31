@@ -1,5 +1,8 @@
 package com.download;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -8,6 +11,7 @@ import android.text.TextUtils;
 
 import com.download.dllistener.OnDownloadStatusListener;
 import com.download.tools.LogCat;
+import com.download.tools.SharedPreference;
 
 import java.io.File;
 
@@ -37,6 +41,7 @@ public class DLUtils {
     // 下载完成
     public static final int HANDLER_WHAT_DOWNLOAD_FINISH = 3;
     public static final int HANDLER_WHAT_DOWNLOAD_CANCEL = 4;
+    public static final int HANDLER_WHAT_DOWNLOADING = 5;
     // 下载出错
     public static final String BUNDLE_KEY_FILE_LENGTH = "BUNDLE_KEY_FILE_LENGTH";
 
@@ -77,14 +82,28 @@ public class DLUtils {
                     }
                     break;
                 case HANDLER_WHAT_DOWNLOAD_ERROR:
-                    //
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("fileName", "");
+                    editor.commit();
                     onDownloadStatusListener.onError(msg.arg1, getErrorMsg(msg.arg1));
+
                     break;
                 case HANDLER_WHAT_DOWNLOAD_FINISH:
+                    SharedPreferences.Editor editor1 = sharedPreferences.edit();
+                    editor1.putString("fileName", "");
+                    editor1.commit();
                     onDownloadStatusListener.onFinish(String.valueOf(msg.obj));
+
                     break;
                 case HANDLER_WHAT_DOWNLOAD_CANCEL:
+                    SharedPreferences.Editor editor2 = sharedPreferences.edit();
+                    editor2.putString("fileName", "");
+                    editor2.commit();
                     onDownloadStatusListener.onCancel();
+
+                    break;
+                case HANDLER_WHAT_DOWNLOADING:
+                    onDownloadStatusListener.onDownloading(String.valueOf(msg.obj));
                     break;
             }
 
@@ -95,20 +114,59 @@ public class DLUtils {
     private DLUtils() {
     }
 
-    public static DLUtils init() {
+    static SharedPreferences sharedPreferences;
+    private static Context context;
+    public static DLUtils init(Context context) {
         if (instances == null) {
             instances = new DLUtils();
+            LogCat.e("/*/*/**/*/*/*/*/*/*/*/");
         }
+        DLUtils.context = context;
+        sharedPreferences =  context.getSharedPreferences("dlutils", Activity.MODE_PRIVATE);
         return instances;
     }
 
 
+    public boolean downloading(String fileName){
+        if(TextUtils.isEmpty(fileName)){
+            return false;
+        }
+        String preFileName = SharedPreference.getSharedPreferenceUtils(context).getDate("fileName", "");
+        if(fileName.equals(preFileName)){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+
     public void download(String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
-        
+
+
+
         if (downLoadHandler == null) {
             downLoadHandler = new DownLoadHandler();
+            downLoadHandler.setOnDownloadStatusListener(listener);
         }
-        downLoadHandler.setOnDownloadStatusListener(listener);
+
+
+
+
+        String preFileName = sharedPreferences.getString("fileName", "");
+
+        if(!TextUtils.isEmpty(preFileName) && preFileName.equals(fileName)){
+            Message msg = downLoadHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOADING);
+            msg.obj = fileName;
+            downLoadHandler.sendMessage(msg);
+            LogCat.e("***********当前下载正在执行************");
+            return;
+        }
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("fileName", fileName);
+        editor.commit();
+
+
         // sdcard 检查
         if(!isExistSDCard()){
             Message msg = downLoadHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_ERROR);
@@ -139,7 +197,10 @@ public class DLUtils {
         threadNum = 2;
         String filePath = path + fileName;
         LogCat.e("download file  path:" + filePath);
-
+        if(downloadThread != null){
+            downloadThread.cancelDownload();
+            downloadThread = null;
+        }
         downloadThread = new DownloadPrepareThread(downloadUrl, threadNum, filePath, downLoadHandler);
         downloadThread.start();
 
