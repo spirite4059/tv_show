@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.gochinatv.ad.R;
-import com.gochinatv.ad.tools.LogCat;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -78,7 +77,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.MyViewHo
             }
 
             for(AdImgResponse adImgResponse :imgResponses){
-                LogCat.e("%%%%%%%%%%%  EpisodeAdapter %%%%%%%%%%轮循请求图片    " + adImgResponse.adImgName);
+//                LogCat.e("%%%%%%%%%%%  EpisodeAdapter %%%%%%%%%%轮循请求图片    " + adImgResponse.adImgName);
             }
         }
 

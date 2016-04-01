@@ -149,6 +149,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         handler = new Handler(Looper.getMainLooper());
 
+
     }
 
     /**
@@ -275,7 +276,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 for (AdDetailResponse adDetailResponse : cachePlayVideoLists) {
                     if (!TextUtils.isEmpty(adDetailResponse.videoPath)) {
                         playingVideoName = adDetailResponse.videoPath;
-                        LogCat.e("播放缓存播放列表......." +  adDetailResponse.adVideoName);
+                        LogCat.e("播放缓存播放列表......." + adDetailResponse.adVideoName);
                         break;
                     }
                 }
@@ -410,8 +411,14 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         if (screenShotTimer != null) {
             screenShotTimer.cancel();
-
         }
+
+        if(downloadingVideoResponse != null){
+            DeleteFileUtils.getInstance().deleteFile(downloadingVideoResponse.videoPath);
+        }
+
+
+
     }
 
     @Override
@@ -443,7 +450,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         for (AdDetailResponse adDetailResponse : response.data) {
             adDetailResponse.adVideoName = adDetailResponse.name;
         }
-
 
 
         // 1.更新数据内容
@@ -483,9 +489,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         // 6.再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表
 
-        LogCat.e("再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表......" );
+        LogCat.e("再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表......");
         removeTomorrowVideos(localVideoList, adDetailResponses);
-        for(AdDetailResponse adDetailResponse : deleteLists){
+        for (AdDetailResponse adDetailResponse : deleteLists) {
             LogCat.e("删除列表视频：" + adDetailResponse.adVideoName);
         }
 
@@ -520,7 +526,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if(isAdded()){
+                if (isAdded()) {
                     doHttpGetEpisode();
                 }
 
@@ -838,18 +844,18 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         if (deleteLists != null && deleteLists.size() > 0) {
             AdDetailResponse playingVideo = null;
             for (AdDetailResponse adDetailResponse : deleteLists) {
-                if(!TextUtils.isEmpty(playingVideoName) && playingVideoName.equals(adDetailResponse.adVideoName)){
+                if (!TextUtils.isEmpty(playingVideoName) && playingVideoName.equals(adDetailResponse.adVideoName)) {
                     playingVideo = adDetailResponse;
-                }else {
+                } else {
                     DeleteFileUtils.getInstance().deleteFile(adDetailResponse.videoPath);
                 }
                 LogCat.e("删除的文件....." + adDetailResponse.adVideoName);
             }
             deleteLists.clear();
-            if(playingVideo != null){
+            if (playingVideo != null) {
                 deleteLists.add(playingVideo);
             }
-        }else {
+        } else {
             LogCat.e("无需删除文件......");
         }
     }
@@ -1022,6 +1028,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     private void prepareDownloading() {
         if (downloadLists.size() == 0) {
             LogCat.e("所有视频下载完成。。。。。。。。");
+            downloadingVideoResponse = null;
         } else {
             LogCat.e("获取下载列表第一个视频，并开始下载。。。。。。。。 还剩余下载任务：" + downloadLists.size());
             downloadingVideoResponse = downloadLists.get(0);
@@ -1044,36 +1051,46 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     private void playNext(boolean isVideoError) {
         // 此时说明还没有可以播放的视频，播放预置片或者缓存文件
         // 视频正常播放
+        LogCat.e("即将开始播放下一个视频.......");
         if (playVideoLists == null || playVideoLists.size() < 2) {
+            LogCat.e("播放列表数据不足2个.......");
             if (isVideoError) {
+                LogCat.e("由于当前视频播放出错，导致播放下一个.......");
                 if (playVideoLists != null && playVideoLists.size() > 0) {
+                    LogCat.e("播放列表还有视频可以播放.......");
                     playNextVideo(playVideoLists);
+
                 } else {
+                    LogCat.e("播放列表无数据了，播放预置片.......");
                     playPresetVideo();
                 }
             } else {
+                LogCat.e("正常进行播放下一个.......");
                 if (cachePlayVideoLists == null || cachePlayVideoLists.size() < 2) {
                     playPresetVideo();
+                    LogCat.e("播放列表无数据了，播放预置片.......");
+
                 } else {
-                    AdDetailResponse videoAdBean = cachePlayVideoLists.get(playVideoIndex);
+                    LogCat.e("播放列表还有视频可以播放.......");
                     // 播放缓存列表文件
                     playNextVideo(cachePlayVideoLists);
                 }
             }
         } else {
+            LogCat.e("播放列表数据多于2个.......");
             // 删除所有需要删除的缓存文件
             if (deleteLists != null && deleteLists.size() > 0) {
-                if (deleteLists.size() != 0) {
-                    for (AdDetailResponse deleteResponse : deleteLists) {
-                        DeleteFileUtils.getInstance().deleteFile(deleteResponse.videoPath);
-                    }
-                    deleteLists.clear();
+                LogCat.e("删除列表还有内容，则进行删除操作.......");
+                for (AdDetailResponse deleteResponse : deleteLists) {
+                    LogCat.e("删除文件......." + deleteResponse.adVideoName);
+                    DeleteFileUtils.getInstance().deleteFile(deleteResponse.videoPath);
                 }
+                deleteLists.clear();
             }
 
             // 情况缓存文件列表，重置状态
-            if (cachePlayVideoLists != null && cachePlayVideoLists.size() >= 2) {
-                playVideoIndex = 0;
+            if (cachePlayVideoLists != null && cachePlayVideoLists.size() > 0) {
+                LogCat.e("清空缓存播放列表.......");
                 cachePlayVideoLists.clear();
             }
 
@@ -1087,6 +1104,18 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     private void playNextVideo(ArrayList<AdDetailResponse> playVideoLists) {
         int length = playVideoLists.size();
+        if (length > playVideoIndex) {
+            LogCat.e("-----------------------------");
+            for (int i = 0; i < length; i++) {
+                AdDetailResponse adDetailResponse = playVideoLists.get(i);
+                LogCat.e("播放列表：" + adDetailResponse.adVideoName);
+                LogCat.e("播放地址：" + adDetailResponse.videoPath);
+            }
+            LogCat.e("-----------------------------");
+            AdDetailResponse adDetailResponse = playVideoLists.get(playVideoIndex);
+            LogCat.e("当前正在播放结束的是：" + adDetailResponse.adVideoName);
+        }
+
         LogCat.e("当前播放列表数量：" + length);
         playVideoIndex++;
         if (playVideoIndex >= length) {
@@ -1243,7 +1272,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 AdDetailResponse videoAdBean = new AdDetailResponse();
                 String name = file.getName();
                 // 正在下载的文件不能算到本地缓存列表中
-                if(!DLUtils.init(getActivity()).downloading(name)){
+                if (DLUtils.init(getActivity()).downloading(name)) {
+                    LogCat.e("当前文件正在下载。。。。。");
                     continue;
                 }
 
@@ -1305,7 +1335,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     private AdDetailResponse getPlayingVideoInfo() {
         AdDetailResponse videoAdBean = null;
         if (playVideoLists == null || playVideoLists.size() < 2) {
-            if (localVideoList != null && localVideoList.size() > 0 ) {
+            if (localVideoList != null && localVideoList.size() > 0) {
                 videoAdBean = localVideoList.get(playVideoIndex);
             } else {
                 videoAdBean = new AdDetailResponse();

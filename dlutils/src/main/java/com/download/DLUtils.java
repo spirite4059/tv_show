@@ -11,7 +11,6 @@ import android.text.TextUtils;
 
 import com.download.dllistener.OnDownloadStatusListener;
 import com.download.tools.LogCat;
-import com.download.tools.SharedPreference;
 
 import java.io.File;
 
@@ -115,14 +114,14 @@ public class DLUtils {
     }
 
     static SharedPreferences sharedPreferences;
-    private static Context context;
     public static DLUtils init(Context context) {
         if (instances == null) {
             instances = new DLUtils();
-            LogCat.e("/*/*/**/*/*/*/*/*/*/*/");
+            sharedPreferences =  context.getSharedPreferences("dlutils", Activity.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("fileName", "");
+            editor.commit();
         }
-        DLUtils.context = context;
-        sharedPreferences =  context.getSharedPreferences("dlutils", Activity.MODE_PRIVATE);
         return instances;
     }
 
@@ -131,7 +130,7 @@ public class DLUtils {
         if(TextUtils.isEmpty(fileName)){
             return false;
         }
-        String preFileName = SharedPreference.getSharedPreferenceUtils(context).getDate("fileName", "");
+        String preFileName = sharedPreferences.getString("fileName", "");
         if(fileName.equals(preFileName)){
             return true;
         }else {
@@ -210,7 +209,11 @@ public class DLUtils {
     public void cancel() {
         if (downloadThread != null) {
             downloadThread.cancelDownload();
+
         }
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("fileName", "");
+        editor.commit();
     }
 
 
