@@ -528,6 +528,11 @@ public class DataUtils {
 	}
 
 
+	public static String getSdCardOldFileDirectory(){
+		File file = Environment.getExternalStorageDirectory();
+		return (file.getAbsolutePath() + File.separator + Constants.FILE_OLD_DIRECTORY);
+	}
+
 
 	public static String getSdCardFileDirectory(){
 		File file = Environment.getExternalStorageDirectory();

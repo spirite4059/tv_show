@@ -25,6 +25,9 @@ public class MainActivity extends Activity {
         FragmentManager fm = getFragmentManager();
 
         FragmentTransaction ft = fm.beginTransaction();
+
+
+
         ft.add(R.id.root_main, new AdOneFragment());
         ft.add(R.id.root_main, new ADTwoFragment());
 ////        ft.add(R.id.root_main, new ADThreeFragment());
@@ -32,6 +35,9 @@ public class MainActivity extends Activity {
         ft.add(R.id.root_main, new ADFourFragment());
         ft.commit();
 
+
+//        LogCat.e("apk: " + DataUtils.getApkDirectory() + "vego.apk");
+//        RootUtils.clientInstall(DataUtils.getApkDirectory() + "vego.apk");
 
 //        mSimpleDraweeView = (SimpleDraweeView) findViewById(R.id.mSimpleDraweeView);
 //        ControllerListener controllerListener = new BaseControllerListener(){

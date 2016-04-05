@@ -79,7 +79,7 @@ public class DeleteFileUtils {
      * delete and returns "false".
      */
     public boolean deleteDir(File dir) {
-        if (dir.isDirectory()) {
+        if (dir.exists() && dir.isDirectory()) {
             String[] children = dir.list();
             //递归删除目录中的子目录下
             for (int i = 0; i < children.length; i++) {

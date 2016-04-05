@@ -133,6 +133,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         // 5.清空所有升级包，为了节省空间
         DeleteFileUtils.getInstance().deleteFile(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
 
+        String oldPath = DataUtils.getSdCardOldFileDirectory();
+        LogCat.e("清空旧文件目录....." + oldPath);
+        DeleteFileUtils.getInstance().deleteDir(new File(DataUtils.getSdCardOldFileDirectory()));
 
         LogCat.e("请求接口.....");
         // 6.请求视频列表
@@ -460,9 +463,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         localVideoList = getLocalVideoList();
         LogCat.e("------------------------------");
         // 缓存播放列表也更新
-        LogCat.e("根据今日播放列表，更新缓存播放列表......" + cachePlayVideoLists.size());
-        cachePlayVideoLists = getPlayVideoList(localVideoList, adDetailResponses);
-        LogCat.e("------------------------------");
+//        LogCat.e("根据今日播放列表，更新缓存播放列表......" + cachePlayVideoLists.size());
+//        cachePlayVideoLists = getPlayVideoList(localVideoList, adDetailResponses);
+//        LogCat.e("------------------------------");
 
 
         // 2.匹配今天要下载的视频
@@ -1336,14 +1339,22 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         AdDetailResponse videoAdBean = null;
         if (playVideoLists == null || playVideoLists.size() < 2) {
             if (localVideoList != null && localVideoList.size() > 0) {
-                videoAdBean = localVideoList.get(playVideoIndex);
+                int index = 0;
+                if(playVideoIndex < localVideoList.size()){
+                    index = playVideoIndex;
+                }
+                videoAdBean = localVideoList.get(index);
             } else {
                 videoAdBean = new AdDetailResponse();
                 videoAdBean.adVideoName = "预置片";
                 videoAdBean.videoPath = getRawVideoUri();
             }
         } else {
-            videoAdBean = playVideoLists.get(playVideoIndex);
+            int index = 0;
+            if(playVideoIndex < playVideoLists.size()){
+                index = playVideoIndex;
+            }
+            videoAdBean = playVideoLists.get(index);
         }
         return videoAdBean;
     }
