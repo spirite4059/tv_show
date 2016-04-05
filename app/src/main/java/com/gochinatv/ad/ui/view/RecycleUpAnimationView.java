@@ -1,90 +1,273 @@
 package com.gochinatv.ad.ui.view;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Scroller;
 import android.widget.TextView;
 
 import com.gochinatv.ad.R;
+import com.gochinatv.ad.tools.LogCat;
+import com.okhtttp.response.AdImgResponse;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by zfy on 2016/3/29.
  */
-public class RecycleUpAnimationView extends LinearLayout implements Runnable{
+public class RecycleUpAnimationView extends LinearLayout {
 
 
     private Context mContext;
     private Scroller mScroller;
     private LayoutInflater layoutInflater;
+    private ObjectAnimator objectAnimator;//
 
-    private ArrayList<String> nameList = new ArrayList<>();
-    private ArrayList<String> priceList = new ArrayList<>();
+
+
+    private int itemWidth;//item的宽
+
+    private int itemHeight;//item的高
+
+    private boolean isRecycleAnimation;//是否循环执行动画
+
+
+    private int duration = 3;//动画时间（秒）
+
+
+    private Timer recycleTimer;//动画计时器
+    private int secondTime = 1;//每隔多少秒执行一次动画(分)
+
+
+    private ArrayList<AdImgResponse> imgResponses;//数据集合
+
+    private int position = 2;//当前是imgResponses的位置
+
+
+
+
+    @Override
+    protected boolean checkLayoutParams(ViewGroup.LayoutParams p) {
+        return super.checkLayoutParams(p);
+    }
 
     public RecycleUpAnimationView(Context context) {
-        super(context);
-        mContext = context;
-        init();
+        this(context,null);
+        this.mContext = context;
+        mScroller = new Scroller(mContext);
+        layoutInflater = LayoutInflater.from(mContext);
     }
 
     public RecycleUpAnimationView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mContext = context;
-        init();
+        this.mContext = context;
+        mScroller = new Scroller(mContext);
+        layoutInflater = LayoutInflater.from(mContext);
     }
 
     public RecycleUpAnimationView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mContext = context;
-        init();
+        this.mContext = context;
+        mScroller = new Scroller(mContext);
+        layoutInflater = LayoutInflater.from(mContext);
     }
 
 
-    private void init(){
-        mScroller = new Scroller(mContext);
-        layoutInflater = LayoutInflater.from(mContext);
-        nameList.add("aaaaaaaaaaa");
-        priceList.add("13");
+    public void initView(ArrayList<AdImgResponse> list){
+        this.imgResponses = list;
+        int seiz = imgResponses.size();
+        LogCat.e("图片广告的个数 seiz : " + seiz);
+        if(seiz == 2){
+            for(int i=0;i<2;i++){
+                View view = layoutInflater.inflate(R.layout.itme_ad_three, this, false);
+                LinearLayout.LayoutParams params = (LayoutParams) this.getLayoutParams();
+                params.width = itemWidth;
+                params.height = itemHeight;
+                view.setLayoutParams(params);
+                TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);
+                name.setText(imgResponses.get(i).adImgName);
+                TextView price = (TextView)view.findViewById(R.id.ad_three_text_price);
+                price.setText(imgResponses.get(i).adImgPrice+"元");
+                this.addView(view,i);
+            }
 
-        nameList.add("bbbbbbbbbb");
-        priceList.add("19");
 
-        nameList.add("cccccccccc");
-        priceList.add("18");
+        }else if(seiz >2){
+            for(int i=0;i<3;i++){
+                View view = layoutInflater.inflate(R.layout.itme_ad_three, this, false);
+                TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);
+                name.setText(imgResponses.get(i).adImgName);
+                TextView price = (TextView)view.findViewById(R.id.ad_three_text_price);
+                price.setText(imgResponses.get(i).adImgPrice+"元");
+                this.addView(view,i);
+            }
 
-        nameList.add("dddddddd");
-        priceList.add("12");
-        nameList.add("eeeeeeeee");
-        priceList.add("17");
+            recycleTimer = new Timer();
+            recycleTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    recycleAnimation();
+                    position ++;
+                    LogCat.e("当前 position : " + position);
+                }
+            },secondTime*60000,secondTime*60000);
 
-        int seiz = nameList.size();
-        for(int i=0;i<3;i++){
-            View view = layoutInflater.inflate(R.layout.itme_ad_three, this, false);
-            TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);
-            name.setText(nameList.get(i));
-            TextView price = (TextView)view.findViewById(R.id.ad_three_text_price);
-            price.setText(priceList.get(i)+"元");
 
-            this.addView(view,i);
+        }else{
+            return;
         }
 
 
     }
 
 
+    /**
+     * 向上滚动
+     */
+    private void recycleAnimation(){
 
-    @Override
-    public void run() {
+        objectAnimator = new ObjectAnimator().ofFloat(this,"translationY",0f,-itemHeight).setDuration(duration*1000);
+
+        objectAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                //动画结束后，要将最上面的view移动最下面复用
+
+                moveViewToBottom();
+
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+
+        objectAnimator.start();
+    }
+
+
+    private void moveViewToBottom(){
+        final View view = this.getChildAt(0);
+        objectAnimator = new ObjectAnimator().ofFloat(view,"translationY",-itemHeight,2*itemHeight).setDuration(1);
+
+        objectAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (position > imgResponses.size()) {
+                    position = 0;
+                }
+                TextView name = (TextView) view.findViewById(R.id.ad_three_text_name);
+                name.setText(imgResponses.get(position).adImgName);
+                TextView price = (TextView) view.findViewById(R.id.ad_three_text_price);
+                price.setText(imgResponses.get(position).adImgPrice + "元");
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                if (position > imgResponses.size()) {
+                    position = 0;
+                }
+                TextView name = (TextView) view.findViewById(R.id.ad_three_text_name);
+                name.setText(imgResponses.get(position).adImgName);
+                TextView price = (TextView) view.findViewById(R.id.ad_three_text_price);
+                price.setText(imgResponses.get(position).adImgPrice + "元");
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        objectAnimator.start();
+
 
     }
 
 
 
+    public ArrayList<AdImgResponse> getImgResponses() {
+        return imgResponses;
+    }
+
+    /**
+     * 设置数据
+     * @param imgResponses
+     */
+    public void setImgResponses(ArrayList<AdImgResponse> imgResponses) {
+        this.imgResponses = imgResponses;
+    }
 
 
+    public boolean isRecycleAnimation() {
+        return isRecycleAnimation;
+    }
 
+    /**
+     * 是否执行循环动画
+     * @param isRecycleAnimation
+     */
+    public void setIsRecycleAnimation(boolean isRecycleAnimation) {
+        this.isRecycleAnimation = isRecycleAnimation;
+    }
+
+
+    public int getItemHeight() {
+        return itemHeight;
+    }
+
+    /**
+     * 设置item的高
+     * @param itemHeight
+     */
+    public void setItemHeight(int itemHeight) {
+        this.itemHeight = itemHeight;
+    }
+
+    public int getItemWidth() {
+        return itemWidth;
+    }
+
+    /**
+     *  设置item的宽
+     * @param itemWidth
+     */
+    public void setItemWidth(int itemWidth) {
+        this.itemWidth = itemWidth;
+    }
+
+    public int getSecondTime() {
+        return secondTime;
+    }
+
+    /**
+     * 设置间隔时间（秒）
+     * @param secondTime
+     */
+    public void setSecondTime(int secondTime) {
+        this.secondTime = secondTime;
+    }
 }

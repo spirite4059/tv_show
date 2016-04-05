@@ -52,7 +52,7 @@ public class RootUtils {
             PrintWriter.flush();
             PrintWriter.close();
             int value = process.waitFor();
-            LogCat.e("静默安装成功："+value);
+            LogCat.e("value："+value);
             return returnResult(value);
 
         } catch (Exception e) {

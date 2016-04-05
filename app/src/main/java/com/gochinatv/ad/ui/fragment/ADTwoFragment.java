@@ -110,9 +110,9 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
     @Override
     public void onStop() {
-//        if(mDemoSlider != null){
-//            mDemoSlider.stopAutoCycle();
-//        }
+        if(mDemoSlider != null){
+            mDemoSlider.stopAutoCycle();
+        }
 
         super.onStop();
     }

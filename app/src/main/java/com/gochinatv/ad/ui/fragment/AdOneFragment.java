@@ -20,7 +20,9 @@ import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.RootUtils;
 import com.gochinatv.ad.tools.ScreenShotUtils;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.video.MeasureVideoView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -998,7 +1000,19 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     private void downloadApkSuccess(String filePath) {
         updateInfo = null;
-        DataUtils.installApk(getActivity(), filePath);
+        //新包下载完成得安装
+        if(RootUtils.hasRootPerssion()){
+            //RootUtils.clientInstall("/sdcard/Music/test.apk");
+            SharedPreference.getSharedPreferenceUtils(getActivity()).saveDate("isClientInstall", true);
+            RootUtils.clientInstall(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
+            //Toast.makeText(getActivity(), "有root权限，静默安装方式", Toast.LENGTH_LONG).show();
+            LogCat.e("有root权限，静默安装方式");
+        }else{
+            //Toast.makeText(getActivity(),"没有root权限，普通安装方式",Toast.LENGTH_LONG).show();
+            //RootUtils.installApk(CustomActivity.this,"/sdcard/Music/test.apk");
+            LogCat.e("没有root权限，普通安装方式");
+            DataUtils.installApk(getActivity(), filePath);
+        }
         getActivity().finish();
     }
 

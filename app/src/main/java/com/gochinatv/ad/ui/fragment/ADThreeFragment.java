@@ -1,65 +1,109 @@
 package com.gochinatv.ad.ui.fragment;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 
-import com.daimajia.slider.library.SliderTypes.BaseSliderView;
-import com.daimajia.slider.library.Tricks.ViewPagerEx;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
+import com.gochinatv.ad.tools.DataUtils;
+import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.ui.view.RecycleUpAnimationView;
+import com.okhtttp.OkHttpCallBack;
+import com.okhtttp.OkHttpUtils;
+import com.okhtttp.response.AdImgResponse;
+import com.okhtttp.response.AdThreeDataResponse;
+import com.tools.HttpUrls;
+
+import java.util.ArrayList;
 
 /**
  * Created by zfy on 2016/3/16.
  */
-public class ADThreeFragment extends BaseFragment implements BaseSliderView.OnSliderClickListener, ViewPagerEx.OnPageChangeListener{
+public class ADThreeFragment extends BaseFragment {
 
     //private SliderLayout mDemoSlider;
-    private LinearLayout linearLayout;
+    private RecycleUpAnimationView linearLayout;
+    private ImageView adThreeBg;
+    private ArrayList<AdImgResponse> imgResponses;
+
+
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
-        //View view = inflater.inflate(R.layout.fragment_ad_three,container,false);
         return inflater.inflate(R.layout.fragment_ad_three,container,false);
     }
 
     @Override
     protected void initView(View rootView) {
-        //mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
-        linearLayout = (LinearLayout) rootView.findViewById(R.id.ad_three_lin);
+        linearLayout = (RecycleUpAnimationView) rootView.findViewById(R.id.ad_three_lin);
+        adThreeBg = (ImageView) rootView.findViewById(R.id.ad_three_bg_image);
     }
 
     @Override
     protected void init() {
-        //Uri uri = Uri.parse("https://raw.githubusercontent.com/facebook/fresco/gh-pages/static/fresco-logo.png");
-        //draweeView.setImageURI(uri);
-//        HashMap<String,String> url_maps = new HashMap<String, String>();
-//        url_maps.put("Hannibal", "http://static2.hypable.com/wp-content/uploads/2013/12/hannibal-season-2-release-date.jpg");
-//        url_maps.put("Big Bang Theory", "http://tvfiles.alphacoders.com/100/hdclearart-10.png");
-//        url_maps.put("House of Cards", "http://cdn3.nflximg.net/images/3093/2043093.jpg");
-//        url_maps.put("Game of Thrones", "http://images.boomsbeat.com/data/images/full/19640/game-of-thrones-season-4-jpg.jpg");
-//
-//        for(String name : url_maps.keySet()){
-//            TextSliderView textSliderView = new TextSliderView(getActivity());
-//            // initialize a SliderLayout
-//            textSliderView
-//                    .description(name)
-//                    .image(url_maps.get(name))
-//                    .setScaleType(BaseSliderView.ScaleType.Fit)
-//                    .setOnSliderClickListener(this);
-//
-//            //add your extra information
-//            textSliderView.bundle(new Bundle());
-//            textSliderView.getBundle()
-//                    .putString("extra",name);
-//
-//            mDemoSlider.addSlider(textSliderView);
-//        }
-//        mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
-//        mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
-//        mDemoSlider.setCustomAnimation(null);
-//        mDemoSlider.setDuration(10000);
-//        mDemoSlider.addOnPageChangeListener(this);
+        double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
+        double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
+        linearLayout.setItemWidth((int) Math.floor(width));
+        linearLayout.setItemHeight((int) Math.floor(height/2));
+        initData();
+
+
+
+    }
+
+
+    protected void initData() {
+
+//        //请求图片
+        OkHttpUtils.getInstance().doHttpGet(HttpUrls.URL_GET_AD_THREE, new OkHttpCallBack<AdThreeDataResponse>() {
+            @Override
+            public void onSuccess(String url, AdThreeDataResponse response) {
+                if (!isAdded()) {
+                    return;
+                }
+                if (response == null || !(response instanceof AdThreeDataResponse)) {
+                    //再次请求
+                    initData();
+                }
+
+                if (response.data == null || !(response.data instanceof ArrayList)) {
+                    //再次请求
+                    LogCat.e(" !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    initData();
+                }
+                imgResponses = response.data;
+                int totalSize = imgResponses.size();
+                if (totalSize == 0) {
+
+                    LogCat.e(" totalSize == 0  totalSize == 0 没有广告图片");
+
+
+                } else if (totalSize == 1) {
+
+                    AdImgResponse adImgResponse = new AdImgResponse();
+                    adImgResponse.adImgName = "";
+                    adImgResponse.adImgPrice = "";
+                    adImgResponse.adImgUrl = "localPicture";
+                    imgResponses.add(adImgResponse);
+                    hideBGImage();
+                } else {
+                    hideBGImage();
+                }
+
+
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                if (!isAdded()) {
+                    return;
+                }
+                initData();
+            }
+        });
 
 
 
@@ -67,11 +111,12 @@ public class ADThreeFragment extends BaseFragment implements BaseSliderView.OnSl
     }
 
 
+
+
+
     @Override
     public void onStop() {
-//        if(mDemoSlider != null){
-//            mDemoSlider.stopAutoCycle();
-//        }
+
 
         super.onStop();
     }
@@ -87,23 +132,37 @@ public class ADThreeFragment extends BaseFragment implements BaseSliderView.OnSl
     }
 
 
-    @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    /**
+     * 隐藏BG图
+     */
+    private void hideBGImage(){
+        if(adThreeBg != null){
+            ObjectAnimator animator = new ObjectAnimator().ofFloat(adThreeBg, "alpha", 1.0f, 0f).setDuration(3000);
+            animator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    linearLayout.initView(imgResponses);//填充RecycleUpAnimationView中子view
+                    //linearLayout.setImgResponses(imgResponses);//设置数据
+                }
 
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    adThreeBg.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    adThreeBg.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            animator.start();
+        }
     }
 
-    @Override
-    public void onPageSelected(int position) {
 
-    }
-
-    @Override
-    public void onPageScrollStateChanged(int state) {
-
-    }
-
-    @Override
-    public void onSliderClick(BaseSliderView slider) {
-
-    }
 }
