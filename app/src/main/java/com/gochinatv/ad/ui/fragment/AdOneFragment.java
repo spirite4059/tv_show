@@ -323,7 +323,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                     return false;
                 }
 
-                if (what == -38) {
+                if (what != 1) {
                     return true;
                 }
                 LogCat.e("视频播放出错......");

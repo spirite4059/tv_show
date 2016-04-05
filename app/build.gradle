@@ -71,5 +71,4 @@ dependencies {
     compile project(':library')
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'com.android.support:recyclerview-v7:23.0.1'
-    compile 'com.chrisplus.rootmanager:library:2.0.4@aar'
 }
