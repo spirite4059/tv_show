@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.download.DLUtils;
 import com.download.ErrorCodes;
@@ -73,7 +74,15 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     private ArrayList<AdDetailResponse> downloadLists = null;
     private ArrayList<AdDetailResponse> prepareDownloadLists = null;
 
+
     private boolean isDownloadVideo;
+
+
+
+    /**
+     * 是否用更新的apk在下载
+     */
+    private boolean isDownloadAPK;
 
     private String videoUrl;
 
@@ -86,9 +95,15 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
 
+        RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.fragment_ad_video, container, false);
 
-
-        return inflater.inflate(R.layout.fragment_ad_video, container, false);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.width = DataUtils.getDisplayMetricsWidth(getActivity());
+        params.height  =DataUtils.getDisplayMetricsHeight(getActivity());
+        params.topMargin = 0;
+        params.leftMargin = 0;
+        layout.setLayoutParams(params);
+        return layout;
     }
 
     @Override
@@ -1194,6 +1209,15 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             videoAdBean = playVideoLists.get(index);
         }
         return videoAdBean;
+    }
+
+
+    public boolean isDownloadAPK() {
+        return isDownloadAPK;
+    }
+
+    public void setIsDownloadAPK(boolean isDownloadAPK) {
+        this.isDownloadAPK = isDownloadAPK;
     }
 
 

@@ -3,14 +3,31 @@ package com.gochinatv.ad;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.os.AsyncTask;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.LinearLayout;
 
-import com.gochinatv.ad.ui.fragment.ADFourFragment;
-import com.gochinatv.ad.ui.fragment.ADTwoFragment;
-import com.gochinatv.ad.ui.fragment.AdFiveFragment;
+import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.tools.Constants;
+import com.gochinatv.ad.tools.DataUtils;
+import com.gochinatv.ad.tools.DownloadUtils;
+import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.RootUtils;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
+import com.httputils.http.response.UpdateResponse;
+import com.okhtttp.OkHttpCallBack;
+import com.okhtttp.OkHttpUtils;
+import com.tools.HttpUrls;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -18,30 +35,26 @@ import com.gochinatv.ad.ui.fragment.AdOneFragment;
  */
 public class MainActivity extends Activity {
 
-    //SimpleDraweeView mSimpleDraweeView;
 
     private View view;
+    private LinearLayout loadingView;
+    /**
+     * 下载info
+     */
+    private UpdateResponse.UpdateInfoResponse updateInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         view = findViewById(R.id.root_main);
-        FragmentManager fm = getFragmentManager();
+        loadingView = (LinearLayout) findViewById(R.id.loading);
+        doHttpUpdate(this);
 
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.add(R.id.root_main, new AdOneFragment());
-        ft.add(R.id.root_main, new ADTwoFragment());
-////        ft.add(R.id.root_main, new ADThreeFragment());
-       ft.add(R.id.root_main, new AdFiveFragment());
-        ft.add(R.id.root_main, new ADFourFragment());
-        ft.commit();
-
-
-
-        //        //新包下载完成得安装
+//        //        //新包下载完成得安装
 //        if(RootUtils.hasRootPerssion()){
 //            //RootUtils.clientInstall("/sdcard/Music/test.apk");
+//            SharedPreference.getSharedPreferenceUtils(this).saveDate("isClientInstall", true);
 //            LogCat.e("有root权限：RootUtils.hasRootPerssion()");
 //            Toast.makeText(MainActivity.this, "有root权限，静默安装方式", Toast.LENGTH_LONG).show();
 //            RootUtils.clientInstall("/mnt/internal_sd/Movies/VegoPlus.apk");
@@ -53,66 +66,185 @@ public class MainActivity extends Activity {
 //
 //        }
 
-
-//        //新包下载完成得安装
-//        if(RootUtils.hasRootPerssion()){
-//            //RootUtils.clientInstall("/sdcard/Music/test.apk");
-//            LogCat.e("有root权限：RootUtils.hasRootPerssion()");
-//            Toast.makeText(MainActivity.this, "有root权限，静默安装方式", Toast.LENGTH_LONG).show();
-//        }else{
-//            Toast.makeText(MainActivity.this,"没有root权限，普通安装方式",Toast.LENGTH_LONG).show();
-//            //RootUtils.installApk(CustomActivity.this,"/sdcard/Music/test.apk");
-//            LogCat.e("没有root权限：RootUtils.hasRootPerssion()");
-//        }
-//
-//        if (RootManager.getInstance().obtainPermission()) {
-//
-//            LogCat.e("获取root权限成功 RootManager" );
-//
-//            LogCat.e("有root权限：RootManager.getInstance().hasRooted() ");
-//            //RootManager.getInstance().installPackage();
-//
-//            view.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    final String apkPath = "/mnt/internal_sd/Movies/VegoPlus.apk";
-//                    runAsyncTask(new AsyncTask<Void, Void, Result>() {
-//
-//                        @Override
-//                        protected void onPreExecute() {
-//                            LogCat.e("Installing package " + apkPath + " ...........");
-//                            super.onPreExecute();
-//                        }
-//
-//                        @Override
-//                        protected Result doInBackground(Void... params) {
-//                            return RootManager.getInstance().installPackage(apkPath);
-//                        }
-//
-//                        @Override
-//                        protected void onPostExecute(Result result) {
-//                            LogCat.e("Install " + apkPath + " " + result.getResult()
-//                                    + " with the message " + result.getMessage());
-//                            super.onPostExecute(result);
-//                        }
-//
-//                    });
-//                }
-//            }, 5000);
-//
-//
-//        }else if(RootManager.getInstance().obtainPermission()){
-//            LogCat.e("获取root权限成功 RootManager" );
-//        }else{
-//            LogCat.e("获取root权限失败 RootManager " );
-//        }
-
     }
 
 
 
-    private static final <T> void runAsyncTask(AsyncTask<T, ?, ?> asyncTask, T... params) {
-        asyncTask.execute(params);
+    /**
+     * 检查是否有版本更新
+     */
+
+    private int reTryTimes;
+    protected void doHttpUpdate(final Context context) {
+        Map<String, String> map = new HashMap<>();
+        map.put("platformId", String.valueOf("22"));
+        if (!TextUtils.isEmpty(android.os.Build.MODEL)) {
+            // 不为空
+            try {
+                map.put("modelNumber", URLEncoder.encode(android.os.Build.MODEL, "utf-8")); // 型号
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                map.put("modelNumber", android.os.Build.MODEL); // 型号
+            }
+        }
+        try {
+            ApplicationInfo appInfo = this.getPackageManager().getApplicationInfo(this.getPackageName(),
+                    PackageManager.GET_META_DATA);
+            if (appInfo != null) {
+                String brand = appInfo.metaData.getString("UMENG_CHANNEL");
+                if (TextUtils.isEmpty(brand)) {
+                    map.put("brandNumber", "chinarestaurant"); // 品牌
+                } else {
+                    map.put("brandNumber", brand); // 品牌
+                }
+            }
+        } catch (PackageManager.NameNotFoundException e1) {
+            e1.printStackTrace();
+            map.put("brandNumber", "chinarestaurant"); // 品牌
+        }
+
+        OkHttpUtils.getInstance().
+
+                doHttpGet(HttpUrls.URL_CHECK_UPDATE, map, new OkHttpCallBack<UpdateResponse>() {
+                    @Override
+                    public void onSuccess(String url, UpdateResponse response) {
+                        LogCat.e("onSuccess adVideoUrl: " + url);
+                        if (isFinishing()) {
+                            return;
+                        }
+
+                        if (response == null || !(response instanceof UpdateResponse)) {
+                            LogCat.e("升级数据出错，无法正常升级1。。。。。");
+                            doError();
+                            return;
+                        }
+
+                        if (response.resultForApk == null || !(response.resultForApk instanceof UpdateResponse.UpdateInfoResponse)) {
+                            LogCat.e("升级数据出错，无法正常升级2。。。。。");
+                            doError();
+                            return;
+                        }
+
+                        if ("1".equals(response.status) == false) {
+                            LogCat.e("升级接口的status == 0。。。。。");
+                            doError();
+                            return;
+                        }
+
+                        updateInfo = response.resultForApk;
+                        // 获取当前最新版本号
+                        if (TextUtils.isEmpty(updateInfo.versionCode) == false) {
+                            double netVersonCode = Integer.parseInt(updateInfo.versionCode);
+                            // 检测是否要升级
+                            try {
+                                if (DataUtils.getAppVersion(context) < netVersonCode) { // 升级
+                                    // 升级
+                                    // 下载最新安装包，下载完成后，提示安装
+                                    LogCat.e("需要升级。。。。。");
+                                    // 去下载当前的apk
+                                    downloadAPK();
+                                    // 加载布局.但是不让AdOneFragment，下载视频
+                                    loadingView.setVisibility(View.GONE);
+                                    FragmentManager fm = getFragmentManager();
+                                    FragmentTransaction ft = fm.beginTransaction();
+                                    AdOneFragment adOneFragment =  new AdOneFragment();
+                                    adOneFragment.setIsDownloadAPK(true);
+                                    ft.add(R.id.root_main, adOneFragment);
+                                    //ft.add(R.id.root_main, new ADTwoFragment());
+                                    //ft.add(R.id.root_main, new ADThreeFragment());
+                                    //ft.add(R.id.root_main, new AdFiveFragment());
+                                    //ft.add(R.id.root_main, new ADFourFragment());
+                                    ft.commit();
+
+
+                                } else {
+                                    // 不升级,加载布局
+                                    LogCat.e("无需升级。。。。。");
+                                    loadingView.setVisibility(View.GONE);
+                                    FragmentManager fm = getFragmentManager();
+                                    FragmentTransaction ft = fm.beginTransaction();
+                                    ft.add(R.id.root_main, new AdOneFragment());
+                                    //ft.add(R.id.root_main, new ADTwoFragment());
+                                    //ft.add(R.id.root_main, new ADThreeFragment());
+                                    //ft.add(R.id.root_main, new AdFiveFragment());
+                                    //ft.add(R.id.root_main, new ADFourFragment());
+                                    ft.commit();
+                                }
+                            } catch (PackageManager.NameNotFoundException e) {
+                                e.printStackTrace();
+                                LogCat.e("判断升级过程中出错。。。。。");
+                                doError();
+                            }
+                        } else {
+                            // 不升级
+                            LogCat.e("升级版本为null。。。。。");
+                            doError();
+                        }
+
+                    }
+
+                    private void doError() {
+                        if (!isFinishing()) {
+                            // 做不升级处理, 继续请求广告视频列表
+                            reTryTimes++;
+                            if (reTryTimes > 4) {
+                                reTryTimes = 0;
+                                LogCat.e("升级接口已连续请求3次，不在请求" );
+                            } else {
+                                LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
+                                doHttpUpdate(MainActivity.this);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(String url, String errorMsg) {
+                        LogCat.e("请求接口出错，无法升级。。。。。" + url);
+                        doError();
+                    }
+                });
+
+    }
+
+
+    /**
+     * 下载apk
+     */
+    private void downloadAPK(){
+        DownloadUtils.download(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+            @Override
+            public void onDownloadFileSuccess(String filePath) {
+//        //新包下载完成得安装
+                if(RootUtils.hasRootPerssion()){
+                    SharedPreference.getSharedPreferenceUtils(MainActivity.this).saveDate("isClientInstall", true);
+                    RootUtils.clientInstall(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
+                    LogCat.e("有root权限，静默安装方式");
+                }else{
+                    LogCat.e("没有root权限，普通安装方式");
+                    DataUtils.installApk(MainActivity.this, filePath);
+                }
+                MainActivity.this.finish();
+            }
+
+            @Override
+            public void onDownloadFileError(int errorCode, String errorMsg) {
+                if ("1".equals(updateInfo.type)) {
+                    // 强制更新
+                    view.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogCat.e("5秒后继续尝试，如此循环。。。。");
+                            downloadAPK();
+                        }
+                    }, 5000);
+
+                } else {
+                    updateInfo = null;
+                }
+            }
+        });
+
+
     }
 
 }

@@ -12,38 +12,32 @@
         android:layout_height="@dimen/d_60dp"
         android:layout_marginLeft="@dimen/d_20dp"
         android:src="@mipmap/logo"
-        android:scaleType="fitCenter"/>
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        />
 
+    <LinearLayout
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        >
+        <ProgressBar
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_gravity="center"
+            style="@style/Widget.AppCompat.ProgressBar"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#f1f1f1"
+            android:text="Loading......"
+            />
+    </LinearLayout>
 
-    <!--<LinearLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:orientation="horizontal"-->
-        <!--android:layout_marginTop="@dimen/d_80dp"-->
-        <!-->-->
-
-        <!--<ImageView-->
-            <!--android:layout_width="@dimen/d_216dp"-->
-            <!--android:layout_height="@dimen/d_288dp"-->
-            <!--android:layout_marginLeft="@dimen/d_20dp"-->
-            <!--android:src="@drawable/adtwo"-->
-            <!--android:scaleType="fitXY"/>-->
-
-        <!--<ImageView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginLeft="@dimen/d_20dp"-->
-            <!--android:src="@drawable/adtwo"-->
-            <!--android:scaleType="fitXY"/>-->
-        <!--<com.facebook.drawee.view.SimpleDraweeView-->
-            <!--android:id="@+id/mSimpleDraweeView"-->
-            <!--android:layout_width="@dimen/d_216dp"-->
-            <!--android:layout_height="@dimen/d_288dp"-->
-            <!--android:layout_marginLeft="@dimen/d_20dp"-->
-            <!--android:src="@drawable/news2"-->
-            <!--android:scaleType="fitXY"/>-->
-
-    <!--</LinearLayout>-->
 
 
 

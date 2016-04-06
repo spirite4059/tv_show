@@ -46,6 +46,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 //        webView = new WebView(getActivity());
 //        RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
 //        relativeLayout.addView(webView,layoutParams2);
+
         return inflater.inflate(R.layout.fragment_ad_two,container,false);
         //return relativeLayout;
     }

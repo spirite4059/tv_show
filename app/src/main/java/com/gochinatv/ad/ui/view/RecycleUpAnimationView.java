@@ -3,6 +3,8 @@ package com.gochinatv.ad.ui.view;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,10 +38,10 @@ public class RecycleUpAnimationView extends LinearLayout {
 
     private int itemHeight;//item的高
 
-    private boolean isRecycleAnimation;//是否循环执行动画
+    private boolean isStopRecycleAnimation;//是否停止了滚动动画
 
 
-    private int duration = 3;//动画时间（秒）
+    private int duration = 2;//动画时间（秒）
 
 
     private Timer recycleTimer;//动画计时器
@@ -59,7 +61,7 @@ public class RecycleUpAnimationView extends LinearLayout {
     }
 
     public RecycleUpAnimationView(Context context) {
-        this(context,null);
+        this(context, null);
         this.mContext = context;
         mScroller = new Scroller(mContext);
         layoutInflater = LayoutInflater.from(mContext);
@@ -98,6 +100,14 @@ public class RecycleUpAnimationView extends LinearLayout {
                 this.addView(view,i);
             }
 
+            //空view，以备复用
+            View view = layoutInflater.inflate(R.layout.itme_ad_three, this, false);
+            LinearLayout.LayoutParams params = (LayoutParams) this.getLayoutParams();
+            params.width = itemWidth;
+            params.height = itemHeight;
+            view.setLayoutParams(params);
+            this.addView(view,2);
+
 
         }else if(seiz >2){
             for(int i=0;i<3;i++){
@@ -113,41 +123,53 @@ public class RecycleUpAnimationView extends LinearLayout {
             recycleTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    recycleAnimation();
                     position ++;
                     LogCat.e("当前 position : " + position);
+                    Message message = new Message();
+                    message.what = 1;
+                    handler.sendMessage(message);
                 }
             },secondTime*60000,secondTime*60000);
-
 
         }else{
             return;
         }
 
-
     }
 
 
+
+
+    Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
+            if (msg.what == 1) {
+                recycleAnimation();
+            }
+            super.handleMessage(msg);
+        }
+    };
+
+
+
     /**
-     * 向上滚动
+     * 向上滚动的动画
      */
     private void recycleAnimation(){
 
+        LogCat.e(" 子view的个数："+  this.getChildCount());
         objectAnimator = new ObjectAnimator().ofFloat(this,"translationY",0f,-itemHeight).setDuration(duration*1000);
 
         objectAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
+                LogCat.e("#########  onAnimationStart :  动画开始了 ");
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 //动画结束后，要将最上面的view移动最下面复用
-
                 moveViewToBottom();
-
-
+                LogCat.e("######### onAnimationEnd :  动画结束了 ");
             }
 
             @Override
@@ -164,10 +186,12 @@ public class RecycleUpAnimationView extends LinearLayout {
         objectAnimator.start();
     }
 
-
+    /**
+     * 将最上面一个view移动最下面复用
+     */
     private void moveViewToBottom(){
-        final View view = this.getChildAt(0);
-        objectAnimator = new ObjectAnimator().ofFloat(view,"translationY",-itemHeight,2*itemHeight).setDuration(1);
+        final View reuseView = this.getChildAt(0);
+        objectAnimator = new ObjectAnimator().ofFloat(reuseView,"translationY",-itemHeight,2*itemHeight).setDuration(1);
 
         objectAnimator.addListener(new Animator.AnimatorListener() {
             @Override
@@ -177,23 +201,24 @@ public class RecycleUpAnimationView extends LinearLayout {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (position > imgResponses.size()) {
+                if (position > imgResponses.size()-1) {
                     position = 0;
                 }
-                TextView name = (TextView) view.findViewById(R.id.ad_three_text_name);
+                TextView name = (TextView) reuseView.findViewById(R.id.ad_three_text_name);
                 name.setText(imgResponses.get(position).adImgName);
-                TextView price = (TextView) view.findViewById(R.id.ad_three_text_price);
+                TextView price = (TextView) reuseView.findViewById(R.id.ad_three_text_price);
                 price.setText(imgResponses.get(position).adImgPrice + "元");
+                LogCat.e(" moveViewToBottom  position: " + position + "   菜名：   " +imgResponses.get(position).adImgName);
             }
 
             @Override
             public void onAnimationCancel(Animator animation) {
-                if (position > imgResponses.size()) {
+                if (position > imgResponses.size()-1) {
                     position = 0;
                 }
-                TextView name = (TextView) view.findViewById(R.id.ad_three_text_name);
+                TextView name = (TextView) reuseView.findViewById(R.id.ad_three_text_name);
                 name.setText(imgResponses.get(position).adImgName);
-                TextView price = (TextView) view.findViewById(R.id.ad_three_text_price);
+                TextView price = (TextView) reuseView.findViewById(R.id.ad_three_text_price);
                 price.setText(imgResponses.get(position).adImgPrice + "元");
             }
 
@@ -222,16 +247,12 @@ public class RecycleUpAnimationView extends LinearLayout {
     }
 
 
-    public boolean isRecycleAnimation() {
-        return isRecycleAnimation;
-    }
-
     /**
-     * 是否执行循环动画
+     * 是否停止滚动动画
      * @param isRecycleAnimation
      */
-    public void setIsRecycleAnimation(boolean isRecycleAnimation) {
-        this.isRecycleAnimation = isRecycleAnimation;
+    public void setIsStopRecycleAnimation(boolean isRecycleAnimation) {
+        this.isStopRecycleAnimation = isRecycleAnimation;
     }
 
 
@@ -244,6 +265,7 @@ public class RecycleUpAnimationView extends LinearLayout {
      * @param itemHeight
      */
     public void setItemHeight(int itemHeight) {
+        LogCat.e(" itemHeight: "+ itemHeight);
         this.itemHeight = itemHeight;
     }
 
@@ -256,6 +278,7 @@ public class RecycleUpAnimationView extends LinearLayout {
      * @param itemWidth
      */
     public void setItemWidth(int itemWidth) {
+        LogCat.e(" itemWidth: "+ itemWidth);
         this.itemWidth = itemWidth;
     }
 
@@ -270,4 +293,85 @@ public class RecycleUpAnimationView extends LinearLayout {
     public void setSecondTime(int secondTime) {
         this.secondTime = secondTime;
     }
+
+
+    /**
+     * 当有新数据时，要及时刷新
+     * @param imgResponses
+     */
+    public void refreshDtaImgResponses(ArrayList<AdImgResponse> imgResponses){
+        this.imgResponses = imgResponses;
+        int size = imgResponses.size();
+        if(size == 2){
+            //此时只有2个广告，要停止轮播
+            if(recycleTimer != null ){
+                recycleTimer.cancel();
+            }
+
+        }else if(size >2){
+            if(isStopRecycleAnimation){
+                //动画停止了，再次开启
+                if(recycleTimer != null){
+                    //新创建timer并开启动画,将position置为2
+                    position = 2;
+                    recycleTimer = new Timer();
+                    recycleTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            position ++;
+                            LogCat.e("当前 position : " + position);
+                            Message message = new Message();
+                            message.what = 1;
+                            handler.sendMessage(message);
+                        }
+                    },secondTime*60000,secondTime*60000);
+                }else{
+                    //直接开启动画，将position置为2
+                    position = 2;
+                    recycleTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            position ++;
+                            LogCat.e("当前 position : " + position);
+                            Message message = new Message();
+                            message.what = 1;
+                            handler.sendMessage(message);
+                        }
+                    },secondTime*60000,secondTime*60000);
+                }
+
+
+            }else{
+                //动画没有停止，不做任何操作
+
+            }
+
+        }
+
+    }
+
+
+    /**
+     * 停止滚动动画
+     */
+    public void stopRecycleAnimation(){
+        if(recycleTimer != null ){
+            recycleTimer.cancel();
+        }
+    }
+
+    /**
+     * 当页面销毁时，调用
+     */
+    public void destoryRecycleAnimation(){
+        if(recycleTimer != null ){
+            recycleTimer.cancel();
+            recycleTimer = null;
+        }
+
+    }
+
+
+
+
 }

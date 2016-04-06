@@ -47,7 +47,9 @@ public class ADThreeFragment extends BaseFragment {
         double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
         double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
         linearLayout.setItemWidth((int) Math.floor(width));
-        linearLayout.setItemHeight((int) Math.floor(height/2));
+        linearLayout.setItemHeight((int) Math.floor(height / 2));
+        LogCat.e("width: " + (int) Math.floor(width) +"     height:"+ (int) Math.floor(height / 2));
+
         initData();
 
 

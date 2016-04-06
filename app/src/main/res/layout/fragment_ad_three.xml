@@ -5,17 +5,25 @@
     android:layout_height="@dimen/d_432dp"
     android:layout_alignParentRight="true"
     android:layout_alignParentBottom="true"
-    android:background="@android:color/white"
+
     android:paddingLeft="@dimen/d_4dp"
     >
 
-    <com.gochinatv.ad.ui.view.RecycleUpAnimationView
-             android:id="@+id/ad_three_lin"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:orientation="vertical"
-             >
-    </com.gochinatv.ad.ui.view.RecycleUpAnimationView>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none"
+        >
+        <com.gochinatv.ad.ui.view.RecycleUpAnimationView
+            android:id="@+id/ad_three_lin"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@android:color/white"
+            >
+        </com.gochinatv.ad.ui.view.RecycleUpAnimationView>
+    </ScrollView>
+
 
 
 

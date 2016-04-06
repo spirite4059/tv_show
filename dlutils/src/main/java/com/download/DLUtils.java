@@ -188,7 +188,7 @@ public class DLUtils {
         File file = new File(path);
         // 如果SD卡目录不存在创建
         if (!file.exists()) {
-            file.mkdir();
+            file.mkdirs();
         }
         // 简单起见，我先把URL和文件名称写死，其实这些都可以通过HttpHeader获取到
 //        downloadUrl = "http://gdown.baidu.com/data/wisegame/91319a5a1dfae322/baidu_16785426.apk";
