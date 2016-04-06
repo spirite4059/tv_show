@@ -214,13 +214,13 @@ public class VideoPlayFragment extends VideoHttpBaseFragment implements OnUpgrad
 
     }
 
-    @Override
-    protected void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo) {
-        this.updateInfo = updateInfo;
-        isDownloadVideo = false;
-        DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, this);
-
-    }
+//    @Override
+//    protected void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo) {
+//        this.updateInfo = updateInfo;
+//        isDownloadVideo = false;
+//        DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, this);
+//
+//    }
 
     @Override
     protected void onGetVideoListSuccessful(VideoDetailListResponse response, String url) {

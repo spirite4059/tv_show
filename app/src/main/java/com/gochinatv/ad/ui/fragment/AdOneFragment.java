@@ -19,9 +19,7 @@ import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
-import com.gochinatv.ad.tools.RootUtils;
 import com.gochinatv.ad.tools.ScreenShotUtils;
-import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.video.MeasureVideoView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -83,7 +81,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     private Handler handler;
 
-    private String playingVideoName;
 
 
     @Override
@@ -273,6 +270,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     }
 
     private void startPlayVideo() {
+        String playingVideoName = null;
         if (playVideoLists == null || playVideoLists.size() < 2) {
             // 如果播放列表视频数量不足2个，继续检查本地缓存列表
             if (cachePlayVideoLists == null || cachePlayVideoLists.size() < 2) {
@@ -428,13 +426,13 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     }
 
-    @Override
-    protected void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo) {
-        this.updateInfo = updateInfo;
-        isDownloadVideo = false;
-        DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, this);
-
-    }
+//    @Override
+//    protected void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo) {
+//        this.updateInfo = updateInfo;
+//        isDownloadVideo = false;
+//        DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, this);
+//
+//    }
 
     @Override
     protected void onGetVideoListSuccessful(VideoDetailListResponse response, String url) {
@@ -540,8 +538,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 //            }
 //        }, 1000 * 10);
 
-        // 匹对视频，并进行播放和下载
-//        matchVideos(adDetailResponses, adDetailResponses);
 
     }
 
@@ -656,48 +652,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     }
 
 
-    private void matchVideos(ArrayList<AdDetailResponse> todayVideos, ArrayList<AdDetailResponse> tomorrowVideos) {
-        // serverList 去除本地缓存中需要用到的就是都要下载的
 
-        downloadLists = new ArrayList<>();
-
-        // 本地缓存中还有用的视频，或者预置片
-        playVideoLists = new ArrayList<>();
-
-        // 本地缓存中已经无用的视频
-        deleteLists = new ArrayList<>();
-
-        // 预下载视频列表
-        prepareDownloadLists = new ArrayList<>();
-
-        // 默认全部视频都需要下载
-        downloadLists.addAll(todayVideos);
-
-        // 匹配当天的视频列表，可用的视频加入playVideoLists，同时将其从downloadLists中删除，无用的视频加入deleteLists中
-        ArrayList<AdDetailResponse> localVideos = matchServerVideos(todayVideos);
-
-        // 开启下载
-        for (AdDetailResponse adDetailResponse : downloadLists) {
-            LogCat.e("需要下载的视频..." + adDetailResponse.adVideoName);
-        }
-        // 开启下载
-        prepareDownloading();
-
-
-        LogCat.e("开始匹对明天的播放列表");
-        // 开始匹配第二天的视频列表，可用的视频从prepareDownloadLists删除，并检测是否在deleteLists中，如果在就从deleteLists删除，否在就下载
-        matchTomorrowList(tomorrowVideos, localVideos);
-
-        // 释放资源
-        localVideos.clear();
-        localVideos = null;
-
-        // 将明日的列表缓存到本地
-        new CacheVideoListThread(tomorrowVideos, DataUtils.getCacheDirectory(), Constants.FILE_CACHE_NAME).start();
-        // 查看是在playlist中播放视频还是从deleteList中播放视频
-        playAndDeleteVideos();
-
-    }
 
     private void matchTomorrowList(ArrayList<AdDetailResponse> tomorrowVideos, ArrayList<AdDetailResponse> localVideos) {
         if (tomorrowVideos == null || tomorrowVideos.size() == 0) {
@@ -808,50 +763,13 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         return isAccessDelete;
     }
 
-    private ArrayList<AdDetailResponse> matchServerVideos(ArrayList<AdDetailResponse> adDetailResponses) {
-        LogCat.e("检测本地video目录......");
-        if (adDetailResponses == null || adDetailResponses.size() == 0) {
-            return null;
-        }
-
-        ArrayList<AdDetailResponse> localVideos = null;
-        File videoFile = new File(DataUtils.getVideoDirectory());
-        if (videoFile.exists()) {
-            LogCat.e("本地video目录存在......");
-            // 将目录中的文件生成一个video表
-            localVideos = getLocalList(videoFile);
-            if (localVideos != null && localVideos.size() > 0) {
-                // 有缓存视频文件
-                // 匹对当前的视频内容
-                LogCat.e("将video目录中的文件与server表进行匹对......");
-                for (AdDetailResponse localVideoResponse : localVideos) {
-                    boolean isDelete = true;
-                    for (AdDetailResponse serverResponse : adDetailResponses) {
-                        // 当前本地缓存视频可以继续使用，加入播放列表
-                        if (serverResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
-                            isDelete = false;
-                            serverResponse.videoPath = localVideoResponse.videoPath;
-                            playVideoLists.add(serverResponse);
-                            // 从下载列表中删除当前的item
-                            downloadLists.remove(serverResponse);
-                            LogCat.e("匹对成功的视频，无需删除......" + serverResponse.adVideoName);
-                        }
-                    }
-                    // 没有匹对的视频，将其加入删除列表
-                    if (isDelete) {
-                        deleteLists.add(localVideoResponse);
-                    }
-                }
-            }
-        }
-        return localVideos;
-    }
-
     private void executeDeleteVideos() {
         if (deleteLists != null && deleteLists.size() > 0) {
+            AdDetailResponse playingInfo = getPlayingVideoInfo();
             AdDetailResponse playingVideo = null;
             for (AdDetailResponse adDetailResponse : deleteLists) {
-                if (!TextUtils.isEmpty(playingVideoName) && playingVideoName.equals(adDetailResponse.adVideoName)) {
+
+                if (!TextUtils.isEmpty(playingInfo.adVideoName) && playingInfo.adVideoName.equals(adDetailResponse.adVideoName)) {
                     playingVideo = adDetailResponse;
                 } else {
                     DeleteFileUtils.getInstance().deleteFile(adDetailResponse.videoPath);
@@ -927,7 +845,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     @Override
     public void onDownloadFileSuccess(String filePath) {
-        if (isDownloadVideo) {
+//        if (isDownloadVideo) {
             LogCat.e("onFinish............. " + filePath);
             // 把下载成功的视频添加到播放列表中
             playVideoLists.add(downloadingVideoResponse);
@@ -935,25 +853,25 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             downloadLists.remove(downloadingVideoResponse);
             // 继续进行下载任务
             prepareDownloading();
-        } else {
-            // 把下载成功的视频添加到播放列表中
-            downloadApkSuccess(filePath);
-        }
+//        } else {
+//            // 把下载成功的视频添加到播放列表中
+//            downloadApkSuccess(filePath);
+//        }
 
     }
 
 
     @Override
     public void onDownloadFileError(int errorCode, String errorMsg) {
-        if (isDownloadVideo) {
+//        if (isDownloadVideo) {
             if (errorCode == ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE) { // 如果是空间不足的错误，就不在进行下载
                 // TODO 上报情况
             } else {
                 downVideoError();
             }
-        } else {
-            downloadApkError();
-        }
+//        } else {
+//            downloadApkError();
+//        }
 
     }
 
@@ -1000,45 +918,45 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     }
 
 
-    private void downloadApkSuccess(String filePath) {
-        updateInfo = null;
-        //新包下载完成得安装
-        if(RootUtils.hasRootPerssion()){
-            //RootUtils.clientInstall("/sdcard/Music/test.apk");
-            SharedPreference.getSharedPreferenceUtils(getActivity()).saveDate("isClientInstall", true);
-            RootUtils.clientInstall(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-            //Toast.makeText(getActivity(), "有root权限，静默安装方式", Toast.LENGTH_LONG).show();
-            LogCat.e("有root权限，静默安装方式");
-        }else{
-            //Toast.makeText(getActivity(),"没有root权限，普通安装方式",Toast.LENGTH_LONG).show();
-            //RootUtils.installApk(CustomActivity.this,"/sdcard/Music/test.apk");
-            LogCat.e("没有root权限，普通安装方式");
-            DataUtils.installApk(getActivity(), filePath);
-        }
-        getActivity().finish();
-    }
+//    private void downloadApkSuccess(String filePath) {
+//        updateInfo = null;
+//        //新包下载完成得安装
+//        if(RootUtils.hasRootPerssion()){
+//            //RootUtils.clientInstall("/sdcard/Music/test.apk");
+//            SharedPreference.getSharedPreferenceUtils(getActivity()).saveDate("isClientInstall", true);
+//            RootUtils.clientInstall(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
+//            //Toast.makeText(getActivity(), "有root权限，静默安装方式", Toast.LENGTH_LONG).show();
+//            LogCat.e("有root权限，静默安装方式");
+//        }else{
+//            //Toast.makeText(getActivity(),"没有root权限，普通安装方式",Toast.LENGTH_LONG).show();
+//            //RootUtils.installApk(CustomActivity.this,"/sdcard/Music/test.apk");
+//            LogCat.e("没有root权限，普通安装方式");
+//            DataUtils.installApk(getActivity(), filePath);
+//        }
+//        getActivity().finish();
+//    }
 
 
-    private void downloadApkError() {
-        // 此时出错，需要判断是否是强制升级，如果是强制升级，说明是接口等重大功能改变，必须优先升级
-        // 强制升级：如果出错，就要循环去做升级操作，直至升级成
-        // 普通升级：如果出错，不再请求，去请求视频接口
-        if ("1".equals(updateInfo.type)) {
-            // 强制更新
-            videoView.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    LogCat.e("5秒后继续尝试，如此循环。。。。");
-                    isDownloadVideo = false;
-                    DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, AdOneFragment.this);
-                }
-            }, 5000);
-
-        } else {
-            updateInfo = null;
-            doHttpGetEpisode();
-        }
-    }
+//    private void downloadApkError() {
+//        // 此时出错，需要判断是否是强制升级，如果是强制升级，说明是接口等重大功能改变，必须优先升级
+//        // 强制升级：如果出错，就要循环去做升级操作，直至升级成
+//        // 普通升级：如果出错，不再请求，去请求视频接口
+//        if ("1".equals(updateInfo.type)) {
+//            // 强制更新
+//            videoView.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    LogCat.e("5秒后继续尝试，如此循环。。。。");
+//                    isDownloadVideo = false;
+//                    DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, AdOneFragment.this);
+//                }
+//            }, 5000);
+//
+//        } else {
+//            updateInfo = null;
+//            doHttpGetEpisode();
+//        }
+//    }
 
 
     /**
@@ -1142,7 +1060,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         }
         AdDetailResponse adDetailResponse = playVideoLists.get(playVideoIndex);
         playVideo(adDetailResponse.videoPath);
-        playingVideoName = adDetailResponse.adVideoName;
         LogCat.e("即将播放视频。。。" + adDetailResponse.adVideoName + "  " + playVideoIndex);
     }
 
@@ -1158,7 +1075,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 LogCat.e("正在检测是否联网。。。。。");
                 if (DataUtils.isNetworkConnected(getActivity())) {
                     // 先去请求服务器，查看视频列表
-                    doHttpUpdate(getActivity());
+                    doHttpGetEpisode();
                     httpTimer.cancel();
                     httpTimer = null;
                     LogCat.e("已经联网。。。。。");
@@ -1169,120 +1086,20 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         }, 0, 10 * 1000);
     }
 
-    // 初始化本地缓存表
-    private void initLocalBufferList() {
-        File fileVideo = new File(DataUtils.getVideoDirectory());
-        if (fileVideo.exists() && fileVideo.isDirectory()) {
-            LogCat.e("Video文件目录存在.....");
-            File[] fileVideos = fileVideo.listFiles();
-            if (fileVideos.length < 2) {
-                // TODO 播放预置片
-                LogCat.e("Video文件目录文件数量不足2个，播放预置片.....");
-                playPresetVideo();
-            } else {
-                // 检测缓存文件是否存在
-                File cacheFile = new File(DataUtils.getCacheDirectory() + Constants.FILE_CACHE_NAME);
-                if (cacheFile.exists() && cacheFile.isFile()) {
-                    // 文件存在
-                    LogCat.e("准备读取cache的内容.....");
-                    // 读取缓存文件
-                    String json = DataUtils.readFileFromSdCard(cacheFile);
-                    if (TextUtils.isEmpty(json)) {
-                        LogCat.e("cache文件内容为null.....");
-                        // TODO 播放video的视频
-                        playDirectoryVideo(fileVideo);
-                        LogCat.e("播放Video文件目录的视频内容.....");
-                    } else {
-                        // 将其转换成实体类
-                        Gson gson = new Gson();
-                        ArrayList<AdDetailResponse> adDetailResponses = gson.fromJson(json, new TypeToken<ArrayList<AdDetailResponse>>() {
-                        }.getType());
-                        if (adDetailResponses == null || adDetailResponses.size() < 2) {
-                            // 检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
-                            LogCat.e("cache文件内视频列表的数量小于2.....");
-                            // TODO 播放video的视频
-                            playDirectoryVideo(fileVideo);
-                            LogCat.e("播放Video文件目录的视频内容.....");
-                        } else {
-                            // TODO
-                            for (AdDetailResponse adDetailResponse : adDetailResponses) {
-                                adDetailResponse.adVideoName = adDetailResponse.name;
-                            }
 
-                            LogCat.e("开始匹配cache的列表和video的文件列表.....");
-                            // 检测prepareVideo目录下的视频，跟上面的列表进行配对，如果有则加入Local列表
-                            ArrayList<AdDetailResponse> fileVideoList = getLocalList(fileVideo);
-                            // 匹配视频列表，获取有用的视频
-                            int fileVideoSize = fileVideoList.size();
-
-                            int cacheVideoSize = adDetailResponses.size();
-                            for (int i = 0; i < fileVideoSize; i++) {
-                                AdDetailResponse fileVideoResponse = fileVideoList.get(i);
-                                for (int j = 0; j < cacheVideoSize; j++) {
-                                    AdDetailResponse cacheVideoResponse = adDetailResponses.get(j);
-                                    if (cacheVideoResponse.adVideoName.equals(fileVideoResponse.adVideoName)) {
-                                        // 当前视频可以使用
-                                        cacheVideoResponse.videoPath = fileVideoResponse.videoPath;
-                                        // 加入本地视频列表
-                                        localVideoList.add(cacheVideoResponse);
-                                        LogCat.e("跟cache匹对成功的视频......" + cacheVideoResponse.adVideoName);
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (localVideoList.size() < 2) {
-                                // 检测video视频目录。如果视频多余2个，加入local，少于2个播放预置片
-                                LogCat.e("匹配后的结果集数量不足2个，情况local，准备播放昨天的内容.....");
-                                // TODO 播放video的视频
-                                LogCat.e("播放Video文件目录的视频内容.....");
-                                playDirectoryVideo(fileVideo);
-                            } else {
-                                // 播放缓存列表的视频内容
-                                LogCat.e("匹配到合适的结果，准备播放.....");
-                                playVideo(localVideoList.get(0).videoPath);
-                            }
-                        }
-                    }
-                } else {
-                    // 缓存文件不存在，直接查看video目录
-                    // TODO 播放video的视频
-                    LogCat.e("播放Video文件目录的视频内容.....");
-                    playDirectoryVideo(fileVideo);
-                }
-            }
-        } else {
-            // TODO 播放预置片
-            LogCat.e("video目录不存在，播放预置片.....");
-            playPresetVideo();
-        }
-
-    }
-
-
+    /**
+     * 播放预置片
+     */
     private void playPresetVideo() {
-//        localVideoList.clear();
-//        AdDetailResponse videoAdBean = new AdDetailResponse();
-//        videoAdBean.adVideoName = "预置片";
-//        videoAdBean.videoPath = getRawVideoUri();
-//        videoAdBean.isPresetPiece = true;
-//        videoAdBean.adVideoIndex = 0;
-//        localVideoList.add(videoAdBean);
         playVideo(getRawVideoUri());
-        playingVideoName = "预置片";
-
-    }
-
-    private void playDirectoryVideo(File file) {
-        localVideoList.clear();
-
-        localVideoList = getLocalList(file);
-
-        playVideo(localVideoList.get(0).videoPath);
-
     }
 
 
+    /**
+     * 返回当前的本地video视频列表信息集合
+     * @param videoFiles
+     * @return
+     */
     private ArrayList<AdDetailResponse> getLocalList(File videoFiles) {
         ArrayList<AdDetailResponse> adDetailResponses = new ArrayList<>();
         File[] files = videoFiles.listFiles();
@@ -1351,6 +1168,10 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     }
 
 
+    /**
+     * 获取正在播放的视频信息
+     * @return
+     */
     private AdDetailResponse getPlayingVideoInfo() {
         AdDetailResponse videoAdBean = null;
         if (playVideoLists == null || playVideoLists.size() < 2) {

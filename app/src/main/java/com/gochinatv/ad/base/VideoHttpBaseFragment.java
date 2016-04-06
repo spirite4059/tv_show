@@ -39,7 +39,7 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
 
     protected abstract void onGetVideoPathFailed(String path);
 
-    protected abstract void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo);
+//    protected abstract void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo);
 
     /**
      * 请求视频列表数
@@ -193,7 +193,7 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
                                     LogCat.e("需要升级。。。。。");
 
                                     // 去下载当前的apk
-                                    onUpgradeSuccessful(updateInfo);
+//                                    onUpgradeSuccessful(updateInfo);
 
 
                                 } else {
