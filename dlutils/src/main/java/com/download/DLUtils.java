@@ -13,6 +13,7 @@ import com.download.dllistener.OnDownloadStatusListener;
 import com.download.tools.LogCat;
 
 import java.io.File;
+import java.io.IOException;
 
 import static com.download.ErrorCodes.ERROR_DOWNLOADING_READ;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
@@ -190,17 +191,27 @@ public class DLUtils {
         if (!file.exists()) {
             file.mkdirs();
         }
+
+        File apkFile = new File(path, fileName);
+        if(!apkFile.exists()){
+            try {
+                apkFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         // 简单起见，我先把URL和文件名称写死，其实这些都可以通过HttpHeader获取到
 //        downloadUrl = "http://gdown.baidu.com/data/wisegame/91319a5a1dfae322/baidu_16785426.apk";
 //        fileName = "baidu_16785426.apk";
         threadNum = 2;
-        String filePath = path + fileName;
-        LogCat.e("download file  path:" + filePath);
+//        String filePath = path + fileName;
+        LogCat.e("download file  path:" + apkFile.getAbsolutePath());
         if(downloadThread != null){
             downloadThread.cancelDownload();
             downloadThread = null;
         }
-        downloadThread = new DownloadPrepareThread(downloadUrl, threadNum, filePath, downLoadHandler);
+        downloadThread = new DownloadPrepareThread(downloadUrl, threadNum, apkFile, downLoadHandler);
         downloadThread.start();
 
     }

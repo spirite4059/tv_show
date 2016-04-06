@@ -7,7 +7,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.StatFs;
-import android.text.TextUtils;
 
 import com.download.tools.LogCat;
 
@@ -27,7 +26,7 @@ import static com.download.ErrorCodes.HTTP_PARTIAL;
 public class DownloadPrepareThread extends Thread {
     private String downloadUrl;// 下载链接地址
     private int threadNum;// 开启的线程数
-    private String filePath;// 保存文件路径地址
+    private File file;// 保存文件路径地址
     private Handler mHandler;
     private int errorCode;
     private Bundle bundle;
@@ -35,10 +34,10 @@ public class DownloadPrepareThread extends Thread {
     private static final int CONNECT_TIME_OUT = 60000;
 
 
-    public DownloadPrepareThread(String downloadUrl, int threadNum, String filePath, Handler mHandler) {
+    public DownloadPrepareThread(String downloadUrl, int threadNum, File file, Handler mHandler) {
         this.downloadUrl = downloadUrl;
         this.threadNum = threadNum;
-        this.filePath = filePath;
+        this.file = file;
         this.mHandler = mHandler;
         errorCode = 0;
     }
@@ -204,7 +203,7 @@ public class DownloadPrepareThread extends Thread {
         }
 
 
-        if (TextUtils.isEmpty(filePath)) {
+        if (file == null) {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
             setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL);
             return;
@@ -213,9 +212,13 @@ public class DownloadPrepareThread extends Thread {
         if (isCancel) {
             return;
         }
-
-        File file = new File(filePath);
-
+        if(!file.exists()){
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         if (isCancel) {
             return;
