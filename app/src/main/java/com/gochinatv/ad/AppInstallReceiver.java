@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 
+import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.RootUtils;
 import com.gochinatv.ad.tools.SharedPreference;
 
@@ -19,8 +20,11 @@ public class AppInstallReceiver extends BroadcastReceiver {
         if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED)) {
             String packageName = intent.getDataString();
             boolean is = SharedPreference.getSharedPreferenceUtils(context).getDate("isClientInstall", false);
+            LogCat.e("静默安装完成，广播启动 packageName " + "package:com.gochinatv.ad".equals(packageName));
+            LogCat.e("静默安装完成，广播启动  is  "+ is);
             if("package:com.gochinatv.ad".equals(packageName) && is){
                 RootUtils.startApp("com.gochinatv.ad", "com.gochinatv.ad.MainActivity");
+                LogCat.e("静默安装完成，广播启动");
             }
 
 
@@ -33,11 +37,12 @@ public class AppInstallReceiver extends BroadcastReceiver {
         }
         if (intent.getAction().equals(Intent.ACTION_PACKAGE_REPLACED)) {
             String packageName = intent.getDataString();
-
             boolean is = SharedPreference.getSharedPreferenceUtils(context).getDate("isClientInstall",false);
+            LogCat.e("静默安装完成，广播启动 packageName " + "package:com.gochinatv.ad".equals(packageName));
+            LogCat.e("静默安装完成，广播启动  is  "+ is);
             if("package:com.gochinatv.ad".equals(packageName) && is){
                   RootUtils.startApp("com.gochinatv.ad", "com.gochinatv.ad.MainActivity");
-
+                  LogCat.e("静默安装完成，广播启动");
             }
 
 

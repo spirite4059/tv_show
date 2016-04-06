@@ -51,8 +51,9 @@ public class MainActivity extends Activity {
         view = findViewById(R.id.root_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
         doHttpUpdate(this);
+        RootUtils.hasRootPerssion();//一开始就请求root
 
-//        //        //新包下载完成得安装
+        //        //新包下载完成得安装
 //        if(RootUtils.hasRootPerssion()){
 //            //RootUtils.clientInstall("/sdcard/Music/test.apk");
 //            SharedPreference.getSharedPreferenceUtils(this).saveDate("isClientInstall", true);
@@ -237,12 +238,15 @@ public class MainActivity extends Activity {
                     LogCat.e("没有root权限，普通安装方式");
                     DataUtils.installApk(MainActivity.this, filePath);
                 }
-                MainActivity.this.finish();
+                //MainActivity.this.finish();
             }
 
             @Override
             public void onDownloadFileError(int errorCode, String errorMsg) {
-                loadFragment(false);
+                //通知AdOneFragment去下载视频
+                LogCat.e("下载apk出现错误");
+
+
             }
         });
 
