@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
      * 下载info
      */
     private UpdateResponse.UpdateInfoResponse updateInfo;
+    private AdOneFragment adOneFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -207,7 +208,7 @@ public class MainActivity extends Activity {
         loadingView.setVisibility(View.GONE);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
-        AdOneFragment adOneFragment = new AdOneFragment();
+        adOneFragment = new AdOneFragment();
         if(isDownload){
             adOneFragment.setIsDownloadAPK(true);
         }
@@ -245,7 +246,9 @@ public class MainActivity extends Activity {
             public void onDownloadFileError(int errorCode, String errorMsg) {
                 //通知AdOneFragment去下载视频
                 LogCat.e("下载apk出现错误");
-
+                if(adOneFragment != null){
+                    adOneFragment.startDownloadVideo();
+                }
 
             }
         });

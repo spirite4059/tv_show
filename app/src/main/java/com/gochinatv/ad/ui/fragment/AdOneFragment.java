@@ -1231,5 +1231,14 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         this.isDownloadAPK = isDownloadAPK;
     }
 
+    /**
+     * 开始下载视频
+     */
+    public void startDownloadVideo(){
+        httpRequest();
+    }
+
+
+
 
 }
