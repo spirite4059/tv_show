@@ -145,9 +145,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         LogCat.e("查找可以播放的视频.....");
         startPlayVideo();
 
-        LogCat.e("清空升级apk.....");
-        // 5.清空所有升级包，为了节省空间
-        DeleteFileUtils.getInstance().deleteFile(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
+
+
 
         String oldPath = DataUtils.getSdCardOldFileDirectory();
         LogCat.e("清空旧文件目录....." + oldPath);
@@ -157,6 +156,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         // 6.请求视频列表
         if(!isDownloadAPK){ // 当有下载任务的时候，就不会再去请求视频列表，全部资源给下载apk
             httpRequest();
+            // 5.清空所有升级包，为了节省空间
+            DeleteFileUtils.getInstance().deleteFile(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
+            LogCat.e("清空升级apk.....");
         }
 
 
