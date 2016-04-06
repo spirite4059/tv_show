@@ -59,4 +59,14 @@ public class Constants {
      */
     public static boolean isClientInstall;
 
+
+    /**
+     * --------------------------是否是测试环境-------------------------------
+     */
+    public static boolean isTest = false;
+
+
+
+
+
 }

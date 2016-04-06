@@ -69,6 +69,11 @@ public class MainActivity extends Activity {
     }
 
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+    }
 
     /**
      * 检查是否有版本更新
@@ -93,18 +98,19 @@ public class MainActivity extends Activity {
             if (appInfo != null) {
                 String brand = appInfo.metaData.getString("UMENG_CHANNEL");
                 if (TextUtils.isEmpty(brand)) {
-                    map.put("brandNumber", "chinarestaurant"); // 品牌
+                    String name = Constants.isTest ? "ctTest" : "chinarestaurant";//如果是测试：ctTest；否则：chinarestaurant
+                    map.put("brandNumber", name); // 品牌
                 } else {
                     map.put("brandNumber", brand); // 品牌
                 }
             }
         } catch (PackageManager.NameNotFoundException e1) {
             e1.printStackTrace();
-            map.put("brandNumber", "chinarestaurant"); // 品牌
+            String name = Constants.isTest ? "ctTest" : "chinarestaurant";//如果是测试：ctTest；否则：chinarestaurant
+            map.put("brandNumber", name); // 品牌
         }
 
         OkHttpUtils.getInstance().
-
                 doHttpGet(HttpUrls.URL_CHECK_UPDATE, map, new OkHttpCallBack<UpdateResponse>() {
                     @Override
                     public void onSuccess(String url, UpdateResponse response) {
@@ -147,7 +153,7 @@ public class MainActivity extends Activity {
                                     loadingView.setVisibility(View.GONE);
                                     FragmentManager fm = getFragmentManager();
                                     FragmentTransaction ft = fm.beginTransaction();
-                                    AdOneFragment adOneFragment =  new AdOneFragment();
+                                    AdOneFragment adOneFragment = new AdOneFragment();
                                     adOneFragment.setIsDownloadAPK(true);
                                     ft.add(R.id.root_main, adOneFragment);
                                     //ft.add(R.id.root_main, new ADTwoFragment());
@@ -189,7 +195,7 @@ public class MainActivity extends Activity {
                             reTryTimes++;
                             if (reTryTimes > 4) {
                                 reTryTimes = 0;
-                                LogCat.e("升级接口已连续请求3次，不在请求" );
+                                LogCat.e("升级接口已连续请求3次，不在请求");
                             } else {
                                 LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
                                 doHttpUpdate(MainActivity.this);
@@ -211,7 +217,7 @@ public class MainActivity extends Activity {
      * 下载apk
      */
     private void downloadAPK(){
-        DownloadUtils.download(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+        DownloadUtils.downloadAPK(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
 //        //新包下载完成得安装
