@@ -28,9 +28,6 @@ import com.httputils.http.response.AdDetailResponse;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
-import com.okhtttp.OkHttpCallBack;
-import com.okhtttp.response.AdVideoListResponse;
-import com.okhtttp.response.VideoHttpService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -158,31 +155,35 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         LogCat.e("请求接口.....");
         // 6.请求视频列表
-        httpRequest();
+        if(!isDownloadAPK){ // 当有下载任务的时候，就不会再去请求视频列表，全部资源给下载apk
+            httpRequest();
+        }
+
 
         LogCat.e("开始上传截屏文件timer.....");
         // 7.开启上传截图
 //        startScreenShot();
 
 
-        // 先开始播放视频
-        // 优先查看是否有缓存的视频可以播放，有就播放，没有则播放本地视频
-//        initLocalBufferList();
-
+        //  开启轮询接口
 //        handler = new Handler(Looper.getMainLooper());
 
 
-        VideoHttpService.doHttpGetVideoList(getActivity(), new OkHttpCallBack<AdVideoListResponse>() {
-            @Override
-            public void onSuccess(String url, AdVideoListResponse response) {
-                LogCat.e("新街口成功了.........");
-            }
-
-            @Override
-            public void onError(String url, String errorMsg) {
-                LogCat.e("新街口onError了.........");
-            }
-        });
+//        VideoHttpService.doHttpGetVideoList(getActivity(), new OkHttpCallBack<AdVideoListResponse>() {
+//            @Override
+//            public void onSuccess(String url, AdVideoListResponse response) {
+//                LogCat.e("新街口成功了........*******************.");
+//                if(response != null){
+//
+//                }
+//
+//            }
+//
+//            @Override
+//            public void onError(String url, String errorMsg) {
+//                LogCat.e("新街口onError了.........********************");
+//            }
+//        });
 
     }
 
@@ -239,11 +240,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         int localLength = localVideoList.size();
         if (localLength < 2) {
             // 此时无需匹对列表，直接将预置片放入缓存播放列表
-//            AdDetailResponse adDetailResponse = new AdDetailResponse();
-//            adDetailResponse.adVideoName = "预置片";
-//            adDetailResponse.videoPath = getRawVideoUri();
-//            cachePlayVideos.add(adDetailResponse);
-
         } else {
             // 匹对列表
             for (AdDetailResponse localVideo : localVideoList) {
@@ -258,12 +254,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             }
             // 匹配后结果不满足2个，仍然要播放预告片
             if (cachePlayVideos.size() < 2) {
-//                cachePlayVideos.clear();
-//                AdDetailResponse adDetailResponse = new AdDetailResponse();
-//                adDetailResponse.adVideoName = "预置片";
-//                adDetailResponse.videoPath = getRawVideoUri();
-//                cachePlayVideos.add(adDetailResponse);
-
                 cachePlayVideos.addAll(localVideoList);
             }
         }
@@ -993,9 +983,14 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      * 下载准备工作
      */
     private void prepareDownloading() {
-        if (downloadLists.size() == 0) {
-            LogCat.e("所有视频下载完成。。。。。。。。");
-            downloadingVideoResponse = null;
+        if (downloadLists.size() == 0 ) {
+            if(prepareDownloadLists.size() == 0){
+                LogCat.e("所有视频下载完成。。。。。。。。");
+                downloadingVideoResponse = null;
+            }else {
+                downloadLists.addAll(prepareDownloadLists);
+                prepareDownloading();
+            }
         } else {
             LogCat.e("获取下载列表第一个视频，并开始下载。。。。。。。。 还剩余下载任务：" + downloadLists.size());
             downloadingVideoResponse = downloadLists.get(0);
