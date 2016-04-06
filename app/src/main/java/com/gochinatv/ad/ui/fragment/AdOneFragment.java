@@ -530,15 +530,15 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
 
         LogCat.e("++++++++++++++++++++++++++++++++++++++++++++++++");
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isAdded()) {
-                    doHttpGetEpisode();
-                }
-
-            }
-        }, 1000 * 10);
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (isAdded()) {
+//                    doHttpGetEpisode();
+//                }
+//
+//            }
+//        }, 1000 * 10);
 
         // 匹对视频，并进行播放和下载
 //        matchVideos(adDetailResponses, adDetailResponses);
