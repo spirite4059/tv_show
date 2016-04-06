@@ -30,7 +30,7 @@ public class Constants {
     public static final String FILE_DIRECTORY = "VegoPlus" + File.separator;
     public static final String FILE_OLD_DIRECTORY = "gochinatv" + File.separator;
     public static final String FILE_DIRECTORY_VIDEO = "video" + File.separator;
-    public static final String FILE_DIRECTORY_APK = "apk" + File.separator;
+    public static final String FILE_DIRECTORY_APK = "apkFile" + File.separator;
     public static final String FILE_DIRECTORY_CACHE = "cache" + File.separator;
     public static final String FILE_DIRECTORY_SCREEN_SHOT = "screenShot" + File.separator;
     public static final String FILE_DIRECTORY_PRE_VIDEO = "prepareVideo" + File.separator;
@@ -61,12 +61,9 @@ public class Constants {
 
 
     /**
-     * --------------------------是否是测试环境-------------------------------
+     * --------------------------是否是测试-------------------------------
      */
     public static boolean isTest = false;
-
-
-
 
 
 }

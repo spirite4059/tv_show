@@ -151,18 +151,7 @@ public class MainActivity extends Activity {
                                     // 去下载当前的apk
                                     downloadAPK();
                                     // 加载布局.但是不让AdOneFragment，下载视频
-                                    loadingView.setVisibility(View.GONE);
-                                    FragmentManager fm = getFragmentManager();
-                                    FragmentTransaction ft = fm.beginTransaction();
-                                    AdOneFragment adOneFragment = new AdOneFragment();
-                                    adOneFragment.setIsDownloadAPK(true);
-                                    ft.add(R.id.root_main, adOneFragment);
-                                    //ft.add(R.id.root_main, new ADTwoFragment());
-                                    //ft.add(R.id.root_main, new ADThreeFragment());
-                                    //ft.add(R.id.root_main, new AdFiveFragment());
-                                    //ft.add(R.id.root_main, new ADFourFragment());
-                                    ft.commit();
-
+                                    loadFragment(true);
 
                                 } else {
                                     // 不升级,加载布局
@@ -171,15 +160,7 @@ public class MainActivity extends Activity {
                                     // 5.清空所有升级包，为了节省空间
                                     DeleteFileUtils.getInstance().deleteFile(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
                                     LogCat.e("清空升级apk.....");
-                                    loadingView.setVisibility(View.GONE);
-                                    FragmentManager fm = getFragmentManager();
-                                    FragmentTransaction ft = fm.beginTransaction();
-                                    ft.add(R.id.root_main, new AdOneFragment());
-                                    //ft.add(R.id.root_main, new ADTwoFragment());
-                                    //ft.add(R.id.root_main, new ADThreeFragment());
-                                    //ft.add(R.id.root_main, new AdFiveFragment());
-                                    //ft.add(R.id.root_main, new ADFourFragment());
-                                    ft.commit();
+                                    loadFragment(false);
                                 }
                             } catch (PackageManager.NameNotFoundException e) {
                                 e.printStackTrace();
@@ -217,12 +198,34 @@ public class MainActivity extends Activity {
 
     }
 
+    /**
+     * 加载fragment
+     * @param isDownload
+     */
+    private void loadFragment(boolean isDownload){
+        loadingView.setVisibility(View.GONE);
+        FragmentManager fm = getFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        AdOneFragment adOneFragment = new AdOneFragment();
+        if(isDownload){
+            adOneFragment.setIsDownloadAPK(true);
+        }
+        ft.add(R.id.root_main, adOneFragment);
+        //ft.add(R.id.root_main, new ADTwoFragment());
+        //ft.add(R.id.root_main, new ADThreeFragment());
+        //ft.add(R.id.root_main, new AdFiveFragment());
+        //ft.add(R.id.root_main, new ADFourFragment());
+        ft.commit();
+    }
+
+
+
 
     /**
      * 下载apk
      */
     private void downloadAPK(){
-        DownloadUtils.downloadAPK(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+        DownloadUtils.download(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
 //        //新包下载完成得安装
@@ -239,19 +242,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onDownloadFileError(int errorCode, String errorMsg) {
-                if ("1".equals(updateInfo.type)) {
-                    // 强制更新
-                    view.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            LogCat.e("5秒后继续尝试，如此循环。。。。");
-                            downloadAPK();
-                        }
-                    }, 5000);
-
-                } else {
-                    updateInfo = null;
-                }
+                loadFragment(false);
             }
         });
 
