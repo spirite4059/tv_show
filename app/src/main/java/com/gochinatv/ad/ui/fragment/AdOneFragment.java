@@ -2,7 +2,6 @@ package com.gochinatv.ad.ui.fragment;
 
 import android.media.MediaPlayer;
 import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,6 +88,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
+
+
+
         return inflater.inflate(R.layout.fragment_ad_video, container, false);
     }
 
@@ -145,14 +147,14 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         LogCat.e("开始上传截屏文件timer.....");
         // 7.开启上传截图
-        startScreenShot();
+//        startScreenShot();
 
 
         // 先开始播放视频
         // 优先查看是否有缓存的视频可以播放，有就播放，没有则播放本地视频
 //        initLocalBufferList();
 
-        handler = new Handler(Looper.getMainLooper());
+//        handler = new Handler(Looper.getMainLooper());
 
 
     }
