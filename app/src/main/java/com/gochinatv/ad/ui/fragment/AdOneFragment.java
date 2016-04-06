@@ -173,7 +173,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 //            @Override
 //            public void onSuccess(String url, AdVideoListResponse response) {
 //                LogCat.e("新街口成功了........*******************.");
-//                if(response != null){
+//                if (response != null) {
 //
 //                }
 //
@@ -988,7 +988,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 LogCat.e("所有视频下载完成。。。。。。。。");
                 downloadingVideoResponse = null;
             }else {
+                LogCat.e("当日的下载列表下载完成，继续下载明日与播放的视频列表");
                 downloadLists.addAll(prepareDownloadLists);
+                prepareDownloadLists.clear();
                 prepareDownloading();
             }
         } else {

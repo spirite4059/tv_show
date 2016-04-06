@@ -1,10 +1,11 @@
-package com.okhtttp.response;
+package com.okhtttp.service;
 
 import android.content.Context;
 
 import com.okhtttp.MacUtils;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
+import com.okhtttp.response.AdVideoListResponse;
 
 import java.util.HashMap;
 import java.util.Map;
