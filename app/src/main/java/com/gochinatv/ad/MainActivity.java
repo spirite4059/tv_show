@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
@@ -166,6 +167,10 @@ public class MainActivity extends Activity {
                                 } else {
                                     // 不升级,加载布局
                                     LogCat.e("无需升级。。。。。");
+
+                                    // 5.清空所有升级包，为了节省空间
+                                    DeleteFileUtils.getInstance().deleteFile(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
+                                    LogCat.e("清空升级apk.....");
                                     loadingView.setVisibility(View.GONE);
                                     FragmentManager fm = getFragmentManager();
                                     FragmentTransaction ft = fm.beginTransaction();
@@ -221,11 +226,11 @@ public class MainActivity extends Activity {
             @Override
             public void onDownloadFileSuccess(String filePath) {
 //        //新包下载完成得安装
-                if(RootUtils.hasRootPerssion()){
+                if (RootUtils.hasRootPerssion()) {
                     SharedPreference.getSharedPreferenceUtils(MainActivity.this).saveDate("isClientInstall", true);
                     RootUtils.clientInstall(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                     LogCat.e("有root权限，静默安装方式");
-                }else{
+                } else {
                     LogCat.e("没有root权限，普通安装方式");
                     DataUtils.installApk(MainActivity.this, filePath);
                 }
