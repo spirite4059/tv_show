@@ -28,6 +28,9 @@ import com.httputils.http.response.AdDetailResponse;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.UpdateResponse;
 import com.httputils.http.response.VideoDetailListResponse;
+import com.okhtttp.OkHttpCallBack;
+import com.okhtttp.response.AdVideoListResponse;
+import com.okhtttp.response.VideoHttpService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -168,6 +171,18 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
 //        handler = new Handler(Looper.getMainLooper());
 
+
+        VideoHttpService.doHttpGetVideoList(getActivity(), new OkHttpCallBack<AdVideoListResponse>() {
+            @Override
+            public void onSuccess(String url, AdVideoListResponse response) {
+                LogCat.e("新街口成功了.........");
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                LogCat.e("新街口onError了.........");
+            }
+        });
 
     }
 
