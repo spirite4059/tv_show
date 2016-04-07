@@ -184,6 +184,7 @@ public class MainActivity extends Activity {
                             if (reTryTimes > 4) {
                                 reTryTimes = 0;
                                 LogCat.e("升级接口已连续请求3次，不在请求");
+                                loadFragment(false);
                             } else {
                                 LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
                                 doHttpUpdate(MainActivity.this);
