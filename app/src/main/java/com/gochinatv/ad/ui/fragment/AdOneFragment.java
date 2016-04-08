@@ -496,8 +496,10 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         // 5.匹配明天要下载的视频
         LogCat.e("根据明日播放列表，获取下载列表......");
         prepareDownloadLists = getDownloadList(localVideoList, adDetailResponses);
+
         LogCat.e("------------------------------");
         // 匹对今天的下载列表，提出重复下载的视频
+        LogCat.e("开始处理重复的下载任务......");
         reconnectedPrepare();
 
         // 6.再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表
@@ -532,15 +534,15 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
 
         LogCat.e("++++++++++++++++++++++++++++++++++++++++++++++++");
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (isAdded()) {
-//                    doHttpGetEpisode();
-//                }
-//
-//            }
-//        }, 1000 * 10);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isAdded()) {
+                    doHttpGetEpisode();
+                }
+
+            }
+        }, TIME_RETRY_DURATION);
 
 
     }
