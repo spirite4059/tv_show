@@ -19,9 +19,6 @@ import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.RootUtils;
 import com.gochinatv.ad.tools.SharedPreference;
-import com.gochinatv.ad.ui.fragment.ADFourFragment;
-import com.gochinatv.ad.ui.fragment.ADThreeFragment;
-import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.httputils.http.response.UpdateResponse;
 import com.okhtttp.OkHttpCallBack;
@@ -217,10 +214,10 @@ public class MainActivity extends Activity {
             adOneFragment.setIsDownloadAPK(true);
         }
         ft.add(R.id.root_main, adOneFragment);
-        ft.add(R.id.root_main, new ADTwoFragment());
-        ft.add(R.id.root_main, new ADThreeFragment());
-//        ft.add(R.id.root_main, new AdFiveFragment());
-        ft.add(R.id.root_main, new ADFourFragment());
+        //ft.add(R.id.root_main, new ADTwoFragment());
+        //ft.add(R.id.root_main, new ADThreeFragment());
+        //ft.add(R.id.root_main, new AdFiveFragment());
+        //ft.add(R.id.root_main, new ADFourFragment());
         ft.commit();
     }
 
