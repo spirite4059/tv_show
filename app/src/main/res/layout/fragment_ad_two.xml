@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
@@ -11,19 +11,25 @@
     android:paddingBottom="@dimen/d_2dp"
     >
 
-
-    <com.daimajia.slider.library.SliderLayout
-        android:id="@+id/slider"
-        android:layout_width="match_parent"
-        custom:pager_animation="Accordion"
-        custom:auto_cycle="true"
-        custom:indicator_visibility="visible"
-        custom:pager_animation_span="1100"
-        android:layout_height="match_parent"/>
-    <!--<WebView-->
-        <!--android:id="@+id/webview"-->
+    <!--<com.daimajia.slider.library.SliderLayout-->
+        <!--android:id="@+id/slider"-->
         <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"></WebView>-->
+        <!--custom:pager_animation="Accordion"-->
+        <!--custom:auto_cycle="true"-->
+        <!--custom:indicator_visibility="visible"-->
+        <!--custom:pager_animation_span="1100"-->
+        <!--android:layout_height="match_parent"/>-->
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></WebView>
+    <ImageView
+        android:id="@+id/ad_two_img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/adtwo"
+        android:scaleType="fitXY"
+        />
 
 
-</LinearLayout>
+</RelativeLayout>

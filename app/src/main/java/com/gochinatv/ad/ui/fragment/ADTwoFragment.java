@@ -1,118 +1,121 @@
 package com.gochinatv.ad.ui.fragment;
 
-import android.os.Bundle;
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
-import com.daimajia.slider.library.Indicators.PagerIndicator;
-import com.daimajia.slider.library.SliderLayout;
-import com.daimajia.slider.library.SliderTypes.BaseSliderView;
-import com.daimajia.slider.library.SliderTypes.TextSliderView;
-import com.daimajia.slider.library.Tricks.ViewPagerEx;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.okhtttp.OkHttpCallBack;
+import com.okhtttp.response.ADTwoResponse;
+import com.okhtttp.response.LayoutResponse;
+import com.okhtttp.service.ADHttpService;
 
-import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  *
  * Created by zfy on 2016/3/16.
  */
-public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSliderClickListener, ViewPagerEx.OnPageChangeListener{
+public class ADTwoFragment extends BaseFragment {
 
 
-    private SliderLayout mDemoSlider;
-
+    //webView
     private WebView webView;
+
+    public LayoutResponse getLayoutResponse() {
+        return layoutResponse;
+    }
+
+    public void setLayoutResponse(LayoutResponse layoutResponse) {
+        this.layoutResponse = layoutResponse;
+    }
+
+    //布局参数
+    private LayoutResponse layoutResponse;
+
+    //开始默认显示图片
+    private ImageView imageView;
+
+    //请求文字广告接口的定时器
+    private int getTextaWebTime = 5;//每隔多长去请求接口，默认：5 （分钟）
+    private Timer getWebADTimer;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
         LogCat.e("width: " + DataUtils.getDisplayMetricsWidth(getActivity()) + " height:" + DataUtils.getDisplayMetricsHeight(getActivity()));
 
-//        RelativeLayout relativeLayout = new RelativeLayout(getActivity());
-//        Resources resources = getResources();
-//        DataUtils.dpToPx(resources,500);
-//
-//        RelativeLayout.LayoutParams layoutParams1 = new RelativeLayout.LayoutParams(DataUtils.dpToPx(resources,500),DataUtils.dpToPx(resources,500));
-//        //layoutParams1.addRule(RelativeLayout.CENTER_IN_PARENT);
-//        layoutParams1.topMargin = 100;
-//        layoutParams1.leftMargin = 500;
-//        relativeLayout.setLayoutParams(layoutParams1);
-//
-//        webView = new WebView(getActivity());
-//        RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
-//        relativeLayout.addView(webView,layoutParams2);
+        RelativeLayout linearLayout = (RelativeLayout) inflater.inflate(R.layout.fragment_ad_two, container, false);
+        if(layoutResponse != null){
 
-        return inflater.inflate(R.layout.fragment_ad_two,container,false);
-        //return relativeLayout;
+            if(!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
+                    && !TextUtils.isEmpty(layoutResponse.adTop) && !TextUtils.isEmpty(layoutResponse.adLeft)){
+
+                String widthStr = layoutResponse.adWidth;
+                String heightStr = layoutResponse.adHeight;
+                String topStr = layoutResponse.adTop;
+                String leftStr = layoutResponse.adLeft;
+
+                //动态布局
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+                double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
+                double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
+                double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
+                double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
+
+                params.width = (int) Math.floor(width);
+                params.height = (int) Math.floor(height);
+                params.topMargin = (int) Math.floor(top);
+
+                params.leftMargin = (int) Math.floor(left);
+                linearLayout.setLayoutParams(params);
+                LogCat.e(" 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
+
+            }
+        }
+
+        return linearLayout;
+
     }
 
     @Override
     protected void initView(View rootView) {
-        mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
-        //webView = (WebView) rootView.findViewById(R.id.webview);
-
+        //mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
+        webView = (WebView) rootView.findViewById(R.id.webview);
+        imageView = (ImageView) rootView.findViewById(R.id.ad_two_img);
     }
 
     @Override
     protected void init() {
-
-        HashMap<String,Integer> url_maps = new HashMap<String, Integer>();
-        url_maps.put("Hannibal", R.drawable.adtwo);
-        url_maps.put("Big Bang Theory", R.drawable.news);
-        url_maps.put("House of Cards", R.drawable.news2);
-        url_maps.put("Game of Thrones", R.drawable.news3);
-        for(String adVideoName : url_maps.keySet()){
-            TextSliderView textSliderView = new TextSliderView(getActivity());
-            // initialize a SliderLayout
-            textSliderView
-                    .description(adVideoName)
-                    .image(url_maps.get(adVideoName))
-                    .setScaleType(BaseSliderView.ScaleType.Fit)
-                    .setOnSliderClickListener(this);
-
-            //add your extra information
-            textSliderView.bundle(new Bundle());
-            textSliderView.getBundle()
-                    .putString("extra",adVideoName);
-
-            mDemoSlider.addSlider(textSliderView);
-        }
-        mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
-        mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
-        mDemoSlider.setCustomAnimation(null);
-        mDemoSlider.setDuration(10000);
-        mDemoSlider.addOnPageChangeListener(this);
-        //当只有一张照片时，不显示小点和动画
-        mDemoSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);
-
-
-
-        //webView.loadUrl("http://blog.csdn.net/woshinia/article/details/11520403");
+        doGetWebAD();
     }
 
     @Override
     protected void bindEvent() {
-//        webView.setWebViewClient(new WebViewClient(){
-//            @Override
-//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//                // TODO Auto-generated method stub
-//                //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
-//                view.loadUrl(url);
-//                return true;
-//            }
-//        });
-    }
 
+    }
 
     @Override
     public void onStop() {
-        if(mDemoSlider != null){
-            mDemoSlider.stopAutoCycle();
+//        if(mDemoSlider != null){
+//            mDemoSlider.stopAutoCycle();
+//        }
+
+        if(getWebADTimer != null){
+            getWebADTimer.cancel();
+            getWebADTimer = null;
         }
 
         super.onStop();
@@ -123,25 +126,133 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
         super.onDestroy();
     }
 
+    /**
+     * 请求web广告
+     */
+    private  int reTryTimesTwo;
+    private void doGetWebAD(){
 
+        ADHttpService.doHttpGetWebADInfo(getActivity(), new OkHttpCallBack<ADTwoResponse>() {
+            @Override
+            public void onSuccess(String url, ADTwoResponse response) {
+                if(!isAdded()){
+                    return;
+                }
 
-    @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                if (response == null || !(response instanceof ADTwoResponse)) {
+                    LogCat.e("请求web接口失败");
+                    doError();
+                    return;
+                }
+
+                if(!TextUtils.isEmpty(response.adWebUrl)){
+                    webView.loadUrl(response.adWebUrl);
+                    webFinishLinster();
+
+                    getWebADTimer = new Timer();
+                    getWebADTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            doGetWebAD();
+                        }
+                    }, getTextaWebTime * 60000, getTextaWebTime * 60000);
+
+                }
+            }
+
+            private void doError() {
+                if (isAdded()) {
+                    // 做不升级处理, 继续请求广告视频列表
+                    reTryTimesTwo++;
+                    if (reTryTimesTwo > 4) {
+                        reTryTimesTwo = 0;
+                        LogCat.e("web广告接口已连续请求3次，不在请求");
+                    } else {
+                        LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
+                        doGetWebAD();
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                doError();
+            }
+        });
 
     }
 
-    @Override
-    public void onPageSelected(int position) {
+
+    /**
+     * web监听
+     */
+    private void webFinishLinster(){
+
+        webView.setWebViewClient(new WebViewClient() {
+
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                LogCat.e("web加载完成 url " + url);
+                //开启动画，显示webview
+                showWebView();
+
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                // TODO Auto-generated method stub
+                //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
+                view.loadUrl(url);
+                return true;
+            }
+
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+            }
+        });
+
 
     }
 
-    @Override
-    public void onPageScrollStateChanged(int state) {
+    /**
+     * 显示webVeiw
+     */
+    private void showWebView(){
+
+        ObjectAnimator animator = new ObjectAnimator().ofFloat(imageView,"alpha",1.0f,0.0f).setDuration(2000);
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                imageView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                imageView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+
+        animator.start();
 
     }
 
-    @Override
-    public void onSliderClick(BaseSliderView slider) {
 
-    }
+
+
+
+
 }

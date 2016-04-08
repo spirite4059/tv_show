@@ -237,6 +237,7 @@ public class MainActivity extends Activity {
         loadingView.setVisibility(View.GONE);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
+
         adOneFragment = new AdOneFragment();
         if(isDownload){
             adOneFragment.setIsDownloadAPK(true);
@@ -245,7 +246,16 @@ public class MainActivity extends Activity {
         //ft.add(R.id.root_main, new ADTwoFragment());
         //ft.add(R.id.root_main, new ADThreeFragment());
         //ft.add(R.id.root_main, new AdFiveFragment());
-        //ft.add(R.id.root_main, new ADFourFragment());
+
+//        ADFourFragment adFourFragment = new ADFourFragment();
+//        LayoutResponse fourLayout = new LayoutResponse();
+//        fourLayout.adType = "4";
+//        fourLayout.adWidth = "0.83125";
+//        fourLayout.adHeight = "0.084375";
+//        fourLayout.adTop = "0.915625";
+//        fourLayout.adLeft = "0.0";
+//        adFourFragment.setLayoutResponse(fourLayout);
+//        ft.add(R.id.root_main, adFourFragment);
         ft.commit();
     }
 
@@ -305,7 +315,7 @@ public class MainActivity extends Activity {
                         && !TextUtils.isEmpty(twoLayout.adTop) && !TextUtils.isEmpty(twoLayout.adLeft)) {
                     //此时加载广告二
                     ADTwoFragment adTwoFragment = new ADTwoFragment();
-                    // adTwoFragment.setLayoutResponse(twoLayout);
+                    adTwoFragment.setLayoutResponse(twoLayout);
                     ft.add(R.id.root_main, adTwoFragment);
                 }
             }
@@ -448,23 +458,6 @@ public class MainActivity extends Activity {
 
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
