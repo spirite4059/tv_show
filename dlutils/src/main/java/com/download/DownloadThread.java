@@ -12,7 +12,7 @@ import java.net.URL;
 /**
  * Created by fq_mbp on 16/2/29.
  */
-public class DownloadThread extends Thread {
+public class DownloadThread implements Runnable {
     /** 当前下载是否完成 */
     private boolean isCompleted = false;
     /** 当前下载文件长度 */
@@ -160,7 +160,7 @@ public class DownloadThread extends Thread {
                 len = bis.read(buffer, 0, BUFFER_IN_SIZE);
             } catch (IOException e) {
                 e.printStackTrace();
-                LogCat.e("输出流写入文件异常。。。。。" + e.getMessage());
+                LogCat.e("输出流写入文件异常。。。。。isCancel" + isCancel + "," + e.getLocalizedMessage());
                 errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
             }
             if(errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
@@ -188,7 +188,7 @@ public class DownloadThread extends Thread {
         }
         if(errorCode == 0){
             isCompleted = true;
-            LogCat.e("current thread " + getName() + " has finished,all size:"
+            LogCat.e("current thread "  + " has finished,all size:"
                     + downloadLength);
         }
     }

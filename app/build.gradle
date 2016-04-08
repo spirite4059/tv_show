@@ -13,7 +13,7 @@ android {
         applicationId "com.gochinatv.ad"
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 8
+        versionCode 9
         versionName "1.1.9"
         // dex突破65535的限制
         multiDexEnabled true
