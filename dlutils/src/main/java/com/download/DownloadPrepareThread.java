@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.ExecutorService;
 
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
 import static com.download.ErrorCodes.HTTP_OK;
@@ -23,7 +24,7 @@ import static com.download.ErrorCodes.HTTP_PARTIAL;
 /**
  * Created by fq_mbp on 16/2/29.
  */
-public class DownloadPrepareThread extends Thread {
+public class DownloadPrepareThread implements Runnable {
     private String downloadUrl;// 下载链接地址
     private int threadNum;// 开启的线程数
     private File file;// 保存文件路径地址
@@ -32,14 +33,16 @@ public class DownloadPrepareThread extends Thread {
     private Bundle bundle;
     private boolean isCancel;
     private static final int CONNECT_TIME_OUT = 60000;
+    private ExecutorService service;
+    private DownloadThread[] threads;
 
-
-    public DownloadPrepareThread(String downloadUrl, int threadNum, File file, Handler mHandler) {
+    public DownloadPrepareThread(ExecutorService service, String downloadUrl, int threadNum, File file, Handler mHandler) {
         this.downloadUrl = downloadUrl;
         this.threadNum = threadNum;
         this.file = file;
         this.mHandler = mHandler;
         errorCode = 0;
+        this.service = service;
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -66,7 +69,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        DownloadThread[] threads = new DownloadThread[threadNum];
+        threads = new DownloadThread[threadNum];
         if (threads.length == 0) {
             setErrorMsg(ErrorCodes.ERROR_THREAD_NUMBERS);
             return;
@@ -229,7 +232,6 @@ public class DownloadPrepareThread extends Thread {
             // 启动线程，分别下载每个线程需要下载的部分
             threads[i] = new DownloadThread(url, file, blockSize,
                     (i + 1));
-            threads[i].setName("Thread:" + i);
             threads[i].setOnDownloadErrorListener(new DownloadThread.OnDownloadErrorListener() {
                 @Override
                 public void onDownloadError(int errorCode) {
@@ -237,7 +239,8 @@ public class DownloadPrepareThread extends Thread {
                     setErrorMsg(errorCode);
                 }
             });
-            threads[i].start();
+
+            service.execute(threads[i]);
         }
 
         boolean isFinished = false;
@@ -293,8 +296,12 @@ public class DownloadPrepareThread extends Thread {
 
                 // 通知handler去更新视图组件
                 setDownloadMsg(DLUtils.HANDLER_WHAT_DOWNLOAD_FILE_SIZE, downloadedAllSize);
+                try{
+                    Thread.sleep(1000);// 休息1秒后再读取下载进度
+                }catch (Exception e){
 
-                Thread.sleep(1000);// 休息1秒后再读取下载进度
+                }
+
 
             }
         } catch (Exception e) {
@@ -308,7 +315,14 @@ public class DownloadPrepareThread extends Thread {
             msg.obj = file;
 
             mHandler.sendMessage(msg);
-
+            if(file != null &&  downloadSize != fileSize ){
+                LogCat.e("文件下载大小出错......删除出错的文件");
+                if(file.delete()){
+                    LogCat.e("文件下载大小出错......删除成功");
+                }else {
+                    LogCat.e("文件下载大小出错......删除出错");
+                }
+            }
             return;
         }
 
@@ -331,6 +345,16 @@ public class DownloadPrepareThread extends Thread {
             } else {
                 LogCat.e("文件下载大小出错......downloadSize:" + downloadSize);
                 setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+
+                if(file != null){
+                    LogCat.e("文件下载大小出错......删除出错的文件");
+                    if(file.delete()){
+                        LogCat.e("文件下载大小出错......删除成功");
+                    }else {
+                        LogCat.e("文件下载大小出错......删除出错");
+                    }
+                }
+
             }
         } else {
             LogCat.e("文件下载尚未完成......");
@@ -393,6 +417,15 @@ public class DownloadPrepareThread extends Thread {
 
     public void cancelDownload() {
         isCancel = true;
+        for(DownloadThread thread : threads){
+            thread.cancel();
+        }
+
+        if(service != null && !service.isShutdown()){
+            service.shutdownNow();
+        }
+
+
     }
 
 
