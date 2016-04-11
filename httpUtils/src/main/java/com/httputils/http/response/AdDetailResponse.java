@@ -26,4 +26,6 @@ public class AdDetailResponse {
 
     public int adVideoIndex;
 
+    public long adVideoLength;
+
 }

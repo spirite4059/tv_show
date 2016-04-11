@@ -37,6 +37,7 @@ public class Constants {
     public static final String FILE_DIRECTORY_PICTURE = "picture" + File.separator;
     public static final String FILE_SCREEN_SHOT_NAME = "screenShot.png";
     public static final String FILE_CACHE_NAME = "cacheVideo.json";
+    public static final String FILE_CACHE_TD_NAME = "cacheTodayVideo.json";
 
     public static final String FILE_DOWNLOAD_EXTENSION = ".mp4";
     public static final String FILE_APK_NAME = "VegoPlus.apk";

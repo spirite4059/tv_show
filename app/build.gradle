@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.gochinatv.ad"
-        minSdkVersion 17
+        minSdkVersion 14
         targetSdkVersion 23
         versionCode 9
         versionName "1.1.9"
