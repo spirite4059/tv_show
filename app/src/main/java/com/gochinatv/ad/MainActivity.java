@@ -22,6 +22,7 @@ import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
+import com.gochinatv.ad.ui.fragment.AdFiveFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.httputils.http.response.UpdateResponse;
 import com.okhtttp.OkHttpCallBack;
@@ -98,9 +99,14 @@ public class MainActivity extends Activity {
 
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        LogCat.e("当弹出弹出root框时，MainActivity是否 onPause");
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
-        LogCat.e("当弹出弹出root框时，MainActivity是否 onStop");
     }
 
     /**
@@ -108,6 +114,9 @@ public class MainActivity extends Activity {
      */
     private int reTryTimes;
     protected void doHttpUpdate(final Context context) {
+
+        LogCat.e("当弹出 root 请求时，是否立马执行了接口请求 doHttpUpdate");
+
         Map<String, String> map = new HashMap<>();
         map.put("platformId", String.valueOf("22"));
         if (!TextUtils.isEmpty(android.os.Build.MODEL)) {
@@ -243,11 +252,11 @@ public class MainActivity extends Activity {
             adOneFragment.setIsDownloadAPK(true);
         }
         ft.add(R.id.root_main, adOneFragment);
-        //ft.add(R.id.root_main, new ADTwoFragment());
+        ft.add(R.id.root_main, new ADTwoFragment());
         //ft.add(R.id.root_main, new ADThreeFragment());
-        //ft.add(R.id.root_main, new AdFiveFragment());
+        ft.add(R.id.root_main, new AdFiveFragment());
 
-//        ADFourFragment adFourFragment = new ADFourFragment();
+        ADFourFragment adFourFragment = new ADFourFragment();
 //        LayoutResponse fourLayout = new LayoutResponse();
 //        fourLayout.adType = "4";
 //        fourLayout.adWidth = "0.83125";
@@ -255,7 +264,7 @@ public class MainActivity extends Activity {
 //        fourLayout.adTop = "0.915625";
 //        fourLayout.adLeft = "0.0";
 //        adFourFragment.setLayoutResponse(fourLayout);
-//        ft.add(R.id.root_main, adFourFragment);
+        ft.add(R.id.root_main, adFourFragment);
         ft.commit();
     }
 
@@ -326,7 +335,7 @@ public class MainActivity extends Activity {
                         && !TextUtils.isEmpty(threeLayout.adTop) && !TextUtils.isEmpty(threeLayout.adLeft)) {
                     //此时加载广告三
                     ADThreeFragment adThreeFragment = new ADThreeFragment();
-                    // adThreeFragment.setLayoutResponse(threeLayout);
+                    adThreeFragment.setLayoutResponse(threeLayout);
                     ft.add(R.id.root_main, adThreeFragment);
                 }
             }
