@@ -1126,8 +1126,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      * @return
      */
     private String getRawVideoUri() {
-        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
-//        return "";
+//        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
+        return "";
     }
 
 

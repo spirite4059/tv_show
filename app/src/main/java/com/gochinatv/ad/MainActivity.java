@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -85,7 +86,7 @@ public class MainActivity extends Activity {
             file.delete();
         }
 
-//        Settings.Global.putInt(getContentResolver(),Settings.Global.INSTALL_NON_MARKET_APPS,true?1:0);
+        Settings.Global.putInt(getContentResolver(),Settings.Global.INSTALL_NON_MARKET_APPS,0);
 //        testInstall();
         LogCat.e("******/////**********");
     }
