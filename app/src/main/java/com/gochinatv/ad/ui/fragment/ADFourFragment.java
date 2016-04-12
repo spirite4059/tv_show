@@ -56,6 +56,9 @@ public class ADFourFragment extends BaseFragment {
 
     private LayoutResponse layoutResponse;
 
+    //是否是第一次网络请求
+    private boolean isFirstDoHttp = true;
+
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
 
@@ -197,13 +200,18 @@ public class ADFourFragment extends BaseFragment {
                     cycleTextAD();
                 }
 
-                getTextADTimer = new Timer();
-                getTextADTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        doGetTextAD();
+                if(isFirstDoHttp){
+                    if(getTextADTimer == null){
+                        getTextADTimer = new Timer();
+                        getTextADTimer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                doGetTextAD();
+                            }
+                        },getTextADTime*60000,getTextADTime*60000);
                     }
-                },getTextADTime*60000,getTextADTime*60000);
+                }
+                isFirstDoHttp = false;
 
             }
 

@@ -22,7 +22,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar.Fullscreen" >
-        <activity android:name=".MainActivity" >
+        <activity android:name=".MainActivity"
+            android:screenOrientation="landscape"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -40,7 +42,9 @@
             android:name="UMENG_APPKEY"
             android:value="${UMENG_APPKEY_VALUE}" />
 
-        <activity android:name=".MainTestActivity" >
+        <activity android:name=".MainTestActivity"
+            android:screenOrientation="landscape"
+            >
 
             <!-- <intent-filter> -->
             <!-- <action android:adVideoName="android.intent.action.MAIN" /> -->

@@ -1,39 +1,34 @@
 package com.gochinatv.ad.ui.fragment;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.daimajia.slider.library.Indicators.PagerIndicator;
+import com.daimajia.slider.library.SliderLayout;
+import com.daimajia.slider.library.SliderTypes.BaseSliderView;
+import com.daimajia.slider.library.SliderTypes.TextSliderView;
+import com.daimajia.slider.library.Tricks.ViewPagerEx.OnPageChangeListener;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
-import com.okhtttp.OkHttpCallBack;
-import com.okhtttp.response.ADTwoResponse;
 import com.okhtttp.response.LayoutResponse;
-import com.okhtttp.service.ADHttpService;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.HashMap;
 
 /**
  *
  * Created by zfy on 2016/3/16.
  */
-public class ADTwoFragment extends BaseFragment {
+public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSliderClickListener, OnPageChangeListener {
 
 
-    //webView
-    private WebView webView;
+    private SliderLayout mDemoSlider;
+
 
     public LayoutResponse getLayoutResponse() {
         return layoutResponse;
@@ -46,15 +41,7 @@ public class ADTwoFragment extends BaseFragment {
     //布局参数
     private LayoutResponse layoutResponse;
 
-    //开始默认显示图片
-    private ImageView imageView;
 
-    //请求文字广告接口的定时器
-    private int getTextaWebTime = 5;//每隔多长去请求接口，默认：5 （分钟）
-    private Timer getWebADTimer;
-
-    //是否是第一次网络请求
-    private boolean isFirstDoHttp = true;
 
 
 
@@ -99,14 +86,44 @@ public class ADTwoFragment extends BaseFragment {
 
     @Override
     protected void initView(View rootView) {
-        //mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
-        webView = (WebView) rootView.findViewById(R.id.webview);
-        imageView = (ImageView) rootView.findViewById(R.id.ad_two_img);
+        mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
+
     }
 
     @Override
     protected void init() {
-        doGetWebAD();
+
+        HashMap<String,Integer> file_maps = new HashMap<String, Integer>();
+        file_maps.put("Hannibal",R.drawable.adtwo);
+        file_maps.put("Big Bang Theory", R.drawable.news3);
+
+        for(String name : file_maps.keySet()){
+            TextSliderView textSliderView = new TextSliderView(getActivity());
+            // initialize a SliderLayout
+            textSliderView
+                    .description(name)
+                    .image(file_maps.get(name))
+                    .setScaleType(BaseSliderView.ScaleType.Fit)
+                    .setOnSliderClickListener(this);
+
+            //add your extra information
+            textSliderView.bundle(new Bundle());
+            textSliderView.getBundle()
+                    .putString("extra",name);
+
+            mDemoSlider.addSlider(textSliderView);
+        }
+        mDemoSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);//不显示圆点
+        mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
+        //mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
+        //mDemoSlider.setCustomAnimation(new DescriptionAnimation());
+        mDemoSlider.setDuration(4000);
+        mDemoSlider.addOnPageChangeListener(this);
+
+
+
+
+
     }
 
     @Override
@@ -117,148 +134,37 @@ public class ADTwoFragment extends BaseFragment {
     @Override
     public void onStop() {
         super.onStop();
+
     }
 
     @Override
     public void onDestroy() {
-        if(getWebADTimer != null){
-            getWebADTimer.cancel();
-            getWebADTimer = null;
-        }
         super.onDestroy();
-    }
-
-    /**
-     * 请求web广告
-     */
-    private  int reTryTimesTwo;
-    private void doGetWebAD(){
-
-        ADHttpService.doHttpGetWebADInfo(getActivity(), new OkHttpCallBack<ADTwoResponse>() {
-            @Override
-            public void onSuccess(String url, ADTwoResponse response) {
-                if(!isAdded()){
-                    return;
-                }
-
-                if (response == null || !(response instanceof ADTwoResponse)) {
-                    LogCat.e("请求web接口失败");
-                    doError();
-                    return;
-                }
-
-                if(!TextUtils.isEmpty(response.adWebUrl)){
-                    webView.loadUrl(response.adWebUrl);
-                    webFinishLinster();
-
-                    getWebADTimer = new Timer();
-                    getWebADTimer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            doGetWebAD();
-                        }
-                    }, getTextaWebTime * 60000, getTextaWebTime * 60000);
-
-                }
-            }
-
-            private void doError() {
-                if (isAdded()) {
-                    // 做不升级处理, 继续请求广告视频列表
-                    reTryTimesTwo++;
-                    if (reTryTimesTwo > 4) {
-                        reTryTimesTwo = 0;
-                        LogCat.e("web广告接口已连续请求3次，不在请求");
-                    } else {
-                        LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
-                        doGetWebAD();
-                    }
-                }
-            }
-
-            @Override
-            public void onError(String url, String errorMsg) {
-                doError();
-            }
-        });
-
-    }
-
-
-    /**
-     * web监听
-     */
-    private void webFinishLinster(){
-
-        webView.setWebViewClient(new WebViewClient() {
-
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                LogCat.e("web加载完成 url " + url);
-                //开启动画，显示webview
-                if(isFirstDoHttp){
-                    showWebView();
-                    isFirstDoHttp = false;
-                }
-
-
-            }
-
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // TODO Auto-generated method stub
-                //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
-                view.loadUrl(url);
-                return true;
-            }
-
-
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-            }
-        });
+        if(mDemoSlider != null){
+            mDemoSlider.stopAutoCycle();
+        }
 
 
     }
 
-    /**
-     * 显示webVeiw
-     */
-    private void showWebView(){
 
-        ObjectAnimator animator = new ObjectAnimator().ofFloat(imageView,"alpha",1.0f,0.0f).setDuration(2000);
-        animator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                imageView.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                imageView.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-
-        animator.start();
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
     }
 
+    @Override
+    public void onPageSelected(int position) {
 
+    }
 
+    @Override
+    public void onPageScrollStateChanged(int state) {
 
+    }
 
+    @Override
+    public void onSliderClick(BaseSliderView slider) {
 
+    }
 }

@@ -157,7 +157,7 @@ public class RecycleUpAnimationView extends LinearLayout {
     private void recycleAnimation(){
 
         LogCat.e(" 子view的个数："+  this.getChildCount());
-        objectAnimator = new ObjectAnimator().ofFloat(this,"translationY",0f,-itemHeight).setDuration(duration*1000);
+        objectAnimator = new ObjectAnimator().ofFloat(this,"y",0f,-itemHeight).setDuration(duration*1000);
 
         objectAnimator.addListener(new Animator.AnimatorListener() {
             @Override
@@ -187,11 +187,11 @@ public class RecycleUpAnimationView extends LinearLayout {
     }
 
     /**
-     * 将最上面一个view移动最下面复用
+     * 将最上面一个view移动最下面复用,translationY
      */
     private void moveViewToBottom(){
         final View reuseView = this.getChildAt(0);
-        objectAnimator = new ObjectAnimator().ofFloat(reuseView,"translationY",-itemHeight,2*itemHeight).setDuration(1);
+        objectAnimator = new ObjectAnimator().ofFloat(reuseView,"y",-itemHeight,2*itemHeight).setDuration(1);
 
         objectAnimator.addListener(new Animator.AnimatorListener() {
             @Override

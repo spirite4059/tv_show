@@ -617,7 +617,14 @@ public class DataUtils {
 		return metrics.heightPixels+getNavigationBarHeight(context);
 	}
 
-
+	/**
+	 * 获取设备分辨率--高--heightPixels
+	 */
+	public static int getDisplayMetricsHeightNormal(Activity context){
+		DisplayMetrics metrics = new DisplayMetrics();
+		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		return metrics.heightPixels;
+	}
 
 
 

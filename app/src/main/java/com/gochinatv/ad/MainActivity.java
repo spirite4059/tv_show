@@ -255,16 +255,9 @@ public class MainActivity extends Activity {
         ft.add(R.id.root_main, new ADTwoFragment());
         //ft.add(R.id.root_main, new ADThreeFragment());
         ft.add(R.id.root_main, new AdFiveFragment());
+        ft.add(R.id.root_main, new ADFourFragment());
 
-        ADFourFragment adFourFragment = new ADFourFragment();
-//        LayoutResponse fourLayout = new LayoutResponse();
-//        fourLayout.adType = "4";
-//        fourLayout.adWidth = "0.83125";
-//        fourLayout.adHeight = "0.084375";
-//        fourLayout.adTop = "0.915625";
-//        fourLayout.adLeft = "0.0";
-//        adFourFragment.setLayoutResponse(fourLayout);
-        ft.add(R.id.root_main, adFourFragment);
+          //ft.add(R.id.root_main, new TestFragment());
         ft.commit();
     }
 
@@ -313,7 +306,7 @@ public class MainActivity extends Activity {
                 if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
                         && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
                     //此时加载广告一
-                    //adOneFragment.setLayoutResponse(oneLayout);
+                    adOneFragment.setLayoutResponse(oneLayout);
                     ft.add(R.id.root_main, adOneFragment);
                 }
             }
