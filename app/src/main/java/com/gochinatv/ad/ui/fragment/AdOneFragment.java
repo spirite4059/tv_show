@@ -111,22 +111,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.fragment_ad_video, container, false);
-<<<<<<< HEAD
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.width = DataUtils.getDisplayMetricsWidth(getActivity());
-        params.height = DataUtils.getDisplayMetricsHeight(getActivity());
-        params.topMargin = 0;
-        params.leftMargin = 0;
-        layout.setLayoutParams(params);
-=======
-
-//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-//        params.width = DataUtils.getDisplayMetricsWidth(getActivity());
-//        params.height = DataUtils.getDisplayMetricsHeight(getActivity());
-//        params.topMargin = 0;
-//        params.leftMargin = 0;
-//        layout.setLayoutParams(params);
-
         if(layoutResponse != null){
 
             if(!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
@@ -154,7 +138,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
             }
         }
->>>>>>> origin/master
         return layout;
     }
 
