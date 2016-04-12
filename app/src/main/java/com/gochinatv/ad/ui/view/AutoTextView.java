@@ -43,7 +43,8 @@ public class AutoTextView extends TextSwitcher implements
         super(context, attrs);
         // TODO Auto-generated constructor stub
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.auto3d);
-        mHeight = a.getDimension(R.styleable.auto3d_textSize, R.dimen.d_24sp);
+        mHeight = a.getDimension(R.styleable.auto3d_textSize, R.dimen.d_24sp);//24
+
         a.recycle();
         mContext = context;
         init();
@@ -78,7 +79,7 @@ public class AutoTextView extends TextSwitcher implements
         TextView t = new TextView(mContext);
         t.setTextColor(Color.WHITE);
 
-        t.setTextSize(mHeight);
+        t.setTextSize(12);//mHeight
         t.setMaxLines(1);
         return t;
     }

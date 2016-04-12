@@ -22,8 +22,8 @@
         android:orientation="vertical"
         >
         <ProgressBar
-            android:layout_width="90dp"
-            android:layout_height="90dp"
+            android:layout_width="@dimen/d_90dp"
+            android:layout_height="@dimen/d_90dp"
             android:layout_gravity="center"
             style="@style/Widget.AppCompat.ProgressBar"
             />

@@ -111,6 +111,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.fragment_ad_video, container, false);
+
+
         if(layoutResponse != null){
 
             if(!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
@@ -138,6 +140,12 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
             }
         }
+
+
+        //全屏
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
+        layout.setLayoutParams(params);
+
         return layout;
     }
 
