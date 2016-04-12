@@ -25,7 +25,8 @@ public class NoTouchRecyclerView extends RecyclerView {
         if (isScrollable == false) {
             return false;
         } else {
-            return super.onTouchEvent(ev);
+            //return super.onTouchEvent(ev);
+            return true;
         }
 
     }
@@ -35,7 +36,8 @@ public class NoTouchRecyclerView extends RecyclerView {
         if (isScrollable == false) {
             return false;
         } else {
-            return super.onInterceptTouchEvent(ev);
+            //return super.onInterceptTouchEvent(ev);
+            return true;
         }
 
     }

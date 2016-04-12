@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -84,10 +83,10 @@ public class MainActivity extends Activity {
         if(file.exists()){
             file.delete();
         }
-
-        Settings.Global.putInt(getContentResolver(),Settings.Global.INSTALL_NON_MARKET_APPS,0);
+        LogCat.e("++++++++++++++4343333++++++++++++++");
+//        Settings.Global.putInt(getContentResolver(), "package_verifier_enable", 0);
 //        testInstall();
-        LogCat.e("******/////**********");
+
     }
 
     private void testInstall(){
@@ -124,7 +123,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        LogCat.e("当弹出弹出root框时，MainActivity是否 onStop");
         DLUtils.init(this).cancel();
     }
 
@@ -133,9 +131,6 @@ public class MainActivity extends Activity {
      */
     private int reTryTimes;
     protected void doHttpUpdate(final Context context) {
-
-        LogCat.e("当弹出 root 请求时，是否立马执行了接口请求 doHttpUpdate");
-
         Map<String, String> map = new HashMap<>();
         map.put("platformId", String.valueOf("22"));
         if (!TextUtils.isEmpty(android.os.Build.MODEL)) {
@@ -276,13 +271,13 @@ public class MainActivity extends Activity {
         if(isDownload){
             adOneFragment.setIsDownloadAPK(true);
         }
-//        ft.add(R.id.root_main, adOneFragment);
+        ft.add(R.id.root_main, adOneFragment);
 //        ft.add(R.id.root_main, new ADTwoFragment());
 //        //ft.add(R.id.root_main, new ADThreeFragment());
 //        ft.add(R.id.root_main, new AdFiveFragment());
 //        ft.add(R.id.root_main, new ADFourFragment());
 
-          //ft.add(R.id.root_main, new TestFragment());
+        //ft.add(R.id.root_main, new TestFragment());
         ft.commit();
     }
 
@@ -381,12 +376,10 @@ public class MainActivity extends Activity {
         DownloadUtils.download(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
-//        //新包下载完成得安装
-
+                //新包下载完成得安装
                 LogCat.e("下载升级成功，开始正式升级.......");
                 File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                 InstallUtils.installAuto(MainActivity.this, file,true);
-
                 //MainActivity.this.finish();
             }
 
@@ -409,11 +402,12 @@ public class MainActivity extends Activity {
      */
 
     //布局数据
-    private  ArrayList<LayoutResponse> LayoutResponses;
+    private ArrayList<LayoutResponse> LayoutResponses;
     //截屏数据
     private ScreenShotResponse screenShot;
     private int reTryTimesTwo;
-    private void doGetDerviceInfo(){
+
+    private void doGetDerviceInfo() {
         ADHttpService.doHttpGetDeviceInfo(this, new OkHttpCallBack<ADDeviceDataResponse>() {
             @Override
             public void onSuccess(String url, ADDeviceDataResponse response) {
@@ -434,11 +428,11 @@ public class MainActivity extends Activity {
                     return;
                 }
 
-                if(response.screenShot != null){
+                if (response.screenShot != null) {
                     screenShot = response.screenShot;
                 }
 
-                if(response.layout != null){
+                if (response.layout != null) {
                     LayoutResponses = response.layout;
                 }
 
@@ -448,7 +442,6 @@ public class MainActivity extends Activity {
                 loadFragmentTwo(isHasUpgrade);
 
             }
-
 
 
             private void doError() {

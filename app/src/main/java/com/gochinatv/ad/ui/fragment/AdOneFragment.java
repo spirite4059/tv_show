@@ -142,7 +142,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         }
 
 
-        //全屏
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
         layout.setLayoutParams(params);
 
