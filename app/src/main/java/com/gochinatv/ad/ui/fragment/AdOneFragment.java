@@ -27,6 +27,7 @@ import com.google.gson.reflect.TypeToken;
 import com.httputils.http.response.AdDetailResponse;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.VideoDetailListResponse;
+import com.okhtttp.response.LayoutResponse;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -95,16 +96,65 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      */
     private final int MAX_RETRY_TIMES = 3;
 
+    public LayoutResponse getLayoutResponse() {
+        return layoutResponse;
+    }
+
+    public void setLayoutResponse(LayoutResponse layoutResponse) {
+        this.layoutResponse = layoutResponse;
+    }
+
+    //布局参数
+    private LayoutResponse layoutResponse;
+
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.fragment_ad_video, container, false);
+<<<<<<< HEAD
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.width = DataUtils.getDisplayMetricsWidth(getActivity());
         params.height = DataUtils.getDisplayMetricsHeight(getActivity());
         params.topMargin = 0;
         params.leftMargin = 0;
         layout.setLayoutParams(params);
+=======
+
+//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+//        params.width = DataUtils.getDisplayMetricsWidth(getActivity());
+//        params.height = DataUtils.getDisplayMetricsHeight(getActivity());
+//        params.topMargin = 0;
+//        params.leftMargin = 0;
+//        layout.setLayoutParams(params);
+
+        if(layoutResponse != null){
+
+            if(!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
+                    && !TextUtils.isEmpty(layoutResponse.adTop) && !TextUtils.isEmpty(layoutResponse.adLeft)){
+
+                String widthStr = layoutResponse.adWidth;
+                String heightStr = layoutResponse.adHeight;
+                String topStr = layoutResponse.adTop;
+                String leftStr = layoutResponse.adLeft;
+
+                //动态布局
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+                double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
+                double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
+                double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
+                double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
+
+                params.width = (int) Math.floor(width);
+                params.height = (int) Math.floor(height);
+                params.topMargin = (int) Math.floor(top);
+
+                params.leftMargin = (int) Math.floor(left);
+                layout.setLayoutParams(params);
+                LogCat.e(" 广告二布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
+
+            }
+        }
+>>>>>>> origin/master
         return layout;
     }
 
@@ -920,8 +970,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 cachePlayVideoLists.clear();
             }
 
-            AdDetailResponse videoAdBean = playVideoLists.get(playVideoIndex);
-            LogCat.e("添加一次视频播放" + videoAdBean.adVideoName);
+//            AdDetailResponse videoAdBean = playVideoLists.get(playVideoIndex);
+//            LogCat.e("添加一次视频播放" + videoAdBean.adVideoName);
             // 播放缓存列表文件
             playNextVideo(playVideoLists);
 

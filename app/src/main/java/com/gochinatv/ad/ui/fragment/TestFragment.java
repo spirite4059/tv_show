@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 
 /**
@@ -14,7 +15,11 @@ public class TestFragment extends BaseFragment {
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
-        return null;
+
+
+
+
+        return inflater.inflate(R.layout.fragment_test,container,false);
     }
 
     @Override

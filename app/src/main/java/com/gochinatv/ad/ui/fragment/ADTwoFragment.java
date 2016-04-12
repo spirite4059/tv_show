@@ -53,6 +53,13 @@ public class ADTwoFragment extends BaseFragment {
     private int getTextaWebTime = 5;//每隔多长去请求接口，默认：5 （分钟）
     private Timer getWebADTimer;
 
+    //是否是第一次网络请求
+    private boolean isFirstDoHttp = true;
+
+
+
+
+
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
         LogCat.e("width: " + DataUtils.getDisplayMetricsWidth(getActivity()) + " height:" + DataUtils.getDisplayMetricsHeight(getActivity()));
@@ -81,7 +88,7 @@ public class ADTwoFragment extends BaseFragment {
 
                 params.leftMargin = (int) Math.floor(left);
                 linearLayout.setLayoutParams(params);
-                LogCat.e(" 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
+                LogCat.e(" 广告二布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
 
             }
         }
@@ -109,20 +116,15 @@ public class ADTwoFragment extends BaseFragment {
 
     @Override
     public void onStop() {
-//        if(mDemoSlider != null){
-//            mDemoSlider.stopAutoCycle();
-//        }
-
-        if(getWebADTimer != null){
-            getWebADTimer.cancel();
-            getWebADTimer = null;
-        }
-
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
+        if(getWebADTimer != null){
+            getWebADTimer.cancel();
+            getWebADTimer = null;
+        }
         super.onDestroy();
     }
 
@@ -196,7 +198,11 @@ public class ADTwoFragment extends BaseFragment {
                 super.onPageFinished(view, url);
                 LogCat.e("web加载完成 url " + url);
                 //开启动画，显示webview
-                showWebView();
+                if(isFirstDoHttp){
+                    showWebView();
+                    isFirstDoHttp = false;
+                }
+
 
             }
 

@@ -2,10 +2,12 @@ package com.gochinatv.ad.ui.fragment;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
@@ -16,6 +18,7 @@ import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.AdImgResponse;
 import com.okhtttp.response.AdThreeDataResponse;
+import com.okhtttp.response.LayoutResponse;
 import com.tools.HttpUrls;
 
 import java.util.ArrayList;
@@ -30,10 +33,53 @@ public class ADThreeFragment extends BaseFragment {
     private ImageView adThreeBg;
     private ArrayList<AdImgResponse> imgResponses;
 
+    public LayoutResponse getLayoutResponse() {
+        return layoutResponse;
+    }
+
+    public void setLayoutResponse(LayoutResponse layoutResponse) {
+        this.layoutResponse = layoutResponse;
+    }
+
+    //布局参数
+    private LayoutResponse layoutResponse;
+
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
-        return inflater.inflate(R.layout.fragment_ad_three,container,false);
+
+        RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.fragment_ad_three,container,false);
+
+        if(layoutResponse != null){
+
+            if(!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
+                    && !TextUtils.isEmpty(layoutResponse.adTop) && !TextUtils.isEmpty(layoutResponse.adLeft)){
+
+                String widthStr = layoutResponse.adWidth;
+                String heightStr = layoutResponse.adHeight;
+                String topStr = layoutResponse.adTop;
+                String leftStr = layoutResponse.adLeft;
+
+                //动态布局
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+                double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
+                double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
+                double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
+                double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
+
+                params.width = (int) Math.floor(width);
+                params.height = (int) Math.floor(height);
+                params.topMargin = (int) Math.floor(top);
+
+                params.leftMargin = (int) Math.floor(left);
+                layout.setLayoutParams(params);
+                LogCat.e(" 广告二布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
+
+            }
+        }
+
+
+        return layout;
     }
 
     @Override

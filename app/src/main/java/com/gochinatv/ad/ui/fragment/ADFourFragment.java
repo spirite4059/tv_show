@@ -122,7 +122,7 @@ public class ADFourFragment extends BaseFragment {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
+
         if(cycleTextTimer != null){
             cycleTextTimer.cancel();
             cycleTextTimer = null;
@@ -132,6 +132,7 @@ public class ADFourFragment extends BaseFragment {
             getTextADTimer.cancel();
             getTextADTimer = null;
         }
+        super.onDestroy();
     }
 
     int i = 0;
