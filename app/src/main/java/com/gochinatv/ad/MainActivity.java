@@ -11,14 +11,13 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.download.DLUtils;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
+import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
-import com.gochinatv.ad.tools.RootUtils;
-import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
@@ -31,7 +30,9 @@ import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.ADHttpService;
 import com.tools.HttpUrls;
+import com.umeng.analytics.MobclickAgent;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -76,24 +77,44 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         view = findViewById(R.id.root_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
-        RootUtils.hasRootPerssion();//一开始就请求root
         doHttpUpdate(this);
 
-        //        //新包下载完成得安装
-//        if(RootUtils.hasRootPerssion()){
-//            //RootUtils.clientInstall("/sdcard/Music/test.apk");
-//            SharedPreference.getSharedPreferenceUtils(this).saveDate("isClientInstall", true);
-//            LogCat.e("有root权限：RootUtils.hasRootPerssion()");
-//            Toast.makeText(MainActivity.this, "有root权限，静默安装方式", Toast.LENGTH_LONG).show();
-//            RootUtils.clientInstall("/mnt/internal_sd/Movies/VegoPlus.apk");
-//        }else{
-//            Toast.makeText(MainActivity.this,"没有root权限，普通安装方式",Toast.LENGTH_LONG).show();
-//            //RootUtils.installApk(CustomActivity.this,"/sdcard/Music/test.apk");
-//            LogCat.e("没有root权限：RootUtils.hasRootPerssion()");
-//            //RootUtils.installApk();
-//
-//        }
+        File file = new File(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
+        if(file.exists()){
+            file.delete();
+        }
 
+//        Settings.Global.putInt(getContentResolver(),Settings.Global.INSTALL_NON_MARKET_APPS,true?1:0);
+//        testInstall();
+        LogCat.e("******/////**********");
+    }
+
+    private void testInstall(){
+        //
+//        File file = Environment.getExternalStorageDirectory();
+////
+//        File fileApk = new File(file.getAbsolutePath() + "/Music/test.apk");
+//
+//        LogCat.e("fileApk: " + fileApk.getAbsolutePath());
+////
+//        PackageInfo pInfo = null;
+//        try {
+//            pInfo = getPackageManager().getPackageInfo("com.gochinatv.ad", 0);
+//        } catch (PackageManager.NameNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        if(InstallUtils.hasRootPermission()){
+//            //  have  root
+//            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), true);
+//            Toast.makeText(this, "提醒：获取到root权限，可以静默升级！", Toast.LENGTH_LONG).show();
+//            // rootClientInstall(apkFile.getAbsolutePath());
+//        }else if (InstallUtils.isSystemApp(pInfo) || InstallUtils.isSystemUpdateApp(pInfo)){
+////                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
+//            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), false);
+//            Toast.makeText(this,"提醒：获取到系统权限，可以静默升级！",Toast.LENGTH_LONG).show();
+//        }else {
+//            Toast.makeText(this,"提醒：没有获取到系统权限和root权限，请选择普通安装！",Toast.LENGTH_LONG).show();
+//        }
     }
 
 
@@ -101,6 +122,7 @@ public class MainActivity extends Activity {
     protected void onStop() {
         super.onStop();
         LogCat.e("当弹出弹出root框时，MainActivity是否 onStop");
+        DLUtils.init(this).cancel();
     }
 
     /**
@@ -168,6 +190,13 @@ public class MainActivity extends Activity {
                         // 获取当前最新版本号
                         if (TextUtils.isEmpty(updateInfo.versionCode) == false) {
                             double netVersonCode = Integer.parseInt(updateInfo.versionCode);
+                            try {
+                                LogCat.e("当前的app版本：" + DataUtils.getAppVersion(context));
+                            } catch (PackageManager.NameNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                            LogCat.e("当前的最新版本：" + netVersonCode);
+
                             // 检测是否要升级
                             try {
                                 //升级接口成功
@@ -181,12 +210,11 @@ public class MainActivity extends Activity {
                                     downloadAPK();
                                     // 加载布局.但是不让AdOneFragment，下载视频
                                     loadFragment(true);
-
                                 } else {
                                     // 不升级,加载布局
                                     LogCat.e("无需升级。。。。。");
                                     // 5.清空所有升级包，为了节省空间
-                                    DeleteFileUtils.getInstance().deleteFile(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
+
                                     LogCat.e("清空升级apk.....");
                                     loadFragment(false);
                                 }
@@ -355,14 +383,11 @@ public class MainActivity extends Activity {
             @Override
             public void onDownloadFileSuccess(String filePath) {
 //        //新包下载完成得安装
-                if (RootUtils.hasRootPerssion()) {
-                    SharedPreference.getSharedPreferenceUtils(MainActivity.this).saveDate("isClientInstall", true);
-                    RootUtils.clientInstall(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-                    LogCat.e("有root权限，静默安装方式");
-                } else {
-                    LogCat.e("没有root权限，普通安装方式");
-                    DataUtils.installApk(MainActivity.this, filePath);
-                }
+
+                LogCat.e("下载升级成功，开始正式升级.......");
+                File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
+                InstallUtils.installAuto(MainActivity.this, file,true);
+
                 //MainActivity.this.finish();
             }
 
@@ -459,6 +484,23 @@ public class MainActivity extends Activity {
 
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MobclickAgent.onPageStart("MainActivity");
+        MobclickAgent.onResume(this);
+
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPageEnd("MainActivity");
+        MobclickAgent.onPause(this);
+
+    }
 
 
 }

@@ -315,19 +315,13 @@ public class DownloadPrepareThread implements Runnable {
             msg.obj = file;
 
             mHandler.sendMessage(msg);
-            if(file != null &&  downloadSize != fileSize ){
-                LogCat.e("文件下载大小出错......删除出错的文件");
-                if(file.delete()){
-                    LogCat.e("文件下载大小出错......删除成功");
-                }else {
-                    LogCat.e("文件下载大小出错......删除出错");
-                }
-            }
+            deleteFailFile(fileSize, downloadSize);
             return;
         }
 
         if (errorCode == ErrorCodes.ERROR_DOWNLOAD_UNKNOWN) {
             setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_UNKNOWN);
+            deleteFailFile(fileSize, downloadSize);
             return;
         }
 
@@ -345,15 +339,7 @@ public class DownloadPrepareThread implements Runnable {
             } else {
                 LogCat.e("文件下载大小出错......downloadSize:" + downloadSize);
                 setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
-
-                if(file != null){
-                    LogCat.e("文件下载大小出错......删除出错的文件");
-                    if(file.delete()){
-                        LogCat.e("文件下载大小出错......删除成功");
-                    }else {
-                        LogCat.e("文件下载大小出错......删除出错");
-                    }
-                }
+                deleteFailFile(fileSize, downloadSize);
 
             }
         } else {
@@ -362,6 +348,17 @@ public class DownloadPrepareThread implements Runnable {
         }
 
 
+    }
+
+    private void deleteFailFile(int fileSize, int downloadSize) {
+        if(file != null &&  downloadSize != fileSize ){
+            LogCat.e("文件下载大小出错......删除出错的文件");
+            if(file.delete()){
+                LogCat.e("文件下载大小出错......删除成功");
+            }else {
+                LogCat.e("文件下载大小出错......删除出错");
+            }
+        }
     }
 
     private HttpURLConnection getHttpURLConnection(URL url) {
@@ -418,7 +415,9 @@ public class DownloadPrepareThread implements Runnable {
     public void cancelDownload() {
         isCancel = true;
         for(DownloadThread thread : threads){
-            thread.cancel();
+            if(thread != null){
+                thread.cancel();
+            }
         }
 
         if(service != null && !service.isShutdown()){
