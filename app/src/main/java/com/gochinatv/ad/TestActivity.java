@@ -788,8 +788,10 @@ public class TestActivity extends BaseActivity {
      * @return
      */
     private String getRawVideoUri() {
-        return DataUtils.getRawVideoUri(this, R.raw.video_test);
+//        return DataUtils.getRawVideoUri(this, R.raw.video_test);
+        return "";
     }
+
 
 
     // 播放视频

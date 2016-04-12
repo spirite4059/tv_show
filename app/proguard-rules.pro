@@ -78,3 +78,20 @@ public static final int *;
 -dontoptimize
 #预校验
 -dontpreverify
+
+
+-keepclassmembers class * {
+   public <init> (org.json.JSONObject);
+}
+
+
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+-keep public class com.gochinatv.ad.R$*{
+public static final int *;
+}
+
+

@@ -39,13 +39,20 @@ public class InstallUtils {
             }
             if(hasRootPermission()){
                 //  have  root
-                installSilent(context,apkFile.getAbsolutePath(),true);
+                Toast.makeText(context, "提醒：提醒：即将开始安装新版本，稍后自动重启！", Toast.LENGTH_LONG).show();
+                SharedPreference.getSharedPreferenceUtils(context).saveDate("isClientInstall", true);
+                LogCat.e("获取到root权限，开始静默升级。。。。。。。");
+                installSilent(context, apkFile.getAbsolutePath(), true);
                 // rootClientInstall(apkFile.getAbsolutePath());
             }else if (isSystemApp(pInfo) || isSystemUpdateApp(pInfo)){
-                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
+                SharedPreference.getSharedPreferenceUtils(context).saveDate("isClientInstall", true);
+                LogCat.e("获取到系统权限，开始静默升级。。。。。。。");
+                Toast.makeText(context,"提醒：即将开始安装新版本，稍后自动重启！",Toast.LENGTH_LONG).show();
                 installSilent(context, apkFile.getAbsolutePath(), false);
+
             }else {
-                Toast.makeText(context,"提醒：没有获取到系统权限和root权限，请选择普通安装！",Toast.LENGTH_LONG).show();
+                LogCat.e("没有获取到任何权限，普通安装。。。。。。。");
             }
             return;
         }
@@ -206,7 +213,7 @@ public class InstallUtils {
      * @param pInfo
      * @return
      */
-    private static boolean isSystemApp(PackageInfo pInfo) {
+    public static boolean isSystemApp(PackageInfo pInfo) {
         if(pInfo == null ) return false ;
         return ((pInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
     }
@@ -216,7 +223,7 @@ public class InstallUtils {
      * @param pInfo
      * @return
      */
-    private static boolean isSystemUpdateApp(PackageInfo pInfo) {
+    public static boolean isSystemUpdateApp(PackageInfo pInfo) {
         if(pInfo == null ) return false ;
         return ((pInfo.applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0);
     }
@@ -283,7 +290,7 @@ public class InstallUtils {
     /**
      * 判断手机是否有root权限
      */
-    private static boolean hasRootPermission(){
+    public static boolean hasRootPermission(){
         PrintWriter PrintWriter = null;
         Process process = null;
         try {

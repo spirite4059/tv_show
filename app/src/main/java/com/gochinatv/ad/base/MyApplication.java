@@ -15,6 +15,7 @@ import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
 import com.nostra13.universalimageloader.utils.StorageUtils;
 import com.umeng.analytics.AnalyticsConfig;
+import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
 
@@ -38,6 +39,10 @@ public class MyApplication extends Application{
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        MobclickAgent.openActivityDurationTrack(false);
+        MobclickAgent.setCatchUncaughtExceptions(true);
+        MobclickAgent.setDebugMode(true);
 
         cacheDir = StorageUtils.getOwnCacheDirectory(this, "imageloader/Cache");
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
