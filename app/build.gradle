@@ -14,7 +14,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 23
         versionCode 9
-        versionName "1.1.9"
+        versionName "1.2.1"
         // dex突破65535的限制
         multiDexEnabled true
         //    5697616167e58e3881002b8e
@@ -34,7 +34,7 @@ android {
             buildConfigField "boolean", "LOG_DEBUG", "false"
 
             // 是否使用混淆。
-            minifyEnabled true
+            minifyEnabled false
             zipAlignEnabled true
             // 移除无用的resource文件
             shrinkResources true

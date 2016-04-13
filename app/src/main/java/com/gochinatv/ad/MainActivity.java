@@ -47,7 +47,6 @@ import java.util.Map;
 public class MainActivity extends Activity {
 
 
-    private View view;
     private LinearLayout loadingView;
     /**
      * 下载info
@@ -76,7 +75,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        view = findViewById(R.id.root_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
 
         init();
@@ -180,19 +178,19 @@ public class MainActivity extends Activity {
                             return;
                         }
 
-                        if (response == null || !(response instanceof UpdateResponse)) {
+                        if (response == null) {
                             LogCat.e("升级数据出错，无法正常升级1。。。。。");
                             doError();
                             return;
                         }
 
-                        if (response.resultForApk == null || !(response.resultForApk instanceof UpdateResponse.UpdateInfoResponse)) {
+                        if (response.resultForApk == null) {
                             LogCat.e("升级数据出错，无法正常升级2。。。。。");
                             doError();
                             return;
                         }
 
-                        if ("1".equals(response.status) == false) {
+                        if (!"1".equals(response.status)) {
                             LogCat.e("升级接口的status == 0。。。。。");
                             doError();
                             return;
@@ -200,7 +198,7 @@ public class MainActivity extends Activity {
                         reTryTimes = 0;
                         updateInfo = response.resultForApk;
                         // 获取当前最新版本号
-                        if (TextUtils.isEmpty(updateInfo.versionCode) == false) {
+                        if (!TextUtils.isEmpty(updateInfo.versionCode)) {
                             double netVersonCode = Integer.parseInt(updateInfo.versionCode);
                             try {
                                 LogCat.e("当前的app版本：" + DataUtils.getAppVersion(context));
@@ -274,6 +272,9 @@ public class MainActivity extends Activity {
      * @param isDownload
      */
     private void loadFragment(boolean isDownload){
+        if(isFinishing()){
+            return;
+        }
         loadingView.setVisibility(View.GONE);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
@@ -289,7 +290,7 @@ public class MainActivity extends Activity {
 //        ft.add(R.id.root_main, new ADFourFragment());
 
         //ft.add(R.id.root_main, new TestFragment());
-        ft.commit();
+        ft.commitAllowingStateLoss();
     }
 
 
@@ -375,7 +376,7 @@ public class MainActivity extends Activity {
                 }
             }
 
-            ft.commit();
+            ft.commitAllowingStateLoss();
         }
     }
 
