@@ -288,7 +288,7 @@ public class MainActivity extends Activity {
 //        ft.add(R.id.root_main, new AdFiveFragment());
 //        ft.add(R.id.root_main, new ADFourFragment());
 
-          //ft.add(R.id.root_main, new TestFragment());
+        //ft.add(R.id.root_main, new TestFragment());
         ft.commit();
     }
 
@@ -422,11 +422,12 @@ public class MainActivity extends Activity {
      */
 
     //布局数据
-    private  ArrayList<LayoutResponse> LayoutResponses;
+    private ArrayList<LayoutResponse> LayoutResponses;
     //截屏数据
     private ScreenShotResponse screenShot;
     private int reTryTimesTwo;
-    private void doGetDerviceInfo(){
+
+    private void doGetDerviceInfo() {
         ADHttpService.doHttpGetDeviceInfo(this, new OkHttpCallBack<ADDeviceDataResponse>() {
             @Override
             public void onSuccess(String url, ADDeviceDataResponse response) {
@@ -447,11 +448,11 @@ public class MainActivity extends Activity {
                     return;
                 }
 
-                if(response.screenShot != null){
+                if (response.screenShot != null) {
                     screenShot = response.screenShot;
                 }
 
-                if(response.layout != null){
+                if (response.layout != null) {
                     LayoutResponses = response.layout;
                 }
 
@@ -461,7 +462,6 @@ public class MainActivity extends Activity {
                 loadFragmentTwo(isHasUpgrade);
 
             }
-
 
 
             private void doError() {
