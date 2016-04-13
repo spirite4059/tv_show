@@ -42,7 +42,7 @@ public class MyApplication extends Application{
 
         MobclickAgent.openActivityDurationTrack(false);
         MobclickAgent.setCatchUncaughtExceptions(true);
-        MobclickAgent.setDebugMode(true);
+        MobclickAgent.setDebugMode(false);
 
         cacheDir = StorageUtils.getOwnCacheDirectory(this, "imageloader/Cache");
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)

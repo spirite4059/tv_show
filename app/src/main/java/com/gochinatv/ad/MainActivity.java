@@ -78,16 +78,26 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         view = findViewById(R.id.root_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
-        doHttpUpdate(this);
 
+        init();
+    }
+
+    private void init(){
+        doHttpUpdate(this);
+        // 删除升级安装包
+        deleteUpdateApk();
+        /**
+         * 如果要启动测试，需要注释此段代码，否则无法正常启动
+         */
+        Settings.Global.putInt(getContentResolver(), "package_verifier_enable", 0);
+//        testInstall();
+    }
+
+    private void deleteUpdateApk() {
         File file = new File(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
         if(file.exists()){
             file.delete();
         }
-
-        Settings.Global.putInt(getContentResolver(),Settings.Global.INSTALL_NON_MARKET_APPS,0);
-//        testInstall();
-        LogCat.e("******/////**********");
     }
 
     private void testInstall(){
@@ -124,7 +134,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        LogCat.e("当弹出弹出root框时，MainActivity是否 onStop");
         DLUtils.init(this).cancel();
     }
 
@@ -133,9 +142,6 @@ public class MainActivity extends Activity {
      */
     private int reTryTimes;
     protected void doHttpUpdate(final Context context) {
-
-        LogCat.e("当弹出 root 请求时，是否立马执行了接口请求 doHttpUpdate");
-
         Map<String, String> map = new HashMap<>();
         map.put("platformId", String.valueOf("22"));
         if (!TextUtils.isEmpty(android.os.Build.MODEL)) {
@@ -191,7 +197,7 @@ public class MainActivity extends Activity {
                             doError();
                             return;
                         }
-
+                        reTryTimes = 0;
                         updateInfo = response.resultForApk;
                         // 获取当前最新版本号
                         if (TextUtils.isEmpty(updateInfo.versionCode) == false) {
@@ -276,7 +282,7 @@ public class MainActivity extends Activity {
         if(isDownload){
             adOneFragment.setIsDownloadAPK(true);
         }
-//        ft.add(R.id.root_main, adOneFragment);
+        ft.add(R.id.root_main, adOneFragment);
 //        ft.add(R.id.root_main, new ADTwoFragment());
 //        //ft.add(R.id.root_main, new ADThreeFragment());
 //        ft.add(R.id.root_main, new AdFiveFragment());
@@ -381,22 +387,29 @@ public class MainActivity extends Activity {
         DownloadUtils.download(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
-//        //新包下载完成得安装
-
+                //新包下载完成得安装
                 LogCat.e("下载升级成功，开始正式升级.......");
                 File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                 InstallUtils.installAuto(MainActivity.this, file,true);
-
                 //MainActivity.this.finish();
             }
 
             @Override
             public void onDownloadFileError(int errorCode, String errorMsg) {
                 //通知AdOneFragment去下载视频
-                LogCat.e("下载apk出现错误");
-                if (adOneFragment != null) {
-                    adOneFragment.startDownloadVideo();
+                if(reTryTimes < 3){
+                    LogCat.e("下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
+                    reTryTimes += 1;
+                    downloadAPK();
+                }else {
+                    LogCat.e("下载apk出现错误");
+                    if (adOneFragment != null) {
+                        adOneFragment.startDownloadVideo();
+                    }
                 }
+
+
+
 
             }
         });
