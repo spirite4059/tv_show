@@ -2,20 +2,23 @@ package com.download;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.os.StatFs;
+import android.text.TextUtils;
 
+import com.download.dllistener.OnDownloadStatusListener;
+import com.download.tools.CacheVideoListThread;
+import com.download.tools.Constants;
 import com.download.tools.LogCat;
+import com.download.tools.ToolUtils;
+import com.httputils.http.response.AdDetailResponse;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.ExecutorService;
+import java.util.ArrayList;
 
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
 import static com.download.ErrorCodes.HTTP_OK;
@@ -24,25 +27,22 @@ import static com.download.ErrorCodes.HTTP_PARTIAL;
 /**
  * Created by fq_mbp on 16/2/29.
  */
-public class DownloadPrepareThread implements Runnable {
+public class DownloadPrepareThread extends Thread {
     private String downloadUrl;// 下载链接地址
     private int threadNum;// 开启的线程数
     private File file;// 保存文件路径地址
-    private Handler mHandler;
+    private OnDownloadStatusListener listener;
     private int errorCode;
-    private Bundle bundle;
     private boolean isCancel;
     private static final int CONNECT_TIME_OUT = 60000;
-    private ExecutorService service;
     private DownloadThread[] threads;
 
-    public DownloadPrepareThread(ExecutorService service, String downloadUrl, int threadNum, File file, Handler mHandler) {
+    public DownloadPrepareThread(String downloadUrl, int threadNum, File file, OnDownloadStatusListener listener) {
         this.downloadUrl = downloadUrl;
         this.threadNum = threadNum;
         this.file = file;
-        this.mHandler = mHandler;
+        this.listener = listener;
         errorCode = 0;
-        this.service = service;
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -52,7 +52,7 @@ public class DownloadPrepareThread implements Runnable {
             return;
         }
 
-        if (mHandler == null) {
+        if (listener == null) {
             return;
         }
 
@@ -157,41 +157,59 @@ public class DownloadPrepareThread implements Runnable {
             return;
         }
 
+        if (listener != null) {
+            listener.onPrepare(fileSize);
+        }
+
+        // 取本地已经缓存的列表，生成对应实体类
+        ArrayList<AdDetailResponse> cacheVideos = ToolUtils.getCacheList();
+        // 根据fileName匹对当前的视频信息
+
+        if (cacheVideos != null && cacheVideos.size() > 0) {
+            for (AdDetailResponse cache : cacheVideos) {
+                if (cache != null && !TextUtils.isEmpty(cache.adVideoName)) {
+                    String cacheVideoName = cache.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
+
+                    // 将对应文件的赋值后，再将该实体类写入缓存
+                    if (cacheVideoName.equals(file.getName())) {
+                        cache.adVideoLength = fileSize;
+                        LogCat.e("缓存列表文件名字：" + cacheVideoName);
+                        LogCat.e("下载文件的名字：" + file.getName());
+                        break;
+                    }
+                }
+            }
+        }
+        // 再将缓存文件写入sdcard
+        cacheVideoList(cacheVideos);
+
 
         // 可用空间检查
-
         //获得SD卡空间的信息
         File path = Environment.getExternalStorageDirectory();
         StatFs statFs = new StatFs(path.getPath());
         long blockSizeLong = 0;
-        long totalBlocksLong = 0;
         long availableBlocksLong = 0;
-        if(Build.VERSION.SDK_INT >= 18){
+        if (Build.VERSION.SDK_INT >= 18) {
             blockSizeLong = statFs.getBlockSizeLong();
-            totalBlocksLong = statFs.getFreeBlocksLong();
             availableBlocksLong = statFs.getAvailableBlocksLong();
-        }else {
+        } else {
             blockSizeLong = statFs.getBlockSizeLong();
-            totalBlocksLong = statFs.getFreeBlocksLong();
             availableBlocksLong = statFs.getAvailableBlocksLong();
         }
 
-
         //计算SD卡的空间大小
-        long totalsize = blockSizeLong * totalBlocksLong;
-        long availablesize = availableBlocksLong * blockSizeLong;
-        long preSpace = 10 * 1024 * 1024; // 10k的预留空间
-        if(availablesize < (fileSize + preSpace)){
+        long availableSize = availableBlocksLong * blockSizeLong;
+        long preSpace = 10 * 1024 * 1024; // 10M的预留空间
+        if (availableSize < (fileSize + preSpace)) {
             // sdcard空间不足，无法下载当前视频
             setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE);
             return;
 
         }
 
-
-
         LogCat.e("fileSize: " + fileSize);
-        setDownloadMsg(DLUtils.HANDLER_WHAT_FILE_SIZE, fileSize);
+
 
         if (isCancel) {
             return;
@@ -215,7 +233,7 @@ public class DownloadPrepareThread implements Runnable {
         if (isCancel) {
             return;
         }
-        if(!file.exists()){
+        if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
@@ -239,17 +257,24 @@ public class DownloadPrepareThread implements Runnable {
                     setErrorMsg(errorCode);
                 }
             });
+            threads[i].start();
 
-            service.execute(threads[i]);
+
         }
+
+        if (errorCode == ErrorCodes.ERROR_DOWNLOAD_EXCUTORS) {
+            setErrorMsg(errorCode);
+            return;
+        }
+
 
         boolean isFinished = false;
 
-        int threadErrorCode;
 
         if (isCancel) {
             return;
         }
+
         int downloadSize = 0;
         try {
             while (!isFinished) {
@@ -263,11 +288,11 @@ public class DownloadPrepareThread implements Runnable {
                             downloadThread.cancel();
                             continue;
                         }
-                        threadErrorCode = downloadThread.getErrorCode();
-                        if (threadErrorCode != 0) {
+                        errorCode = downloadThread.getErrorCode();
+                        if (errorCode != 0) {
                             // 线程出错了, 中断下载
+                            LogCat.e("下载过程有异常.......终止进度线程");
                             isThreadError = true;
-                            setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_INTERRUPT);
                             break;
                         } else {
                             if (!downloadThread.isCompleted()) {
@@ -293,12 +318,11 @@ public class DownloadPrepareThread implements Runnable {
 
                     break;
                 }
-
                 // 通知handler去更新视图组件
-                setDownloadMsg(DLUtils.HANDLER_WHAT_DOWNLOAD_FILE_SIZE, downloadedAllSize);
-                try{
+                setDownloadMsg(downloadedAllSize);
+                try {
                     Thread.sleep(1000);// 休息1秒后再读取下载进度
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
 
@@ -309,18 +333,19 @@ public class DownloadPrepareThread implements Runnable {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_UNKNOWN;
         }
 
+        // 主动取消下载
         if (isCancel) {
-            Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_CANCEL);
-
-            msg.obj = file;
-
-            mHandler.sendMessage(msg);
+//            Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_CANCEL);
+//            msg.obj = file;
+//            mHandler.sendMessage(msg);
+            listener.onError(errorCode);
             deleteFailFile(fileSize, downloadSize);
             return;
         }
-
-        if (errorCode == ErrorCodes.ERROR_DOWNLOAD_UNKNOWN) {
-            setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_UNKNOWN);
+        // 当下载过程出错
+        if (errorCode != 0) {
+            LogCat.e("下载过程出错，主动停止下载........");
+            setErrorMsg(errorCode);
             deleteFailFile(fileSize, downloadSize);
             return;
         }
@@ -329,18 +354,12 @@ public class DownloadPrepareThread implements Runnable {
         // 完成所有的下载了
         if (isFinished) {
             LogCat.e("文件下载完成......fileSize: " + fileSize);
-            if (downloadSize == fileSize) {
+            if (deleteFailFile(fileSize, downloadSize)) {
                 LogCat.e("文件完整下载......");
-                Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
-
-                msg.obj = file.getAbsolutePath();
-
-                mHandler.sendMessage(msg);
-            } else {
-                LogCat.e("文件下载大小出错......downloadSize:" + downloadSize);
-                setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
-                deleteFailFile(fileSize, downloadSize);
-
+//                Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
+//                msg.obj = file.getAbsolutePath();
+//                mHandler.sendMessage(msg);
+                listener.onFinish(file.getAbsolutePath());
             }
         } else {
             LogCat.e("文件下载尚未完成......");
@@ -350,15 +369,18 @@ public class DownloadPrepareThread implements Runnable {
 
     }
 
-    private void deleteFailFile(int fileSize, int downloadSize) {
-        if(file != null &&  downloadSize != fileSize ){
+    private boolean deleteFailFile(int fileSize, int downloadSize) {
+        if (file != null && downloadSize != fileSize) {
             LogCat.e("文件下载大小出错......删除出错的文件");
-            if(file.delete()){
+            if (file.delete()) {
                 LogCat.e("文件下载大小出错......删除成功");
-            }else {
+
+            } else {
                 LogCat.e("文件下载大小出错......删除出错");
             }
+            return false;
         }
+        return true;
     }
 
     private HttpURLConnection getHttpURLConnection(URL url) {
@@ -386,45 +408,35 @@ public class DownloadPrepareThread implements Runnable {
     }
 
 
-    private void setDownloadMsg(int type, long code) {
-        if (mHandler != null) {
-            Message msg = mHandler.obtainMessage(type);
-            if (bundle == null) {
-                bundle = new Bundle();
-            }
-            if (type == DLUtils.HANDLER_WHAT_FILE_SIZE) {
-                bundle.putLong(DLUtils.BUNDLE_KEY_FILE_LENGTH, code);
-            } else {
-                bundle.putLong(DLUtils.BUNDLE_KEY_FILE_DOWNLOAD_SIZE, code);
-            }
-
-            msg.setData(bundle);
-            mHandler.sendMessage(msg);
+    private void setDownloadMsg(long code) {
+        if (listener != null) {
+            listener.onProgress(code);
         }
     }
 
     private void setErrorMsg(int errorCode) {
-        if (mHandler != null) {
-            Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_ERROR);
-            msg.arg1 = errorCode;
-            mHandler.sendMessage(msg);
+        if (listener != null) {
+            listener.onError(errorCode);
         }
     }
 
 
     public void cancelDownload() {
         isCancel = true;
-        for(DownloadThread thread : threads){
-            if(thread != null){
-                thread.cancel();
+        if (threads != null) {
+            for (DownloadThread thread : threads) {
+                if (thread != null) {
+                    thread.cancel();
+                }
             }
         }
 
-        if(service != null && !service.isShutdown()){
-            service.shutdownNow();
-        }
+    }
 
 
+    private synchronized void cacheVideoList(ArrayList<AdDetailResponse> cachePlayVideoLists) {
+        new CacheVideoListThread(cachePlayVideoLists, ToolUtils.getCacheDirectory(), Constants.FILE_CACHE_TD_NAME).start();
+        LogCat.e("文件缓存成功.........");
     }
 
 

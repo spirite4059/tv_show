@@ -92,6 +92,16 @@ public final class ErrorCodes {
      */
     public static final int ERROR_DOWNLOAD_SDCARD_SPACE = 1017;
 
+    /**
+     *  线程池出错
+     */
+    public static final int ERROR_DOWNLOAD_EXCUTORS = 1018;
+
+
+    /**
+     *  线程池出错
+     */
+    public static final int ERROR_DOWNLOAD_INIT_INFO = 1019;
 
     static final int HTTP_OK = 200;
     static final int HTTP_CREATED = 201;

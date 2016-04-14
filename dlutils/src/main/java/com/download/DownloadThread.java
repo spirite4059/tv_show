@@ -1,6 +1,7 @@
 package com.download;
 
 import com.download.tools.LogCat;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,7 +13,7 @@ import java.net.URL;
 /**
  * Created by fq_mbp on 16/2/29.
  */
-public class DownloadThread implements Runnable {
+public class DownloadThread extends Thread {
     /** 当前下载是否完成 */
     private boolean isCompleted = false;
     /** 当前下载文件长度 */
@@ -99,7 +100,6 @@ public class DownloadThread implements Runnable {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
         }
         if (bis == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN) {
-            LogCat.e("缓冲流获取异常。。。。。");
             setErrorCode();
             return;
         }
@@ -111,7 +111,6 @@ public class DownloadThread implements Runnable {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_RANDOM;
         }
         if (raf == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM) {
-            LogCat.e("随机流获取异常。。。。。");
             setErrorCode();
             return;
         }
@@ -122,7 +121,6 @@ public class DownloadThread implements Runnable {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;   // 整个下载中断的code
         }
         if(errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK){   // 整个下载中断的code
-            LogCat.e("随机流定为异常。。。。。");
             setErrorCode();
             return;
         }
@@ -131,7 +129,7 @@ public class DownloadThread implements Runnable {
             len = bis.read(buffer, 0, BUFFER_IN_SIZE);
         } catch (IOException e) {
             e.printStackTrace();
-            LogCat.e("输出流写入文件异常。。。。。" + e.getMessage());
+
             errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
         }
         if(len < 0 || errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
@@ -140,6 +138,7 @@ public class DownloadThread implements Runnable {
             return;
         }
         downloadLength = len;
+
         while (len != -1 && !isCancel) {
             try {
                 raf.write(buffer, 0, len);
@@ -149,18 +148,19 @@ public class DownloadThread implements Runnable {
                 // 简单处理就是从开头位置重新写入，能避免不出错，但是可能会导致已经下载的流量浪费
                 errorCode = ErrorCodes.ERROR_DOWNLOAD_WRITE;
             }
+
             if(errorCode == ErrorCodes.ERROR_DOWNLOAD_WRITE){
                 // 彻底放弃当前下载
                 // TODO
-                LogCat.e("写入文件异常。。。。。");
                 setErrorCode();
                 break;
             }
+
+
             try {
                 len = bis.read(buffer, 0, BUFFER_IN_SIZE);
             } catch (IOException e) {
                 e.printStackTrace();
-                LogCat.e("输出流写入文件异常。。。。。isCancel" + isCancel + "," + e.getLocalizedMessage());
                 errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
             }
             if(errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){

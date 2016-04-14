@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -46,7 +45,6 @@ import java.util.Map;
  */
 public class MainActivity extends Activity {
 
-
     private LinearLayout loadingView;
     /**
      * 下载info
@@ -74,11 +72,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 情况fragment的状态，保证getActivity不为null
+        if(savedInstanceState!= null) {
+            String FRAGMENTS_TAG = "android:support:fragments";
+            savedInstanceState.remove(FRAGMENTS_TAG);
+        }
         setContentView(R.layout.activity_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
 
         init();
     }
+
 
     private void init(){
         doHttpUpdate(this);
@@ -87,7 +91,10 @@ public class MainActivity extends Activity {
         /**
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
-        Settings.Global.putInt(getContentResolver(), "package_verifier_enable", 0);
+//        DataUtils.startAppServer(this);
+
+
+
 //        testInstall();
     }
 
@@ -132,7 +139,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        DLUtils.init(this).cancel();
+        DLUtils.init().cancel(this);
     }
 
     /**
@@ -245,7 +252,7 @@ public class MainActivity extends Activity {
                         if (!isFinishing()) {
                             // 做不升级处理, 继续请求广告视频列表
                             reTryTimes++;
-                            if (reTryTimes > 4) {
+                            if (reTryTimes >= 3) {
                                 reTryTimes = 0;
                                 LogCat.e("升级接口已连续请求3次，不在请求");
                                 //升级接口成功
@@ -290,7 +297,7 @@ public class MainActivity extends Activity {
 //        ft.add(R.id.root_main, new ADFourFragment());
 
         //ft.add(R.id.root_main, new TestFragment());
-        ft.commitAllowingStateLoss();
+        ft.commit();
     }
 
 
@@ -376,7 +383,7 @@ public class MainActivity extends Activity {
                 }
             }
 
-            ft.commitAllowingStateLoss();
+            ft.commit();
         }
     }
 
@@ -385,7 +392,7 @@ public class MainActivity extends Activity {
      * 下载apk
      */
     private void downloadAPK(){
-        DownloadUtils.download(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+        DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
                 //新包下载完成得安装
@@ -411,6 +418,11 @@ public class MainActivity extends Activity {
 
 
 
+
+            }
+
+            @Override
+            public void onDownloadProgress(String progress) {
 
             }
         });

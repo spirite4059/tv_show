@@ -2,7 +2,7 @@ package com.download.dllistener;
 
 public interface OnDownloadStatusListener {
 
-    void onError(int errorCode, String errorMsg);
+    void onError(int errorCode);
 
     void onPrepare(long fileSize);
 
