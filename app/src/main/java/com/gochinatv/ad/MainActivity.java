@@ -139,7 +139,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        DLUtils.init().cancel(this);
+        DLUtils.init().cancel();
     }
 
     /**

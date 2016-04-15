@@ -1,8 +1,5 @@
 package com.download;
 
-import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -124,7 +121,7 @@ public class DLUtils implements InDLUtils {
 //    }
 
 
-    public void cancel(Context context) {
+    public void cancel() {
         if (downloadThread != null) {
             downloadThread.cancelDownload();
         }

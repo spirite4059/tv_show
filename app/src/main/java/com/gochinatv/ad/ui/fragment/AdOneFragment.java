@@ -27,7 +27,10 @@ import com.google.gson.reflect.TypeToken;
 import com.httputils.http.response.AdDetailResponse;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.VideoDetailListResponse;
+import com.okhtttp.OkHttpCallBack;
+import com.okhtttp.response.AdVideoListResponse;
 import com.okhtttp.response.LayoutResponse;
+import com.okhtttp.service.VideoHttpService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -173,21 +176,21 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 //        handler = new Handler(Looper.getMainLooper());
 
 
-//        VideoHttpService.doHttpGetVideoList(getActivity(), new OkHttpCallBack<AdVideoListResponse>() {
-//            @Override
-//            public void onSuccess(String url, AdVideoListResponse response) {
-//                LogCat.e("新街口成功了........*******************.");
-//                if (response != null) {
-//
-//                }
-//
-//            }
-//
-//            @Override
-//            public void onError(String url, String errorMsg) {
-//                LogCat.e("新街口onError了.........********************");
-//            }
-//        });
+        VideoHttpService.doHttpGetVideoList(getActivity(), new OkHttpCallBack<AdVideoListResponse>() {
+            @Override
+            public void onSuccess(String url, AdVideoListResponse response) {
+                LogCat.e("新街口成功了........*******************.");
+                if (response != null) {
+
+                }
+
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                LogCat.e("新街口onError了.........********************");
+            }
+        });
 
     }
 
@@ -425,6 +428,16 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         prepareDownloading();
         // 还原状态
         retryTimes = 0;
+
+
+        if(getActivity() != null){
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showLogMsg("");
+                }
+            });
+        }
 
     }
 
@@ -858,8 +871,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             httpTimer.cancel();
             httpTimer = null;
         }
-        DownloadUtils.cancel();
-        DLUtils.init().cancel(getActivity());
+
+        DLUtils.init().cancel();
 
         ScreenShotUtils.shutdown();
 
@@ -1218,8 +1231,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      * @return
      */
     private String getRawVideoUri() {
-        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
-//        return "";
+//        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
+        return "";
     }
 
 

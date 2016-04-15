@@ -79,6 +79,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
+
         URL url = null;
         try {
             url = new URL(downloadUrl);

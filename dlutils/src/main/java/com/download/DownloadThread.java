@@ -156,6 +156,11 @@ public class DownloadThread extends Thread {
                 break;
             }
 
+//              if(downloadLength > 1028 * 1024){
+//                errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
+//                setErrorCode();
+//                break;
+//            }
 
             try {
                 len = bis.read(buffer, 0, BUFFER_IN_SIZE);
