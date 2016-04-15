@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.download.DLUtils;
@@ -45,6 +46,8 @@ import java.util.Map;
  */
 public class MainActivity extends Activity {
 
+    private ImageView imgLoge;//LOGE图
+
     private LinearLayout loadingView;
     /**
      * 下载info
@@ -79,7 +82,7 @@ public class MainActivity extends Activity {
         }
         setContentView(R.layout.activity_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
-
+        imgLoge = (ImageView) findViewById(R.id.img_loge);
         init();
     }
 
@@ -192,8 +195,14 @@ public class MainActivity extends Activity {
                         }
 
                         if (response.resultForApk == null) {
-                            LogCat.e("升级数据出错，无法正常升级2。。。。。");
-                            doError();
+                            if("3".equals(response.status)){
+                                isUpgradeSucceed = true;
+                                loadFragment(false);
+                                LogCat.e("没有升级包，不需要更新");
+                            }else{
+                                LogCat.e("升级数据出错，无法正常升级2。。。。。");
+                                doError();
+                            }
                             return;
                         }
 
@@ -282,6 +291,7 @@ public class MainActivity extends Activity {
         if(isFinishing()){
             return;
         }
+        imgLoge.setVisibility(View.VISIBLE);
         loadingView.setVisibility(View.GONE);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
@@ -313,6 +323,7 @@ public class MainActivity extends Activity {
         //当升级和广告体接口都完成后，才加载布局
         if (isUpgradeSucceed && isGetDerviceSucceed) {
             loadingView.setVisibility(View.GONE);
+            imgLoge.setVisibility(View.VISIBLE);
             FragmentManager fm = getFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
 
