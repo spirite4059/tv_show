@@ -285,12 +285,7 @@ public class DownloadPrepareThread extends Thread {
                             downloadThread.cancel();
                             continue;
                         }
-                        if(errorCode != 0){
-                            // 线程出错了, 中断下载
-                            LogCat.e("下载过程有异常.......终止进度线程");
-                            isThreadError = true;
-                            break;
-                        }
+
                         errorCode = downloadThread.getErrorCode();
                         if (errorCode != 0) {
                             // 线程出错了, 中断下载
@@ -319,7 +314,6 @@ public class DownloadPrepareThread extends Thread {
                         LogCat.e("主动取消了下载......");
 
                     }
-
                     break;
                 }
                 // 通知handler去更新视图组件
@@ -339,7 +333,8 @@ public class DownloadPrepareThread extends Thread {
 
         // 主动取消下载
         if (isCancel) {
-            listener.onError(errorCode);
+            setCancel();
+
             deleteFailFile(fileSize, downloadSize);
             return;
         }
@@ -357,7 +352,7 @@ public class DownloadPrepareThread extends Thread {
             LogCat.e("文件下载完成......fileSize: " + fileSize);
             if (deleteFailFile(fileSize, downloadSize)) {
                 LogCat.e("文件完整下载......");
-                listener.onFinish(file.getAbsolutePath());
+                setFinish(file.getAbsolutePath());
             }
         } else {
             LogCat.e("文件下载尚未完成......");
@@ -415,6 +410,18 @@ public class DownloadPrepareThread extends Thread {
     private void setErrorMsg(int errorCode) {
         if (listener != null) {
             listener.onError(errorCode);
+        }
+    }
+
+    private void setCancel() {
+        if (listener != null) {
+            listener.onCancel();
+        }
+    }
+
+    private void setFinish(String filePath) {
+        if (listener != null) {
+            listener.onFinish(filePath);
         }
     }
 
