@@ -1,7 +1,8 @@
 package com.okhtttp.response;
 
-import java.util.ArrayList;
+import com.httputils.http.response.AdDetailResponse;
 
+import java.util.ArrayList;
 /**
  * Created by fq_mbp on 16/4/6.
  */

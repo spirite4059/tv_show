@@ -37,6 +37,8 @@ public class DownloadPrepareThread extends Thread {
     private static final int CONNECT_TIME_OUT = 60000;
     private DownloadThread[] threads;
 
+
+
     public DownloadPrepareThread(String downloadUrl, int threadNum, File file, OnDownloadStatusListener listener) {
         this.downloadUrl = downloadUrl;
         this.threadNum = threadNum;
@@ -110,6 +112,7 @@ public class DownloadPrepareThread extends Thread {
         if (isCancel) {
             return;
         }
+
         boolean isConnectSuccess = false;
         try {
             final int code = connection.getResponseCode();
@@ -251,13 +254,6 @@ public class DownloadPrepareThread extends Thread {
             // 启动线程，分别下载每个线程需要下载的部分
             threads[i] = new DownloadThread(url, file, blockSize,
                     (i + 1));
-            threads[i].setOnDownloadErrorListener(new DownloadThread.OnDownloadErrorListener() {
-                @Override
-                public void onDownloadError(int errorCode) {
-                    isCancel = true;
-                    setErrorMsg(errorCode);
-                }
-            });
             threads[i].start();
 
 
@@ -289,6 +285,12 @@ public class DownloadPrepareThread extends Thread {
                             downloadThread.cancel();
                             continue;
                         }
+                        if(errorCode != 0){
+                            // 线程出错了, 中断下载
+                            LogCat.e("下载过程有异常.......终止进度线程");
+                            isThreadError = true;
+                            break;
+                        }
                         errorCode = downloadThread.getErrorCode();
                         if (errorCode != 0) {
                             // 线程出错了, 中断下载
@@ -305,6 +307,7 @@ public class DownloadPrepareThread extends Thread {
                         }
                     }
                 }
+
                 downloadSize = downloadedAllSize;
 
                 // 是否有子线程出错或者取消下载
@@ -336,9 +339,6 @@ public class DownloadPrepareThread extends Thread {
 
         // 主动取消下载
         if (isCancel) {
-//            Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_CANCEL);
-//            msg.obj = file;
-//            mHandler.sendMessage(msg);
             listener.onError(errorCode);
             deleteFailFile(fileSize, downloadSize);
             return;
@@ -357,9 +357,6 @@ public class DownloadPrepareThread extends Thread {
             LogCat.e("文件下载完成......fileSize: " + fileSize);
             if (deleteFailFile(fileSize, downloadSize)) {
                 LogCat.e("文件完整下载......");
-//                Message msg = mHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOAD_FINISH);
-//                msg.obj = file.getAbsolutePath();
-//                mHandler.sendMessage(msg);
                 listener.onFinish(file.getAbsolutePath());
             }
         } else {

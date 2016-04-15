@@ -28,8 +28,6 @@ public class DownloadThread extends Thread {
     private int blockSize;
     private boolean isCancel;
     private int errorCode;
-    /** 下载无法恢复的监听 */
-    private OnDownloadErrorListener onDownloadErrorListener;
     /** 缓冲流 */
     private BufferedInputStream bis;
     /** 随机流 */
@@ -60,7 +58,6 @@ public class DownloadThread extends Thread {
         HttpURLConnection connection = getConnection(startPos, endPos);
         if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
             // 彻底放弃当前下载
-            setErrorCode();
             return;
         }
         downloadFile(connection, startPos);
@@ -100,7 +97,6 @@ public class DownloadThread extends Thread {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
         }
         if (bis == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN) {
-            setErrorCode();
             return;
         }
         byte[] buffer = new byte[BUFFER_IN_SIZE];
@@ -111,7 +107,6 @@ public class DownloadThread extends Thread {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_RANDOM;
         }
         if (raf == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM) {
-            setErrorCode();
             return;
         }
         try {
@@ -121,7 +116,6 @@ public class DownloadThread extends Thread {
             errorCode = ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;   // 整个下载中断的code
         }
         if(errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK){   // 整个下载中断的code
-            setErrorCode();
             return;
         }
         int len = -1;
@@ -134,7 +128,6 @@ public class DownloadThread extends Thread {
         }
         if(len < 0 || errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
             // 此时多次读取数据出错，应该停止下载了
-            setErrorCode();
             return;
         }
         downloadLength = len;
@@ -150,15 +143,14 @@ public class DownloadThread extends Thread {
             }
 
             if(errorCode == ErrorCodes.ERROR_DOWNLOAD_WRITE){
+                errorCode = ErrorCodes.ERROR_DOWNLOAD_WRITE;
                 // 彻底放弃当前下载
                 // TODO
-                setErrorCode();
                 break;
             }
 
-//              if(downloadLength > 1028 * 1024){
+//            if(downloadLength > 1028 * 1024){
 //                errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
-//                setErrorCode();
 //                break;
 //            }
 
@@ -171,8 +163,6 @@ public class DownloadThread extends Thread {
             if(errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
                 // 彻底放弃当前下载
                 // TODO
-                setErrorCode();
-
                 break;
             }
             downloadLength += len;
@@ -219,15 +209,5 @@ public class DownloadThread extends Thread {
     public void cancel(){
         isCancel = true;
     }
-    public interface OnDownloadErrorListener {
-        void onDownloadError(int errorCode);
-    }
-    public void setOnDownloadErrorListener(OnDownloadErrorListener onDownloadErrorListener) {
-        this.onDownloadErrorListener = onDownloadErrorListener;
-    }
-    private void setErrorCode(){
-        if(onDownloadErrorListener != null){
-            onDownloadErrorListener.onDownloadError(errorCode);
-        }
-    }
+
 }
