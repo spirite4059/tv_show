@@ -2,9 +2,7 @@ package com.gochinatv.ad.base;
 
 import android.text.TextUtils;
 
-import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.LogCat;
-import com.gochinatv.ad.tools.SharedPreference;
 import com.httputils.http.response.CdnPathResponse;
 import com.httputils.http.response.VideoDetailListResponse;
 import com.okhtttp.OkHttpCallBack;
@@ -74,28 +72,23 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
             @Override
             public void onSuccess(String url, AdVideoListResponse response) {
                 LogCat.e("新街口成功了........*******************.");
-                if(!isAdded()){
+                if (!isAdded()) {
                     return;
                 }
 
-
+                onGetVideoListSuccess(response, url);
 
             }
 
             @Override
             public void onError(String url, String errorMsg) {
                 LogCat.e("新街口onError了.........********************");
-
-
-
+                onGetVideoListFailed(errorMsg, url);
 
             }
         });
 
     }
-
-
-
 
 
 
@@ -149,36 +142,9 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
 
 
 
-    protected void recordStartTime() {
-        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
-        sharedPreference.saveDate(Constants.SHARE_KEY_DURATION, System.currentTimeMillis());
-    }
 
-    protected void computeTime() {
-        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
-        // 计算离开的时候总时长
-        try {
-            long startLong = sharedPreference.getDate(Constants.SHARE_KEY_DURATION, 0L);
-            if (startLong != 0) {
-                long duration = System.currentTimeMillis() - startLong;
-                if (duration > 0) {
-                    long day = duration / (24 * 60 * 60 * 1000);
-                    long hour = (duration / (60 * 60 * 1000) - day * 24);
-                    long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
-                    long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-                    String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
 
-                    LogCat.e(str);
 
-                    LogCat.e("上报开机时长。。。。。。。。");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            sharedPreference.saveDate(Constants.SHARE_KEY_DURATION, 0);
-        }
-    }
 
 
 

@@ -255,8 +255,6 @@ public class DownloadPrepareThread extends Thread {
             threads[i] = new DownloadThread(url, file, blockSize,
                     (i + 1));
             threads[i].start();
-
-
         }
 
         if (errorCode == ErrorCodes.ERROR_DOWNLOAD_EXCUTORS) {

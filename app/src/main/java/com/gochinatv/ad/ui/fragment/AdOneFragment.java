@@ -14,23 +14,20 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.VideoHttpBaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.thread.CacheVideoListThread;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.ScreenShotUtils;
+import com.gochinatv.ad.tools.VideoAdUtils;
 import com.gochinatv.ad.video.MeasureVideoView;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.httputils.http.response.AdDetailResponse;
 import com.httputils.http.response.PlayInfoResponse;
 import com.httputils.http.response.VideoDetailListResponse;
 import com.okhtttp.response.AdVideoListResponse;
 import com.okhtttp.response.LayoutResponse;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -67,7 +64,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     private ArrayList<AdDetailResponse> cachePlayVideoLists = null;
     private ArrayList<AdDetailResponse> deleteLists = null;
     private ArrayList<AdDetailResponse> downloadLists = null;
-//    private ArrayList<AdDetailResponse> prepareDownloadLists = null;
+    private ArrayList<AdDetailResponse> prepareDownloadLists = null;
 
     /**
      * 是否用更新的apk在下载
@@ -80,7 +77,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     private boolean isDownloadPrepare;
 
-    private final int HEADER_FILE_LENGTH = 1024 * 1024 * 10;
 
     /**
      * 进行重试的时间间隔
@@ -95,7 +91,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     private TextView tvProgress;
 
-    private StringBuilder logBuilder;
+    private boolean isTest = false;
+
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -115,7 +112,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         // 显示loading加载状态
         showLoading();
         // 记录开始时间
-        recordStartTime();
+        VideoAdUtils.recordStartTime(getActivity());
         // 先判断sdcard状态是否可用，如果不可用，直接播放本地视频
         if (!DataUtils.isExistSDCard()) {
             LogCat.e("sd卡状态不可用......");
@@ -125,28 +122,45 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         // 1.初始化本地缓存表
         LogCat.e("获取本地缓存视频列表.......");
-        localVideoList = getLocalVideoList();
+        localVideoList = VideoAdUtils.getLocalVideoList();
         LogCat.e("------------------------------");
         if (localVideoList.size() != 0) {
-            // 2.获取今日播放的视频完整性
-            ArrayList<AdDetailResponse> cacheTodayList = getCacheList(Constants.FILE_CACHE_TD_NAME);
+            // 2.获取今日播放的缓存列表
+            LogCat.e("获取今日播放的缓存列表.......");
+            ArrayList<AdDetailResponse> cacheTodayList = VideoAdUtils.getCacheList(Constants.FILE_CACHE_TD_NAME);
 
-            // 3.取明日缓存列表
-            // LogCat.e("获取缓存的明日播放列表.......");
-//             ArrayList<AdDetailResponse> cacheTomorrowList = getCacheList(Constants.FILE_CACHE_NAME);
-            // LogCat.e("------------------------------");
-
-            // 4.根据今明两日的文件列表检查localVideoList列表文件的完整性
-            checkFileLength(cacheTodayList);
-            // checkFileLength(cacheTomorrowList);
+            ArrayList<AdDetailResponse> cacheTomorrowList = null;
+            if(isTest){
+                LogCat.e("获取缓存的明日播放列表.......");
+                cacheTomorrowList = VideoAdUtils.getCacheList(Constants.FILE_CACHE_NAME);
+            }
 
 
-            // 5.根据本地缓存视频列表和缓存明日列表，得出当前的播放列表
-            // LogCat.e("根据本地缓存视频列表和缓存明日列表，得出当前的播放列表.....");
-            // cachePlayVideoLists = getPlayVideoList(localVideoList, cacheTomorrowList);
 
-            // TODO 临时
-            cachePlayVideoLists = localVideoList;
+
+            LogCat.e("开始根据今日播放列表检测文件的完整性......." + localVideoList.size());
+            VideoAdUtils.checkFileLength(localVideoList, cacheTodayList);
+            if(isTest){
+                // 3.取明日缓存列表
+                LogCat.e("------------------------------");
+                // 4.根据今明两日的文件列表检查localVideoList列表文件的完整性
+                if (cacheTomorrowList != null && cacheTomorrowList.size() != 0) {
+                    LogCat.e("开始根据明日播放列表检测文件的完整性......." + localVideoList.size());
+
+                    VideoAdUtils.checkFileLength(localVideoList, cacheTomorrowList);
+                }
+                LogCat.e("检测完后的视频列表个数......." + localVideoList.size());
+
+                // 5.根据本地缓存视频列表和缓存明日列表，得出当前的播放列表
+                LogCat.e("根据本地缓存视频列表和缓存明日列表，得出当前的播放列表.....");
+                cachePlayVideoLists = VideoAdUtils.getPlayVideoList(localVideoList, cacheTomorrowList);
+                LogCat.e("------------------------------");
+            }else {
+                cachePlayVideoLists = localVideoList;
+            }
+
+
+
         } else {
             cachePlayVideoLists = localVideoList;
         }
@@ -156,7 +170,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         startPlayVideo();
 
         // 删除旧的文件目录
-        deleteOldDir();
+        VideoAdUtils.deleteOldDir();
 
         LogCat.e("请求接口.....");
         // 6.请求视频列表
@@ -172,7 +186,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
         //  开启轮询接口
 //        handler = new Handler(Looper.getMainLooper());
-
 
 
     }
@@ -251,28 +264,22 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         }
 
         // 将今日列表缓存到本地
-        cacheVideoList(Constants.FILE_CACHE_TD_NAME, adDetailResponses);
-
-        // 1.更新数据内容
-        // 重新获取本地缓存列表
-//        LogCat.e("重新获取本地缓存列表......");
-//        localVideoList = getLocalVideoList();
-//        LogCat.e("------------------------------");
+        VideoAdUtils.cacheVideoList(Constants.FILE_CACHE_TD_NAME, adDetailResponses);
 
         // 2.匹配今天要下载的视频
         LogCat.e("根据今日播放列表，获取下载列表......");
-        downloadLists = getDownloadList(localVideoList, adDetailResponses);
+        downloadLists = VideoAdUtils.getDownloadList(localVideoList, adDetailResponses);
         LogCat.e("------------------------------");
 
 
         // 3.匹配要删除的视频
         LogCat.e("根据今日播放列表，获取删除列表......");
-        deleteLists = getDeleteList(localVideoList, adDetailResponses);
+        deleteLists = VideoAdUtils.getDeleteList(localVideoList, adDetailResponses);
         LogCat.e("------------------------------");
 
         // 4.匹配要播放的视频
         LogCat.e("根据今日播放列表，获取播放列表......");
-        playVideoLists = getTodayPlayVideoList(localVideoList, adDetailResponses);
+        playVideoLists = VideoAdUtils.getTodayPlayVideoList(localVideoList, adDetailResponses);
         LogCat.e("------------------------------");
 
         // 5.匹配明天要下载的视频
@@ -392,7 +399,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     @Override
     protected void onGetVideoListSuccess(AdVideoListResponse response, String url) {
-        if(!isAdded()){
+        if (!isAdded()) {
             return;
         }
         LogCat.e("url: " + url);
@@ -406,40 +413,52 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             return;
         }
 
-        // 将今日列表缓存到本地
-        cacheVideoList(Constants.FILE_CACHE_TD_NAME, response.current);
+        // 去除重复
+        LogCat.e("去除今日播放列表重复的视频.......");
+        ArrayList<AdDetailResponse> currentVideoList = getDistinctVideoList(response.current);
+        LogCat.e("去除明日播放列表重复的视频.......");
+        ArrayList<AdDetailResponse> nextVideoList = getDistinctVideoList(response.next);
 
+
+        // 将今日列表缓存到本地
+        LogCat.e("将今日列表缓存到本地.......");
+        VideoAdUtils.cacheVideoList(Constants.FILE_CACHE_TD_NAME, nextVideoList);
         // 2.匹配今天要下载的视频
         LogCat.e("根据今日播放列表，获取下载列表......");
-        downloadLists = getDownloadList(localVideoList, response.current);
+        downloadLists = VideoAdUtils.getDownloadList(localVideoList, currentVideoList);
         LogCat.e("------------------------------");
 
 
         // 3.匹配要删除的视频
         LogCat.e("根据今日播放列表，获取删除列表......");
-        deleteLists = getDeleteList(localVideoList, response.current);
+        deleteLists = VideoAdUtils.getDeleteList(localVideoList, currentVideoList);
         LogCat.e("------------------------------");
 
         // 4.匹配要播放的视频
         LogCat.e("根据今日播放列表，获取播放列表......");
-        playVideoLists = getTodayPlayVideoList(localVideoList, response.current);
+        playVideoLists = VideoAdUtils.getTodayPlayVideoList(localVideoList, currentVideoList);
         LogCat.e("------------------------------");
 
-        // 5.匹配明天要下载的视频
-        LogCat.e("根据明日播放列表，获取下载列表......");
-//        prepareDownloadLists = getDownloadList(localVideoList, adDetailResponses);
-
-//        LogCat.e("------------------------------");
-        // 匹对今天的下载列表，提出重复下载的视频
-//        LogCat.e("开始处理重复的下载任务......");
-//        reconnectedPrepare();
-
-        // 6.再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表
-//        LogCat.e("再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表......");
-//        removeTomorrowVideos(localVideoList, adDetailResponses);
-//        for (AdDetailResponse adDetailResponse : deleteLists) {
-//            LogCat.e("删除列表视频：" + adDetailResponse.adVideoName);
-//        }
+        if (response.next != null && response.next.size() != 0) {
+            // 11.将明日播放列表缓存到本地
+            LogCat.e("将明日播放列表缓存到本地......");
+            VideoAdUtils.cacheVideoList(Constants.FILE_CACHE_NAME, nextVideoList);
+            // 5.匹配明天要下载的视频
+            LogCat.e("根据明日播放列表，获取下载列表......");
+            prepareDownloadLists = VideoAdUtils.getDownloadList(localVideoList, nextVideoList);
+            LogCat.e("------------------------------");
+            // 匹对今天的下载列表，提出重复下载的视频
+            LogCat.e("开始处理重复的下载任务......");
+            VideoAdUtils.reconnectedPrepare(downloadLists, prepareDownloadLists);
+            // 6.再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表
+            LogCat.e("再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表......");
+            removeTomorrowVideos(deleteLists, nextVideoList);
+            LogCat.e("最终的删除列表......");
+            for (AdDetailResponse adDetailResponse : deleteLists) {
+                LogCat.e("删除列表视频：" + adDetailResponse.adVideoName);
+            }
+            LogCat.e("------------------------------");
+        }
 
 
         // 9.进行删除控制
@@ -460,26 +479,35 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         for (AdDetailResponse adDetailResponse : downloadLists) {
             LogCat.e("需要下载的视频..." + adDetailResponse.adVideoName);
         }
+
         prepareDownloading();
 
-        // 11.将明日播放列表缓存到本地
-//        LogCat.e("将明日播放列表缓存到本地......");
-//        cacheVideoList(Constants.FILE_CACHE_NAME, adDetailResponses);
-
-        showLogMsg("");
         // 显示开发下载模式，主要是为了显示日志
+        showLogMsg("");
         LogCat.e("++++++++++++++++++++++++++++++++++++++++++++++++");
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (isAdded()) {
-//                    doHttpGetEpisode();
-//                }
-//
-//            }
-//        }, TIME_RETRY_DURATION);
+    }
 
-
+    private ArrayList<AdDetailResponse> getDistinctVideoList(ArrayList<AdDetailResponse> videos) {
+        ArrayList<AdDetailResponse> videoList = new ArrayList<>();
+        for(AdDetailResponse adDetailResponse : videos){
+            int length = videoList.size();
+            if(length == 0){
+                videoList.add(adDetailResponse);
+            }else {
+                boolean isHasVideo = false;
+                for(int i = 0; i < length; i++){
+                    AdDetailResponse currentVideo = videoList.get(i);
+                    if(currentVideo.adVideoName.equals(adDetailResponse.adVideoName)){
+                        isHasVideo = true;
+                        break;
+                    }
+                }
+                if(!isHasVideo){
+                    videoList.add(adDetailResponse);
+                }
+            }
+        }
+        return videoList;
     }
 
     @Override
@@ -505,7 +533,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         retryTimes = 0;
 
 
-        if(getActivity() != null){
+        if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -528,7 +556,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     @Override
     public void onDownloadProgress(final String progress) {
-        if(getActivity() != null){
+        if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -572,89 +600,10 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     }
 
 
-    /**
-     * 得到本地的缓存视频的列表
-     *
-     * @return
-     */
-    private ArrayList<AdDetailResponse> getLocalVideoList() {
-        ArrayList<AdDetailResponse> localVideos = new ArrayList<>();
-        File fileVideo = new File(DataUtils.getVideoDirectory());
-        if (fileVideo.exists() && fileVideo.isDirectory()) {
-            localVideos.addAll(getLocalList(fileVideo));
-        }
-        return localVideos;
-    }
-
-    /**
-     * 得到明日的播放列表
-     *
-     * @return
-     */
-    private synchronized ArrayList<AdDetailResponse> getCacheList(String fileName) {
-        ArrayList<AdDetailResponse> cacheTomorrowList = new ArrayList<>();
-        File cacheFile = new File(DataUtils.getCacheDirectory() + fileName);
-        if (cacheFile.exists() && cacheFile.isFile()) {
-            String json = DataUtils.readFileFromSdCard(cacheFile);
-            if (!TextUtils.isEmpty(json)) {
-                Gson gson = new Gson();
-                LogCat.e("缓存的明日列表已经找到........");
-                cacheTomorrowList = gson.fromJson(json, new TypeToken<ArrayList<AdDetailResponse>>() {
-                }.getType());
-                // TODO 以后删除
-                LogCat.e("缓存播放列表内容........");
-                for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
-                    LogCat.e("视频名称：" + adDetailResponse.adVideoName + ", 文件大小：" + adDetailResponse.adVideoLength);
-                    adDetailResponse.adVideoName = adDetailResponse.name;
-                }
-
-            }
-        }
-        return cacheTomorrowList;
-    }
-
-    /**
-     * 根据本地缓存视频列表和明日播放列，得出当前的视频播放列表
-     *
-     * @param localVideoList
-     * @param cacheTomorrowList
-     * @return
-     */
-    private ArrayList<AdDetailResponse> getPlayVideoList(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTomorrowList) {
-        ArrayList<AdDetailResponse> cachePlayVideos = new ArrayList<>();
-        int localLength = localVideoList.size();
-        if (localLength < 2) {
-            // 此时无需匹对列表，直接将预置片放入缓存播放列表
-        } else {
-            // 匹对列表
-            for (AdDetailResponse localVideo : localVideoList) {
-                for (AdDetailResponse cacheVideo : cacheTomorrowList) {
-                    if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
-                        cacheVideo.videoPath = localVideo.videoPath;
-                        LogCat.e("缓存视频：" + cacheVideo.adVideoName);
-                        cachePlayVideos.add(cacheVideo);
-                        break;
-                    }
-                }
-            }
-            // 匹配后结果不满足2个，仍然要播放预告片
-            if (cachePlayVideos.size() < 2) {
-                cachePlayVideos.addAll(localVideoList);
-            }
-        }
-        return cachePlayVideos;
-    }
-
-
     public void setLayoutResponse(LayoutResponse layoutResponse) {
         this.layoutResponse = layoutResponse;
     }
 
-    private void deleteOldDir() {
-        String oldPath = DataUtils.getSdCardOldFileDirectory();
-        LogCat.e("清空旧文件目录(gochinatv)....." + oldPath);
-        DeleteFileUtils.getInstance().deleteDir(new File(DataUtils.getSdCardOldFileDirectory()));
-    }
 
     /**
      * 开始截屏
@@ -715,114 +664,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     }
 
 
-    private void reconnectedPrepare() {
-//        int downloadsSize = downloadLists.size();
-//        for(int i = 0; i < prepareDownloadLists.size(); i++){
-//            AdDetailResponse prepareVideo = prepareDownloadLists.get(i);
-//            for(int j = 0; j < downloadsSize; j++){
-//                AdDetailResponse downloadVideo = downloadLists.get(j);
-//                if(!TextUtils.isEmpty(prepareVideo.adVideoName) && prepareVideo.adVideoName.equals(downloadVideo.adVideoName)){
-//                    prepareDownloadLists.remove(i);
-//                    LogCat.e("剔除重复下载的视频：" + prepareVideo.adVideoName);
-//                    --i;
-//                    break;
-//                }
-//            }
-//        }
-//        LogCat.e("------------------------------");
-//        LogCat.e("最终的明日下载列表.......");
-//        for(AdDetailResponse adDetailResponse : prepareDownloadLists){
-//            LogCat.e("明日下载视频：" + adDetailResponse.adVideoName);
-//        }
-//        LogCat.e("------------------------------");
-    }
-
-    /**
-     * 根据本地缓存视频列表和今日播放列表，得到需要下载的视频列表
-     *
-     * @param localVideoList
-     * @param todayVideoList
-     * @return
-     */
-    private ArrayList<AdDetailResponse> getDownloadList(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> todayVideoList) {
-        ArrayList<AdDetailResponse> downloadList = new ArrayList<>();
-        // 今天播放列表的视频不在本地缓存列表中，说明当前视频需要下载
-        boolean isNeedDl;
-        for (AdDetailResponse todayResponse : todayVideoList) {
-            isNeedDl = true;
-            for (AdDetailResponse localVideoResponse : localVideoList) {
-                // 如果当前视频在本地缓存中，改视频不需要下载，反之下载
-                if (!TextUtils.isEmpty(todayResponse.adVideoName) && todayResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
-                    isNeedDl = false;
-                    break;
-                }
-            }
-            if (isNeedDl) {
-                downloadList.add(todayResponse);
-                LogCat.e("需下载的视频：" + todayResponse.adVideoName);
-            }
-        }
-        return downloadList;
-    }
-
-
-    /**
-     * 根据本地缓存视频列表和今日播放列表，得到需要下载的删除文件列表
-     *
-     * @param localVideoList
-     * @param todayVideoList
-     * @return
-     */
-    private ArrayList<AdDetailResponse> getDeleteList(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> todayVideoList) {
-        // 删除文件为在本地缓存视频列表，而不在今日播放列表的内容
-        ArrayList<AdDetailResponse> deleteList = new ArrayList<>();
-        boolean isNeedDel;
-        for (AdDetailResponse localVideoResponse : localVideoList) {
-            isNeedDel = true;
-            for (AdDetailResponse todayResponse : todayVideoList) {
-                // 今天播放列表的视频不在本地缓存列表中，说明当前视频需要下载
-                if (!TextUtils.isEmpty(todayResponse.adVideoName) && todayResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
-                    isNeedDel = false;
-                    break;
-                }
-            }
-            if (isNeedDel) {
-                LogCat.e("需要删除的视频：" + localVideoResponse.adVideoName);
-                deleteList.add(localVideoResponse);
-            }
-        }
-        return deleteList;
-    }
-
-
-    /**
-     * 根据本地缓存视频列表和今日播放列表，得到需要下载的删除文件列表
-     *
-     * @param localVideoList
-     * @param todayVideoList
-     * @return
-     */
-    private ArrayList<AdDetailResponse> getTodayPlayVideoList(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> todayVideoList) {
-        // 播放列表的内容为本地缓存视频在今日播放列表中
-        ArrayList<AdDetailResponse> playList = new ArrayList<>();
-        for (AdDetailResponse localVideoResponse : localVideoList) {
-            for (AdDetailResponse todayResponse : todayVideoList) {
-                // 本地缓存视频在今日播放列表中，说明当前视频可以直接播放
-                if (!TextUtils.isEmpty(todayResponse.adVideoName) && todayResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
-                    todayResponse.videoPath = localVideoResponse.videoPath;
-                    playList.add(todayResponse.adVideoIndex, todayResponse);
-                    LogCat.e("播放列表：" + todayResponse.adVideoName);
-                    break;
-                }
-            }
-        }
-        return playList;
-    }
-
-
     private void removeTomorrowVideos(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> tomorrowList) {
         // 获取明日需要用到的视频
-        ArrayList<AdDetailResponse> preparePlayList = getTodayPlayVideoList(localVideoList, tomorrowList);
+        ArrayList<AdDetailResponse> preparePlayList = VideoAdUtils.getTodayPlayVideoList(localVideoList, tomorrowList);
 
         // 从删除列表中取出明日需要用到的视频
         boolean isTomorrowUsed;
@@ -836,11 +680,13 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 if (!TextUtils.isEmpty(deleteVideo.adVideoName) && deleteVideo.adVideoName.equals(prepareVideo.adVideoName)) {
                     isTomorrowUsed = true;
                     indexUsed = i;
+                    LogCat.e("在删除列表中明日需要用到的视频   " + deleteVideo.adVideoName);
                     break;
                 }
             }
             if (isTomorrowUsed) {
                 // 当前视频在在明日
+                LogCat.e("将当前视频从删除列表中剔除 ");
                 deleteLists.remove(indexUsed);
             }
 
@@ -966,17 +812,17 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      */
     private void prepareDownloading() {
         if (downloadLists.size() == 0) {
-//            if (prepareDownloadLists.size() == 0) {
-            LogCat.e("所有视频下载完成。。。。。。。。");
-            downloadingVideoResponse = null;
-            isDownloadPrepare = false;
-//            } else {
-//                LogCat.e("当日的下载列表下载完成，继续下载明日与播放的视频列表");
-//                downloadLists.addAll(prepareDownloadLists);
-//                prepareDownloadLists.clear();
-//                isDownloadPrepare = true;
-//                prepareDownloading();
-//            }
+            if (prepareDownloadLists.size() == 0) {
+                LogCat.e("所有视频下载完成。。。。。。。。");
+                downloadingVideoResponse = null;
+                isDownloadPrepare = false;
+            } else {
+                LogCat.e("当日的下载列表下载完成，继续下载明日与播放的视频列表");
+                downloadLists.addAll(prepareDownloadLists);
+                prepareDownloadLists.clear();
+                isDownloadPrepare = true;
+                prepareDownloading();
+            }
         } else {
             LogCat.e("获取下载列表第一个视频，并开始下载。。。。。。。。 还剩余下载任务：" + downloadLists.size());
             downloadingVideoResponse = downloadLists.get(0);
@@ -984,14 +830,20 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             String path = DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_VIDEO;
             downloadingVideoResponse.videoPath = path + downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
             // 开始获取文件地址
-            if (downloadingVideoResponse.playInfo != null && downloadingVideoResponse.playInfo.size() != 0) {
-                PlayInfoResponse playInfoResponse = downloadingVideoResponse.playInfo.get(0);
-                doHttpGetCdnPath(playInfoResponse.remotevid);
-            } else {
-                LogCat.e("视频的playInfo数据出错，放弃当前视频，进行下一个.......");
-                downloadLists.remove(0);
-                prepareDownloading();
+            if(isTest){
+                doHttpGetCdnPath(downloadingVideoResponse.adVideoUrl);
+            }else {
+                if (downloadingVideoResponse.playInfo != null && downloadingVideoResponse.playInfo.size() != 0) {
+                    PlayInfoResponse playInfoResponse = downloadingVideoResponse.playInfo.get(0);
+                    doHttpGetCdnPath(playInfoResponse.remotevid);
+                } else {
+                    LogCat.e("视频的playInfo数据出错，放弃当前视频，进行下一个.......");
+                    downloadLists.remove(0);
+                    prepareDownloading();
+                }
             }
+
+
 
 
         }
@@ -1002,6 +854,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             // 当前下载视频
             // 当前已下载视频的个数
             StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("正在播放：" + getPlayingVideoInfo().adVideoName);
+            logBuilder.append('\n');
             logBuilder.append("当前正在下载：");
             if (downloadingVideoResponse != null) {
                 logBuilder.append(downloadingVideoResponse.adVideoName);
@@ -1030,11 +884,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         }
     }
 
-
-    private String getVideoNameListBuilder() {
-
-        return logBuilder.toString();
-    }
 
     private void download(String url) {
         // 一个视频一个视频的下载
@@ -1136,40 +985,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
     }
 
 
-    /**
-     * 检测localVideoList列表文件完整性
-     *
-     * @param cacheTodayList
-     */
-    private void checkFileLength(ArrayList<AdDetailResponse> cacheTodayList) {
-        if (cacheTodayList != null && cacheTodayList.size() != 0) {
-            LogCat.e("检测到昨日播放列表, 开始检测文件完整性......");
-            for (int i = 0; i < localVideoList.size(); i++) {
-                AdDetailResponse localVideo = localVideoList.get(i);
-                for (AdDetailResponse cacheVideo : cacheTodayList) {
-                    if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
-                        if (cacheVideo.adVideoLength != 0 && cacheVideo.adVideoLength != localVideo.adVideoLength) {
-                            --i;
-                            localVideoList.remove(localVideo);
-                            DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-                            LogCat.e("由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
-                        }
-                    }
-                }
-            }
-        } else {
-            for (int i = 0; i < localVideoList.size(); i++) {
-                AdDetailResponse localVideo = localVideoList.get(i);
-                if (localVideo.adVideoLength == 0) {
-                    --i;
-                    localVideoList.remove(localVideo);
-                    DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-                    LogCat.e("由于文件大小==0，需要删除的文件是......." + localVideo.adVideoName);
-                }
-            }
-        }
-    }
-
     private void playNextVideo(ArrayList<AdDetailResponse> playVideoLists) {
         int length = playVideoLists.size();
         if (length > playVideoIndex) {
@@ -1223,9 +1038,11 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 if (isAdded()) {
                     if (DataUtils.isNetworkConnected(getActivity())) {
                         // 先去请求服务器，查看视频列表
-                        doHttpGetEpisode();
-
-//                        doHttpGetVideoList();
+                        if(isTest){
+                            doHttpGetVideoList();
+                        }else {
+                            doHttpGetEpisode();
+                        }
 
 
                         httpTimer.cancel();
@@ -1255,45 +1072,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
 
     /**
-     * 返回当前的本地video视频列表信息集合
-     *
-     * @param videoFiles
-     * @return
-     */
-    private ArrayList<AdDetailResponse> getLocalList(File videoFiles) {
-        ArrayList<AdDetailResponse> adDetailResponses = new ArrayList<>();
-        File[] files = videoFiles.listFiles();
-        for (File file : files) {
-            if (file.isFile()) {
-                String name = file.getName();
-                // 正在下载的文件不能算到本地缓存列表中
-//                if (DLUtils.init().downloading(getActivity(), name)) {
-//                    LogCat.e("当前文件正在下载。。。。。");
-//                    continue;
-//                }
-                // 文件下载失败
-                if (file.length() < HEADER_FILE_LENGTH) {
-                    DeleteFileUtils.getInstance().deleteFile(file.getAbsolutePath());
-                    continue;
-                }
-                AdDetailResponse videoAdBean = new AdDetailResponse();
-                int index = name.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
-                name = name.substring(0, index);
-                // TODO 以后要删除的
-                videoAdBean.adVideoName = name;
-                videoAdBean.videoPath = file.getAbsolutePath();
-                videoAdBean.adVideoLength = file.length();
-                adDetailResponses.add(videoAdBean);
-                LogCat.e("本地缓存视频：" + videoAdBean.adVideoName + "  " + videoAdBean.adVideoLength);
-            } else {
-                DeleteFileUtils.getInstance().deleteFile(file.getAbsolutePath());
-            }
-        }
-        return adDetailResponses;
-    }
-
-
-    /**
      * 播放本地视频
      *
      * @param videoPath
@@ -1310,8 +1088,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      * @return
      */
     private String getRawVideoUri() {
-        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
-//        return "";
+//        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
+        return "";
     }
 
 
@@ -1331,12 +1109,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         if (loading != null && loading.getVisibility() != View.GONE) {
             loading.setVisibility(View.GONE);
         }
-    }
-
-    private synchronized void cacheVideoList(String fileName, ArrayList<AdDetailResponse> cachePlayVideoLists) {
-        LogCat.e("开始文件缓存........." + fileName);
-        new CacheVideoListThread(cachePlayVideoLists, DataUtils.getCacheDirectory(), fileName).start();
-
     }
 
 
