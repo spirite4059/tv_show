@@ -129,7 +129,7 @@ public class RecycleUpAnimationView extends LinearLayout {
                     message.what = 1;
                     handler.sendMessage(message);
                 }
-            },secondTime*60000,secondTime*60000);
+            },secondTime*5000,secondTime*5000);
 
         }else{
             return;

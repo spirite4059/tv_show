@@ -11,7 +11,7 @@ import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
-import com.gochinatv.ad.ui.view.RecycleUpAnimationView;
+import com.gochinatv.ad.ui.view.RecycleAnimationLayout;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.AdImgResponse;
 import com.okhtttp.response.AdThreeDataResponse;
@@ -25,7 +25,9 @@ import java.util.ArrayList;
 public class TestFragment extends BaseFragment {
 
 
-    private RecycleUpAnimationView linearLayout;
+    private RecycleAnimationLayout linearLayout;
+
+    //private RecycleUpAnimationView linearLayout;
     private ImageView adThreeBg;
     private ArrayList<AdImgResponse> imgResponses;
 
@@ -40,7 +42,7 @@ public class TestFragment extends BaseFragment {
 
     @Override
     protected void initView(View rootView) {
-        linearLayout = (RecycleUpAnimationView) rootView.findViewById(R.id.ad_three_lin);
+        linearLayout = (RecycleAnimationLayout) rootView.findViewById(R.id.ad_three_lin);
         adThreeBg = (ImageView) rootView.findViewById(R.id.ad_three_bg_image);
     }
 
@@ -50,6 +52,7 @@ public class TestFragment extends BaseFragment {
         double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
         linearLayout.setItemWidth((int) Math.floor(width));
         linearLayout.setItemHeight((int) Math.floor(height / 2));
+        //linearLayout.setItemHeight((int) Math.floor(width));
         initData();
     }
 
@@ -150,9 +153,19 @@ public class TestFragment extends BaseFragment {
     }
 
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(linearLayout != null ){
+            linearLayout.destoryRecycleAnimation();
+        }
+    }
 
-
-
-
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(linearLayout != null ){
+            linearLayout.destoryRecycleAnimation();
+        }
+    }
 }

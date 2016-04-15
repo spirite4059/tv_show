@@ -29,6 +29,8 @@ import java.util.ArrayList;
 public class ADThreeFragment extends BaseFragment {
 
     //private SliderLayout mDemoSlider;
+
+    //private RecycleAnimationLayout linearLayout;
     private RecycleUpAnimationView linearLayout;
     private ImageView adThreeBg;
     private ArrayList<AdImgResponse> imgResponses;

@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -47,7 +46,9 @@ import java.util.Map;
 public class MainActivity extends Activity {
 
 
+    private View view;
     private LinearLayout loadingView;
+
     /**
      * 下载info
      */
@@ -75,27 +76,18 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        view = findViewById(R.id.root_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
-
-        init();
-    }
-
-    private void init(){
         doHttpUpdate(this);
-        // 删除升级安装包
-        deleteUpdateApk();
-        /**
-         * 如果要启动测试，需要注释此段代码，否则无法正常启动
-         */
-        Settings.Global.putInt(getContentResolver(), "package_verifier_enable", 0);
-//        testInstall();
-    }
 
-    private void deleteUpdateApk() {
         File file = new File(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
         if(file.exists()){
             file.delete();
         }
+        LogCat.e("++++++++++++++4343333++++++++++++++");
+//        Settings.Global.putInt(getContentResolver(), "package_verifier_enable", 0);
+//        testInstall();
+
     }
 
     private void testInstall(){
@@ -178,27 +170,34 @@ public class MainActivity extends Activity {
                             return;
                         }
 
-                        if (response == null) {
+                        if (response == null || !(response instanceof UpdateResponse)) {
                             LogCat.e("升级数据出错，无法正常升级1。。。。。");
                             doError();
                             return;
                         }
 
-                        if (response.resultForApk == null) {
-                            LogCat.e("升级数据出错，无法正常升级2。。。。。");
-                            doError();
+                        if (response.resultForApk == null || !(response.resultForApk instanceof UpdateResponse.UpdateInfoResponse)) {
+
+                            if("3".equals(response.status)){
+                                isUpgradeSucceed = true;
+                                loadFragment(false);
+                                LogCat.e("没有升级包，不需要更新");
+                            }else{
+                                LogCat.e("升级数据出错，无法正常升级2。。。。。");
+                                doError();
+                            }
                             return;
                         }
 
-                        if (!"1".equals(response.status)) {
+                        if ("1".equals(response.status) == false) {
                             LogCat.e("升级接口的status == 0。。。。。");
                             doError();
                             return;
                         }
-                        reTryTimes = 0;
+
                         updateInfo = response.resultForApk;
                         // 获取当前最新版本号
-                        if (!TextUtils.isEmpty(updateInfo.versionCode)) {
+                        if (TextUtils.isEmpty(updateInfo.versionCode) == false) {
                             double netVersonCode = Integer.parseInt(updateInfo.versionCode);
                             try {
                                 LogCat.e("当前的app版本：" + DataUtils.getAppVersion(context));
@@ -272,9 +271,6 @@ public class MainActivity extends Activity {
      * @param isDownload
      */
     private void loadFragment(boolean isDownload){
-        if(isFinishing()){
-            return;
-        }
         loadingView.setVisibility(View.GONE);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
@@ -285,8 +281,8 @@ public class MainActivity extends Activity {
         }
         ft.add(R.id.root_main, adOneFragment);
 //        ft.add(R.id.root_main, new ADTwoFragment());
-//        //ft.add(R.id.root_main, new ADThreeFragment());
-//        ft.add(R.id.root_main, new AdFiveFragment());
+//        ft.add(R.id.root_main, new ADThreeFragment());
+//        //ft.add(R.id.root_main, new AdFiveFragment());
 //        ft.add(R.id.root_main, new ADFourFragment());
 
         //ft.add(R.id.root_main, new TestFragment());
@@ -376,7 +372,7 @@ public class MainActivity extends Activity {
                 }
             }
 
-            ft.commitAllowingStateLoss();
+            ft.commit();
         }
     }
 
@@ -398,19 +394,10 @@ public class MainActivity extends Activity {
             @Override
             public void onDownloadFileError(int errorCode, String errorMsg) {
                 //通知AdOneFragment去下载视频
-                if(reTryTimes < 3){
-                    LogCat.e("下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
-                    reTryTimes += 1;
-                    downloadAPK();
-                }else {
-                    LogCat.e("下载apk出现错误");
-                    if (adOneFragment != null) {
-                        adOneFragment.startDownloadVideo();
-                    }
+                LogCat.e("下载apk出现错误");
+                if (adOneFragment != null) {
+                    adOneFragment.startDownloadVideo();
                 }
-
-
-
 
             }
         });
