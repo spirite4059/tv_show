@@ -17,6 +17,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -641,5 +642,13 @@ public class DataUtils {
 		int height = resources.getDimensionPixelSize(resourceId);
 		return height;
 	}
+
+	/**
+	 * 开启验证应用服务
+	 */
+	public static void startAppServer(Context context){
+		Settings.Global.putInt(context.getContentResolver(), "package_verifier_enable", 0);
+	}
+
 
 }

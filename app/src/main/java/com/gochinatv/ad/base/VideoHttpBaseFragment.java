@@ -48,6 +48,7 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
         Map<String, String> map = new HashMap<>();
         map.put("albumId", "63272");    // 测试用
 //        map.put("albumId", "66371");
+//        map.put("albumId", "67282");
         map.put("videoType", "1");
         map.put("serialType", "1");
 
@@ -77,9 +78,9 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
         OkHttpUtils.getInstance().doHttpGet(HttpUrls.HTTP_URL_CDN_PATH, url, new OkHttpCallBack<CdnPathResponse>() {
             @Override
             public void onSuccess(String url, CdnPathResponse response) {
-                if (!isAdded()) {
-                    return;
-                }
+//                if (!isAdded()) {
+//                    return;
+//                }
                 LogCat.e("onSuccess。。。。。。。" + url);
                 if (response == null || !(response instanceof CdnPathResponse)) {
                     LogCat.e("cdn地址请求成功 数据错误1。。。。。。。");
@@ -105,9 +106,9 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
 
             @Override
             public void onError(String url, String errorMsg) {
-                if (!isAdded()) {
-                    return;
-                }
+//                if (!isAdded()) {
+//                    return;
+//                }
 
                 LogCat.e("cdn地址获取失败。。。。。。。" + url);
                 onGetVideoPathFailed(url);
@@ -157,9 +158,9 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
                     @Override
                     public void onSuccess(String url, UpdateResponse response) {
                         LogCat.e("onSuccess adVideoUrl: " + url);
-                        if (!isAdded()) {
-                            return;
-                        }
+//                        if (!isAdded()) {
+//                            return;
+//                        }
 
 
                         if (response == null || !(response instanceof UpdateResponse)) {
@@ -215,7 +216,7 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
                     }
 
                     private void doError() {
-                        if (isAdded()) {
+//                        if (isAdded()) {
                             // 做不升级处理, 继续请求广告视频列表
                             reTryTimes++;
                             if (reTryTimes > 4) {
@@ -225,7 +226,7 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
                                 LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
                                 doHttpUpdate(getActivity());
                             }
-                        }
+//                        }
                     }
 
                     @Override
@@ -246,9 +247,9 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
         OkHttpUtils.getInstance().doHttpGet(HttpUrls.URL_GET_SERVER_TIMELONG, new OkHttpCallBack<TimeResponse>() {
             @Override
             public void onSuccess(String url, TimeResponse response) {
-                if (!isAdded()) {
-                    return;
-                }
+//                if (!isAdded()) {
+//                    return;
+//                }
 
                 LogCat.e("获取当前时间。。。。。。onSuccess");
                 if (response == null || !(response instanceof TimeResponse)) {

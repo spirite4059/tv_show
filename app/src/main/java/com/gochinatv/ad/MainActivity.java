@@ -45,10 +45,7 @@ import java.util.Map;
  */
 public class MainActivity extends Activity {
 
-
-    private View view;
     private LinearLayout loadingView;
-
     /**
      * 下载info
      */
@@ -75,19 +72,37 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 情况fragment的状态，保证getActivity不为null
+        if(savedInstanceState!= null) {
+            String FRAGMENTS_TAG = "android:support:fragments";
+            savedInstanceState.remove(FRAGMENTS_TAG);
+        }
         setContentView(R.layout.activity_main);
-        view = findViewById(R.id.root_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
-        doHttpUpdate(this);
 
+        init();
+    }
+
+
+    private void init(){
+        doHttpUpdate(this);
+        // 删除升级安装包
+        deleteUpdateApk();
+        /**
+         * 如果要启动测试，需要注释此段代码，否则无法正常启动
+         */
+//        DataUtils.startAppServer(this);
+
+
+
+//        testInstall();
+    }
+
+    private void deleteUpdateApk() {
         File file = new File(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
         if(file.exists()){
             file.delete();
         }
-        LogCat.e("++++++++++++++4343333++++++++++++++");
-//        Settings.Global.putInt(getContentResolver(), "package_verifier_enable", 0);
-//        testInstall();
-
     }
 
     private void testInstall(){
@@ -124,7 +139,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        DLUtils.init(this).cancel();
+        DLUtils.init().cancel();
     }
 
     /**
@@ -170,34 +185,27 @@ public class MainActivity extends Activity {
                             return;
                         }
 
-                        if (response == null || !(response instanceof UpdateResponse)) {
+                        if (response == null) {
                             LogCat.e("升级数据出错，无法正常升级1。。。。。");
                             doError();
                             return;
                         }
 
-                        if (response.resultForApk == null || !(response.resultForApk instanceof UpdateResponse.UpdateInfoResponse)) {
-
-                            if("3".equals(response.status)){
-                                isUpgradeSucceed = true;
-                                loadFragment(false);
-                                LogCat.e("没有升级包，不需要更新");
-                            }else{
-                                LogCat.e("升级数据出错，无法正常升级2。。。。。");
-                                doError();
-                            }
-                            return;
-                        }
-
-                        if ("1".equals(response.status) == false) {
-                            LogCat.e("升级接口的status == 0。。。。。");
+                        if (response.resultForApk == null) {
+                            LogCat.e("升级数据出错，无法正常升级2。。。。。");
                             doError();
                             return;
                         }
 
+                        if (!"1".equals(response.status)) {
+                            LogCat.e("升级接口的status == 0。。。。。");
+                            doError();
+                            return;
+                        }
+                        reTryTimes = 0;
                         updateInfo = response.resultForApk;
                         // 获取当前最新版本号
-                        if (TextUtils.isEmpty(updateInfo.versionCode) == false) {
+                        if (!TextUtils.isEmpty(updateInfo.versionCode)) {
                             double netVersonCode = Integer.parseInt(updateInfo.versionCode);
                             try {
                                 LogCat.e("当前的app版本：" + DataUtils.getAppVersion(context));
@@ -244,7 +252,7 @@ public class MainActivity extends Activity {
                         if (!isFinishing()) {
                             // 做不升级处理, 继续请求广告视频列表
                             reTryTimes++;
-                            if (reTryTimes > 4) {
+                            if (reTryTimes >= 3) {
                                 reTryTimes = 0;
                                 LogCat.e("升级接口已连续请求3次，不在请求");
                                 //升级接口成功
@@ -271,6 +279,9 @@ public class MainActivity extends Activity {
      * @param isDownload
      */
     private void loadFragment(boolean isDownload){
+        if(isFinishing()){
+            return;
+        }
         loadingView.setVisibility(View.GONE);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
@@ -281,12 +292,12 @@ public class MainActivity extends Activity {
         }
         ft.add(R.id.root_main, adOneFragment);
 //        ft.add(R.id.root_main, new ADTwoFragment());
-//        ft.add(R.id.root_main, new ADThreeFragment());
-//        //ft.add(R.id.root_main, new AdFiveFragment());
+//        //ft.add(R.id.root_main, new ADThreeFragment());
+//        ft.add(R.id.root_main, new AdFiveFragment());
 //        ft.add(R.id.root_main, new ADFourFragment());
 
         //ft.add(R.id.root_main, new TestFragment());
-        ft.commitAllowingStateLoss();
+        ft.commit();
     }
 
 
@@ -381,7 +392,7 @@ public class MainActivity extends Activity {
      * 下载apk
      */
     private void downloadAPK(){
-        DownloadUtils.download(MainActivity.this, Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+        DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
                 //新包下载完成得安装
@@ -394,10 +405,24 @@ public class MainActivity extends Activity {
             @Override
             public void onDownloadFileError(int errorCode, String errorMsg) {
                 //通知AdOneFragment去下载视频
-                LogCat.e("下载apk出现错误");
-                if (adOneFragment != null) {
-                    adOneFragment.startDownloadVideo();
+                if(reTryTimes < 3){
+                    LogCat.e("下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
+                    reTryTimes += 1;
+                    downloadAPK();
+                }else {
+                    LogCat.e("下载apk出现错误");
+                    if (adOneFragment != null) {
+                        adOneFragment.startDownloadVideo();
+                    }
                 }
+
+
+
+
+            }
+
+            @Override
+            public void onDownloadProgress(String progress) {
 
             }
         });

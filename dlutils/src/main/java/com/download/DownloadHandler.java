@@ -1,16 +1,17 @@
 package com.download;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
 import com.download.dllistener.InDLUtils;
 import com.download.dllistener.OnDownloadStatusListener;
+import com.download.tools.LogCat;
 
 import static com.download.ErrorCodes.ERROR_DOWNLOADING_READ;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_CONN;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_EXCUTORS;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_NULL;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_SIZE;
@@ -27,11 +28,9 @@ import static com.download.ErrorCodes.ERROR_THREAD_NUMBERS;
 public class DownloadHandler extends Handler implements InDLUtils{
 
     private OnDownloadStatusListener onDownloadStatusListener;
-    private Context context;
 
-    public DownloadHandler(Context context, OnDownloadStatusListener onDownloadStatusListener) {
-        this.context = context;
-        this.onDownloadStatusListener = onDownloadStatusListener;
+    public DownloadHandler() {
+
     }
 
     @Override
@@ -50,19 +49,17 @@ public class DownloadHandler extends Handler implements InDLUtils{
                 break;
             case HANDLER_WHAT_DOWNLOAD_FILE_SIZE:
                 if (bundle != null) {
+                    LogCat.e("HANDLER_WHAT_DOWNLOADING.......");
                     onDownloadStatusListener.onProgress(bundle.getLong(BUNDLE_KEY_FILE_DOWNLOAD_SIZE, 0));
                 }
                 break;
             case HANDLER_WHAT_DOWNLOAD_ERROR:
-                SharedUtils.clear(context);
-                onDownloadStatusListener.onError(msg.arg1, getErrorMsg(msg.arg1));
+                onDownloadStatusListener.onError(msg.arg1);
                 break;
             case HANDLER_WHAT_DOWNLOAD_FINISH:
-                SharedUtils.clear(context);
                 onDownloadStatusListener.onFinish(String.valueOf(msg.obj));
                 break;
             case HANDLER_WHAT_DOWNLOAD_CANCEL:
-                SharedUtils.clear(context);
                 onDownloadStatusListener.onCancel();
                 break;
             case HANDLER_WHAT_DOWNLOADING:
@@ -112,6 +109,9 @@ public class DownloadHandler extends Handler implements InDLUtils{
                 break;
             case ERROR_DOWNLOAD_FILE_UNKNOWN:
                 errorMsg = "error：下载文件大小出错";
+                break;
+            case ERROR_DOWNLOAD_EXCUTORS:
+                errorMsg = "error：线程池出错";
                 break;
             default:
                 errorMsg = "error：未知的异常";
