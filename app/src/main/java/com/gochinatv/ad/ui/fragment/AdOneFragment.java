@@ -419,10 +419,24 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
         LogCat.e("去除明日播放列表重复的视频.......");
         ArrayList<AdDetailResponse> nextVideoList = getDistinctVideoList(response.next);
 
+        /**
+         * -----------------测试------------------
+         */
+        AdDetailResponse adDetailResponse1 = new AdDetailResponse();
+        adDetailResponse1.adVideoName = "test，做下载测试";
+        adDetailResponse1.adVideoIndex = nextVideoList.get(0).adVideoIndex;
+        adDetailResponse1.adVideoUrl = nextVideoList.get(0).adVideoUrl;
+        nextVideoList.add(adDetailResponse1);
+
+
+//        nextVideoList.remove(0);
+        /**
+         * -----------------测试------------------
+         */
 
         // 将今日列表缓存到本地
         LogCat.e("将今日列表缓存到本地.......");
-        VideoAdUtils.cacheVideoList(Constants.FILE_CACHE_TD_NAME, nextVideoList);
+        VideoAdUtils.cacheVideoList(Constants.FILE_CACHE_TD_NAME, currentVideoList);
         // 2.匹配今天要下载的视频
         LogCat.e("根据今日播放列表，获取下载列表......");
         downloadLists = VideoAdUtils.getDownloadList(localVideoList, currentVideoList);
@@ -844,7 +858,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                     this.videoUrl = downloadingVideoResponse.adVideoUrl;
                     retryTimes = 0;
                     LogCat.e("获取到当前视频的下载地址。。。。。。。。" + downloadingVideoResponse.adVideoUrl);
-                    download(downloadingVideoResponse.adVideoUrl);
+                    String url = "http://vod.vegocdn.com/2016/03/24/6551A4BE0000FC56.mp4?st=1461069387&token=e1c882433f2c51c13d763488516a9564";
+                    download(url);
                 }
 //                doHttpGetCdnPath(downloadingVideoResponse.adVideoUrl);
             }else {

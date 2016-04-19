@@ -47,7 +47,6 @@ public class ToolUtils {
                 LogCat.e("播放列表内容........");
                 for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
                     LogCat.e("视频名称：" + adDetailResponse.adVideoName);
-                    adDetailResponse.adVideoName = adDetailResponse.name;
                 }
 
             }

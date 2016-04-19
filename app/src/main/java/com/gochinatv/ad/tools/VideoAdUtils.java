@@ -102,7 +102,7 @@ public class VideoAdUtils {
                 LogCat.e("缓存播放列表内容........");
                 for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
                     LogCat.e("视频名称：" + adDetailResponse.adVideoName + ", 文件大小：" + adDetailResponse.adVideoLength);
-                    adDetailResponse.adVideoName = adDetailResponse.name;
+//                    adDetailResponse.adVideoName = adDetailResponse.name;
                 }
 
             }
