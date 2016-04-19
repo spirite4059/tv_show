@@ -91,7 +91,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
     private TextView tvProgress;
 
-    private boolean isTest = false;
+    private boolean isTest = true;
 
 
     @Override
@@ -836,7 +836,17 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
             downloadingVideoResponse.videoPath = path + downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
             // 开始获取文件地址
             if(isTest){
-                doHttpGetCdnPath(downloadingVideoResponse.adVideoUrl);
+                if(TextUtils.isEmpty(downloadingVideoResponse.adVideoUrl)){
+                    LogCat.e("视频的playInfo数据出错，放弃当前视频，进行下一个.......");
+                    downloadLists.remove(0);
+                    prepareDownloading();
+                }else {
+                    this.videoUrl = downloadingVideoResponse.adVideoUrl;
+                    retryTimes = 0;
+                    LogCat.e("获取到当前视频的下载地址。。。。。。。。" + downloadingVideoResponse.adVideoUrl);
+                    download(downloadingVideoResponse.adVideoUrl);
+                }
+//                doHttpGetCdnPath(downloadingVideoResponse.adVideoUrl);
             }else {
                 if (downloadingVideoResponse.playInfo != null && downloadingVideoResponse.playInfo.size() != 0) {
                     PlayInfoResponse playInfoResponse = downloadingVideoResponse.playInfo.get(0);
@@ -847,10 +857,6 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                     prepareDownloading();
                 }
             }
-
-
-
-
         }
     }
 
@@ -1093,8 +1099,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      * @return
      */
     private String getRawVideoUri() {
-        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
-//        return "";
+//        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
+        return "";
     }
 
 
