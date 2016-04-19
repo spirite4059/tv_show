@@ -812,16 +812,21 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      */
     private void prepareDownloading() {
         if (downloadLists.size() == 0) {
-            if (prepareDownloadLists.size() == 0) {
+            if(isTest){
+                if (prepareDownloadLists.size() == 0) {
+                    LogCat.e("所有视频下载完成。。。。。。。。");
+                    downloadingVideoResponse = null;
+                    isDownloadPrepare = false;
+                } else {
+                    LogCat.e("当日的下载列表下载完成，继续下载明日与播放的视频列表");
+                    downloadLists.addAll(prepareDownloadLists);
+                    prepareDownloadLists.clear();
+                    isDownloadPrepare = true;
+                    prepareDownloading();
+                }
+            }else {
                 LogCat.e("所有视频下载完成。。。。。。。。");
                 downloadingVideoResponse = null;
-                isDownloadPrepare = false;
-            } else {
-                LogCat.e("当日的下载列表下载完成，继续下载明日与播放的视频列表");
-                downloadLists.addAll(prepareDownloadLists);
-                prepareDownloadLists.clear();
-                isDownloadPrepare = true;
-                prepareDownloading();
             }
         } else {
             LogCat.e("获取下载列表第一个视频，并开始下载。。。。。。。。 还剩余下载任务：" + downloadLists.size());
@@ -1088,8 +1093,8 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
      * @return
      */
     private String getRawVideoUri() {
-//        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
-        return "";
+        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
+//        return "";
     }
 
 
