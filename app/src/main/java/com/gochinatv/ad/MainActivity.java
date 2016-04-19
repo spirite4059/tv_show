@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
         /**
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
-        DataUtils.startAppServer(this);
+//        DataUtils.startAppServer(this);
 
 
 
