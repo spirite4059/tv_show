@@ -857,8 +857,9 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
                 }else {
                     this.videoUrl = downloadingVideoResponse.adVideoUrl;
                     retryTimes = 0;
-                    LogCat.e("获取到当前视频的下载地址。。。。。。。。" + downloadingVideoResponse.adVideoUrl);
+
                     String url = "http://vod.vegocdn.com/2016/03/24/6551A4BE0000FC56.mp4?st=1461069387&token=e1c882433f2c51c13d763488516a9564";
+                    LogCat.e("获取到当前视频的下载地址。。。。。。。。" + url);
                     download(url);
                 }
 //                doHttpGetCdnPath(downloadingVideoResponse.adVideoUrl);

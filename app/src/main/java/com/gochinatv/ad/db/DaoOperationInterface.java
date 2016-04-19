@@ -1,20 +1,38 @@
 package com.gochinatv.ad.db;
 
-import java.util.ArrayList;
+import com.httputils.http.response.AdDetailResponse;
 
-public interface DaoOperationInterface<T> {
-	
-	public boolean add(T record);
-	
-	public boolean query(T record);
-	
-	public ArrayList<T> queryAll();
-	
-	public boolean delete(String aid);
-	
-	public void deleteAll();
+public interface DaoOperationInterface {
 
-	public void close();
-	
-	public void insert(T record);
+	/**
+	 * 插入一条视频信息记录
+	 * @param adDetailResponse
+	 * @return
+	 */
+	 boolean insert(AdDetailResponse adDetailResponse);
+
+	/**
+	 * 根据视频id，删除当前记录
+	 * @param id
+	 * @return
+	 */
+	boolean delete(int id);
+
+
+	/**
+	 * 根据视频id，查询是否存在当前记录
+	 * @param id
+	 * @return 存在：true，反正false
+	 */
+	 boolean query(int id);
+
+	/**
+	 * 根据id，修改对应视频的长度
+	 * @param id
+	 * @param length
+	 * @return
+	 */
+	boolean update(int id, long length);
+
+
 }

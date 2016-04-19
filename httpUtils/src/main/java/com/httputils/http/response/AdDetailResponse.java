@@ -11,7 +11,7 @@ public class AdDetailResponse {
     public String name; // 视频名称
 
 
-
+    public int adVideoId;// 视频id
     public String tag; // 标签
 
     public String adVideoUrl;// 第三方视频播放地址
