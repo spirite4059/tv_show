@@ -13,7 +13,7 @@ import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
-import com.gochinatv.ad.ui.view.RecycleUpAnimationView;
+import com.gochinatv.ad.ui.view.RecycleAnimationLayout;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.AdImgResponse;
@@ -30,8 +30,8 @@ public class ADThreeFragment extends BaseFragment {
 
     //private SliderLayout mDemoSlider;
 
-    //private RecycleAnimationLayout linearLayout;
-    private RecycleUpAnimationView linearLayout;
+    private RecycleAnimationLayout linearLayout;
+    //private RecycleUpAnimationView linearLayout;
     private ImageView adThreeBg;
     private ArrayList<AdImgResponse> imgResponses;
 
@@ -75,7 +75,7 @@ public class ADThreeFragment extends BaseFragment {
 
                 params.leftMargin = (int) Math.floor(left);
                 layout.setLayoutParams(params);
-                LogCat.e(" 广告二布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
+                LogCat.e(" 广告三布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
 
             }
         }
@@ -86,7 +86,7 @@ public class ADThreeFragment extends BaseFragment {
 
     @Override
     protected void initView(View rootView) {
-        linearLayout = (RecycleUpAnimationView) rootView.findViewById(R.id.ad_three_lin);
+        linearLayout = (RecycleAnimationLayout) rootView.findViewById(R.id.ad_three_lin);
         adThreeBg = (ImageView) rootView.findViewById(R.id.ad_three_bg_image);
     }
 
@@ -125,14 +125,16 @@ public class ADThreeFragment extends BaseFragment {
                     initData();
                 }
                 imgResponses = response.data;
+
+                //设置滚动间隔
+                if(response.adImgInterval != 0){
+                    linearLayout.setSecondTime(response.adImgInterval);
+                }
+
                 int totalSize = imgResponses.size();
                 if (totalSize == 0) {
-
                     LogCat.e(" totalSize == 0  totalSize == 0 没有广告图片");
-
-
                 } else if (totalSize == 1) {
-
                     AdImgResponse adImgResponse = new AdImgResponse();
                     adImgResponse.adImgName = "";
                     adImgResponse.adImgPrice = "";
@@ -142,8 +144,6 @@ public class ADThreeFragment extends BaseFragment {
                 } else {
                     hideBGImage();
                 }
-
-
             }
 
             @Override
@@ -166,14 +166,18 @@ public class ADThreeFragment extends BaseFragment {
 
     @Override
     public void onStop() {
-
-
         super.onStop();
+        if(linearLayout != null ){
+            linearLayout.destoryRecycleAnimation();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if(linearLayout != null ){
+            linearLayout.destoryRecycleAnimation();
+        }
     }
 
     @Override

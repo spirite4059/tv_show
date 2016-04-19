@@ -10,6 +10,6 @@ public class AdThreeDataResponse {
     public String status;
     public String message;
     public String currentTime;
-    public String adImgInterval;
+    public int adImgInterval;
     public ArrayList<AdImgResponse> data;
 }

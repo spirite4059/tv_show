@@ -47,6 +47,8 @@ import java.util.Map;
 public class MainActivity extends Activity {
 
     private ImageView imgLoge;//LOGE图
+    private ImageView imgBG;//大背景图
+
 
     private LinearLayout loadingView;
     /**
@@ -83,12 +85,14 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
         imgLoge = (ImageView) findViewById(R.id.img_loge);
+        imgBG = (ImageView) findViewById(R.id.img_loging);
         init();
     }
 
 
     private void init(){
         doHttpUpdate(this);
+        //doGetDerviceInfo();
         // 删除升级安装包
         deleteUpdateApk();
         /**
@@ -198,6 +202,7 @@ public class MainActivity extends Activity {
                             if("3".equals(response.status)){
                                 isUpgradeSucceed = true;
                                 loadFragment(false);
+                                //loadFragmentTwo(isHasUpgrade);
                                 LogCat.e("没有升级包，不需要更新");
                             }else{
                                 LogCat.e("升级数据出错，无法正常升级2。。。。。");
@@ -236,6 +241,7 @@ public class MainActivity extends Activity {
                                     downloadAPK();
                                     // 加载布局.但是不让AdOneFragment，下载视频
                                     loadFragment(true);
+                                    //loadFragmentTwo(isHasUpgrade);
                                 } else {
                                     // 不升级,加载布局
                                     LogCat.e("无需升级。。。。。");
@@ -243,6 +249,7 @@ public class MainActivity extends Activity {
 
                                     LogCat.e("清空升级apk.....");
                                     loadFragment(false);
+                                    //loadFragmentTwo(isHasUpgrade);
                                 }
                             } catch (PackageManager.NameNotFoundException e) {
                                 e.printStackTrace();
@@ -267,6 +274,7 @@ public class MainActivity extends Activity {
                                 //升级接口成功
                                 isUpgradeSucceed = true;
                                 loadFragment(false);
+                                //loadFragmentTwo(isHasUpgrade);
                             } else {
                                 LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
                                 doHttpUpdate(MainActivity.this);
@@ -293,6 +301,7 @@ public class MainActivity extends Activity {
         }
         imgLoge.setVisibility(View.VISIBLE);
         loadingView.setVisibility(View.GONE);
+        imgBG.setVisibility(View.GONE);
         FragmentManager fm = getFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
 
@@ -323,77 +332,100 @@ public class MainActivity extends Activity {
         //当升级和广告体接口都完成后，才加载布局
         if (isUpgradeSucceed && isGetDerviceSucceed) {
             loadingView.setVisibility(View.GONE);
+            imgBG.setVisibility(View.GONE);
             imgLoge.setVisibility(View.VISIBLE);
             FragmentManager fm = getFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
-
             adOneFragment = new AdOneFragment();
             if (isDownload) {
                 adOneFragment.setIsDownloadAPK(true);
             }
+
             if (screenShot != null) {
                 //截屏的参数
                 //adOneFragment.
             }
-            //设置布局参数
-            if (LayoutResponses != null && LayoutResponses.size() > 0) {
-                int size = LayoutResponses.size();
-                for (int i = 0; i < size; i++) {
-                    if ("1".equals(LayoutResponses.get(i).adType)) {
-                        oneLayout = LayoutResponses.get(i);
-                    } else if ("2".equals(LayoutResponses.get(i).adType)) {
-                        twoLayout = LayoutResponses.get(i);
-                    } else if ("3".equals(LayoutResponses.get(i).adType)) {
-                        threeLayout = LayoutResponses.get(i);
-                    } else if ("4".equals(LayoutResponses.get(i).adType)) {
-                        fourLayout = LayoutResponses.get(i);
+            if(!TextUtils.isEmpty(adStruct)){
+                if("0".equals(adStruct)){
+                    //一个广告位
+                    oneLayout = new LayoutResponse();
+                    oneLayout.adWidth = "1.0";
+                    oneLayout.adHeight = "1.0";
+                    oneLayout.adTop = "0.0";
+                    oneLayout.adLeft = "0.0";
+                    //广告一
+                    if (oneLayout != null) {
+                        if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
+                                && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
+                            //此时加载广告一
+                            adOneFragment.setLayoutResponse(oneLayout);
+                            ft.add(R.id.root_main, adOneFragment);
+                        }
+                    }
+                }else if("1".equals(adStruct)){
+                    //四个广告位
+
+                    //遍历获取布局参数
+                    if (LayoutResponses != null && LayoutResponses.size() > 0) {
+                        int size = LayoutResponses.size();
+                        for (int i = 0; i < size; i++) {
+                            if ("1".equals(LayoutResponses.get(i).adType)) {
+                                oneLayout = LayoutResponses.get(i);
+                            } else if ("2".equals(LayoutResponses.get(i).adType)) {
+                                twoLayout = LayoutResponses.get(i);
+                            } else if ("3".equals(LayoutResponses.get(i).adType)) {
+                                threeLayout = LayoutResponses.get(i);
+                            } else if ("4".equals(LayoutResponses.get(i).adType)) {
+                                fourLayout = LayoutResponses.get(i);
+                            }
+                        }
+                    }
+
+                    //广告一
+                    if (oneLayout != null) {
+                        if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
+                                && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
+                            //此时加载广告一
+                            LogCat.e("成功加载了广告一");
+                            adOneFragment.setLayoutResponse(oneLayout);
+                            ft.add(R.id.root_main, adOneFragment);
+                        }
+                    }
+                    //广告二
+                    if (twoLayout != null) {
+                        if (!TextUtils.isEmpty(twoLayout.adWidth) && !TextUtils.isEmpty(twoLayout.adHeight)
+                                && !TextUtils.isEmpty(twoLayout.adTop) && !TextUtils.isEmpty(twoLayout.adLeft)) {
+                            //此时加载广告二
+                            LogCat.e("成功加载了广告二");
+                            ADTwoFragment adTwoFragment = new ADTwoFragment();
+                            adTwoFragment.setLayoutResponse(twoLayout);
+                            ft.add(R.id.root_main, adTwoFragment);
+                        }
+                    }
+                    //广告三
+                    if (threeLayout != null) {
+                        if (!TextUtils.isEmpty(threeLayout.adWidth) && !TextUtils.isEmpty(threeLayout.adHeight)
+                                && !TextUtils.isEmpty(threeLayout.adTop) && !TextUtils.isEmpty(threeLayout.adLeft)) {
+                            //此时加载广告三
+                            LogCat.e("成功加载了广告三");
+                            ADThreeFragment adThreeFragment = new ADThreeFragment();
+                            adThreeFragment.setLayoutResponse(threeLayout);
+                            ft.add(R.id.root_main, adThreeFragment);
+                        }
+                    }
+                    //广告四
+                    if (fourLayout != null) {
+                        if (!TextUtils.isEmpty(fourLayout.adWidth) && !TextUtils.isEmpty(fourLayout.adHeight)
+                                && !TextUtils.isEmpty(fourLayout.adTop) && !TextUtils.isEmpty(fourLayout.adLeft)) {
+                            //此时加载广告四
+                            LogCat.e("成功加载了广告四");
+                            ADFourFragment adFourFragment = new ADFourFragment();
+                            adFourFragment.setLayoutResponse(fourLayout);
+                            ft.add(R.id.root_main, adFourFragment);
+                        }
                     }
                 }
             }
-
-            //广告一
-            if (oneLayout != null) {
-                if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
-                        && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
-                    //此时加载广告一
-                    adOneFragment.setLayoutResponse(oneLayout);
-                    ft.add(R.id.root_main, adOneFragment);
-                }
-            }
-
-            //广告二
-            if (twoLayout != null) {
-                if (!TextUtils.isEmpty(twoLayout.adWidth) && !TextUtils.isEmpty(twoLayout.adHeight)
-                        && !TextUtils.isEmpty(twoLayout.adTop) && !TextUtils.isEmpty(twoLayout.adLeft)) {
-                    //此时加载广告二
-                    ADTwoFragment adTwoFragment = new ADTwoFragment();
-                    adTwoFragment.setLayoutResponse(twoLayout);
-                    ft.add(R.id.root_main, adTwoFragment);
-                }
-            }
-
-            //广告三
-            if (threeLayout != null) {
-                if (!TextUtils.isEmpty(threeLayout.adWidth) && !TextUtils.isEmpty(threeLayout.adHeight)
-                        && !TextUtils.isEmpty(threeLayout.adTop) && !TextUtils.isEmpty(threeLayout.adLeft)) {
-                    //此时加载广告三
-                    ADThreeFragment adThreeFragment = new ADThreeFragment();
-                    adThreeFragment.setLayoutResponse(threeLayout);
-                    ft.add(R.id.root_main, adThreeFragment);
-                }
-            }
-
-            //广告四
-            if (fourLayout != null) {
-                if (!TextUtils.isEmpty(fourLayout.adWidth) && !TextUtils.isEmpty(fourLayout.adHeight)
-                        && !TextUtils.isEmpty(fourLayout.adTop) && !TextUtils.isEmpty(fourLayout.adLeft)) {
-                    //此时加载广告四
-                    ADFourFragment adFourFragment = new ADFourFragment();
-                    adFourFragment.setLayoutResponse(fourLayout);
-                    ft.add(R.id.root_main, adFourFragment);
-                }
-            }
-
             ft.commit();
         }
     }
@@ -427,9 +459,6 @@ public class MainActivity extends Activity {
                     }
                 }
 
-
-
-
             }
 
             @Override
@@ -450,7 +479,8 @@ public class MainActivity extends Activity {
     //截屏数据
     private ScreenShotResponse screenShot;
     private int reTryTimesTwo;
-
+    //布局形式——0：一屏；1：4屏
+    private String adStruct;
     private void doGetDerviceInfo() {
         ADHttpService.doHttpGetDeviceInfo(this, new OkHttpCallBack<ADDeviceDataResponse>() {
             @Override
@@ -459,19 +489,19 @@ public class MainActivity extends Activity {
                 if (isFinishing()) {
                     return;
                 }
-
-                if (response == null || !(response instanceof ADDeviceDataResponse)) {
+                if (response == null) {
                     LogCat.e("请求广告体接口失败");
                     doError();
                     return;
                 }
 
-                if ("1".equals(response.status) == false) {
+                if (!"0".equals(response.status)) {
                     LogCat.e("请求广告体接口失败 status = 1");
                     doError();
                     return;
                 }
 
+                adStruct = response.adStruct;
                 if (response.screenShot != null) {
                     screenShot = response.screenShot;
                 }

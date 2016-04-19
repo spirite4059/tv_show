@@ -5,6 +5,7 @@
     <dimen name="d_10dp">5.0dp</dimen>
 
     <dimen name="d_20dp">10.0dp</dimen>
+    <dimen name="d_50dp">25.0dp</dimen>
     <dimen name="d_60dp">30.0dp</dimen>
     <dimen name="d_62dp">31.0dp</dimen>
     <dimen name="d_90dp">45.0dp</dimen>

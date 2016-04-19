@@ -31,7 +31,6 @@ public class ADFourFragment extends BaseFragment {
 
     //滚动控件
     private AutoTextView autoTextView;
-    //private List<String> stringList;
 
     //private boolean isCycleText;
     //循环滚动定时器
@@ -42,9 +41,9 @@ public class ADFourFragment extends BaseFragment {
     //文字集合总数
     private int taotalSize;
 
-    //请求文字广告接口的定时器
-    private int getTextADTime = 5;//每隔多长去请求接口，默认：5 （分钟）
-    private Timer getTextADTimer;
+//    //请求文字广告接口的定时器
+//    private int getTextADTime = 5;//每隔多长去请求接口，默认：5 （分钟）
+//    private Timer getTextADTimer;
 
     public LayoutResponse getLayoutResponse() {
         return layoutResponse;
@@ -131,10 +130,10 @@ public class ADFourFragment extends BaseFragment {
             cycleTextTimer = null;
         }
 
-        if(getTextADTimer != null){
-            getTextADTimer.cancel();
-            getTextADTimer = null;
-        }
+//        if(getTextADTimer != null){
+//            getTextADTimer.cancel();
+//            getTextADTimer = null;
+//        }
         super.onDestroy();
     }
 
@@ -195,22 +194,22 @@ public class ADFourFragment extends BaseFragment {
                 }
                 textData = response.data;
                 taotalSize = textData.size();
-
+                cycleTextTime = response.adTextInterval;//设置滚动间隔
                 if(taotalSize >0){
                     cycleTextAD();
                 }
 
-                if(isFirstDoHttp){
-                    if(getTextADTimer == null){
-                        getTextADTimer = new Timer();
-                        getTextADTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                doGetTextAD();
-                            }
-                        },getTextADTime*60000,getTextADTime*60000);
-                    }
-                }
+//                if(isFirstDoHttp){
+//                    if(getTextADTimer == null){
+//                        getTextADTimer = new Timer();
+//                        getTextADTimer.schedule(new TimerTask() {
+//                            @Override
+//                            public void run() {
+//                                doGetTextAD();
+//                            }
+//                        },getTextADTime*60000,getTextADTime*60000);
+//                    }
+//                }
                 isFirstDoHttp = false;
 
             }

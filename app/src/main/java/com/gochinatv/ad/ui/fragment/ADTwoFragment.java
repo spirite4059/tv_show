@@ -117,7 +117,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
         mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
         //mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
         //mDemoSlider.setCustomAnimation(new DescriptionAnimation());
-        mDemoSlider.setDuration(4000);
+        mDemoSlider.setDuration(10000);
         mDemoSlider.addOnPageChangeListener(this);
 
 

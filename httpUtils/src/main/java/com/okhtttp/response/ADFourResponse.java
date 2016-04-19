@@ -13,7 +13,7 @@ public class ADFourResponse {
 
     public String currentTime;
 
-    public String adTextInterval;
+    public int adTextInterval;
 
     public ArrayList<ADTextRseponse> data;
 

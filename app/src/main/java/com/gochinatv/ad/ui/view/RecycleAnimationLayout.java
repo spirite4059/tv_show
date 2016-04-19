@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,7 +51,7 @@ public class RecycleAnimationLayout extends LinearLayout {
     private int scrollDownDuration = 5;//每隔多少秒执行一次动画(秒)
 
     private Timer recycleTimer;//动画计时器
-    private int secondTime = 15;//每隔多少秒执行一次动画(秒)
+    private int secondTime = 30;//每隔多少秒执行一次动画(秒)
 
 
     private boolean isRecycle;//是否处于滚动状态
@@ -101,9 +102,19 @@ public class RecycleAnimationLayout extends LinearLayout {
                 TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);
                 name.setText(imgResponses.get(i).adImgName);
                 TextView price = (TextView)view.findViewById(R.id.ad_three_text_price);
-                price.setText(imgResponses.get(i).adImgPrice+"元");
+                if(!TextUtils.isEmpty(imgResponses.get(i).adImgPrice)){
+                    price.setText(imgResponses.get(i).adImgPrice + "元");
+                }else{
+                    price.setText(imgResponses.get(i).adImgPrice);
+                }
+
                 ImageView pic = (ImageView)view.findViewById(R.id.ad_three_img);
-                imageLoader.displayImage(imgResponses.get(i).adImgUrl,pic,options);
+                if("localPicture".equals(imgResponses.get(i).adImgUrl)){
+                    imageLoader.displayImage("drawable://" + R.drawable.ad_three_loading1,pic,options);
+                }else {
+                    imageLoader.displayImage(imgResponses.get(i).adImgUrl,pic,options);
+                }
+
                 this.addView(view);
             }
             //留着复用

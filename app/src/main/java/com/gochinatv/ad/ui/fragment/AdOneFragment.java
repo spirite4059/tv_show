@@ -921,7 +921,7 @@ public class AdOneFragment extends VideoHttpBaseFragment implements OnUpgradeSta
 
                 params.leftMargin = (int) Math.floor(left);
                 layout.setLayoutParams(params);
-                LogCat.e(" 广告二布局 width: " + params.width + " height: " + params.height + " top: " + params.topMargin + " left: " + params.leftMargin);
+                LogCat.e(" 广告一布局 width: " + params.width + " height: " + params.height + " top: " + params.topMargin + " left: " + params.leftMargin);
 
             }
         }
