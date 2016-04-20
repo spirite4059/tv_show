@@ -1,16 +1,17 @@
 package com.download;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
-import android.text.TextUtils;
 
 import com.download.dllistener.OnDownloadStatusListener;
 import com.download.tools.CacheVideoListThread;
 import com.download.tools.Constants;
 import com.download.tools.LogCat;
 import com.download.tools.ToolUtils;
+import com.gochinatv.db.AdDao;
 import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
@@ -36,11 +37,14 @@ public class DownloadPrepareThread extends Thread {
     private boolean isCancel;
     private static final int CONNECT_TIME_OUT = 60000;
     private DownloadThread[] threads;
+    private Context context;
+    private boolean isToday;
 
 
-
-    public DownloadPrepareThread(String downloadUrl, int threadNum, File file, OnDownloadStatusListener listener) {
+    public DownloadPrepareThread(Context context, boolean isToday, String downloadUrl, int threadNum, File file, OnDownloadStatusListener listener) {
         this.downloadUrl = downloadUrl;
+        this.context = context;
+        this.isToday = isToday;
         this.threadNum = threadNum;
         this.file = file;
         this.listener = listener;
@@ -165,27 +169,37 @@ public class DownloadPrepareThread extends Thread {
             listener.onPrepare(fileSize);
         }
 
-        // 取本地已经缓存的列表，生成对应实体类
-        ArrayList<AdDetailResponse> cacheVideos = ToolUtils.getCacheList();
-        // 根据fileName匹对当前的视频信息
-
-        if (cacheVideos != null && cacheVideos.size() > 0) {
-            for (AdDetailResponse cache : cacheVideos) {
-                if (cache != null && !TextUtils.isEmpty(cache.adVideoName)) {
-                    String cacheVideoName = cache.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
-
-                    // 将对应文件的赋值后，再将该实体类写入缓存
-                    if (cacheVideoName.equals(file.getName())) {
-                        cache.adVideoLength = fileSize;
-                        LogCat.e("缓存列表文件名字：" + cacheVideoName);
-                        LogCat.e("下载文件的名字：" + file.getName());
-                        break;
-                    }
-                }
-            }
+        LogCat.e("将文件大小写入数据库.......");
+        try {
+            String fileName = file.getName();
+            int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
+            fileName = fileName.substring(0, index);
+            AdDao.getInstance(context).update(isToday, fileName, AdDao.adVideoLength, String.valueOf(fileSize));
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
+//        // 取本地已经缓存的列表，生成对应实体类
+//        ArrayList<AdDetailResponse> cacheVideos = ToolUtils.getCacheList();
+//        // 根据fileName匹对当前的视频信息
+//
+//        if (cacheVideos != null && cacheVideos.size() > 0) {
+//            for (AdDetailResponse cache : cacheVideos) {
+//                if (cache != null && !TextUtils.isEmpty(cache.adVideoName)) {
+//                    String cacheVideoName = cache.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
+//
+//                    // 将对应文件的赋值后，再将该实体类写入缓存
+//                    if (cacheVideoName.equals(file.getName())) {
+//                        cache.adVideoLength = fileSize;
+//                        LogCat.e("缓存列表文件名字：" + cacheVideoName);
+//                        LogCat.e("下载文件的名字：" + file.getName());
+//                        break;
+//                    }
+//                }
+//            }
+//        }
         // 再将缓存文件写入sdcard
-        cacheVideoList(cacheVideos);
+//        cacheVideoList(cacheVideos);
 
 
         // 可用空间检查

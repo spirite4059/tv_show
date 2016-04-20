@@ -145,7 +145,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        DLUtils.init().cancel();
+        DLUtils.init(this).cancel();
     }
 
     /**
@@ -343,6 +343,7 @@ public class MainActivity extends Activity {
             if (screenShot != null) {
                 //截屏的参数
                 //adOneFragment.
+                adOneFragment.setScreenShotResponse(screenShot);
             }
             if(!TextUtils.isEmpty(adStruct)){
                 if("0".equals(adStruct)){
@@ -434,7 +435,7 @@ public class MainActivity extends Activity {
      * 下载apk
      */
     private void downloadAPK(){
-        DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+        DownloadUtils.download(true, getApplication(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
                 //新包下载完成得安装

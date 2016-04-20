@@ -5,10 +5,10 @@ package com.okhtttp.response;
  */
 public class ScreenShotResponse {
 
-    public String screenShotInterval;
+    public int screenShotInterval;
 
-    public String screenShotImgW;
+    public int screenShotImgW;
 
 
-    public String screenShotImgH;
+    public int screenShotImgH;
 }

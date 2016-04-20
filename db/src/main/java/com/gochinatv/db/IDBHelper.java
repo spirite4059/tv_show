@@ -1,4 +1,4 @@
-package com.gochinatv.ad.db;
+package com.gochinatv.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

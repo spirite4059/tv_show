@@ -3,9 +3,10 @@ package com.gochinatv.ad.tools;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.gochinatv.ad.db.AdDao;
+import com.download.DLUtils;
 import com.gochinatv.ad.thread.CacheVideoListThread;
 import com.gochinatv.ad.thread.DeleteFileUtils;
+import com.gochinatv.db.AdDao;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.okhtttp.response.AdDetailResponse;
@@ -55,11 +56,11 @@ public class VideoAdUtils {
      *
      * @return
      */
-    public static ArrayList<AdDetailResponse> getLocalVideoList() {
+    public static ArrayList<AdDetailResponse> getLocalVideoList(Context context) {
         ArrayList<AdDetailResponse> localVideos = new ArrayList<>();
         File fileVideo = new File(DataUtils.getVideoDirectory());
         if (fileVideo.exists() && fileVideo.isDirectory()) {
-            localVideos.addAll(getLocalList(fileVideo));
+            localVideos.addAll(getLocalList(context, fileVideo));
         }
         return localVideos;
     }
@@ -70,17 +71,17 @@ public class VideoAdUtils {
      * @param videoFiles
      * @return
      */
-    private static ArrayList<AdDetailResponse> getLocalList(File videoFiles) {
+    private static ArrayList<AdDetailResponse> getLocalList(Context context, File videoFiles) {
         ArrayList<AdDetailResponse> adDetailResponses = new ArrayList<>();
         File[] files = videoFiles.listFiles();
         for (File file : files) {
             if (file.isFile()) {
                 String name = file.getName();
                 // 正在下载的文件不能算到本地缓存列表中
-//                if (DLUtils.init().downloading(getActivity(), name)) {
-//                    LogCat.e("当前文件正在下载。。。。。");
-//                    continue;
-//                }
+                if (DLUtils.init(context).downloading(file.getAbsolutePath())) {
+                    LogCat.e("当前文件正在下载。。。。。");
+                    continue;
+                }
                 // 文件下载失败
                 final int HEADER_FILE_LENGTH = 1024 * 1024 * 10;
                 if (file.length() < HEADER_FILE_LENGTH) {
@@ -103,11 +104,10 @@ public class VideoAdUtils {
     }
 
 
-    public static void updateVideoPath(Context context, int vid, String path){
-        AdDao.getInstance(context).update(true, vid, AdDao.videoPath, path);
-        if( AdDao.getInstance(context).query(true, vid)){
-            LogCat.e("查找到》。。。。。。。。。");
-            LogCat.e("查询修改后的大小： " + AdDao.getInstance(context).queryDetail(true, vid).videoPath);
+    public static void updateVideoPath(boolean isToday, Context context, int vid, String path){
+        AdDao.getInstance(context).update(isToday, vid, AdDao.videoPath, path);
+        if( AdDao.getInstance(context).query(isToday, vid)){
+            LogCat.e("查询修改后的大小： " + AdDao.getInstance(context).queryDetail(isToday, vid).videoPath);
         }
 
 
@@ -133,7 +133,6 @@ public class VideoAdUtils {
                 LogCat.e("缓存播放列表内容........");
                 for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
                     LogCat.e("视频名称：" + adDetailResponse.adVideoName + ", 文件大小：" + adDetailResponse.adVideoLength);
-//                    adDetailResponse.adVideoName = adDetailResponse.name;
                 }
 
             }

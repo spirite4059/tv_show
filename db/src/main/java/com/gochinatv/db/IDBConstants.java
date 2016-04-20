@@ -1,4 +1,4 @@
-package com.gochinatv.ad.db;
+package com.gochinatv.db;
 
 /**
  * Created by fq_mbp on 15/12/24.
@@ -40,7 +40,8 @@ public interface IDBConstants {
             + adVideoLength + ") values (?,?,?,?,?,?)";
 
     String SQL_QUERY = "select * from " + DBBASE_TD_VIDEOS_TABLE_NAME + " order by " + adVideoId;
-    String SQL_QUERY_ID = "select * from " + DBBASE_TD_VIDEOS_TABLE_NAME + " where  adVideoId = ?";
+    String SQL_QUERY_ID = "select * from " + DBBASE_TD_VIDEOS_TABLE_NAME + " where " + adVideoId + " = ?";
+    String SQL_QUERY_NAME = "select * from " + DBBASE_TD_VIDEOS_TABLE_NAME + " where "  + adVideoName + " = ?";
 
 
 
@@ -62,9 +63,9 @@ public interface IDBConstants {
             + videoPath + ", " + adVideoIndex + ", "
             + adVideoLength + ") values (?,?,?,?,?,?)";
 
-
     String SQL_QUERY_TM = "select * from " + DBBASE_TM_VIDEOS_TABLE_NAME + " order by " + adVideoId;
-    String SQL_QUERY_ID_TM = "select * from " + DBBASE_TM_VIDEOS_TABLE_NAME + " where  adVideoId = ?";
+    String SQL_QUERY_ID_TM = "select * from " + DBBASE_TM_VIDEOS_TABLE_NAME + " where " + adVideoId + " = ?";
+    String SQL_QUERY_NAME_TM = "select * from " + DBBASE_TM_VIDEOS_TABLE_NAME + " where "  + adVideoName + " = ?";
 
 
 

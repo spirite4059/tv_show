@@ -2,44 +2,73 @@ package com.gochinatv.ad.tools;
 
 import android.app.Activity;
 
-import com.gochinatv.ad.thread.ScreenShotRunnable;
+import com.okhtttp.response.ScreenShotResponse;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by fq_mbp on 16/3/30.
  */
 public class ScreenShotUtils {
 
+    private static ScreenShotUtils instance;
     // 截屏时间间隔 默认 1小时  1000 * 60 * 60
     private int delay = 1000 * 60 * 60;
 
-    private static ExecutorService service;
+
+    private ScheduledExecutorService service;
 
 
+
+    private ScreenShotUtils(){
+        service = Executors.newScheduledThreadPool(2);
+    }
+
+    public static ScreenShotUtils getInstance(){
+        if(instance == null){
+            synchronized (ScreenShotUtils.class){
+                if(instance == null){
+                    instance = new ScreenShotUtils();
+                }
+            }
+        }
+        return instance;
+    }
     /**
      *
      * @param activity
      * @param currentTime：当前播放进度
      * @param bgScale：背景图的缩放比例
-     * @param videoScale：视频的缩放比例
      * @param videoName：当前播放视频的文件名称
      */
-    public static void screenShot(Activity activity, int currentTime, float bgScale, float videoScale, String videoName){
+    public void screenShot(Activity activity, int currentTime, float bgScale, String videoName, ScreenShotResponse screenShotResponse){
         if(service != null){
-            service.shutdown();
-            service = null;
+            service.shutdownNow();
+            service = Executors.newScheduledThreadPool(2);
         }
-        service = Executors.newSingleThreadScheduledExecutor();
 
-        ScreenShotRunnable screenShotRunnable = new ScreenShotRunnable(activity, currentTime, bgScale, videoScale, videoName);
 
-        service.execute(screenShotRunnable);
+        if(screenShotResponse != null){
+            delay = screenShotResponse.screenShotInterval;
+        }
+
+        service.schedule(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        }, delay, TimeUnit.SECONDS);
+
+
+
+//        ScreenShotRunnable screenShotRunnable = new ScreenShotRunnable(activity, currentTime, bgScale, videoName, screenShotResponse);
+//        service.schedule(screenShotRunnable, delay, TimeUnit.SECONDS);
     }
 
 
-    public static void shutdown(){
+    public void shutdown(){
         if(service != null){
             service.shutdown();
         }

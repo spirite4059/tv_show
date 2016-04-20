@@ -1,4 +1,4 @@
-package com.gochinatv.ad.db;
+package com.gochinatv.db;
 
 
 import com.okhtttp.response.AdDetailResponse;
@@ -43,10 +43,10 @@ public interface DaoOperationInterface {
 
 	/**
 	 * 根据id，修改对应视频的长度
-	 * @param id
+	 * @param fileName
 	 * @return
 	 */
-	boolean update(boolean isToday, int id,  String column, String value);
+	boolean update(boolean isToday, String fileName, String column, String value);
 
 
 }

@@ -1,5 +1,6 @@
 package com.download;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -16,28 +17,39 @@ import java.io.IOException;
  */
 public class DLUtils implements InDLUtils {
 
+    private static DLUtils instance;
+
     private DownloadPrepareThread downloadThread;
 
-    private String downloadUrl;
+    private String downloadingPath;
 
-    private DLUtils() {
-    }
+    private Context context;
 
-    private static class DLUtilsHolder {
-        private static final DLUtils instance = new DLUtils();
-    }
-
-    public static DLUtils init() {
-        return DLUtilsHolder.instance;
+    private DLUtils(Context context) {
+        this.context = context;
+        downloadingPath = null;
     }
 
 
-    public void download(String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
-        this.downloadUrl = downloadUrl;
-        // 正在下载当前任务则不处理
-//        if(isDownloading(context, fileName))
-//            return;
+    public static DLUtils init(Context context) {
+        if(instance == null){
+            synchronized (DLUtils.class){
+                if(instance == null){
+                    instance = new DLUtils(context);
+                }
+            }
+        }
+        return instance;
+    }
 
+
+    public void download(boolean isToday, String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
+        if(!TextUtils.isEmpty(downloadingPath) && downloadingPath.equals(path +fileName)){
+            LogCat.e("正在下载当前任务则不处理......");
+            return;
+        }
+
+        this.downloadingPath = path + fileName;
         // 记录当前下载任务
 //        SharedUtils.put(context, fileName);
 
@@ -62,7 +74,7 @@ public class DLUtils implements InDLUtils {
             downloadThread = null;
         }
 
-        downloadThread = new DownloadPrepareThread(downloadUrl, threadNum, apkFile, listener);
+        downloadThread = new DownloadPrepareThread(context, isToday, downloadUrl, threadNum, apkFile, listener);
 
         // 开启当前下载任务
         downloadThread.start();
@@ -103,30 +115,26 @@ public class DLUtils implements InDLUtils {
 
 
 
-//    /**
-//     * 检测是否正在下载
-//     * @param fileName
-//     * @return
-//     */
-//    public boolean downloading(Context context, String fileName){
-//        if(TextUtils.isEmpty(fileName)){
-//            return false;
-//        }
-//        String preFileName = SharedUtils.getValue(context);
-//        if(fileName.equals(preFileName)){
-//            return true;
-//        }else {
-//            return false;
-//        }
-//    }
+    /**
+     * 检测是否正在下载
+     * @param fileName
+     * @return
+     */
+    public boolean downloading(String fileName){
+        if(!TextUtils.isEmpty(downloadingPath) && downloadingPath.equals(fileName)){
+            LogCat.e("正在下载当前任务则不处理......");
+            return true;
+        }
+        return false;
+    }
 
 
     public void cancel() {
         if (downloadThread != null) {
             downloadThread.cancelDownload();
         }
-//        SharedUtils.clear(context);
 
+        downloadingPath = null;
     }
 
 

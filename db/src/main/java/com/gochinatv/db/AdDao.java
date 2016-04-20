@@ -1,4 +1,4 @@
-package com.gochinatv.ad.db;
+package com.gochinatv.db;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -331,7 +331,7 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
     }
 
     @Override
-    public synchronized boolean update(boolean isToday, int id, String column, String value) {
+    public synchronized boolean update(boolean isToday, String fileName, String column, String value) {
         SQLiteDatabase database = null;
         boolean flag = false;
         try {
@@ -339,7 +339,7 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
             Cursor cursor = null;
             try {
                 database.beginTransaction();
-                cursor = database.rawQuery((isToday ? SQL_QUERY_ID : SQL_QUERY_ID_TM), new String[]{String.valueOf(id)});
+                cursor = database.rawQuery((isToday ? SQL_QUERY_NAME : SQL_QUERY_NAME_TM), new String[]{fileName});
                 if (cursor != null && cursor.moveToNext()) {
                     flag = true;
                 }
@@ -366,7 +366,7 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
             database.beginTransaction();
             ContentValues updatedValues = new ContentValues();
             updatedValues.put(column, value);
-            int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoId + " = ?", new String[]{String.valueOf(id)});
+            int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoName + " = ?", new String[]{fileName});
             if (temp == 0) {
                 flag = true;
             }
@@ -382,6 +382,61 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
         }
         return flag;
     }
+
+
+
+    public synchronized boolean update(boolean isToday, int vid, String column, String value) {
+        SQLiteDatabase database = null;
+        boolean flag = false;
+        try {
+            database = getConnection();
+            Cursor cursor = null;
+            try {
+                database.beginTransaction();
+                cursor = database.rawQuery((isToday ? SQL_QUERY_ID : SQL_QUERY_ID_TM), new String[]{String.valueOf(vid)});
+                if (cursor != null && cursor.moveToNext()) {
+                    flag = true;
+                }
+                database.setTransactionSuccessful();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (database != null) {
+                    database.endTransaction();
+                }
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+            // 如果存在，直接返回插入成功
+            if (!flag) {
+                return false;
+            }
+            if (database == null) {
+                return false;
+            }
+
+
+            database.beginTransaction();
+            ContentValues updatedValues = new ContentValues();
+            updatedValues.put(column, value);
+            int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoId + " = ?", new String[]{String.valueOf(vid)});
+            if (temp == 0) {
+                flag = true;
+            }
+            database.setTransactionSuccessful();
+            database.endTransaction();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+
+            if (null != database) {
+                database.close();
+            }
+        }
+        return flag;
+    }
+
 
 
 }

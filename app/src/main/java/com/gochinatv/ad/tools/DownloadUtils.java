@@ -1,5 +1,7 @@
 package com.gochinatv.ad.tools;
 
+import android.content.Context;
+
 import com.download.DLUtils;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
@@ -26,9 +28,8 @@ import static com.download.ErrorCodes.ERROR_THREAD_NUMBERS;
 public class DownloadUtils {
 
 
-    public static void download(String dir, String fileName, String fileUrl, final OnUpgradeStatusListener listener) {
-        String path = DataUtils.getSdCardFileDirectory() + dir;
-        DLUtils.init().download(path, fileName, fileUrl, 2, new OnDownloadStatusListener() {
+    public static void download(boolean isToday, Context context, String dir, String fileName, String fileUrl, final OnUpgradeStatusListener listener) {
+        DLUtils.init(context.getApplicationContext()).download(isToday, dir, fileName, fileUrl, 2, new OnDownloadStatusListener() {
 
             private long fileLength;
 
