@@ -342,11 +342,10 @@ public class DownloadPrepareThread extends Thread {
             e.printStackTrace();
             errorCode = ErrorCodes.ERROR_DOWNLOAD_UNKNOWN;
         }
-
+        DLUtils.clearDownloadStatus();
         // 主动取消下载
         if (isCancel) {
             setCancel();
-
             deleteFailFile(fileSize, downloadSize);
             return;
         }

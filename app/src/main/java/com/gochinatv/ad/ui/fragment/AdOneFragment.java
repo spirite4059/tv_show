@@ -1,6 +1,9 @@
 package com.gochinatv.ad.ui.fragment;
 
+import android.graphics.Bitmap;
 import android.media.MediaPlayer;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,11 +18,11 @@ import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.ad.thread.DeleteFileUtils;
-import com.gochinatv.ad.thread.ScreenShotRunnable;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.ScreenShotUtils;
 import com.gochinatv.ad.tools.VideoAdUtils;
 import com.gochinatv.ad.video.MeasureVideoView;
 import com.okhtttp.OkHttpCallBack;
@@ -98,6 +101,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private TextView tvProgress;
 
+    private Handler handler;
+
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -134,7 +139,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             LogCat.e("获取今日播放的缓存列表.......");
 //            ArrayList<AdDetailResponse> cacheTodayList = VideoAdUtils.getCacheList(Constants.FILE_CACHE_TD_NAME);
             ArrayList<AdDetailResponse> cacheTodayList = VideoAdUtils.getCacheList(getActivity(), true);
-            for(AdDetailResponse adDetailResponse : cacheTodayList){
+            for (AdDetailResponse adDetailResponse : cacheTodayList) {
                 LogCat.e("视频名称......." + adDetailResponse.adVideoName + ", " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
             }
             LogCat.e("------------------------------");
@@ -143,7 +148,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             LogCat.e("获取缓存的明日播放列表.......");
 //            cacheTomorrowList = VideoAdUtils.getCacheList(Constants.FILE_CACHE_NAME);
             cacheTomorrowList = VideoAdUtils.getCacheList(getActivity(), false);
-            for(AdDetailResponse adDetailResponse : cacheTomorrowList){
+            for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
                 LogCat.e("视频名称......." + adDetailResponse.adVideoName + ", " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
             }
             LogCat.e("------------------------------");
@@ -184,13 +189,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
 
 
-//        LogCat.e("开始上传截屏文件timer.....");
+        LogCat.e("开始上传截屏文件.....");
         // 7.开启上传截图
-//        startScreenShot();
+        startScreenShot();
 
 
         //  开启轮询接口
-//        handler = new Handler(Looper.getMainLooper());
+        handler = new Handler(Looper.getMainLooper());
 
 
     }
@@ -345,9 +350,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //    }
 
 
-
-
-
 //    @Override
 //    protected void onGetVideoPathFailed(String path) {
 //        LogCat.e("当前视频的下载地址获取失败。。。。");
@@ -382,7 +384,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //        }
 //    }
 
-    protected void doHttpGetVideoList(){
+    protected void doHttpGetVideoList() {
         VideoHttpService.doHttpGetVideoList(getActivity(), new OkHttpCallBack<AdVideoListResponse>() {
             @Override
             public void onSuccess(String url, AdVideoListResponse response) {
@@ -521,12 +523,17 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
 
+        // 显示开发下载模式，主要是为了显示日志
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isAdded() && getActivity() != null) {
+                    doHttpGetVideoList();
+                }
 
+            }
+        }, TIME_RETRY_DURATION);
 
-
-
-//        LogCat.e("查找可以播放的视频.....");
-//        startPlayVideo();
     }
 
 
@@ -541,10 +548,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             }
         }, TIME_RETRY_DURATION);
     }
-
-
-
-
 
 
     private ArrayList<AdDetailResponse> getDistinctVideoList(ArrayList<AdDetailResponse> videos) {
@@ -669,38 +672,41 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      * 开始截屏
      */
     private void startScreenShot() {
-        AdDetailResponse videoAdBean = getPlayingVideoInfo();
         LogCat.e("开始截图.......");
         LogCat.e("当前视频截图位置......." + videoView.getCurrentPosition());
         LogCat.e("当前视频总时长......." + videoView.getDuration());
-        LogCat.e("当前视频名称......." + videoAdBean.adVideoName);
-
         screenShotService = Executors.newScheduledThreadPool(2);
-        if(screenShotResponse != null){
+        if (screenShotResponse != null) {
             delay = screenShotResponse.screenShotInterval;
         }
         delay = 10;
+        screenShotService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                LogCat.e("开始进行截图...........");
+                if(getActivity() == null || isDetached()){
+                    return;
+                }
+                AdDetailResponse videoAdBean = getPlayingVideoInfo();
+                long delay = videoView.getCurrentPosition();
+                Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), delay, videoAdBean.videoPath, screenShotResponse);
+                if (videoBitmap == null) {
+                    return;
+                }
+                // Bitmap resultBitmap = mergeBitmap(bitmap, videoBitmap);
 
-        screenShotService.schedule(new ScreenShotRunnable(getActivity(), videoView.getCurrentPosition(), videoAdBean.videoPath, screenShotResponse), delay, TimeUnit.SECONDS);
+                ScreenShotUtils.uploadBitmap(getActivity(), videoBitmap);
 
-//        screenShotTimer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                // 开始截屏
-//                // 当前正在播放的视频
-//                AdDetailResponse videoAdBean = getPlayingVideoInfo();
-//
-//                if (videoAdBean == null) {
-//                    return;
-//                }
-//                if (videoView == null) {
-//                    return;
-//                }
-//
-
-//                ScreenShotUtils.getInstance().screenShot(getActivity(), videoView.getCurrentPosition(), 0.5f, videoAdBean.videoPath, screenShotResponse);
-//            }
-//        }, 1000 * 60, 1000 * 60);
+                // if(bitmap != null){
+                // bitmap.recycle();
+                //    bitmap = null;
+                // }
+                if (videoBitmap != null) {
+                    videoBitmap.recycle();
+                    videoBitmap = null;
+                }
+            }
+        }, delay, delay, TimeUnit.SECONDS);
     }
 
     private void startPlayVideo() {
@@ -908,7 +914,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 videoUrl = downloadingVideoResponse.adVideoUrl;
                 retryTimes = 0;
 
-//               videoUrl = "http://vod.vegocdn.com/2016/03/24/6551A4BE0000FC56.mp4?st=1461069387&token=e1c882433f2c51c13d763488516a9564";
+               videoUrl = "http://vod.vegocdn.com/2016/03/24/6551A4BE0000FC56.mp4?st=1461069387&token=e1c882433f2c51c13d763488516a9564";
                 LogCat.e("获取到当前视频的下载地址。。。。。。。。" + videoUrl);
                 download(videoUrl);
             }
@@ -1110,8 +1116,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
                         httpTimer.cancel();
                         httpTimer = null;
-
-                        startScreenShot();
 
 
                         LogCat.e("已经联网。。。。。");

@@ -21,7 +21,7 @@ public class DLUtils implements InDLUtils {
 
     private DownloadPrepareThread downloadThread;
 
-    private String downloadingPath;
+    private static String downloadingPath;
 
     private Context context;
 
@@ -81,6 +81,7 @@ public class DLUtils implements InDLUtils {
 
     }
 
+
     @NonNull
     private File createFile(String path, String fileName) {
         File file = new File(path);
@@ -114,6 +115,9 @@ public class DLUtils implements InDLUtils {
 //    }
 
 
+    protected static void clearDownloadStatus(){
+        downloadingPath = null;
+    }
 
     /**
      * 检测是否正在下载
