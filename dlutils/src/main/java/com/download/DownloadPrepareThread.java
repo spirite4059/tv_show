@@ -11,7 +11,7 @@ import com.download.tools.CacheVideoListThread;
 import com.download.tools.Constants;
 import com.download.tools.LogCat;
 import com.download.tools.ToolUtils;
-import com.httputils.http.response.AdDetailResponse;
+import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
 import java.io.IOException;

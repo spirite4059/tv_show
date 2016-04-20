@@ -7,7 +7,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
-import com.httputils.utils.LogCat;
+import com.tools.LogCat;
 import com.tools.MacUtils;
 
 import java.io.File;

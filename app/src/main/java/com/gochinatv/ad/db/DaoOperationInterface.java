@@ -1,6 +1,9 @@
 package com.gochinatv.ad.db;
 
-import com.httputils.http.response.AdDetailResponse;
+
+import com.okhtttp.response.AdDetailResponse;
+
+import java.util.ArrayList;
 
 public interface DaoOperationInterface {
 
@@ -9,14 +12,20 @@ public interface DaoOperationInterface {
 	 * @param adDetailResponse
 	 * @return
 	 */
-	 boolean insert(AdDetailResponse adDetailResponse);
+	boolean insert(boolean isToday, AdDetailResponse adDetailResponse);
+
+	/**
+	 * 插入多条视频信息记录
+	 * @return
+	 */
+	void insertAll(boolean isToday, ArrayList<AdDetailResponse> adDetailResponses);
 
 	/**
 	 * 根据视频id，删除当前记录
 	 * @param id
 	 * @return
 	 */
-	boolean delete(int id);
+	boolean delete(boolean isToday, int id);
 
 
 	/**
@@ -24,15 +33,20 @@ public interface DaoOperationInterface {
 	 * @param id
 	 * @return 存在：true，反正false
 	 */
-	 boolean query(int id);
+	 boolean query(boolean isToday, int id);
+
+	/**
+	 * 查询表内所有信息
+	 * @return 存在：true，反正false
+	 */
+	ArrayList<AdDetailResponse> queryAll(boolean isToday);
 
 	/**
 	 * 根据id，修改对应视频的长度
 	 * @param id
-	 * @param length
 	 * @return
 	 */
-	boolean update(int id, long length);
+	boolean update(boolean isToday, int id,  String column, String value);
 
 
 }

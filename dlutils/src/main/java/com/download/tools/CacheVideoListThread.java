@@ -3,7 +3,7 @@ package com.download.tools;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
-import com.httputils.http.response.AdDetailResponse;
+import com.okhtttp.response.AdDetailResponse;
 
 import java.io.BufferedWriter;
 import java.io.File;
