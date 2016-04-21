@@ -101,7 +101,11 @@ public class OkHttpUtils {
                 if (response != null && response.body() != null) {
                     String json = response.body().string();
                     if (!TextUtils.isEmpty(json)) {
-                        sendSuccessResultCallback(url, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
+                        try {
+                            sendSuccessResultCallback(url, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
+                        }catch (Exception e){
+                            sendFailedStringCallback(url, e, okHttpCallBack);
+                        }
                     }
                 }
             }
@@ -129,7 +133,11 @@ public class OkHttpUtils {
 //                    LogCat.e("json: " + json);
 //                    LogCat.e("realUrl: " + realUrl);
                     if (!TextUtils.isEmpty(json)) {
-                        sendSuccessResultCallback(realUrl, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
+                        try {
+                            sendSuccessResultCallback(realUrl, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
+                        }catch (Exception e){
+                            sendFailedStringCallback(realUrl, e, okHttpCallBack);
+                        }
                     }
                 }
             }
