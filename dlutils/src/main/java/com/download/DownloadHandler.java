@@ -49,7 +49,6 @@ public class DownloadHandler extends Handler implements InDLUtils{
                 break;
             case HANDLER_WHAT_DOWNLOAD_FILE_SIZE:
                 if (bundle != null) {
-                    LogCat.e("HANDLER_WHAT_DOWNLOADING.......");
                     onDownloadStatusListener.onProgress(bundle.getLong(BUNDLE_KEY_FILE_DOWNLOAD_SIZE, 0));
                 }
                 break;

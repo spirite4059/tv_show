@@ -79,7 +79,7 @@ public class DownloadThread extends Thread {
             System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(READ_TIME_OUT));
             //设置当前线程下载的起点、终点
             connection.setRequestProperty("Range", "bytes=" + startPos + "-" + endPos);
-            LogCat.e(Thread.currentThread().getName() + "  bytes="
+            LogCat.e("video", Thread.currentThread().getName() + "  bytes="
                     + startPos + "-" + endPos);
             connection.connect();
         } catch (IOException e) {
@@ -183,7 +183,7 @@ public class DownloadThread extends Thread {
         }
         if(errorCode == 0){
             isCompleted = true;
-            LogCat.e("current thread "  + " has finished,all size:"
+            LogCat.e("video", "current thread "  + " has finished,all size:"
                     + downloadLength);
         }
     }

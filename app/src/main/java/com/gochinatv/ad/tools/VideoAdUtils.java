@@ -41,6 +41,16 @@ public class VideoAdUtils {
     }
 
     /**
+     * 清空数据表的所有数据
+     */
+    public static synchronized void cleanSqlVideoList(Context context) {
+        LogCat.e("清空数据库........." );
+        AdDao.getInstance(context).deleteAll(true);
+        AdDao.getInstance(context).deleteAll(false);
+        LogCat.e("查询下插入后的个数： " + AdDao.getInstance(context).queryAll(true).size());
+    }
+
+    /**
      * 缓存视频
      * @param cachePlayVideoLists
      */

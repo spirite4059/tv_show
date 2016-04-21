@@ -46,7 +46,6 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
     }
 
 
-
     @Override
     public synchronized boolean insert(boolean isToday, AdDetailResponse adDetailResponse) {
         if (adDetailResponse == null) {
@@ -176,7 +175,7 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             if (null != database) {
                 database.close();
             }
@@ -195,6 +194,33 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
             if (temp == 0) {
                 flag = true;
             }
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (database != null) {
+                database.endTransaction();
+            }
+            if (null != database) {
+                database.close();
+            }
+        }
+        return flag;
+    }
+
+
+    public synchronized boolean deleteAll(boolean isToday) {
+        SQLiteDatabase database = null;
+        boolean flag = false;
+        try {
+            database = getConnection();
+            database.beginTransaction();
+
+            int temp = database.delete((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), null, null);
+            if (temp == 0) {
+                flag = true;
+            }
+
             database.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();
@@ -384,7 +410,6 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
     }
 
 
-
     public synchronized boolean update(boolean isToday, int vid, String column, String value) {
         SQLiteDatabase database = null;
         boolean flag = false;
@@ -436,7 +461,6 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
         }
         return flag;
     }
-
 
 
 }

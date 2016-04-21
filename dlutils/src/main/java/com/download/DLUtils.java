@@ -35,6 +35,7 @@ public class DLUtils implements InDLUtils {
         if(instance == null){
             synchronized (DLUtils.class){
                 if(instance == null){
+                    LogCat.e("video", "DLUtils初始化...........");
                     instance = new DLUtils(context);
                 }
             }
@@ -45,13 +46,12 @@ public class DLUtils implements InDLUtils {
 
     public void download(boolean isToday, String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
         if(!TextUtils.isEmpty(downloadingPath) && downloadingPath.equals(path +fileName)){
-            LogCat.e("正在下载当前任务则不处理......");
+            LogCat.e("video", "正在下载当前任务则不处理......");
             return;
         }
 
-        this.downloadingPath = path + fileName;
         // 记录当前下载任务
-//        SharedUtils.put(context, fileName);
+        downloadingPath = path + fileName;
 
         // sdcard 检查
         if (!ToolUtils.isExistSDCard()) {
@@ -68,7 +68,7 @@ public class DLUtils implements InDLUtils {
         // 获取SD卡路径
         File apkFile = createFile(path, fileName);
 
-        LogCat.e("download file  path:" + apkFile.getAbsolutePath());
+        LogCat.e("video", "download file  path:" + apkFile.getAbsolutePath());
         if(downloadThread != null){
             downloadThread.cancelDownload();
             downloadThread = null;
@@ -101,18 +101,7 @@ public class DLUtils implements InDLUtils {
         return apkFile;
     }
 
-//    private boolean isDownloading(Context context, String fileName) {
-//        String preFileName = SharedUtils.getValue(context);
-//        if(!TextUtils.isEmpty(preFileName) && preFileName.equals(fileName)){
-//            Message msg = downLoadHandler.obtainMessage(DLUtils.HANDLER_WHAT_DOWNLOADING);
-//            msg.obj = fileName;
-//            downLoadHandler.sendMessage(msg);
-//            LogCat.e("***********当前下载正在执行************");
-//            return true;
-//
-//        }
-//        return false;
-//    }
+
 
 
     protected static void clearDownloadStatus(){
@@ -126,7 +115,7 @@ public class DLUtils implements InDLUtils {
      */
     public boolean downloading(String fileName){
         if(!TextUtils.isEmpty(downloadingPath) && downloadingPath.equals(fileName)){
-            LogCat.e("正在下载当前任务则不处理......");
+            LogCat.e("video", "正在下载当前任务则不处理......");
             return true;
         }
         return false;
@@ -137,9 +126,9 @@ public class DLUtils implements InDLUtils {
         if (downloadThread != null) {
             downloadThread.cancelDownload();
         }
-
+        downloadThread = null;
         downloadingPath = null;
-
+        context = null;
         instance = null;
     }
 

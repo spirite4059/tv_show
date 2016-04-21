@@ -35,14 +35,14 @@ public class DownloadUtils {
 
             @Override
             public void onError(int errorCode) {
-                LogCat.e("onDownloadFileError............. " + errorCode + ",  " + getErrorMsg(errorCode));
+                LogCat.e("video", "onDownloadFileError............. " + errorCode + ",  " + getErrorMsg(errorCode));
                 listener.onDownloadFileError(errorCode, getErrorMsg(errorCode));
             }
 
 
             @Override
             public void onPrepare(long fileSize) {
-                LogCat.e("fileSize............. " + fileSize);
+                LogCat.e("video", "fileSize............. " + fileSize);
                 fileLength = fileSize;
 
             }
@@ -59,18 +59,18 @@ public class DownloadUtils {
 
             @Override
             public void onFinish(String filePath) {
-                LogCat.e("DownloadUtils -> onFinish......");
+                LogCat.e("video", "DownloadUtils -> onFinish......");
                 listener.onDownloadFileSuccess(filePath);
             }
 
             @Override
             public void onCancel() {
-                LogCat.e("onCancel............. ");
+                LogCat.e("video", "onCancel............. ");
             }
 
             @Override
             public void onDownloading(String fileName) {
-                LogCat.e("当前下载正在进行中............. " + fileName);
+                LogCat.e("video", "当前下载正在进行中............. " + fileName);
             }
 
             private void logProgress(long progress) {
@@ -85,7 +85,7 @@ public class DownloadUtils {
                 } else {
                     sizeStr = String.valueOf((int) size + "KB，  ");
                 }
-                LogCat.e("progress............. " + sizeStr + s + "%");
+                LogCat.e("video", "progress............. " + sizeStr + s + "%");
                 listener.onDownloadProgress(sizeStr + s + "%");
             }
         });
@@ -97,14 +97,14 @@ public class DownloadUtils {
 //
 //            @Override
 //            public void onError(int errorCode, String errorMsg) {
-//                LogCat.e("onDownloadFileError............. " + errorCode + ",  " + errorMsg);
+//                LogCat.e("video", "onDownloadFileError............. " + errorCode + ",  " + errorMsg);
 //                listener.onDownloadFileError(errorCode, errorMsg);
 //            }
 //
 //
 //            @Override
 //            public void onPrepare(long fileSize) {
-//                LogCat.e("fileSize............. " + fileSize);
+//                LogCat.e("video", "fileSize............. " + fileSize);
 //                fileLength = fileSize;
 //
 //            }
@@ -121,20 +121,20 @@ public class DownloadUtils {
 //
 //            @Override
 //            public void onFinish(String filePath) {
-//                LogCat.e("DownloadUtils -> onFinish......");
+//                LogCat.e("video", "DownloadUtils -> onFinish......");
 //                listener.onDownloadFileSuccess(filePath);
 //            }
 //
 //            @Override
 //            public void onCancel() {
-//                LogCat.e("onCancel............. ");
+//                LogCat.e("video", "onCancel............. ");
 //
 //
 //            }
 //
 //            @Override
 //            public void onDownloading(String fileName) {
-//                LogCat.e("当前下载正在进行中............. " + fileName);
+//                LogCat.e("video", "当前下载正在进行中............. " + fileName);
 //            }
 //
 //            private void logProgress(long progress) {
@@ -149,7 +149,7 @@ public class DownloadUtils {
 //                } else {
 //                    sizeStr = String.valueOf((int) size + "KB，  ");
 //                }
-//                LogCat.e("progress............. " + sizeStr + s + "%");
+//                LogCat.e("video", "progress............. " + sizeStr + s + "%");
 //                listener.onDownloadProgress(sizeStr + s + "%");
 //            }
 //

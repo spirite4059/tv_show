@@ -169,7 +169,7 @@ public class DownloadPrepareThread extends Thread {
             listener.onPrepare(fileSize);
         }
 
-        LogCat.e("将文件大小写入数据库.......");
+        LogCat.e("video", "将文件大小写入数据库.......");
         try {
             String fileName = file.getName();
             int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
@@ -191,8 +191,8 @@ public class DownloadPrepareThread extends Thread {
 //                    // 将对应文件的赋值后，再将该实体类写入缓存
 //                    if (cacheVideoName.equals(file.getName())) {
 //                        cache.adVideoLength = fileSize;
-//                        LogCat.e("缓存列表文件名字：" + cacheVideoName);
-//                        LogCat.e("下载文件的名字：" + file.getName());
+//                        LogCat.e("video", "缓存列表文件名字：" + cacheVideoName);
+//                        LogCat.e("video", "下载文件的名字：" + file.getName());
 //                        break;
 //                    }
 //                }
@@ -226,7 +226,7 @@ public class DownloadPrepareThread extends Thread {
 
         }
 
-        LogCat.e("fileSize: " + fileSize);
+        LogCat.e("video", "fileSize: " + fileSize);
 
 
         if (isCancel) {
@@ -301,7 +301,7 @@ public class DownloadPrepareThread extends Thread {
                         errorCode = downloadThread.getErrorCode();
                         if (errorCode != 0) {
                             // 线程出错了, 中断下载
-                            LogCat.e("下载过程有异常.......终止进度线程");
+                            LogCat.e("video", "下载过程有异常.......终止进度线程");
                             isThreadError = true;
                             break;
                         } else {
@@ -321,9 +321,9 @@ public class DownloadPrepareThread extends Thread {
                 if (isThreadError || isCancel) {
                     isFinished = false;
                     if (isThreadError) {
-                        LogCat.e("下载线程出错......");
+                        LogCat.e("video", "下载线程出错......");
                     } else {
-                        LogCat.e("主动取消了下载......");
+                        LogCat.e("video", "主动取消了下载......");
 
                     }
                     break;
@@ -351,7 +351,7 @@ public class DownloadPrepareThread extends Thread {
         }
         // 当下载过程出错
         if (errorCode != 0) {
-            LogCat.e("下载过程出错，主动停止下载........");
+            LogCat.e("video", "下载过程出错，主动停止下载........");
             setErrorMsg(errorCode);
             deleteFailFile(fileSize, downloadSize);
             return;
@@ -360,13 +360,13 @@ public class DownloadPrepareThread extends Thread {
 
         // 完成所有的下载了
         if (isFinished) {
-            LogCat.e("文件下载完成......fileSize: " + fileSize);
+            LogCat.e("video", "文件下载完成......fileSize: " + fileSize);
             if (deleteFailFile(fileSize, downloadSize)) {
-                LogCat.e("文件完整下载......");
+                LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
             }
         } else {
-            LogCat.e("文件下载尚未完成......");
+            LogCat.e("video", "文件下载尚未完成......");
             setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
         }
 
@@ -375,12 +375,12 @@ public class DownloadPrepareThread extends Thread {
 
     private boolean deleteFailFile(int fileSize, int downloadSize) {
         if (file != null && downloadSize != fileSize) {
-            LogCat.e("文件下载大小出错......删除出错的文件");
+            LogCat.e("video", "文件下载大小出错......删除出错的文件");
             if (file.delete()) {
-                LogCat.e("文件下载大小出错......删除成功");
+                LogCat.e("video", "文件下载大小出错......删除成功");
 
             } else {
-                LogCat.e("文件下载大小出错......删除出错");
+                LogCat.e("video", "文件下载大小出错......删除出错");
             }
             return false;
         }
@@ -452,7 +452,7 @@ public class DownloadPrepareThread extends Thread {
 
     private synchronized void cacheVideoList(ArrayList<AdDetailResponse> cachePlayVideoLists) {
         new CacheVideoListThread(cachePlayVideoLists, ToolUtils.getCacheDirectory(), Constants.FILE_CACHE_TD_NAME).start();
-        LogCat.e("文件缓存成功.........");
+        LogCat.e("video", "文件缓存成功.........");
     }
 
 
