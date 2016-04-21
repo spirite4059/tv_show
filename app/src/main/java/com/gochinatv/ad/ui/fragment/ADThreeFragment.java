@@ -11,6 +11,7 @@ import android.widget.RelativeLayout;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
+import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.ui.view.RecycleAnimationLayout;
@@ -100,6 +101,7 @@ public class ADThreeFragment extends BaseFragment {
 
     @Override
     protected void init() {
+        getImgADTime = Constants.isImageTest? 20*1000:3*60*1000;
         double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
         double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
         linearLayout.setItemWidth((int) Math.floor(width));
@@ -120,7 +122,7 @@ public class ADThreeFragment extends BaseFragment {
                 if (!isAdded()) {
                     return;
                 }
-                LogCat.e(" 广告三 url " + url);
+                LogCat.e("RecycleAnimationLayout"," 广告三 url " + url);
                 if (response == null || !(response instanceof AdThreeDataResponse)) {
                     //再次请求
                     initData();

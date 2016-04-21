@@ -43,19 +43,19 @@
             android:name="UMENG_APPKEY"
             android:value="${UMENG_APPKEY_VALUE}" />
 
-        <activity
-            android:name=".MainTestActivity"
-            android:screenOrientation="landscape" >
+        <!--<activity-->
+            <!--android:name=".MainTestActivity"-->
+            <!--android:screenOrientation="landscape" >-->
 
-            <!-- <intent-filter> -->
-            <!-- <action android:adVideoName="android.intent.action.MAIN" /> -->
+            <!--&lt;!&ndash; <intent-filter> &ndash;&gt;-->
+            <!--&lt;!&ndash; <action android:adVideoName="android.intent.action.MAIN" /> &ndash;&gt;-->
 
 
-            <!-- <category android:adVideoName="android.intent.category.LAUNCHER" /> -->
-            <!-- <category android:adVideoName="android.intent.category.HOME" /> -->
-            <!-- <category android:adVideoName="android.intent.category.DEFAULT" /> -->
-            <!-- </intent-filter> -->
-        </activity>
+            <!--&lt;!&ndash; <category android:adVideoName="android.intent.category.LAUNCHER" /> &ndash;&gt;-->
+            <!--&lt;!&ndash; <category android:adVideoName="android.intent.category.HOME" /> &ndash;&gt;-->
+            <!--&lt;!&ndash; <category android:adVideoName="android.intent.category.DEFAULT" /> &ndash;&gt;-->
+            <!--&lt;!&ndash; </intent-filter> &ndash;&gt;-->
+        <!--</activity>-->
 
         <receiver android:name=".AppInstallReceiver" >
             <intent-filter>
