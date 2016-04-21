@@ -102,6 +102,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private TextView tvProgress;
 
     private Handler handler;
+    // 接口重复刷新时间
+    private long pollInterval;
 
 
     @Override
@@ -532,7 +534,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
 
             }
-        }, TIME_RETRY_DURATION);
+        }, pollInterval);
 
     }
 
@@ -1227,5 +1229,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     public void setScreenShotResponse(ScreenShotResponse screenShotResponse) {
         this.screenShotResponse = screenShotResponse;
     }
+
+    public void setPollInterval(long pollInterval) {
+        this.pollInterval = pollInterval;
+    }
+
 
 }
