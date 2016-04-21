@@ -174,7 +174,8 @@ public class DownloadPrepareThread extends Thread {
             String fileName = file.getName();
             int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
             fileName = fileName.substring(0, index);
-            AdDao.getInstance(context).update(isToday, fileName, AdDao.adVideoLength, String.valueOf(fileSize));
+            boolean isUpdate = AdDao.getInstance(context).update(isToday, fileName, AdDao.adVideoLength, String.valueOf(fileSize));
+            LogCat.e("video", "文件修改成功......." + AdDao.getInstance(context).queryDetail(isToday, AdDao.adVideoName, fileName).adVideoLength);
         }catch (Exception e){
             e.printStackTrace();
         }

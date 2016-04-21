@@ -266,6 +266,9 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
         return flag;
     }
 
+
+
+
     public synchronized AdDetailResponse queryDetail(boolean isToday, int id) {
         SQLiteDatabase database = null;
         Cursor cursor = null;
@@ -274,6 +277,43 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
             database = getConnection();
             database.beginTransaction();
             cursor = database.rawQuery((isToday ? SQL_QUERY_ID : SQL_QUERY_ID_TM), new String[]{String.valueOf(id)});
+            if (cursor != null && cursor.moveToFirst()) {
+                adDetailResponse = new AdDetailResponse();
+                adDetailResponse.adVideoId = cursor.getInt(1);
+                adDetailResponse.adVideoName = cursor.getString(2);
+                adDetailResponse.adVideoUrl = cursor.getString(3);
+                adDetailResponse.videoPath = cursor.getString(4);
+                adDetailResponse.adVideoIndex = cursor.getInt(5);
+                adDetailResponse.adVideoLength = cursor.getLong(6);
+            }
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (database != null) {
+                database.endTransaction();
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
+
+            if (null != database) {
+                database.close();
+            }
+        }
+        return adDetailResponse;
+    }
+
+    public synchronized AdDetailResponse queryDetail(boolean isToday, String column, String value) {
+        SQLiteDatabase database = null;
+        Cursor cursor = null;
+        AdDetailResponse adDetailResponse = null;
+        try {
+            database = getConnection();
+            database.beginTransaction();
+            String sql = "select * from " + (isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME) + " where " + column + " = ?";
+
+            cursor = database.rawQuery(sql, new String[]{String.valueOf(value)});
             if (cursor != null && cursor.moveToFirst()) {
                 adDetailResponse = new AdDetailResponse();
                 adDetailResponse.adVideoId = cursor.getInt(1);

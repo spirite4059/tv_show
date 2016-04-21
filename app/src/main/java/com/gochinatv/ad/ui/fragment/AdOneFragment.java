@@ -32,6 +32,7 @@ import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.VideoHttpService;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -104,6 +105,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private LayoutResponse layoutResponse;
 
     private TextView tvProgress;
+    private TextView tvSpeed;
 
     private Handler handler;
     // 接口重复刷新时间
@@ -121,6 +123,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         videoView = (MeasureVideoView) rootView.findViewById(R.id.videoView);
         loading = (LinearLayout) rootView.findViewById(R.id.loading);
         tvProgress = (TextView) rootView.findViewById(R.id.tv_progress);
+        tvSpeed = (TextView) rootView.findViewById(R.id.tv_internet_speeds);
     }
 
     @Override
@@ -249,7 +252,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 if (isDetached()) {
                     return;
                 }
-                LogCat.e( "video", "视频播放完成。。。。。。");
+                LogCat.e("video", "视频播放完成。。。。。。");
                 // 播放下一个视频
                 playNext(false);
             }
@@ -262,7 +265,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         VideoHttpService.doHttpGetVideoList(getActivity(), new OkHttpCallBack<AdVideoListResponse>() {
             @Override
             public void onSuccess(String url, AdVideoListResponse response) {
-                LogCat.e("video", "新街口成功了........*******************.");
+                LogCat.e("video", "新接口成功了........*******************.");
                 if (!isAdded()) {
                     return;
                 }
@@ -273,7 +276,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
             @Override
             public void onError(String url, String errorMsg) {
-                LogCat.e( "video", "新街口onError了.........********************");
+                LogCat.e( "video", "新接口onError了.........********************");
                 onGetVideoListFailed(errorMsg, url);
 
             }
@@ -397,7 +400,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         prepareDownloading();
 
         // 显示开发下载模式，主要是为了显示日志
-        showLogMsg("");
+        showLogMsg(0, 0);
         LogCat.e("video", "++++++++++++++++++++++++++++++++++++++++++++++++");
 
 
@@ -479,7 +482,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    showLogMsg("");
+                    showLogMsg(0, 0);
                 }
             });
         }
@@ -496,13 +499,30 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
     }
 
+
+    private long oldProgress;
+    private final int K_SIZE = 1024 * 1024;
     @Override
-    public void onDownloadProgress(final String progress) {
+    public void onDownloadProgress(final long progress, final long fileLength) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    showLogMsg(progress);
+                    showLogMsg(progress, fileLength);
+
+                    long current = progress - oldProgress;
+                    String speed ;
+                    if(current < 1024){
+                        speed = current + "B/s";
+                    }else if(current >= 1024 && current < K_SIZE){
+                        speed = current / 1024 + "KB/s";
+                    }else {
+                        speed = current / K_SIZE + "MB/s";
+                    }
+                    tvSpeed.setText("speed: " + speed);
+
+                    oldProgress = progress;
+
                 }
             });
         }
@@ -557,16 +577,18 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         screenShotService = Executors.newScheduledThreadPool(2);
         if (screenShotResponse != null) {
             delay = screenShotResponse.screenShotInterval;
+        }else {
+            delay = 60 * 15; // 15分钟
         }
         if(Constants.isTest){
-            delay = TEST_TIME_DURATION;
+            delay = 30;
         }
 
         screenShotService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 LogCat.e("video", "开始进行截图...........");
-                if(getActivity() == null || isDetached()){
+                if (getActivity() == null || isDetached()) {
                     return;
                 }
                 AdDetailResponse videoAdBean = getPlayingVideoInfo();
@@ -799,10 +821,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 downloadLists.remove(0);
                 prepareDownloading();
             } else {
-                videoUrl = downloadingVideoResponse.adVideoUrl;
                 retryTimes = 0;
-
-               videoUrl = "http://vod.vegocdn.com/2016/03/24/6551A4BE0000FC56.mp4?st=1461069387&token=e1c882433f2c51c13d763488516a9564";
+                if(Constants.isTest){
+                    videoUrl = "http://vod.vegocdn.com/2016/03/24/6551A4BE0000FC56.mp4?st=1461069387&token=e1c882433f2c51c13d763488516a9564";
+                }else {
+                    videoUrl = downloadingVideoResponse.adVideoUrl;
+                }
                 LogCat.e("video", "获取到当前视频的下载地址。。。。。。。。" + videoUrl);
                 download(videoUrl);
             }
@@ -810,7 +834,25 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
     }
 
-    private void showLogMsg(String progress) {
+    private String logProgress(long progress, long fileLength) {
+        if(fileLength == 0){
+            return "";
+        }
+        double size = (int) (progress / 1024);
+        String sizeStr;
+        int s = (int) (progress * 100 / fileLength);
+        if (size > 1000) {
+            size = (progress / 1024) / 1024f;
+            BigDecimal b = new BigDecimal(size);
+            double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+            sizeStr = String.valueOf(f1 + "MB，  ");
+        } else {
+            sizeStr = String.valueOf((int) size + "KB，  ");
+        }
+        return (sizeStr + s + "%");
+    }
+
+    private void showLogMsg(long progress, long fileLength) {
         if (Constants.isTest && !isDetached()) {
             // 当前下载视频
             // 当前已下载视频的个数
@@ -823,7 +865,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             }
             logBuilder.append('\n');
             logBuilder.append("当前下载进度：");
-            logBuilder.append(progress);
+            logBuilder.append(logProgress(progress, fileLength));
             logBuilder.append('\n');
 
             logBuilder.append("已下载视频列表：" + '\n');
@@ -1047,11 +1089,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      * @return
      */
     private String getRawVideoUri() {
-        if(Constants.isTest){
-            return "";
-        }else {
+//        if(Constants.isTest){
+//            return "";
+//
+//        }else {
             return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
-        }
+//        }
     }
 
 

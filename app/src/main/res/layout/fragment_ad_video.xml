@@ -24,6 +24,17 @@
         android:padding="@dimen/d_10dp"
         android:textSize="16sp" />
 
+
+    <TextView
+        android:id="@+id/tv_internet_speeds"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/d_5dp"
+        android:layout_marginBottom="@dimen/d_5dp"
+        android:layout_alignParentBottom="true"
+        android:padding="@dimen/d_10dp"
+        android:textSize="16sp" />
+
     <LinearLayout
         android:id="@+id/loading"
         android:layout_width="wrap_content"

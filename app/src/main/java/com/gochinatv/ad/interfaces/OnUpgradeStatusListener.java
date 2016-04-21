@@ -9,5 +9,5 @@ public interface OnUpgradeStatusListener {
 
     void onDownloadFileError(int errorCode, String errorMsg);
 
-    void onDownloadProgress(String progress);
+    void onDownloadProgress(long progress, long size);
 }

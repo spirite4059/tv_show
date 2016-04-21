@@ -25,7 +25,7 @@ public class VideoAdUtils {
      * @param cachePlayVideoLists
      */
     public static synchronized void cacheVideoList(String fileName, ArrayList<AdDetailResponse> cachePlayVideoLists) {
-        LogCat.e("开始文件缓存........." + fileName);
+        LogCat.e("video", "开始文件缓存........." + fileName);
         new CacheVideoListThread(cachePlayVideoLists, DataUtils.getCacheDirectory(), fileName).start();
 
     }
@@ -35,19 +35,19 @@ public class VideoAdUtils {
      * @param cachePlayVideoLists
      */
     public static synchronized void cacheTDVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
-        LogCat.e("将今日列表存入数据库........." + cachePlayVideoLists.size());
+        LogCat.e("video", "将今日列表存入数据库........." + cachePlayVideoLists.size());
         AdDao.getInstance(context).insertAll(true, cachePlayVideoLists);
-        LogCat.e("查询下插入后的个数： " + AdDao.getInstance(context).queryAll(true).size());
+        LogCat.e("video", "查询下插入后的个数： " + AdDao.getInstance(context).queryAll(true).size());
     }
 
     /**
      * 清空数据表的所有数据
      */
     public static synchronized void cleanSqlVideoList(Context context) {
-        LogCat.e("清空数据库........." );
+        LogCat.e("video", "清空数据库........." );
         AdDao.getInstance(context).deleteAll(true);
         AdDao.getInstance(context).deleteAll(false);
-        LogCat.e("查询下插入后的个数： " + AdDao.getInstance(context).queryAll(true).size());
+        LogCat.e("video", "查询下插入后的个数： " + AdDao.getInstance(context).queryAll(true).size());
     }
 
     /**
@@ -55,9 +55,9 @@ public class VideoAdUtils {
      * @param cachePlayVideoLists
      */
     public static synchronized void cacheTMVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
-        LogCat.e("将今日列表存入数据库........." + cachePlayVideoLists.size());
+        LogCat.e("video", "将今日列表存入数据库........." + cachePlayVideoLists.size());
         AdDao.getInstance(context).insertAll(false, cachePlayVideoLists);
-        LogCat.e("查询下插入后的个数： " + AdDao.getInstance(context).queryAll(false).size());
+        LogCat.e("video", "查询下插入后的个数： " + AdDao.getInstance(context).queryAll(false).size());
     }
 
 
@@ -89,7 +89,7 @@ public class VideoAdUtils {
                 String name = file.getName();
                 // 正在下载的文件不能算到本地缓存列表中
                 if (DLUtils.init(context).downloading(file.getAbsolutePath())) {
-                    LogCat.e("当前文件正在下载。。。。。");
+                    LogCat.e("video", "当前文件正在下载。。。。。");
                     continue;
                 }
                 // 文件下载失败
@@ -105,7 +105,7 @@ public class VideoAdUtils {
                 videoAdBean.videoPath = file.getAbsolutePath();
                 videoAdBean.adVideoLength = file.length();
                 adDetailResponses.add(videoAdBean);
-                LogCat.e("本地缓存视频：" + videoAdBean.adVideoName + "  " + videoAdBean.adVideoLength);
+                LogCat.e("video", "本地缓存视频：" + videoAdBean.adVideoName + "  " + videoAdBean.adVideoLength);
             } else {
                 DeleteFileUtils.getInstance().deleteFile(file.getAbsolutePath());
             }
@@ -117,7 +117,7 @@ public class VideoAdUtils {
     public static void updateVideoPath(boolean isToday, Context context, int vid, String path){
         AdDao.getInstance(context).update(isToday, vid, AdDao.videoPath, path);
         if( AdDao.getInstance(context).query(isToday, vid)){
-            LogCat.e("查询修改后的大小： " + AdDao.getInstance(context).queryDetail(isToday, vid).videoPath);
+            LogCat.e("video", "查询修改后的大小： " + AdDao.getInstance(context).queryDetail(isToday, vid).videoPath);
         }
 
 
@@ -136,13 +136,13 @@ public class VideoAdUtils {
             String json = DataUtils.readFileFromSdCard(cacheFile);
             if (!TextUtils.isEmpty(json)) {
                 Gson gson = new Gson();
-                LogCat.e("缓存列表已经找到........");
+                LogCat.e("video", "缓存列表已经找到........");
                 cacheTomorrowList = gson.fromJson(json, new TypeToken<ArrayList<AdDetailResponse>>() {
                 }.getType());
                 // TODO 以后删除
-                LogCat.e("缓存播放列表内容........");
+                LogCat.e("video", "缓存播放列表内容........");
                 for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
-                    LogCat.e("视频名称：" + adDetailResponse.adVideoName + ", 文件大小：" + adDetailResponse.adVideoLength);
+                    LogCat.e("video", "视频名称：" + adDetailResponse.adVideoName + ", 文件大小：" + adDetailResponse.adVideoLength);
                 }
 
             }
@@ -174,15 +174,15 @@ public class VideoAdUtils {
         int localLength = localVideoList.size();
         if (localLength < 2) {
             // 此时无需匹对列表，直接将预置片放入缓存播放列表
-            LogCat.e("如果本地缓存视频文件不足2个，直接播放预置片");
+            LogCat.e("video", "如果本地缓存视频文件不足2个，直接播放预置片");
         } else {
             // 匹对列表
-            LogCat.e("开始根据明日表查找可以播放的视频");
+            LogCat.e("video", "开始根据明日表查找可以播放的视频");
             for (AdDetailResponse localVideo : localVideoList) {
                 for (AdDetailResponse cacheVideo : cacheTomorrowList) {
                     if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
                         cacheVideo.videoPath = localVideo.videoPath;
-                        LogCat.e("缓存视频：" + cacheVideo.adVideoName);
+                        LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
                         cachePlayVideos.add(cacheVideo);
                         break;
                     }
@@ -210,18 +210,18 @@ public class VideoAdUtils {
                 AdDetailResponse downloadVideo = downloadLists.get(j);
                 if(!TextUtils.isEmpty(prepareVideo.adVideoName) && prepareVideo.adVideoName.equals(downloadVideo.adVideoName)){
                     prepareDownloadLists.remove(i);
-                    LogCat.e("剔除重复下载的视频：" + prepareVideo.adVideoName);
+                    LogCat.e("video", "剔除重复下载的视频：" + prepareVideo.adVideoName);
                     --i;
                     break;
                 }
             }
         }
-        LogCat.e("------------------------------");
-        LogCat.e("最终的明日下载列表.......");
+        LogCat.e("video", "------------------------------");
+        LogCat.e("video", "最终的明日下载列表.......");
         for(AdDetailResponse adDetailResponse : prepareDownloadLists){
-            LogCat.e("明日下载视频：" + adDetailResponse.adVideoName);
+            LogCat.e("video", "明日下载视频：" + adDetailResponse.adVideoName);
         }
-        LogCat.e("------------------------------");
+        LogCat.e("video", "------------------------------");
         tomorrowList.addAll(prepareDownloadLists);
         return tomorrowList;
 
@@ -232,7 +232,7 @@ public class VideoAdUtils {
      */
     public static void deleteOldDir() {
         String oldPath = DataUtils.getSdCardOldFileDirectory();
-        LogCat.e("清空旧文件目录(gochinatv)....." + oldPath);
+        LogCat.e("video", "清空旧文件目录(gochinatv)....." + oldPath);
         DeleteFileUtils.getInstance().deleteDir(new File(DataUtils.getSdCardOldFileDirectory()));
     }
 
@@ -259,7 +259,7 @@ public class VideoAdUtils {
             }
             if (isNeedDl) {
                 downloadList.add(todayResponse);
-                LogCat.e("需下载的视频：" + todayResponse.adVideoName + ", " + todayResponse.adVideoId);
+                LogCat.e("video", "需下载的视频：" + todayResponse.adVideoName + ", " + todayResponse.adVideoId);
             }
         }
         return downloadList;
@@ -280,7 +280,7 @@ public class VideoAdUtils {
                 // 本地缓存视频在今日播放列表中，说明当前视频可以直接播放
                 if (!TextUtils.isEmpty(todayResponse.adVideoName) && todayResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
                     todayResponse.videoPath = localVideoResponse.videoPath;
-                    LogCat.e("播放列表：" + todayResponse.adVideoName);
+                    LogCat.e("video", "播放列表：" + todayResponse.adVideoName);
                     playList.add(todayResponse);
                     break;
                 }
@@ -310,7 +310,7 @@ public class VideoAdUtils {
                 }
             }
             if (isNeedDel) {
-                LogCat.e("需要删除的视频：" + localVideoResponse.adVideoName);
+                LogCat.e("video", "需要删除的视频：" + localVideoResponse.adVideoName);
                 deleteList.add(localVideoResponse);
             }
         }
@@ -324,7 +324,7 @@ public class VideoAdUtils {
      */
     public static void checkFileLength(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
         if (cacheTodayList != null && cacheTodayList.size() != 0) {
-            LogCat.e("检测到播放列表, 开始检测文件完整性......");
+            LogCat.e("video", "检测到播放列表, 开始检测文件完整性......");
             for (int i = 0; i < localVideoList.size(); i++) {
                 AdDetailResponse localVideo = localVideoList.get(i);
                 for (AdDetailResponse cacheVideo : cacheTodayList) {
@@ -333,7 +333,7 @@ public class VideoAdUtils {
                             --i;
                             localVideoList.remove(localVideo);
                             DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-                            LogCat.e("由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
+                            LogCat.e("video", "由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
                         }
                     }
                 }
@@ -345,7 +345,7 @@ public class VideoAdUtils {
                     --i;
                     localVideoList.remove(localVideo);
                     DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-                    LogCat.e("由于文件大小==0，需要删除的文件是......." + localVideo.adVideoName);
+                    LogCat.e("video", "由于文件大小==0，需要删除的文件是......." + localVideo.adVideoName);
                 }
             }
         }
@@ -370,9 +370,9 @@ public class VideoAdUtils {
                     long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
                     String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
 
-                    LogCat.e(str);
+                    LogCat.e("video", str);
 
-                    LogCat.e("上报开机时长。。。。。。。。");
+                    LogCat.e("video", "上报开机时长。。。。。。。。");
                 }
             }
         } catch (Exception e) {

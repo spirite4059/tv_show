@@ -52,6 +52,7 @@ public class DownloadUtils {
                 if (fileLength == 0) {
                     return;
                 }
+                listener.onDownloadProgress(progress, fileLength);
                 logProgress(progress);
 
 
@@ -86,7 +87,8 @@ public class DownloadUtils {
                     sizeStr = String.valueOf((int) size + "KB，  ");
                 }
                 LogCat.e("video", "progress............. " + sizeStr + s + "%");
-                listener.onDownloadProgress(sizeStr + s + "%");
+//                listener.onDownloadProgress(sizeStr + s + "%");
+
             }
         });
 
