@@ -139,6 +139,8 @@ public class DLUtils implements InDLUtils {
         }
 
         downloadingPath = null;
+
+        instance = null;
     }
 
 

@@ -15,7 +15,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.download.DLUtils;
-import com.download.tools.SharedPreference;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
@@ -30,7 +29,6 @@ import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.LayoutResponse;
-import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.ADHttpService;
 import com.tools.HttpUrls;
@@ -39,7 +37,6 @@ import com.umeng.analytics.MobclickAgent;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,12 +72,11 @@ public class MainActivity extends Activity {
     private boolean isGetDerviceSucceed;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 情况fragment的状态，保证getActivity不为null
-        if(savedInstanceState!= null) {
+        if (savedInstanceState != null) {
             String FRAGMENTS_TAG = "android:support:fragments";
             savedInstanceState.remove(FRAGMENTS_TAG);
         }
@@ -92,14 +88,14 @@ public class MainActivity extends Activity {
     }
 
 
-    private void init(){
+    private void init() {
         loadingView.postDelayed(new Runnable() {
             @Override
             public void run() {
                 doHttpUpdate(MainActivity.this);
-                doGetDerviceInfo();
+                doGetDeviceInfo();
             }
-        },1000);
+        }, 1000);
         // 删除升级安装包
         deleteUpdateApk();
         /**
@@ -113,12 +109,12 @@ public class MainActivity extends Activity {
 
     private void deleteUpdateApk() {
         File file = new File(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
-        if(file.exists()){
+        if (file.exists()) {
             file.delete();
         }
     }
 
-    private void testInstall(){
+    private void testInstall() {
         //
 //        File file = Environment.getExternalStorageDirectory();
 ////
@@ -147,8 +143,6 @@ public class MainActivity extends Activity {
     }
 
 
-
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -159,6 +153,7 @@ public class MainActivity extends Activity {
      * 检查是否有版本更新
      */
     private int reTryTimes;
+
     protected void doHttpUpdate(final Context context) {
         Map<String, String> map = new HashMap<>();
         map.put("platformId", String.valueOf("22"));
@@ -205,12 +200,12 @@ public class MainActivity extends Activity {
                         }
 
                         if (response.resultForApk == null) {
-                            if("3".equals(response.status)){
+                            if ("3".equals(response.status)) {
                                 isUpgradeSucceed = true;
                                 //loadFragment(false);
-                                loadFragmentTwo(isHasUpgrade);
+                                loadFragmentTwo(isHasUpgrade, null);
                                 LogCat.e("没有升级包，不需要更新");
-                            }else{
+                            } else {
                                 LogCat.e("升级数据出错，无法正常升级2。。。。。");
                                 doError();
                             }
@@ -247,7 +242,7 @@ public class MainActivity extends Activity {
                                     downloadAPK();
                                     // 加载布局.但是不让AdOneFragment，下载视频
                                     //loadFragment(true);
-                                    loadFragmentTwo(isHasUpgrade);
+                                    loadFragmentTwo(isHasUpgrade, null);
                                 } else {
                                     // 不升级,加载布局
                                     LogCat.e("无需升级。。。。。");
@@ -255,7 +250,7 @@ public class MainActivity extends Activity {
 
                                     LogCat.e("清空升级apk.....");
                                     //loadFragment(false);
-                                    loadFragmentTwo(isHasUpgrade);
+                                    loadFragmentTwo(isHasUpgrade, null);
                                 }
                             } catch (PackageManager.NameNotFoundException e) {
                                 e.printStackTrace();
@@ -280,7 +275,7 @@ public class MainActivity extends Activity {
                                 //升级接口成功
                                 isUpgradeSucceed = true;
                                 //loadFragment(false);
-                                loadFragmentTwo(isHasUpgrade);
+                                loadFragmentTwo(isHasUpgrade, null);
                             } else {
                                 LogCat.e("进行第 " + reTryTimes + " 次重试请求。。。。。。。");
                                 doHttpUpdate(MainActivity.this);
@@ -299,10 +294,11 @@ public class MainActivity extends Activity {
 
     /**
      * 加载fragment
+     *
      * @param isDownload
      */
-    private void loadFragment(boolean isDownload){
-        if(isFinishing()){
+    private void loadFragment(boolean isDownload) {
+        if (isFinishing()) {
             return;
         }
         rootLayout.setBackground(null);
@@ -313,7 +309,7 @@ public class MainActivity extends Activity {
         FragmentTransaction ft = fm.beginTransaction();
 
         adOneFragment = new AdOneFragment();
-        if(isDownload){
+        if (isDownload) {
             adOneFragment.setIsDownloadAPK(true);
         }
         ft.add(R.id.root_main, adOneFragment);
@@ -328,128 +324,22 @@ public class MainActivity extends Activity {
 
 
     /**
-     * 加载fragment
-     * @param isDownload
-     */
-    private LayoutResponse oneLayout;//广告一布局
-    private LayoutResponse twoLayout;//广告二布局
-    private LayoutResponse threeLayout;//广告三布局
-    private LayoutResponse fourLayout;//广告四布局
-    private void loadFragmentTwo(boolean isDownload) {
-        //当升级和广告体接口都完成后，才加载布局
-        if (isUpgradeSucceed && isGetDerviceSucceed) {
-            rootLayout.setBackground(null);
-            rootLayout.setBackgroundColor(Color.BLACK);
-            loadingView.setVisibility(View.GONE);
-            imgLoge.setVisibility(View.VISIBLE);
-            FragmentManager fm = getFragmentManager();
-            FragmentTransaction ft = fm.beginTransaction();
-            adOneFragment = new AdOneFragment();
-            if (isDownload) {
-                adOneFragment.setIsDownloadAPK(true);
-            }
-
-            if (screenShot != null) {
-                //截屏的参数
-                //adOneFragment.
-                adOneFragment.setScreenShotResponse(screenShot);
-            }
-            if(!TextUtils.isEmpty(adStruct)){
-                if("1".equals(adStruct)){
-                    //一个广告位
-                    showOneAD(ft);
-                }else if("4".equals(adStruct)){
-                    //四个广告位
-
-                    //遍历获取布局参数
-                    if (LayoutResponses != null && LayoutResponses.size() > 0) {
-                        int size = LayoutResponses.size();
-                        for (int i = 0; i < size; i++) {
-                            if ("1".equals(LayoutResponses.get(i).adType)) {
-                                oneLayout = LayoutResponses.get(i);
-                            } else if ("2".equals(LayoutResponses.get(i).adType)) {
-                                twoLayout = LayoutResponses.get(i);
-                            } else if ("3".equals(LayoutResponses.get(i).adType)) {
-                                threeLayout = LayoutResponses.get(i);
-                            } else if ("4".equals(LayoutResponses.get(i).adType)) {
-                                fourLayout = LayoutResponses.get(i);
-                            }
-                        }
-                    }
-
-                    //广告一
-                    if (oneLayout != null) {
-                        if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
-                                && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
-                            //此时加载广告一
-                            LogCat.e("成功加载了广告一");
-                            adOneFragment.setLayoutResponse(oneLayout);
-                            ft.add(R.id.root_main, adOneFragment);
-                        }
-                    }
-                    //广告二
-                    if (twoLayout != null) {
-                        if (!TextUtils.isEmpty(twoLayout.adWidth) && !TextUtils.isEmpty(twoLayout.adHeight)
-                                && !TextUtils.isEmpty(twoLayout.adTop) && !TextUtils.isEmpty(twoLayout.adLeft)) {
-                            //此时加载广告二
-                            LogCat.e("成功加载了广告二");
-                            ADTwoFragment adTwoFragment = new ADTwoFragment();
-                            adTwoFragment.setLayoutResponse(twoLayout);
-                            ft.add(R.id.root_main, adTwoFragment);
-                        }
-                    }
-                    //广告三
-                    if (threeLayout != null) {
-                        if (!TextUtils.isEmpty(threeLayout.adWidth) && !TextUtils.isEmpty(threeLayout.adHeight)
-                                && !TextUtils.isEmpty(threeLayout.adTop) && !TextUtils.isEmpty(threeLayout.adLeft)) {
-                            //此时加载广告三
-                            LogCat.e("成功加载了广告三");
-                            ADThreeFragment adThreeFragment = new ADThreeFragment();
-                            adThreeFragment.setLayoutResponse(threeLayout);
-                            ft.add(R.id.root_main, adThreeFragment);
-                        }
-                    }
-                    //广告四
-                    if (fourLayout != null) {
-                        if (!TextUtils.isEmpty(fourLayout.adWidth) && !TextUtils.isEmpty(fourLayout.adHeight)
-                                && !TextUtils.isEmpty(fourLayout.adTop) && !TextUtils.isEmpty(fourLayout.adLeft)) {
-                            //此时加载广告四
-                            LogCat.e("成功加载了广告四");
-                            ADFourFragment adFourFragment = new ADFourFragment();
-                            adFourFragment.setLayoutResponse(fourLayout);
-                            ft.add(R.id.root_main, adFourFragment);
-                        }
-                    }
-                }else{
-                    //一个广告位
-                    showOneAD(ft);
-                }
-            }else {
-                //一个广告位
-                showOneAD(ft);
-            }
-            ft.commit();
-        }
-    }
-
-    /**
      * 只有视频广告
+     *
      * @param ft
      */
     private void showOneAD(FragmentTransaction ft) {
-        oneLayout = new LayoutResponse();
+        LayoutResponse oneLayout = new LayoutResponse();
         oneLayout.adWidth = "1.0";
         oneLayout.adHeight = "1.0";
         oneLayout.adTop = "0.0";
         oneLayout.adLeft = "0.0";
         //广告一
-        if (oneLayout != null) {
-            if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
-                    && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
-                //此时加载广告一
-                adOneFragment.setLayoutResponse(oneLayout);
-                ft.add(R.id.root_main, adOneFragment);
-            }
+        if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
+                && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
+            //此时加载广告一
+            adOneFragment.setLayoutResponse(oneLayout);
+            ft.add(R.id.root_main, adOneFragment);
         }
     }
 
@@ -457,25 +347,25 @@ public class MainActivity extends Activity {
     /**
      * 下载apk
      */
-    private void downloadAPK(){
+    private void downloadAPK() {
         DownloadUtils.download(true, getApplication(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
                 //新包下载完成得安装
                 LogCat.e("下载升级成功，开始正式升级.......");
                 File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-                InstallUtils.installAuto(MainActivity.this, file,true);
+                InstallUtils.installAuto(MainActivity.this, file, true);
                 //MainActivity.this.finish();
             }
 
             @Override
             public void onDownloadFileError(int errorCode, String errorMsg) {
                 //通知AdOneFragment去下载视频
-                if(reTryTimes < 3){
+                if (reTryTimes < 3) {
                     LogCat.e("下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
                     reTryTimes += 1;
                     downloadAPK();
-                }else {
+                } else {
                     LogCat.e("下载apk出现错误");
                     if (adOneFragment != null) {
                         adOneFragment.startDownloadVideo();
@@ -498,17 +388,15 @@ public class MainActivity extends Activity {
      */
 
     //布局数据
-    private ArrayList<LayoutResponse> LayoutResponses;
     //截屏数据
-    private ScreenShotResponse screenShot;
     private int reTryTimesTwo;
+
     //布局形式——1：一屏；4：4屏
-    private String adStruct;
-    private void doGetDerviceInfo() {
+    private void doGetDeviceInfo() {
         ADHttpService.doHttpGetDeviceInfo(this, new OkHttpCallBack<ADDeviceDataResponse>() {
             @Override
             public void onSuccess(String url, ADDeviceDataResponse response) {
-                LogCat.e("doGetDerviceInfo url:  " + url);
+                LogCat.e("doGetDeviceInfo url:  " + url);
                 if (isFinishing()) {
                     return;
                 }
@@ -524,25 +412,10 @@ public class MainActivity extends Activity {
                     return;
                 }
 
-                //保存轮询查接口时间间隔
-                if(response.pollInterval != 0){
-                    SharedPreference.getSharedPreferenceUtils(MainActivity.this).saveDate("pollInterval",response.pollInterval);
-                }
-                //屏幕类型
-                adStruct = response.adStruct;
-                //截屏参数
-                if (response.screenShot != null) {
-                    screenShot = response.screenShot;
-                }
-                //布局参数
-                if (response.layout != null) {
-                    LayoutResponses = response.layout;
-                }
-
                 //广告体接口成功
                 isGetDerviceSucceed = true;
                 //加载布局
-                loadFragmentTwo(isHasUpgrade);
+                loadFragmentTwo(isHasUpgrade, response);
 
             }
 
@@ -557,10 +430,10 @@ public class MainActivity extends Activity {
                         //广告体接口成功
                         isGetDerviceSucceed = true;
                         //加载布局
-                        loadFragmentTwo(isHasUpgrade);
+                        loadFragmentTwo(isHasUpgrade, null);
                     } else {
                         LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
-                        doGetDerviceInfo();
+                        doGetDeviceInfo();
                     }
                 }
             }
@@ -577,6 +450,124 @@ public class MainActivity extends Activity {
         });
 
 
+    }
+
+
+    /**
+     * 加载fragment
+     *
+     * @param isDownload
+     */
+    private LayoutResponse oneLayout;//广告一布局
+    private LayoutResponse twoLayout;//广告二布局
+    private LayoutResponse threeLayout;//广告三布局
+    private LayoutResponse fourLayout;//广告四布局
+
+    private void loadFragmentTwo(boolean isDownload, ADDeviceDataResponse response) {
+        //当升级和广告体接口都完成后，才加载布局
+        if (isUpgradeSucceed && isGetDerviceSucceed) {
+            rootLayout.setBackground(null);
+            rootLayout.setBackgroundColor(Color.BLACK);
+            loadingView.setVisibility(View.GONE);
+            imgLoge.setVisibility(View.VISIBLE);
+            FragmentManager fm = getFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+            adOneFragment = new AdOneFragment();
+            if (isDownload) {
+                adOneFragment.setIsDownloadAPK(true);
+            }
+            if (response == null) {
+                showOneAD(ft);
+            } else {
+                if (response.screenShot != null) {
+                    //截屏的参数
+                    //adOneFragment.
+                    adOneFragment.setScreenShotResponse(response.screenShot);
+                }
+
+                if (response.pollInterval > 0) {
+                    //截屏的参数
+                    //adOneFragment.
+                    adOneFragment.setPollInterval(response.pollInterval);
+                }
+
+                if (!TextUtils.isEmpty(response.adStruct)) {
+                    if ("1".equals(response.adStruct)) {
+                        //一个广告位
+                        showOneAD(ft);
+                    } else if ("4".equals(response.adStruct)) {
+                        //四个广告位
+                        //遍历获取布局参数
+                        if (response.layout != null && response.layout.size() > 0) {
+                            int size = response.layout.size();
+                            for (int i = 0; i < size; i++) {
+                                if ("1".equals(response.layout.get(i).adType)) {
+                                    oneLayout = response.layout.get(i);
+                                } else if ("2".equals(response.layout.get(i).adType)) {
+                                    twoLayout = response.layout.get(i);
+                                } else if ("3".equals(response.layout.get(i).adType)) {
+                                    threeLayout = response.layout.get(i);
+                                } else if ("4".equals(response.layout.get(i).adType)) {
+                                    fourLayout = response.layout.get(i);
+                                }
+                            }
+                        }
+
+                        //广告一
+                        if (oneLayout != null) {
+                            if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
+                                    && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
+                                //此时加载广告一
+                                LogCat.e("成功加载了广告一");
+                                adOneFragment.setLayoutResponse(oneLayout);
+                                ft.add(R.id.root_main, adOneFragment);
+                            }
+                        }
+                        //广告二
+                        if (twoLayout != null) {
+                            if (!TextUtils.isEmpty(twoLayout.adWidth) && !TextUtils.isEmpty(twoLayout.adHeight)
+                                    && !TextUtils.isEmpty(twoLayout.adTop) && !TextUtils.isEmpty(twoLayout.adLeft)) {
+                                //此时加载广告二
+                                LogCat.e("成功加载了广告二");
+                                ADTwoFragment adTwoFragment = new ADTwoFragment();
+                                adTwoFragment.setLayoutResponse(twoLayout);
+                                ft.add(R.id.root_main, adTwoFragment);
+                            }
+                        }
+                        //广告三
+                        if (threeLayout != null) {
+                            if (!TextUtils.isEmpty(threeLayout.adWidth) && !TextUtils.isEmpty(threeLayout.adHeight)
+                                    && !TextUtils.isEmpty(threeLayout.adTop) && !TextUtils.isEmpty(threeLayout.adLeft)) {
+                                //此时加载广告三
+                                LogCat.e("成功加载了广告三");
+                                ADThreeFragment adThreeFragment = new ADThreeFragment();
+                                adThreeFragment.setLayoutResponse(threeLayout);
+                                ft.add(R.id.root_main, adThreeFragment);
+                            }
+                        }
+                        //广告四
+                        if (fourLayout != null) {
+                            if (!TextUtils.isEmpty(fourLayout.adWidth) && !TextUtils.isEmpty(fourLayout.adHeight)
+                                    && !TextUtils.isEmpty(fourLayout.adTop) && !TextUtils.isEmpty(fourLayout.adLeft)) {
+                                //此时加载广告四
+                                LogCat.e("成功加载了广告四");
+                                ADFourFragment adFourFragment = new ADFourFragment();
+                                adFourFragment.setLayoutResponse(fourLayout);
+                                ft.add(R.id.root_main, adFourFragment);
+                            }
+                        }
+                    } else {
+                        //一个广告位
+                        showOneAD(ft);
+                    }
+                } else {
+                    //一个广告位
+                    showOneAD(ft);
+                }
+                ft.commit();
+            }
+
+        }
     }
 
 
@@ -603,11 +594,6 @@ public class MainActivity extends Activity {
 //    private Bitmap  getBitmapFromRes(){
 //      return BitmapFactory.decodeResource(this.getResources(),R.drawable.loging_bg);
 //    }
-
-
-
-
-
 
 
 }
