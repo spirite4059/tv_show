@@ -5,7 +5,7 @@ import android.text.TextUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.httputils.http.response.AdDetailResponse;
+import com.okhtttp.response.AdDetailResponse;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,7 +47,6 @@ public class ToolUtils {
                 LogCat.e("播放列表内容........");
                 for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
                     LogCat.e("视频名称：" + adDetailResponse.adVideoName);
-                    adDetailResponse.adVideoName = adDetailResponse.name;
                 }
 
             }

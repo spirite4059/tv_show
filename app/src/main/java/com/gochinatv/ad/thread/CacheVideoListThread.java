@@ -4,7 +4,7 @@ import android.text.TextUtils;
 
 import com.gochinatv.ad.tools.LogCat;
 import com.google.gson.Gson;
-import com.httputils.http.response.AdDetailResponse;
+import com.okhtttp.response.AdDetailResponse;
 
 import java.io.BufferedWriter;
 import java.io.File;

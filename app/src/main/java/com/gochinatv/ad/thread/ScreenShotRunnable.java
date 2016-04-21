@@ -12,6 +12,7 @@ import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.okhtttp.OkHttpUtils;
+import com.okhtttp.response.ScreenShotResponse;
 import com.tools.HttpUrls;
 
 import java.io.File;
@@ -30,20 +31,25 @@ public class ScreenShotRunnable implements Runnable{
     private float bgScale;
     private float videoScale;
     private String fileName;
+    private ScreenShotResponse screenShotResponse;
 
-    public ScreenShotRunnable(Activity activity, long currentTime, float bgScale, float videoScale, String fileName){
+    public ScreenShotRunnable(Activity activity, long currentTime, String fileName, ScreenShotResponse screenShotResponse){
         this.activity = activity;
-        this.bgScale = bgScale;
-        this.videoScale = videoScale;
         this.fileName = fileName;
         this.currentTime = currentTime;
+        this.screenShotResponse = screenShotResponse;
+        videoScale = 0.4f;
     }
+
+
 
     @Override
     public void run() {
 
 //        Bitmap bitmap = getFullScreenShot();
 
+
+        LogCat.e("开始进行截图...........");
         Bitmap videoBitmap = getVideoScreenShot();
         if(videoBitmap == null){
             return;
@@ -70,8 +76,8 @@ public class ScreenShotRunnable implements Runnable{
         if(!fileRoot.exists()){
             fileRoot.mkdirs();
         }
-
-        File file = new File(rootPath, Constants.FILE_SCREEN_SHOT_NAME);
+        LogCat.e("uploadBitmap..............");
+        File file = new File(rootPath,  System.currentTimeMillis() + Constants.FILE_SCREEN_SHOT_NAME);
         if(!file.exists()){
             try {
                 file.createNewFile();
@@ -91,7 +97,7 @@ public class ScreenShotRunnable implements Runnable{
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
-
+            LogCat.e("uploadBitmap..............1111");
             boolean isScreenShot = resultBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
 
 
@@ -164,17 +170,29 @@ public class ScreenShotRunnable implements Runnable{
     }
 
     private Bitmap getVideoScreenShot(){
-        // 获取状况栏高度
-        int width = activity.getWindowManager().getDefaultDisplay().getWidth();
-        int height = activity.getWindowManager().getDefaultDisplay()
-                .getHeight();
+        int width = 0;
+        int height = 0;
+        if(currentTime < 0){
+            return null;
+        }
+
+        if(screenShotResponse == null){
+            // 获取状况栏高度
+            width = activity.getWindowManager().getDefaultDisplay().getWidth();
+            height = activity.getWindowManager().getDefaultDisplay().getHeight();
+        }else {
+            width = screenShotResponse.screenShotImgW;
+            height = screenShotResponse.screenShotImgH;
+        }
+        LogCat.e("开始截取指定帧的图片.....");
+
         // 获取视频的截图
         Bitmap videoBitmap = null;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {// MODE_CAPTURE_FRAME_ONLY
             retriever.setDataSource(fileName);
-            String timeString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            long time = Long.parseLong(timeString);
+//            String timeString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+//            long time = Long.parseLong(timeString);
 //            LogCat.e("获取到的视频长度：" + time);
 //            LogCat.e("获取到的视频长度：" + retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
 //            LogCat.e("获取到的视频名称：" + fileName);
@@ -182,8 +200,13 @@ public class ScreenShotRunnable implements Runnable{
             // 时间参数是微妙
             videoBitmap = retriever.getFrameAtTime(currentTime * 1000,MediaMetadataRetriever.OPTION_CLOSEST_SYNC); //按视频长度比例选择帧
             Matrix videoMatrix = new Matrix();
-            videoMatrix.postScale(videoScale, videoScale); //长和宽放大缩小的比例
-            videoBitmap = Bitmap.createBitmap(videoBitmap, 0, 0, width, height, videoMatrix, true);
+            if(screenShotResponse == null){
+                videoMatrix.postScale(videoScale, videoScale); //长和宽放大缩小的比例
+            }else {
+                videoMatrix.postScale(1.0f, 1.0f); //长和宽放大缩小的比例
+            }
+            videoBitmap = Bitmap.createBitmap(videoBitmap, 0, 0, width, height, videoMatrix , true);
+            LogCat.e("开始截取指定帧的图片.....11111111111");
         } catch (IllegalArgumentException ex) {
             // Assume this is a corrupt video file
             ex.printStackTrace();

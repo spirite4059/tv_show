@@ -3,11 +3,13 @@ package com.gochinatv.ad.tools;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.download.DLUtils;
 import com.gochinatv.ad.thread.CacheVideoListThread;
 import com.gochinatv.ad.thread.DeleteFileUtils;
+import com.gochinatv.db.AdDao;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.httputils.http.response.AdDetailResponse;
+import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,17 +30,37 @@ public class VideoAdUtils {
 
     }
 
+    /**
+     * 缓存视频
+     * @param cachePlayVideoLists
+     */
+    public static synchronized void cacheTDVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
+        LogCat.e("将今日列表存入数据库........." + cachePlayVideoLists.size());
+        AdDao.getInstance(context).insertAll(true, cachePlayVideoLists);
+        LogCat.e("查询下插入后的个数： " + AdDao.getInstance(context).queryAll(true).size());
+    }
+
+    /**
+     * 缓存视频
+     * @param cachePlayVideoLists
+     */
+    public static synchronized void cacheTMVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
+        LogCat.e("将今日列表存入数据库........." + cachePlayVideoLists.size());
+        AdDao.getInstance(context).insertAll(false, cachePlayVideoLists);
+        LogCat.e("查询下插入后的个数： " + AdDao.getInstance(context).queryAll(false).size());
+    }
+
 
     /**
      * 得到本地的缓存视频的列表
      *
      * @return
      */
-    public static ArrayList<AdDetailResponse> getLocalVideoList() {
+    public static ArrayList<AdDetailResponse> getLocalVideoList(Context context) {
         ArrayList<AdDetailResponse> localVideos = new ArrayList<>();
         File fileVideo = new File(DataUtils.getVideoDirectory());
         if (fileVideo.exists() && fileVideo.isDirectory()) {
-            localVideos.addAll(getLocalList(fileVideo));
+            localVideos.addAll(getLocalList(context, fileVideo));
         }
         return localVideos;
     }
@@ -49,17 +71,17 @@ public class VideoAdUtils {
      * @param videoFiles
      * @return
      */
-    private static ArrayList<AdDetailResponse> getLocalList(File videoFiles) {
+    private static ArrayList<AdDetailResponse> getLocalList(Context context, File videoFiles) {
         ArrayList<AdDetailResponse> adDetailResponses = new ArrayList<>();
         File[] files = videoFiles.listFiles();
         for (File file : files) {
             if (file.isFile()) {
                 String name = file.getName();
                 // 正在下载的文件不能算到本地缓存列表中
-//                if (DLUtils.init().downloading(getActivity(), name)) {
-//                    LogCat.e("当前文件正在下载。。。。。");
-//                    continue;
-//                }
+                if (DLUtils.init(context).downloading(file.getAbsolutePath())) {
+                    LogCat.e("当前文件正在下载。。。。。");
+                    continue;
+                }
                 // 文件下载失败
                 final int HEADER_FILE_LENGTH = 1024 * 1024 * 10;
                 if (file.length() < HEADER_FILE_LENGTH) {
@@ -82,6 +104,15 @@ public class VideoAdUtils {
     }
 
 
+    public static void updateVideoPath(boolean isToday, Context context, int vid, String path){
+        AdDao.getInstance(context).update(isToday, vid, AdDao.videoPath, path);
+        if( AdDao.getInstance(context).query(isToday, vid)){
+            LogCat.e("查询修改后的大小： " + AdDao.getInstance(context).queryDetail(isToday, vid).videoPath);
+        }
+
+
+    }
+
 
     /**
      * 得到明日的播放列表
@@ -102,13 +133,23 @@ public class VideoAdUtils {
                 LogCat.e("缓存播放列表内容........");
                 for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
                     LogCat.e("视频名称：" + adDetailResponse.adVideoName + ", 文件大小：" + adDetailResponse.adVideoLength);
-                    adDetailResponse.adVideoName = adDetailResponse.name;
                 }
 
             }
         }
         return cacheTomorrowList;
     }
+
+    /**
+     * 得到今日或明日的播放列表
+     *
+     * @return
+     */
+    public static synchronized ArrayList<AdDetailResponse> getCacheList(Context context, boolean isToday) {
+        ArrayList<AdDetailResponse> cacheTomorrowList = AdDao.getInstance(context).queryAll(isToday);
+        return cacheTomorrowList;
+    }
+
 
 
     /**
@@ -208,7 +249,7 @@ public class VideoAdUtils {
             }
             if (isNeedDl) {
                 downloadList.add(todayResponse);
-                LogCat.e("需下载的视频：" + todayResponse.adVideoName);
+                LogCat.e("需下载的视频：" + todayResponse.adVideoName + ", " + todayResponse.adVideoId);
             }
         }
         return downloadList;

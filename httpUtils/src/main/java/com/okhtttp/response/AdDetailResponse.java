@@ -5,11 +5,9 @@ package com.okhtttp.response;
  */
 public class AdDetailResponse {
 
-    public String adVideoId; // 视频名称
+    public int adVideoId; // 视频名称
 
     public String adVideoName; // 视频名称
-
-    public String name;
 
     public int adVideoIndex;
 
@@ -18,5 +16,5 @@ public class AdDetailResponse {
 
     public String videoPath;// 第三方视频播放地址
 
-    public boolean isPresetPiece;// 第三方视频播放地址
+    public long adVideoLength;// 第三方视频播放地址
 }

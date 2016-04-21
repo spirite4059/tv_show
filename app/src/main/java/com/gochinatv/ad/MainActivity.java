@@ -26,12 +26,12 @@ import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
-import com.httputils.http.response.UpdateResponse;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.ScreenShotResponse;
+import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.ADHttpService;
 import com.tools.HttpUrls;
 import com.umeng.analytics.MobclickAgent;
@@ -108,7 +108,6 @@ public class MainActivity extends Activity {
 //        DataUtils.startAppServer(this);
 
 
-
 //        testInstall();
     }
 
@@ -153,7 +152,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        DLUtils.init().cancel();
+        DLUtils.init(this).cancel();
     }
 
     /**
@@ -353,6 +352,7 @@ public class MainActivity extends Activity {
             if (screenShot != null) {
                 //截屏的参数
                 //adOneFragment.
+                adOneFragment.setScreenShotResponse(screenShot);
             }
             if(!TextUtils.isEmpty(adStruct)){
                 if("1".equals(adStruct)){
@@ -458,7 +458,7 @@ public class MainActivity extends Activity {
      * 下载apk
      */
     private void downloadAPK(){
-        DownloadUtils.download(Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+        DownloadUtils.download(true, getApplication(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
                 //新包下载完成得安装
