@@ -604,7 +604,7 @@ public class DataUtils {
 		DisplayMetrics metrics = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		//metrics.density
-		LogCat.e("metrics.density  "+ metrics.density +" metrics.densityDpi "+metrics.densityDpi);
+		//LogCat.e("metrics.density  "+ metrics.density +" metrics.densityDpi "+metrics.densityDpi);
          return metrics.widthPixels;
 	}
 

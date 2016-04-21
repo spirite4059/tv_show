@@ -41,9 +41,9 @@ public class ADFourFragment extends BaseFragment {
     //文字集合总数
     private int taotalSize;
 
-//    //请求文字广告接口的定时器
-//    private int getTextADTime = 5;//每隔多长去请求接口，默认：5 （分钟）
-//    private Timer getTextADTimer;
+    //请求文字广告接口的定时器
+    private int getTextADTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
+    private Timer getTextADTimer;
 
     public LayoutResponse getLayoutResponse() {
         return layoutResponse;
@@ -57,6 +57,10 @@ public class ADFourFragment extends BaseFragment {
 
     //是否是第一次网络请求
     private boolean isFirstDoHttp = true;
+
+
+    //本地数据
+    private ArrayList<String> textList;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -101,14 +105,22 @@ public class ADFourFragment extends BaseFragment {
     @Override
     protected void init() {
         autoTextView.setText("2016/03/31 19:00 Tuesday,Washington DC      内容合作Contact us:Service@gochinatv.com");
-//        stringList = new ArrayList<>();
-//        stringList.add("2016/03/31 19:00 Tuesday,Washington DC");
-//        stringList.add("内容合作Contact us:Service@gochinatv.com");
-//        stringList.add("2016/03/31 19:00 Tuesday,Washington DC      内容合作Contact us:Service@gochinatv.com");
-//        cycleTextTimer = new Timer();
-//        cycleTextTimer.schedule(new CycleText(),10000,10000);
+        textList = new ArrayList<>();
+        textList.add("2016/03/31 19:00 Tuesday,Washington DC");
+        textList.add("内容合作Contact us:Service@gochinatv.com");
+        textList.add("2016/03/31 19:00 Tuesday,Washington DC      内容合作Contact us:Service@gochinatv.com");
+        if(textList.size()>1){
+            LogCat.e("ADFourFragment 第一次开启滚动 ");
+            i = 0;
+            cycleTextTimer = new Timer();
+            cycleTextTimer.schedule(new CycleText(), cycleTextTime * 1000, cycleTextTime * 1000);
+        }
 
-        doGetTextAD();//请求接口
+
+//        //得到轮询请求接口间隔
+//        getTextADTime = (int) SharedPreference.getSharedPreferenceUtils(getActivity()).getDate("pollInterval",Long.valueOf(14400000));
+//        LogCat.e(" getTextADTime : "+ getTextADTime);
+//        doGetTextAD();//请求接口
     }
 
     @Override
@@ -124,16 +136,16 @@ public class ADFourFragment extends BaseFragment {
 
     @Override
     public void onDestroy() {
-
+        LogCat.e(" 取消广告四的滚动 ");
         if(cycleTextTimer != null){
             cycleTextTimer.cancel();
             cycleTextTimer = null;
         }
 
-//        if(getTextADTimer != null){
-//            getTextADTimer.cancel();
-//            getTextADTimer = null;
-//        }
+        if(getTextADTimer != null){
+            getTextADTimer.cancel();
+            getTextADTimer = null;
+        }
         super.onDestroy();
     }
 
@@ -152,13 +164,13 @@ public class ADFourFragment extends BaseFragment {
         @Override
         public void handleMessage(Message msg) {
             int index = msg.what;
-            if(index > textData.size()-1){
+            if(index > textList.size()-1){
                 index = 0;
                 i = 1;
             }
-            LogCat.e("i :"+ i +" adVideoIndex :"+index);
+            //LogCat.e("i :"+ i +" adVideoIndex :"+index);
             autoTextView.next();
-            autoTextView.setText(textData.get(index).adTextStr);
+            autoTextView.setText(textList.get(index));
             super.handleMessage(msg);
         }
     };
@@ -172,11 +184,10 @@ public class ADFourFragment extends BaseFragment {
         ADHttpService.doHttpGetTextADInfo(getActivity(), new OkHttpCallBack<ADFourResponse>() {
             @Override
             public void onSuccess(String url, ADFourResponse response) {
-                LogCat.e(" url " + url);
                 if(!isAdded()){
                     return;
                 }
-
+                LogCat.e(" 广告四 url " + url);
                 if (response == null || !(response instanceof ADFourResponse)) {
                     LogCat.e("请求文字接口失败");
                     doError();
@@ -199,17 +210,17 @@ public class ADFourFragment extends BaseFragment {
                     cycleTextAD();
                 }
 
-//                if(isFirstDoHttp){
-//                    if(getTextADTimer == null){
-//                        getTextADTimer = new Timer();
-//                        getTextADTimer.schedule(new TimerTask() {
-//                            @Override
-//                            public void run() {
-//                                doGetTextAD();
-//                            }
-//                        },getTextADTime*60000,getTextADTime*60000);
-//                    }
-//                }
+                if(isFirstDoHttp){
+                    if(getTextADTimer == null){
+                        getTextADTimer = new Timer();
+                        getTextADTimer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                doGetTextAD();
+                            }
+                        },getTextADTime,getTextADTime);
+                    }
+                }
                 isFirstDoHttp = false;
 
             }

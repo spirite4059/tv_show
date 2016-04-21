@@ -4,7 +4,7 @@
     android:id="@+id/root_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
+    android:background="@drawable/loading_bg"
     android:keepScreenOn="true"
     >
 
@@ -20,14 +20,14 @@
 
 
 
-    <ImageView
-        android:id="@+id/img_loging"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/loging_bg"
-        android:scaleType="fitXY"
+    <!--<ImageView-->
+        <!--android:id="@+id/img_loging"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:src="@drawable/loging_bg"-->
+        <!--android:scaleType="fitXY"-->
 
-        />
+        <!--/>-->
 
 
     <LinearLayout

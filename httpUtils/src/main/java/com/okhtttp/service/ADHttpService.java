@@ -44,7 +44,8 @@ public class ADHttpService {
     /**
      * 广告三--图片广告
      */
-    public static final String URL_GET_AD_THREE = "http://210.14.151.100:8090/api/ad_v1/getImageAdList";
+    //public static final String URL_GET_AD_THREE = "http://210.14.151.100:8090/api/ad_v1/getImageAdList";
+    public static final String URL_GET_AD_THREE = "http://mock.vego.tv:8888/zfy/getAdList";
     public static void doHttpGetImageADInfo(Context context, OkHttpCallBack<AdThreeDataResponse> listener){
         Map<String, String> params = new HashMap<>();
         params.put("mac", MacUtils.getMacAddress(context));
