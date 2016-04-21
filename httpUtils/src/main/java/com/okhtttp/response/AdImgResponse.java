@@ -8,7 +8,7 @@ public class AdImgResponse {
     public String adImgName;
     public String adImgUrl;
     public int adImgIndex;
-    public String adImgId;
+    public int adImgId;
     public String adImgPrice;
 
 }

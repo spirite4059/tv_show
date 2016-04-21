@@ -14,6 +14,7 @@ import android.widget.Scroller;
 import android.widget.TextView;
 
 import com.gochinatv.ad.R;
+import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -57,7 +58,9 @@ public class RecycleAnimationLayout extends LinearLayout {
 
     private Runnable recycleRunnable;
 
-    private int oldDataSize;
+    //private int oldOneID,oldTwoID;//前一次的图片广告id
+    private ArrayList<Integer> oldIdList,newIdList;
+
 
     public RecycleAnimationLayout(Context context) {
         super(context);
@@ -76,7 +79,6 @@ public class RecycleAnimationLayout extends LinearLayout {
 
     private void init(){
         mScroller = new Scroller(getContext());
-        LogCat.e("RecycleAnimationLayout","11111111111111111111 ");
         layoutInflater = LayoutInflater.from(getContext());
         imageLoader = ImageLoader.getInstance();
         options = new DisplayImageOptions.Builder().cacheInMemory(false).cacheOnDisc(true)
@@ -99,7 +101,6 @@ public class RecycleAnimationLayout extends LinearLayout {
         init();
         this.imgResponses = list;
         int size = imgResponses.size();
-        oldDataSize = size;
         LogCat.e("RecycleAnimationLayout","图片广告的个数 seiz : " + size);
         if(size == 2){
             for(int i=0;i<2;i++){
@@ -248,13 +249,33 @@ public class RecycleAnimationLayout extends LinearLayout {
      * 设置数据
      * @param imgResponses
      */
+    private boolean needRefresh;
     public void setImgResponses(ArrayList<AdImgResponse> imgResponses) {
         this.imgResponses = imgResponses;
         int size = imgResponses.size();
         if(size == 2){
             //要停在滚动
             stopRecycleAnimation();
-            if(size != oldDataSize){
+            //将当前的图片id存储起来
+            if(newIdList == null){
+                newIdList = new ArrayList<>();
+            }
+            if(newIdList.size()>0){
+                newIdList.clear();
+            }
+            for(int i=0; i<2;i++){
+                newIdList.add(imgResponses.get(i).adImgId);
+            }
+
+            //判断是否要刷新数据
+            if(newIdList != null && oldIdList != null ){
+                needRefresh = DataUtils.compare(newIdList,oldIdList);
+            }else{
+                needRefresh = false;
+            }
+
+            if(!needRefresh){
+                LogCat.e("RecycleAnimationLayout"," 数据有改动，需要刷新 ");
                 //刷新数据
                 for(int i=0; i<2;i++){
                     View reuseView = this.getChildAt(i);
@@ -270,13 +291,23 @@ public class RecycleAnimationLayout extends LinearLayout {
                     if("localPicture".equals(imgResponses.get(i).adImgUrl)){
                         imageLoader.displayImage("drawable://" + R.drawable.ad_three_loading1,pic,options);
                     }else {
-                        imageLoader.displayImage(imgResponses.get(i).adImgUrl,pic,options);
+                        imageLoader.displayImage(imgResponses.get(i).adImgUrl, pic, options);
                     }
                 }
             }else{
-                LogCat.e("RecycleAnimationLayout"," 数据集合大小一样，不刷新数据 ");
+                LogCat.e("RecycleAnimationLayout"," 没有数据改动，不需要刷新 ");
             }
 
+            //保留之前的图片id
+            if(oldIdList == null){
+                oldIdList = new ArrayList<>();
+            }
+            if(oldIdList.size()>0){
+                oldIdList.clear();
+            }
+            for(int i=0; i<2;i++){
+                oldIdList.add(imgResponses.get(i).adImgId);
+            }
 
         }else if(size >2){
 
@@ -320,7 +351,6 @@ public class RecycleAnimationLayout extends LinearLayout {
             //要停在滚动
             stopRecycleAnimation();
         }
-        oldDataSize = size;
     }
 
 

@@ -158,6 +158,7 @@ public class ADThreeFragment extends BaseFragment {
                     adImgResponse.adImgName = "";
                     adImgResponse.adImgPrice = "";
                     adImgResponse.adImgUrl = "localPicture";
+                    adImgResponse.adImgId = 0;
                     imgResponses.add(adImgResponse);
                     if(isFirstDoHttp){
                         //第一次请求

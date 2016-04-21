@@ -34,9 +34,11 @@ import java.net.SocketException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressLint({ "NewApi", "SimpleDateFormat", "DefaultLocale" })
@@ -648,6 +650,26 @@ public class DataUtils {
 	 */
 	public static void startAppServer(Context context){
 		Settings.Global.putInt(context.getContentResolver(), "package_verifier_enable", 0);
+	}
+
+
+	/**
+	 * 队列比较
+	 * @param <T>
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static <T extends Comparable<T>> boolean compare(List<T> a, List<T> b) {
+		if(a.size() != b.size())
+			return false;
+		Collections.sort(a);
+		Collections.sort(b);
+		for(int i=0;i<a.size();i++){
+			if(!a.get(i).equals(b.get(i)))
+				return false;
+		}
+		return true;
 	}
 
 

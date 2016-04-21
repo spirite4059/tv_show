@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -74,6 +75,10 @@ public class MainActivity extends Activity {
 
     private ADDeviceDataResponse adDeviceDataResponse;//
 
+    //定时器--在开机自启前网络没连上是用
+    private Handler handler;
+    private int runnableTimes;//post-Runnable的次数
+    //private Runnable runnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,13 +107,17 @@ public class MainActivity extends Activity {
          */
         hideNavigationBar();
 
-        loadingView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                doHttpUpdate(MainActivity.this);
-                doGetDeviceInfo();
-            }
-        }, 2000);
+        if(DataUtils.isNetworkConnected(this)){
+            LogCat.e("网络已连接，请求接口");
+            doHttpUpdate(MainActivity.this);
+            doGetDeviceInfo();
+        }else{
+            LogCat.e("网络未连接，继续判断网络是否连接");
+            handler = new Handler();
+            handler.postDelayed(runnable,3000);
+
+        }
+
         // 删除升级安装包
         deleteUpdateApk();
         /**
@@ -118,9 +127,31 @@ public class MainActivity extends Activity {
             DataUtils.startAppServer(this);
         }
 
-
-
     }
+
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            runnableTimes++;
+            if(DataUtils.isNetworkConnected(MainActivity.this)){
+                LogCat.e("网络已连接，请求接口，并且移除runnable");
+                handler.removeCallbacks(runnable);
+                doHttpUpdate(MainActivity.this);
+                doGetDeviceInfo();
+            }else{
+                if(runnableTimes >4){
+                    LogCat.e("请求5次后不再请求，进入广告一");
+                    isUpgradeSucceed = true;
+                    isGetDerviceSucceed = true;
+                    loadFragmentTwo(isHasUpgrade);
+                }else{
+                    LogCat.e("网络未连接，继续判断网络是否连接");
+                    handler.postDelayed(runnable,3000);
+                }
+            }
+        }
+    };
+
 
     private void deleteUpdateApk() {
         File file = new File(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
@@ -162,6 +193,9 @@ public class MainActivity extends Activity {
     protected void onStop() {
         super.onStop();
         DLUtils.init(this).cancel();
+        if(handler != null && runnable != null){
+            handler.removeCallbacks(runnable);
+        }
     }
 
     /**
@@ -341,9 +375,11 @@ public class MainActivity extends Activity {
     /**
      * 只有视频广告
      *
-     * @param ft
+     * @param
      */
-    private void showOneAD(FragmentTransaction ft) {
+    private void showOneAD() {
+        FragmentManager oneFM = getFragmentManager();
+        FragmentTransaction oneFT = oneFM.beginTransaction();
         LayoutResponse oneLayout = new LayoutResponse();
         oneLayout.adWidth = "1.0";
         oneLayout.adHeight = "1.0";
@@ -354,7 +390,8 @@ public class MainActivity extends Activity {
                 && !TextUtils.isEmpty(oneLayout.adTop) && !TextUtils.isEmpty(oneLayout.adLeft)) {
             //此时加载广告一
             adOneFragment.setLayoutResponse(oneLayout);
-            ft.add(R.id.root_main, adOneFragment);
+            oneFT.add(R.id.root_main, adOneFragment);
+            oneFT.commit();
         }
     }
 
@@ -457,7 +494,7 @@ public class MainActivity extends Activity {
             @Override
             public void onError(String url, String errorMsg) {
 
-                LogCat.e("请求接口出错，无法升级。。。。。" + url);
+                LogCat.e("请求广告体接口失败。。。。。" + url);
                 doError();
 
 
@@ -479,20 +516,20 @@ public class MainActivity extends Activity {
     private LayoutResponse fourLayout;//广告四布局
 
     private void loadFragmentTwo(boolean isDownload) {
+        LogCat.e(" isUpgradeSucceed "+ isUpgradeSucceed +"  isGetDerviceSucceed    " + isGetDerviceSucceed);
         //当升级和广告体接口都完成后，才加载布局
         if (isUpgradeSucceed && isGetDerviceSucceed) {
             rootLayout.setBackground(null);
             rootLayout.setBackgroundColor(Color.BLACK);
             loadingView.setVisibility(View.GONE);
             imgLoge.setVisibility(View.VISIBLE);
-            FragmentManager fm = getFragmentManager();
-            FragmentTransaction ft = fm.beginTransaction();
+
             adOneFragment = new AdOneFragment();
             if (isDownload) {
                 adOneFragment.setIsDownloadAPK(true);
             }
             if (adDeviceDataResponse == null) {
-                showOneAD(ft);
+                showOneAD();
             } else {
                 if (adDeviceDataResponse.screenShot != null) {
                     //截屏的参数
@@ -509,7 +546,7 @@ public class MainActivity extends Activity {
                 if (!TextUtils.isEmpty(adDeviceDataResponse.adStruct)) {
                     if ("1".equals(adDeviceDataResponse.adStruct)) {
                         //一个广告位
-                        showOneAD(ft);
+                        showOneAD();
                     } else if ("4".equals(adDeviceDataResponse.adStruct)) {
                         //四个广告位
                         //遍历获取布局参数
@@ -528,6 +565,8 @@ public class MainActivity extends Activity {
                             }
                         }
 
+                        FragmentManager fm = getFragmentManager();
+                        FragmentTransaction ft = fm.beginTransaction();
                         //广告一
                         if (oneLayout != null) {
                             if (!TextUtils.isEmpty(oneLayout.adWidth) && !TextUtils.isEmpty(oneLayout.adHeight)
@@ -571,15 +610,16 @@ public class MainActivity extends Activity {
                                 ft.add(R.id.root_main, adFourFragment);
                             }
                         }
+                        ft.commit();
                     } else {
                         //一个广告位
-                        showOneAD(ft);
+                        showOneAD();
                     }
                 } else {
                     //一个广告位
-                    showOneAD(ft);
+                    showOneAD();
                 }
-                ft.commit();
+
             }
 
         }
