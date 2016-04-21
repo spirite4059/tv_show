@@ -29,7 +29,7 @@ public class ScreenShotUtils {
         if(!fileRoot.exists()){
             fileRoot.mkdirs();
         }
-        File file = new File(rootPath,  System.currentTimeMillis() + Constants.FILE_SCREEN_SHOT_NAME);
+        File file = new File(rootPath, Constants.FILE_SCREEN_SHOT_NAME);
         if(!file.exists()){
             try {
                 file.createNewFile();
@@ -49,7 +49,6 @@ public class ScreenShotUtils {
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
-            LogCat.e("uploadBitmap..............1111");
             boolean isScreenShot = resultBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
 
 
