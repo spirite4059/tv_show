@@ -40,13 +40,26 @@ public class RecycleAnimationLayout extends LinearLayout {
     private int itemHeight;//item的高
 
     private ArrayList<AdImgResponse> imgResponses;//数据集合
+
+    /**
+       得到当前显示的pos
+     * @return
+     */
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
     private int position = 2;//当前是imgResponses的位置
     private int duration = 2;//动画时间（秒）
 
 
 
 //    private Timer recycleTimer;//动画计时器
-    private int secondTime = 5;//每隔多少秒执行一次动画(秒)
+    private int secondTime = 5000;//每隔多少秒执行一次动画(毫秒)
 
 
     private boolean isRecycle;//是否处于滚动状态
@@ -61,6 +74,8 @@ public class RecycleAnimationLayout extends LinearLayout {
     private ArrayList<Integer> oldIdList,newIdList;
 
     private int [] localImgArray = new int[]{R.drawable.test1,R.drawable.test2,R.drawable.ad_three_loading2,R.drawable.news2};
+
+    private int oldPositionID;//保存
 
 
     public RecycleAnimationLayout(Context context) {
@@ -102,7 +117,7 @@ public class RecycleAnimationLayout extends LinearLayout {
         init();
         this.imgResponses = list;
         int size = imgResponses.size();
-        LogCat.e("RecycleAnimationLayout","图片广告的个数 seiz : " + size);
+        LogCat.e("RecycleAnimationLayout", "图片广告的个数 seiz : " + size);
         if(size == 2){
 
         }else if(size >2){
@@ -122,7 +137,7 @@ public class RecycleAnimationLayout extends LinearLayout {
                 if(imgResponses.get(i).isFromServer){
                     //来自服务器
                     if(imgResponses.get(i).adImgPrice != null){
-                        price.setText(imgResponses.get(i).adImgPrice+"元");
+                        price.setText(imgResponses.get(i).adImgPrice);
                     }
                     if(!TextUtils.isEmpty(imgResponses.get(i).adImgUrl)){
                         imageLoader.displayImage(imgResponses.get(i).adImgUrl, pic, options);
@@ -142,12 +157,17 @@ public class RecycleAnimationLayout extends LinearLayout {
 
                 }
 
+                //记录旧的id
+                if(i==2){
+                   oldPositionID = imgResponses.get(i).adImgId;
+                }
+
+
                 this.addView(view);
             }
-            LogCat.e("RecycleAnimationLayout","2222222222222222 ");
             isRecycle = true;
             recycleRunnable = new RecycleRunnable();
-            handler.postDelayed(recycleRunnable,secondTime*1000);
+            handler.postDelayed(recycleRunnable,secondTime);
 
 
         }else{
@@ -162,7 +182,7 @@ public class RecycleAnimationLayout extends LinearLayout {
         public void run() {
             scrollUp();
             position++;
-            handler.postDelayed(recycleRunnable,secondTime*1000);
+            handler.postDelayed(recycleRunnable,secondTime);
         }
     }
 
@@ -215,16 +235,26 @@ public class RecycleAnimationLayout extends LinearLayout {
         LogCat.e("RecycleAnimationLayout","将最顶的view移动动到最低 ");
         scrollDown();
         final View reuseView = this.getChildAt(0);
-        LinearLayout.LayoutParams params4 = (LinearLayout.LayoutParams) reuseView.getLayoutParams();
-        params4.width = itemWidth;
-        params4.height = itemHeight;
-        reuseView.setLayoutParams(params4);
+//        LinearLayout.LayoutParams params4 = (LinearLayout.LayoutParams) reuseView.getLayoutParams();
+//        params4.width = itemWidth;
+//        params4.height = itemHeight;
+//        reuseView.setLayoutParams(params4);
         this.removeViewAt(0);
         this.addView(reuseView);
         LogCat.e("RecycleAnimationLayout"," 子view个数 getChildCount:  " + this.getChildCount());
         if (position > imgResponses.size()-1) {
             position = 0;
         }
+        LogCat.e("RecycleAnimationLayout"," position:  " + position);
+        LogCat.e("RecycleAnimationLayout"," oldPositionID:  " + oldPositionID + "    下个要出来图片的adImgId;   " + imgResponses.get(position).adImgId);
+        if(oldPositionID == imgResponses.get(position).adImgId){
+            //表示下一个数据与这个相同
+            position++;
+            if (position > imgResponses.size()-1) {
+                position = 0;
+            }
+        }
+
         TextView name = (TextView) reuseView.findViewById(R.id.ad_three_text_name);
         name.setText(imgResponses.get(position).adImgName);
         //name.setText(imgResponses.get(position).adImgName);
@@ -235,7 +265,7 @@ public class RecycleAnimationLayout extends LinearLayout {
         if(imgResponses.get(position).isFromServer){
             //来自服务器
             if(imgResponses.get(position).adImgName != null){
-                price.setText(imgResponses.get(position).adImgPrice+"元");
+                price.setText(imgResponses.get(position).adImgPrice);
             }
             if(!TextUtils.isEmpty(imgResponses.get(position).adImgUrl)){
                 imageLoader.displayImage(imgResponses.get(position).adImgUrl, pic, options);
@@ -254,6 +284,8 @@ public class RecycleAnimationLayout extends LinearLayout {
             }
         }
 
+        //记录旧的id
+        oldPositionID = imgResponses.get(position).adImgId;
         LogCat.e("RecycleAnimationLayout"," moveViewToBottom  position: " + position + "   菜名：   " + imgResponses.get(position).adImgName);
 
     }

@@ -118,7 +118,7 @@ public class ADThreeOtherFragment extends BaseFragment {
             adImgResponse.adImgName = "";
             adImgResponse.adImgPrice = "";
             adImgResponse.adImgUrl = String.valueOf(i);
-            adImgResponse.adImgId = 0;
+            adImgResponse.adImgId = i-10;
             adImgResponse.isFromServer = false;
             imgLocalResponses.add(adImgResponse);
         }
@@ -172,7 +172,7 @@ public class ADThreeOtherFragment extends BaseFragment {
                             adImgResponse.adImgName = "";
                             adImgResponse.adImgPrice = "";
                             adImgResponse.adImgUrl = String.valueOf(i);
-                            adImgResponse.adImgId = 0;
+                            adImgResponse.adImgId = i-10;
                             adImgResponse.isFromServer = false;
                             imgLocalResponses.add(adImgResponse);
                         }
@@ -220,7 +220,7 @@ public class ADThreeOtherFragment extends BaseFragment {
                             adImgResponse.adImgName = "";
                             adImgResponse.adImgPrice = "";
                             adImgResponse.adImgUrl = String.valueOf(i);
-                            adImgResponse.adImgId = 0;
+                            adImgResponse.adImgId = i-10;
                             adImgResponse.isFromServer = false;
                             imgLocalResponses.add(adImgResponse);
                         }
@@ -230,6 +230,8 @@ public class ADThreeOtherFragment extends BaseFragment {
                     LogCat.e("RecycleAnimationLayout", " 本地图片补充的 needAmount ：" + needAmount);
                     int [] needArray = DataUtils.randomCommon(0, 3, needAmount);
                     LogCat.e("RecycleAnimationLayout", " 本地图片补充的 needAmount #################### ：" + needAmount);
+
+
                     if(needArray != null){
                         for(int i=0;i<needArray.length;i++){
                             LogCat.e("RecycleAnimationLayout", " 本地图片补充的：" + needArray[i]);
@@ -271,13 +273,13 @@ public class ADThreeOtherFragment extends BaseFragment {
                 LogCat.e("RecycleAnimationLayout"," 广告三的接口 ！！！！onError ");
                 initData();
 
-                if (adThreeBg != null && adThreeBg.getVisibility() == View.GONE) {
-                    //没有数据显示背景图
-                    adThreeBg.setVisibility(View.VISIBLE);
-                    adThreeBg.setAlpha(1.0f);
-                    //停在滚动
-                    linearLayout.stopRecycleAnimation();
-                }
+//                if (adThreeBg != null && adThreeBg.getVisibility() == View.GONE) {
+//                    //没有数据显示背景图
+//                    adThreeBg.setVisibility(View.VISIBLE);
+//                    adThreeBg.setAlpha(1.0f);
+//                    //停在滚动
+//                    linearLayout.stopRecycleAnimation();
+//                }
 
 
             }
