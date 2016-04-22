@@ -33,7 +33,6 @@ public class MyApplication extends Application{
         Fresco.initialize(this);
         try {
             String mac = TextUtils.isEmpty(DataUtils.getMacAddress(this)) ? "" : DataUtils.getMacAddress(this);
-            mac = mac.replace(":", "");
             LogCat.e("mac: " + mac);
             AnalyticsConfig.setChannel(mac);
         } catch (Exception e) {
