@@ -14,7 +14,6 @@ import android.widget.Scroller;
 import android.widget.TextView;
 
 import com.gochinatv.ad.R;
-import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -61,6 +60,8 @@ public class RecycleAnimationLayout extends LinearLayout {
     //private int oldOneID,oldTwoID;//前一次的图片广告id
     private ArrayList<Integer> oldIdList,newIdList;
 
+    private int [] localImgArray = new int[]{R.drawable.test1,R.drawable.test2,R.drawable.ad_three_loading2,R.drawable.news2};
+
 
     public RecycleAnimationLayout(Context context) {
         super(context);
@@ -103,39 +104,9 @@ public class RecycleAnimationLayout extends LinearLayout {
         int size = imgResponses.size();
         LogCat.e("RecycleAnimationLayout","图片广告的个数 seiz : " + size);
         if(size == 2){
-            for(int i=0;i<2;i++){
-                View view = layoutInflater.inflate(R.layout.itme_ad_three, this, false);
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();
-                params.width = itemWidth;
-                params.height = itemHeight;
-                view.setLayoutParams(params);
-                TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);
-                name.setText(imgResponses.get(i).adImgName);
-                TextView price = (TextView)view.findViewById(R.id.ad_three_text_price);
-                if(!TextUtils.isEmpty(imgResponses.get(i).adImgPrice)){
-                    price.setText(imgResponses.get(i).adImgPrice + "元");
-                }else{
-                    price.setText(imgResponses.get(i).adImgPrice);
-                }
-
-                ImageView pic = (ImageView)view.findViewById(R.id.ad_three_img);
-                if("localPicture".equals(imgResponses.get(i).adImgUrl)){
-                    imageLoader.displayImage("drawable://" + R.drawable.ad_three_loading1,pic,options);
-                }else {
-                    imageLoader.displayImage(imgResponses.get(i).adImgUrl,pic,options);
-                }
-
-                this.addView(view);
-            }
-            //留着复用
-            View view1 = layoutInflater.inflate(R.layout.itme_ad_three, this, false);
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view1.getLayoutParams();
-            params.width = itemWidth;
-            params.height = itemHeight;
-            view1.setLayoutParams(params);
-            this.addView(view1);
 
         }else if(size >2){
+
             for(int i=0;i<3;i++){
                 View view = layoutInflater.inflate(R.layout.itme_ad_three, this, false);
                 LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();
@@ -143,11 +114,34 @@ public class RecycleAnimationLayout extends LinearLayout {
                 params.height = itemHeight;
                 view.setLayoutParams(params);
                 TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);
-                name.setText(imgResponses.get(i).adImgName);
+                if(imgResponses.get(i).adImgName != null){
+                    name.setText(imgResponses.get(i).adImgName);
+                }
                 TextView price = (TextView)view.findViewById(R.id.ad_three_text_price);
-                price.setText(imgResponses.get(i).adImgPrice+"元");
                 ImageView pic = (ImageView)view.findViewById(R.id.ad_three_img);
-                imageLoader.displayImage(imgResponses.get(i).adImgUrl, pic, options);
+                if(imgResponses.get(i).isFromServer){
+                    //来自服务器
+                    if(imgResponses.get(i).adImgPrice != null){
+                        price.setText(imgResponses.get(i).adImgPrice+"元");
+                    }
+                    if(!TextUtils.isEmpty(imgResponses.get(i).adImgUrl)){
+                        imageLoader.displayImage(imgResponses.get(i).adImgUrl, pic, options);
+                    }
+
+                }else{
+                    //来自本地
+                    if(imgResponses.get(i).adImgPrice != null){
+                        price.setText(imgResponses.get(i).adImgPrice);
+                    }
+                    if(!TextUtils.isEmpty(imgResponses.get(i).adImgUrl)){
+                        int pos = Integer.parseInt(imgResponses.get(i).adImgUrl);
+                        if(pos< localImgArray.length){
+                            imageLoader.displayImage("drawable://" + localImgArray[pos], pic, options);
+                        }
+                    }
+
+                }
+
                 this.addView(view);
             }
             LogCat.e("RecycleAnimationLayout","2222222222222222 ");
@@ -233,10 +227,33 @@ public class RecycleAnimationLayout extends LinearLayout {
         }
         TextView name = (TextView) reuseView.findViewById(R.id.ad_three_text_name);
         name.setText(imgResponses.get(position).adImgName);
+        //name.setText(imgResponses.get(position).adImgName);
         TextView price = (TextView) reuseView.findViewById(R.id.ad_three_text_price);
-        price.setText(imgResponses.get(position).adImgPrice + "元");
+        //price.setText(imgResponses.get(position).adImgPrice + "元");
         ImageView pic = (ImageView)reuseView.findViewById(R.id.ad_three_img);
-        imageLoader.displayImage(imgResponses.get(position).adImgUrl, pic, options);
+        //imageLoader.displayImage(imgResponses.get(position).adImgUrl, pic, options);
+        if(imgResponses.get(position).isFromServer){
+            //来自服务器
+            if(imgResponses.get(position).adImgName != null){
+                price.setText(imgResponses.get(position).adImgPrice+"元");
+            }
+            if(!TextUtils.isEmpty(imgResponses.get(position).adImgUrl)){
+                imageLoader.displayImage(imgResponses.get(position).adImgUrl, pic, options);
+            }
+
+        }else{
+            //来自本地
+            if(imgResponses.get(position).adImgPrice != null){
+                price.setText(imgResponses.get(position).adImgPrice);
+            }
+            if(!TextUtils.isEmpty(imgResponses.get(position).adImgUrl)){
+                int pos = Integer.parseInt(imgResponses.get(position).adImgUrl);
+                if(pos< localImgArray.length){
+                    imageLoader.displayImage("drawable://" + localImgArray[pos], pic, options);
+                }
+            }
+        }
+
         LogCat.e("RecycleAnimationLayout"," moveViewToBottom  position: " + position + "   菜名：   " + imgResponses.get(position).adImgName);
 
     }
@@ -253,104 +270,10 @@ public class RecycleAnimationLayout extends LinearLayout {
     public void setImgResponses(ArrayList<AdImgResponse> imgResponses) {
         this.imgResponses = imgResponses;
         int size = imgResponses.size();
-        if(size == 2){
-            //要停在滚动
-            stopRecycleAnimation();
-            //将当前的图片id存储起来
-            if(newIdList == null){
-                newIdList = new ArrayList<>();
-            }
-            if(newIdList.size()>0){
-                newIdList.clear();
-            }
-            for(int i=0; i<2;i++){
-                newIdList.add(imgResponses.get(i).adImgId);
-            }
-
-            //判断是否要刷新数据
-            if(newIdList != null && oldIdList != null ){
-                needRefresh = DataUtils.compare(newIdList,oldIdList);
-            }else{
-                needRefresh = false;
-            }
-
-            if(!needRefresh){
-                LogCat.e("RecycleAnimationLayout"," 数据有改动，需要刷新 ");
-                //刷新数据
-                for(int i=0; i<2;i++){
-                    View reuseView = this.getChildAt(i);
-                    TextView name = (TextView)reuseView.findViewById(R.id.ad_three_text_name);
-                    name.setText(imgResponses.get(i).adImgName);
-                    TextView price = (TextView)reuseView.findViewById(R.id.ad_three_text_price);
-                    if(!TextUtils.isEmpty(imgResponses.get(i).adImgPrice)){
-                        price.setText(imgResponses.get(i).adImgPrice + "元");
-                    }else{
-                        price.setText(imgResponses.get(i).adImgPrice);
-                    }
-                    ImageView pic = (ImageView)reuseView.findViewById(R.id.ad_three_img);
-                    if("localPicture".equals(imgResponses.get(i).adImgUrl)){
-                        imageLoader.displayImage("drawable://" + R.drawable.ad_three_loading1,pic,options);
-                    }else {
-                        imageLoader.displayImage(imgResponses.get(i).adImgUrl, pic, options);
-                    }
-                }
-            }else{
-                LogCat.e("RecycleAnimationLayout"," 没有数据改动，不需要刷新 ");
-            }
-
-            //保留之前的图片id
-            if(oldIdList == null){
-                oldIdList = new ArrayList<>();
-            }
-            if(oldIdList.size()>0){
-                oldIdList.clear();
-            }
-            for(int i=0; i<2;i++){
-                oldIdList.add(imgResponses.get(i).adImgId);
-            }
-
-        }else if(size >2){
-
-            if(isRecycle){
-                //之前有滚动，此时不做任何操作
-                isRecycle = true;
-            }else{
-                //之前没有滚动，开始滚动
-                isRecycle = true;
-                //先将第3个图片添加到第3个view里
-                int last = this.getChildCount()-1;
-                View reuseView = this.getChildAt(last);
-                if(last<imgResponses.size()){
-                    TextView name = (TextView)reuseView.findViewById(R.id.ad_three_text_name);
-                    name.setText(imgResponses.get(last).adImgName);
-                    TextView price = (TextView)reuseView.findViewById(R.id.ad_three_text_price);
-                    if(!TextUtils.isEmpty(imgResponses.get(last).adImgPrice)){
-                        price.setText(imgResponses.get(last).adImgPrice + "元");
-                    }else{
-                        price.setText(imgResponses.get(last).adImgPrice);
-                    }
-                    ImageView pic = (ImageView)reuseView.findViewById(R.id.ad_three_img);
-                    if("localPicture".equals(imgResponses.get(last).adImgUrl)){
-                        imageLoader.displayImage("drawable://" + R.drawable.ad_three_loading1,pic,options);
-                    }else {
-                        imageLoader.displayImage(imgResponses.get(last).adImgUrl,pic,options);
-                    }
-                }
-                //开启滚动
-                if(handler == null){
-                    handler = new Handler(Looper.getMainLooper());
-                }
-                if(recycleRunnable == null){
-                    recycleRunnable = new RecycleRunnable();
-                }
-                handler.postDelayed(recycleRunnable,secondTime*1000);
-
-            }
-
-        }else if(size == 0){
-            //要停在滚动
-            stopRecycleAnimation();
-        }
+        LogCat.e("RecycleAnimationLayout"," 最终轮询的广告个数： "+size);
+//        if(size <3){
+//            stopRecycleAnimation();
+//        }
     }
 
 

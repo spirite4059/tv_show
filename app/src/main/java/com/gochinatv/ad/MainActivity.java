@@ -24,7 +24,7 @@ import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
-import com.gochinatv.ad.ui.fragment.ADThreeFragment;
+import com.gochinatv.ad.ui.fragment.ADThreeOtherFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.okhtttp.OkHttpCallBack;
@@ -594,7 +594,7 @@ public class MainActivity extends Activity {
                                     && !TextUtils.isEmpty(threeLayout.adTop) && !TextUtils.isEmpty(threeLayout.adLeft)) {
                                 //此时加载广告三
                                 LogCat.e("成功加载了广告三");
-                                ADThreeFragment adThreeFragment = new ADThreeFragment();
+                                ADThreeOtherFragment adThreeFragment = new ADThreeOtherFragment();
                                 adThreeFragment.setLayoutResponse(threeLayout);
                                 ft.add(R.id.root_main, adThreeFragment);
                             }

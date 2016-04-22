@@ -11,4 +11,6 @@ public class AdImgResponse {
     public int adImgId;
     public String adImgPrice;
 
+    public boolean isFromServer = true;//是否来自服务器
+
 }
