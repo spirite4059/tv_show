@@ -2,6 +2,7 @@ package com.okhtttp.service;
 
 import android.content.Context;
 
+import com.okhtttp.MacUtils;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.AdVideoListResponse;
@@ -29,7 +30,7 @@ public class VideoHttpService {
 //        } catch (UnsupportedEncodingException e) {
 //            e.printStackTrace();
 //        }
-        params.put("mac", "cc:79:cf:88:88:88");
+        params.put("mac", MacUtils.getMacAddress(context));
         OkHttpUtils.getInstance().doHttpGet(HTTP_URL_GET_VIDEO_LIST, params, listener);
     }
 
