@@ -822,11 +822,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 prepareDownloading();
             } else {
                 retryTimes = 0;
-                if(Constants.isTest){
-                    videoUrl = "http://vod.vegocdn.com/2016/03/24/6551A4BE0000FC56.mp4?st=1461069387&token=e1c882433f2c51c13d763488516a9564";
-                }else {
+//                if(Constants.isTest){
+//                    videoUrl = "http://vod.vegocdn.com/2016/03/24/6551A4BE0000FC56.mp4?st=1461069387&token=e1c882433f2c51c13d763488516a9564";
+//                }else {
                     videoUrl = downloadingVideoResponse.adVideoUrl;
-                }
+//                }
                 LogCat.e("video", "获取到当前视频的下载地址。。。。。。。。" + videoUrl);
                 download(videoUrl);
             }

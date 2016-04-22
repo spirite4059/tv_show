@@ -54,7 +54,7 @@ public class ScreenShotUtils {
 
             if (isScreenShot) {
                 //截图成功
-                LogCat.e("截屏成功......");
+                LogCat.e("screenShot", "截屏成功......");
 
                 try {
                     OkHttpUtils.getInstance().doUploadFile(context, file, HttpUrls.URL_SCREEN_SHOT);
@@ -63,7 +63,7 @@ public class ScreenShotUtils {
                 }
 
             }else {
-                LogCat.e("截屏失败......");
+                LogCat.e("screenShot", "截屏失败......");
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

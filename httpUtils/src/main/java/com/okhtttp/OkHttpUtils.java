@@ -187,9 +187,9 @@ public class OkHttpUtils {
 
         Response response = call.execute();
         if(response.isSuccessful()){
-            LogCat.e("上传成功。。。。。");
+            LogCat.e("screenShot", "上传成功。。。。。");
         }else {
-            LogCat.e("截屏上传失败。。。。。");
+            LogCat.e("screenShot", "截屏上传失败。。。。。");
         }
     }
 
