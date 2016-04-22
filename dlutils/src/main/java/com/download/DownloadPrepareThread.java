@@ -400,6 +400,7 @@ public class DownloadPrepareThread extends Thread {
     }
 
     private void setErrorMsg(int errorCode) {
+        DLUtils.clearDownloadStatus();
         if (listener != null) {
             listener.onError(errorCode);
         }

@@ -93,8 +93,9 @@ public class VideoAdUtils {
                     continue;
                 }
                 // 文件下载失败
-                final int HEADER_FILE_LENGTH = 1024 * 1024 * 10;
+                final int HEADER_FILE_LENGTH = 1024 * 1024 * 1;
                 if (file.length() < HEADER_FILE_LENGTH) {
+
                     DeleteFileUtils.getInstance().deleteFile(file.getAbsolutePath());
                     continue;
                 }

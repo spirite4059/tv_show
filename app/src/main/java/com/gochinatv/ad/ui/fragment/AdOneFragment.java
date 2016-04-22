@@ -151,7 +151,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             for (AdDetailResponse adDetailResponse : cacheTodayList) {
                 LogCat.e("video", "视频名称......." + adDetailResponse.adVideoName + ", " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
             }
-            LogCat.e("video", "------------------------------");
+//            LogCat.e("video", "------------------------------");
 
             ArrayList<AdDetailResponse> cacheTomorrowList = null;
             LogCat.e("video", "获取缓存的明日播放列表.......");
@@ -200,7 +200,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         LogCat.e("video", "开始上传截屏文件.....");
         // 7.开启上传截图
-        startScreenShot();
+//        startScreenShot();
 
 
         //  开启轮询接口
@@ -571,9 +571,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      * 开始截屏
      */
     private void startScreenShot() {
-        LogCat.e("video", "开始截图.......");
-        LogCat.e("video", "当前视频截图位置......." + videoView.getCurrentPosition());
-        LogCat.e("video", "当前视频总时长......." + videoView.getDuration());
+        LogCat.e("screenShot", "开始截图.......");
+        LogCat.e("screenShot", "当前视频截图位置......." + videoView.getCurrentPosition());
         screenShotService = Executors.newScheduledThreadPool(2);
         if (screenShotResponse != null) {
             delay = screenShotResponse.screenShotInterval;
@@ -581,20 +580,22 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             delay = 60 * 15; // 15分钟
         }
         if(Constants.isTest){
-            delay = 30;
+            delay = 10;
         }
 
         screenShotService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                LogCat.e("video", "开始进行截图...........");
+                LogCat.e("screenShot", "开始进行截图...........");
                 if (getActivity() == null || isDetached()) {
                     return;
                 }
                 AdDetailResponse videoAdBean = getPlayingVideoInfo();
                 long delay = videoView.getCurrentPosition();
+
                 Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), delay, videoAdBean.videoPath, screenShotResponse);
                 if (videoBitmap == null) {
+                    LogCat.e("screenShot", "videoBitmap == null...........");
                     return;
                 }
                 // Bitmap resultBitmap = mergeBitmap(bitmap, videoBitmap);
@@ -869,21 +870,24 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             logBuilder.append('\n');
 
             logBuilder.append("已下载视频列表：" + '\n');
-            int size = playVideoLists.size();
-            for (int i = 0; i < size; i++) {
-                AdDetailResponse adDetailResponse = playVideoLists.get(i);
-                logBuilder.append("        ");
-                logBuilder.append(adDetailResponse.adVideoName);
-                if (i < size - 1) {
-                    logBuilder.append('\n');
+            if(playVideoLists != null){
+                int size = playVideoLists.size();
+                for (int i = 0; i < size; i++) {
+                    AdDetailResponse adDetailResponse = playVideoLists.get(i);
+                    logBuilder.append("        ");
+                    logBuilder.append(adDetailResponse.adVideoName);
+                    if (i < size - 1) {
+                        logBuilder.append('\n');
+                    }
                 }
-            }
-            if (tvProgress.getVisibility() != View.VISIBLE) {
-                tvProgress.setVisibility(View.VISIBLE);
-                tvProgress.bringToFront();
+                if (tvProgress.getVisibility() != View.VISIBLE) {
+                    tvProgress.setVisibility(View.VISIBLE);
+                    tvProgress.bringToFront();
 
+                }
+                tvProgress.setText(logBuilder.toString());
             }
-            tvProgress.setText(logBuilder.toString());
+
         }
     }
 

@@ -5,6 +5,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -28,6 +29,7 @@ public class MacUtils {
                 break;
         }
         return macAddress;
+//        return "cc:79:cf:47:41:bc";
     }
     /**
      * 获取wifi的mac
@@ -66,7 +68,9 @@ public class MacUtils {
                 }
 
                 if (interfaceName.equals("eth0")) {
-                    mac = convertToMac(localNetworkInterface.getHardwareAddress());
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+                        mac = convertToMac(localNetworkInterface.getHardwareAddress());
+                    }
 //                    if (mac != null && mac.startsWith("0:")) {
 //                        mac = "0" + mac;
 //                    }

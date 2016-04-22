@@ -2,13 +2,13 @@ package com.okhtttp.service;
 
 import android.content.Context;
 
-import com.okhtttp.MacUtils;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.ADFourResponse;
 import com.okhtttp.response.ADTwoResponse;
 import com.okhtttp.response.AdThreeDataResponse;
+import com.tools.MacUtils;
 
 import java.util.HashMap;
 import java.util.Map;
