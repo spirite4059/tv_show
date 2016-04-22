@@ -168,7 +168,7 @@ public class ADFourFragment extends BaseFragment {
                 index = 0;
                 i = 1;
             }
-            LogCat.e("i :"+ i +" adVideoIndex :"+index + textList.get(index));
+            //LogCat.e("i :"+ i +" adVideoIndex :"+index + textList.get(index));
             autoTextView.next();
             autoTextView.setText(textList.get(index));
             super.handleMessage(msg);

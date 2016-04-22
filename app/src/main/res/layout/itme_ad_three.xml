@@ -1,71 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fresco="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="@dimen/d_212dp"
-    android:layout_height="@dimen/d_216dp">
-
-    <ImageView
-        android:id="@+id/ad_three_img"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
-        android:scaleType="fitXY"
-        android:layout_gravity="center_horizontal"
-        android:src="@drawable/ad_three_loading1"
-        />
+    android:layout_height="@dimen/d_216dp"
+    android:paddingTop="@dimen/d_4dp"
+    >
 
     <LinearLayout
+        android:id="@+id/itme_ad_three_lin"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         >
+
+        <ImageView
+            android:id="@+id/ad_three_img"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:scaleType="fitXY"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ad_three_loading1"
+            />
+
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="19"
+            android:layout_weight="1"
             android:orientation="horizontal"
+            android:background="@color/cf1f1f1"
             >
-            <TextView
-                android:id="@+id/ad_three_text_name"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:layout_gravity="center_vertical"
-                android:maxLines="2"
-                android:textColor="@android:color/black"
-                android:paddingLeft="@dimen/d_10dp"
-                android:textSize="@dimen/d_14sp"
-                />
 
-            <TextView
-                android:id="@+id/ad_three_text_price"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:maxLines="1"
-                android:textColor="@android:color/black"
-                android:gravity="center"
-                android:textSize="@dimen/d_14sp"
-                />
+                <TextView
+                    android:id="@+id/ad_three_text_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:layout_gravity="center_vertical"
+                    android:maxLines="2"
+                    android:textColor="@android:color/black"
+                    android:paddingLeft="@dimen/d_10dp"
+                    android:textSize="@dimen/d_14sp"
+                    />
+
+                <TextView
+                    android:id="@+id/ad_three_text_price"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    android:maxLines="1"
+                    android:textColor="@android:color/black"
+                    android:gravity="center"
+                    android:textSize="@dimen/d_14sp"
+                    />
+
+
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="@android:color/black"
-            >
-        </View>
 
 
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/itme_ad_three_img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:visibility="gone"
+        />
 
 
 
 
-
-</LinearLayout>
+</RelativeLayout>

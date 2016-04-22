@@ -128,6 +128,8 @@ public class RecycleAnimationLayout extends LinearLayout {
                 params.width = itemWidth;
                 params.height = itemHeight;
                 view.setLayoutParams(params);
+                LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.itme_ad_three_lin);
+                ImageView bigPic = (ImageView) view.findViewById(R.id.itme_ad_three_img);
                 TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);
                 if(imgResponses.get(i).adImgName != null){
                     name.setText(imgResponses.get(i).adImgName);
@@ -136,6 +138,10 @@ public class RecycleAnimationLayout extends LinearLayout {
                 ImageView pic = (ImageView)view.findViewById(R.id.ad_three_img);
                 if(imgResponses.get(i).isFromServer){
                     //来自服务器
+
+                    linearLayout.setVisibility(VISIBLE);
+                    bigPic.setVisibility(GONE);
+
                     if(imgResponses.get(i).adImgPrice != null){
                         price.setText(imgResponses.get(i).adImgPrice);
                     }
@@ -145,13 +151,16 @@ public class RecycleAnimationLayout extends LinearLayout {
 
                 }else{
                     //来自本地
+                    linearLayout.setVisibility(GONE);
+                    bigPic.setVisibility(VISIBLE);
+
                     if(imgResponses.get(i).adImgPrice != null){
                         price.setText(imgResponses.get(i).adImgPrice);
                     }
                     if(!TextUtils.isEmpty(imgResponses.get(i).adImgUrl)){
                         int pos = Integer.parseInt(imgResponses.get(i).adImgUrl);
                         if(pos< localImgArray.length){
-                            imageLoader.displayImage("drawable://" + localImgArray[pos], pic, options);
+                            imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
                         }
                     }
 
@@ -255,6 +264,8 @@ public class RecycleAnimationLayout extends LinearLayout {
             }
         }
 
+        LinearLayout linearLayout = (LinearLayout) reuseView.findViewById(R.id.itme_ad_three_lin);
+        ImageView bigPic = (ImageView) reuseView.findViewById(R.id.itme_ad_three_img);
         TextView name = (TextView) reuseView.findViewById(R.id.ad_three_text_name);
         name.setText(imgResponses.get(position).adImgName);
         //name.setText(imgResponses.get(position).adImgName);
@@ -264,6 +275,10 @@ public class RecycleAnimationLayout extends LinearLayout {
         //imageLoader.displayImage(imgResponses.get(position).adImgUrl, pic, options);
         if(imgResponses.get(position).isFromServer){
             //来自服务器
+            linearLayout.setVisibility(VISIBLE);
+            bigPic.setVisibility(GONE);
+
+
             if(imgResponses.get(position).adImgName != null){
                 price.setText(imgResponses.get(position).adImgPrice);
             }
@@ -273,13 +288,16 @@ public class RecycleAnimationLayout extends LinearLayout {
 
         }else{
             //来自本地
+            linearLayout.setVisibility(GONE);
+            bigPic.setVisibility(VISIBLE);
+            //imageLoader.displayImage("drawable://" + localImgArray[pos], pic, options);
             if(imgResponses.get(position).adImgPrice != null){
                 price.setText(imgResponses.get(position).adImgPrice);
             }
             if(!TextUtils.isEmpty(imgResponses.get(position).adImgUrl)){
                 int pos = Integer.parseInt(imgResponses.get(position).adImgUrl);
                 if(pos< localImgArray.length){
-                    imageLoader.displayImage("drawable://" + localImgArray[pos], pic, options);
+                    imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
                 }
             }
         }
