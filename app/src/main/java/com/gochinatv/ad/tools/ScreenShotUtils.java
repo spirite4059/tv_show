@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -25,8 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-
-import wseemann.media.FFmpegMediaMetadataRetriever;
 
 /**
  * Created by fq_mbp on 16/3/30.
@@ -148,8 +147,7 @@ public class ScreenShotUtils {
         // 获取视频的截图
         Bitmap videoBitmap = null;
         LogCat.e("screenShot", "视频截图的名称  " + filePath);
-        FFmpegMediaMetadataRetriever retriever = new FFmpegMediaMetadataRetriever();
-//        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {// MODE_CAPTURE_FRAME_ONLY
             if (Build.VERSION.SDK_INT >= 14) {//Android4.0以上的设备,必须使用这种方式来设置源播放视频的路径
                 retriever.setDataSource(filePath, new HashMap<String, String>());
@@ -157,9 +155,7 @@ public class ScreenShotUtils {
                 retriever.setDataSource(filePath);
             }
 
-            retriever.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_ALBUM);
-            retriever.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_ARTIST);
-            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), FFmpegMediaMetadataRetriever.OPTION_CLOSEST); // frame at 2 seconds
+            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), MediaMetadataRetriever.OPTION_CLOSEST); // frame at 2 seconds
             byte [] artwork = retriever.getEmbeddedPicture();
 
 //            String timeString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
