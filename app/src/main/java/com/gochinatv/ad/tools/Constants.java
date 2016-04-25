@@ -53,7 +53,6 @@ public class Constants {
      */
 
     public static final String FORMAT_VIDEO_AD_TIME = "yyyyMMddHHmmss";
-    public static final String PRESET_PIECE = "预置片";
 
 
     /**
@@ -76,6 +75,9 @@ public class Constants {
 
 
 
+
+
+ 
 
 
 }
