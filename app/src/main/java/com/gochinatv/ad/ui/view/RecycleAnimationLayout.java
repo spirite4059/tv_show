@@ -267,7 +267,9 @@ public class RecycleAnimationLayout extends LinearLayout {
         LinearLayout linearLayout = (LinearLayout) reuseView.findViewById(R.id.itme_ad_three_lin);
         ImageView bigPic = (ImageView) reuseView.findViewById(R.id.itme_ad_three_img);
         TextView name = (TextView) reuseView.findViewById(R.id.ad_three_text_name);
-        name.setText(imgResponses.get(position).adImgName);
+        if(imgResponses.get(position).adImgName != null){
+            name.setText(imgResponses.get(position).adImgName);
+        }
         //name.setText(imgResponses.get(position).adImgName);
         TextView price = (TextView) reuseView.findViewById(R.id.ad_three_text_price);
         //price.setText(imgResponses.get(position).adImgPrice + "元");
@@ -279,7 +281,7 @@ public class RecycleAnimationLayout extends LinearLayout {
             bigPic.setVisibility(GONE);
 
 
-            if(imgResponses.get(position).adImgName != null){
+            if(imgResponses.get(position).adImgPrice != null){
                 price.setText(imgResponses.get(position).adImgPrice);
             }
             if(!TextUtils.isEmpty(imgResponses.get(position).adImgUrl)){
