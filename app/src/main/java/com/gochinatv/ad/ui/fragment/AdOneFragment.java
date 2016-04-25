@@ -3,7 +3,6 @@ package com.gochinatv.ad.ui.fragment;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -141,7 +140,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         // 1.初始化本地缓存表
         LogCat.e("video", "获取本地缓存视频列表.......");
-        localVideoList = VideoAdUtils.getLocalVideoList(getActivity());
+//        localVideoList = VideoAdUtils.getLocalVideoList(getActivity());
+
+        // 获取raw视频
+        localVideoList = VideoAdUtils.getRawVideoList(getActivity());
         LogCat.e("video", "------------------------------");
         if (localVideoList.size() != 0) {
             // 2.获取今日播放的缓存列表
@@ -193,18 +195,18 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         LogCat.e("video", "请求接口.....");
         // 6.请求视频列表
-        if (!isDownloadAPK) { // 当有下载任务的时候，就不会再去请求视频列表，全部资源给下载apk
-            httpRequest();
-        }
+//        if (!isDownloadAPK) { // 当有下载任务的时候，就不会再去请求视频列表，全部资源给下载apk
+//            httpRequest();
+//        }
 
 
-        LogCat.e("video", "开始上传截屏文件.....");
+//        LogCat.e("video", "开始上传截屏文件.....");
         // 7.开启上传截图
 //        startScreenShot();
 
 
         //  开启轮询接口
-        handler = new Handler(Looper.getMainLooper());
+//        handler = new Handler(Looper.getMainLooper());
 
 
     }
@@ -397,7 +399,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             LogCat.e("video", "需要下载的视频..." + adDetailResponse.adVideoName);
         }
 
-        prepareDownloading();
+//        prepareDownloading();
 
         // 显示开发下载模式，主要是为了显示日志
         showLogMsg(0, 0);
@@ -406,15 +408,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
         // 显示开发下载模式，主要是为了显示日志
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isAdded() && getActivity() != null) {
-                    doHttpGetVideoList();
-                }
-
-            }
-        }, (Constants.isTest ? TEST_TIME_DURATION : pollInterval));
+//        handler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (isAdded() && getActivity() != null) {
+//                    doHttpGetVideoList();
+//                }
+//
+//            }
+//        }, (Constants.isTest ? TEST_TIME_DURATION : pollInterval));
 
     }
 
@@ -591,9 +593,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     return;
                 }
                 AdDetailResponse videoAdBean = getPlayingVideoInfo();
-                long delay = videoView.getCurrentPosition();
+                long currentPosition = videoView.getCurrentPosition();
+                long duration = videoView.getDuration();
+                float present = currentPosition / (float)duration;
 
-                Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), delay, videoAdBean.videoPath, screenShotResponse);
+
+                Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), currentPosition, videoAdBean.videoPath, screenShotResponse);
                 if (videoBitmap == null) {
                     LogCat.e("screenShot", "videoBitmap == null...........");
                     return;
@@ -610,6 +615,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     videoBitmap.recycle();
                     videoBitmap = null;
                 }
+
             }
         }, delay, delay, TimeUnit.SECONDS);
     }
@@ -1093,12 +1099,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      * @return
      */
     private String getRawVideoUri() {
-//        if(Constants.isTest){
 //            return "";
-//
-//        }else {
-            return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
-//        }
+            return DataUtils.getRawVideoUri(getActivity(), R.raw.video_1);
     }
 
 
