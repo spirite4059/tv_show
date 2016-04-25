@@ -618,7 +618,7 @@ public class DataUtils {
 	public static int getDisplayMetricsHeight(Activity context){
 		DisplayMetrics metrics = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		return metrics.heightPixels;
+		return metrics.heightPixels + getNavigationBarHeight(context);
 	}
 
 	/**

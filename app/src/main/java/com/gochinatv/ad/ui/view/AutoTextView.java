@@ -79,7 +79,7 @@ public class AutoTextView extends TextSwitcher implements
         TextView t = new TextView(mContext);
         t.setTextColor(Color.WHITE);
 
-        t.setTextSize(12);//mHeight
+        t.setTextSize(mHeight);//mHeight
         t.setMaxLines(1);
         return t;
     }
