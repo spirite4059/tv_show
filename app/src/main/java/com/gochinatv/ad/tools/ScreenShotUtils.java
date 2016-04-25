@@ -5,19 +5,27 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
+import android.os.Build;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ScreenShotResponse;
 import com.tools.HttpUrls;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 
 /**
  * Created by fq_mbp on 16/3/30.
@@ -117,7 +125,8 @@ public class ScreenShotUtils {
         return bitmap;
     }
 
-    public static Bitmap getVideoScreenShot(Activity activity, long currentTime, String fileName, ScreenShotResponse screenShotResponse) {
+
+    public static Bitmap getVideoScreenShot(Activity activity, long currentTime, String filePath, ScreenShotResponse screenShotResponse) {
         int width = 0;
         int height = 0;
         if (currentTime < 0) {
@@ -133,26 +142,34 @@ public class ScreenShotUtils {
             height = screenShotResponse.screenShotImgH;
         }
 
-        LogCat.e("screenShot", "11视频截图的大小  " + width + " x " + height + "，截图时间："  + format(currentTime));
+//        LogCat.e("screenShot", "视频截图的大小  " + width + " x " + height + "，截图时间："  + format(currentTime));
+        LogCat.e("screenShot", "视频截图的大小  " + width + " x " + height);
         // 获取视频的截图
         Bitmap videoBitmap = null;
-        LogCat.e("screenShot", "11视频截图的名称  " +fileName);
+        LogCat.e("screenShot", "视频截图的名称  " + filePath);
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {// MODE_CAPTURE_FRAME_ONLY
-            retriever.setDataSource(fileName);
+            if (Build.VERSION.SDK_INT >= 14) {//Android4.0以上的设备,必须使用这种方式来设置源播放视频的路径
+                retriever.setDataSource(filePath, new HashMap<String, String>());
+            } else {
+                retriever.setDataSource(filePath);
+            }
+
+            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), MediaMetadataRetriever.OPTION_CLOSEST); // frame at 2 seconds
+            byte [] artwork = retriever.getEmbeddedPicture();
+
 //            String timeString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-//            long time = Long.parseLong(timeString);
-//            LogCat.e("获取到的视频长度：" + time);
-//            LogCat.e("获取到的视频长度：" + retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
-//            LogCat.e("获取到的视频名称：" + fileName);
-            LogCat.e("screenShot", "currentTime：" +currentTime);
-            long time = currentTime * 1000;
+//            long duration = Long.parseLong(timeString);
+//            LogCat.e("screenShot", "获取到的视频长度duration：" + duration);
+                LogCat.e("screenShot", "获取到的视频长度currentTime：" + currentTime);
+//            long time = (long) (duration * currentTime);
+//            LogCat.e("screenShot", "time：" + time);
             // 时间参数是微妙
-            videoBitmap = retriever.getFrameAtTime(time, MediaMetadataRetriever.OPTION_CLOSEST_SYNC); //按视频长度比例选择帧
+//            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), MediaMetadataRetriever.OPTION_CLOSEST_SYNC); //按视频长度比例选择帧
 //            videoBitmap = Bitmap.createBitmap(tempBitmap, 0, 0, width, height, videoMatrix, true);
 //            videoBitmap = resizeImage(tempBitmap, width, height);
             videoBitmap = ThumbnailUtils.extractThumbnail(videoBitmap, width, height);
-            LogCat.e("screenShot", "22视频图片大小 " + videoBitmap.getWidth() + " x " + videoBitmap.getHeight());
+            LogCat.e("screenShot", "22视频图片大小 ....." + videoBitmap.getWidth() + " x " + videoBitmap.getHeight());
 
         } catch (IllegalArgumentException ex) {
             // Assume this is a corrupt video file
@@ -167,6 +184,12 @@ public class ScreenShotUtils {
         }
         return videoBitmap;
     }
+
+
+
+
+
+
 
     public static Bitmap resizeImage(Bitmap bitmap, int w, int h) {
         Bitmap BitmapOrg = bitmap;
@@ -225,5 +248,91 @@ public class ScreenShotUtils {
         return strHour + ":" + strMinute + ":" + strSecond;
     }
 
+
+
+
+
+    @SuppressWarnings("deprecation")
+    public static Bitmap acquireScreenshot(Context context) {
+        String rootPath = DataUtils.getScreenShotDirectory();
+        File fileRoot = new File(rootPath);
+        if (!fileRoot.exists()) {
+            fileRoot.mkdirs();
+        }
+        File file = new File(rootPath, System.currentTimeMillis() + Constants.FILE_SCREEN_SHOT_NAME);
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        WindowManager mWinManager = (WindowManager) context
+                .getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics metrics = new DisplayMetrics();
+        Display display = mWinManager.getDefaultDisplay();
+        display.getMetrics(metrics);
+        // 屏幕高
+        int height = metrics.heightPixels;
+        // 屏幕的宽
+        int width = metrics.widthPixels;
+
+        int pixelformat = display.getPixelFormat();
+        PixelFormat localPixelFormat1 = new PixelFormat();
+        PixelFormat.getPixelFormatInfo(pixelformat, localPixelFormat1);
+        // 位深
+        int deepth = localPixelFormat1.bytesPerPixel;
+
+        byte[] arrayOfByte = new byte[height * width * deepth];
+        try {
+            // 读取设备缓存，获取屏幕图像流
+            InputStream localInputStream = readAsRoot();
+            DataInputStream localDataInputStream = new DataInputStream(
+                    localInputStream);
+            localDataInputStream.readFully(arrayOfByte);
+            localInputStream.close();
+
+            int[] tmpColor = new int[width * height];
+            int r, g, b;
+            for (int j = 0; j < width * height * deepth; j += deepth) {
+                b = arrayOfByte[j] & 0xff;
+                g = arrayOfByte[j + 1] & 0xff;
+                r = arrayOfByte[j + 2] & 0xff;
+                tmpColor[j / deepth] = (r << 16) | (g << 8) | b | (0xff000000);
+            }
+            // 构建bitmap
+            Bitmap scrBitmap = Bitmap.createBitmap(tmpColor, width, height,
+                    Bitmap.Config.RGB_565);
+
+
+
+
+
+            uploadBitmap(context, scrBitmap);
+            return scrBitmap;
+
+        } catch (Exception e) {
+            LogCat.e("screenShot", "#### 读取屏幕截图失败");
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    /**
+     * @Title: readAsRoot
+     * @Description: 以root权限读取屏幕截图
+     * @throws Exception
+     * @throws
+     */
+    private static final String DEVICE_NAME = "/dev/graphics/fb0";
+    public static InputStream readAsRoot() throws Exception {
+        File deviceFile = new File(DEVICE_NAME);
+        Process localProcess = Runtime.getRuntime().exec("su");
+        String str = "cat " + deviceFile.getAbsolutePath() + "\n";
+        localProcess.getOutputStream().write(str.getBytes());
+        return localProcess.getInputStream();
+    }
 
 }
