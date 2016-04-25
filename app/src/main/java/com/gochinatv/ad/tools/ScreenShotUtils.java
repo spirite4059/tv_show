@@ -33,39 +33,36 @@ import java.util.HashMap;
 public class ScreenShotUtils {
 
     public static void uploadBitmap(Context context, Bitmap resultBitmap) {
-        String rootPath = DataUtils.getScreenShotDirectory();
-        File fileRoot = new File(rootPath);
-        if (!fileRoot.exists()) {
-            fileRoot.mkdirs();
-        }
-        File file = new File(rootPath, System.currentTimeMillis() + Constants.FILE_SCREEN_SHOT_NAME);
-        if (!file.exists()) {
+        File file = initScreenShotFile();
+        boolean isScreenShot = createScreenShotFile(resultBitmap, file);
+        uploadFile(context, file, isScreenShot);
+
+    }
+
+    private static void uploadFile(Context context, File file, boolean isScreenShot) {
+        if (isScreenShot) {
+            //截图成功
+            LogCat.e("screenShot", "截屏成功......");
             try {
-                file.createNewFile();
+                OkHttpUtils.getInstance().doUploadFile(context, file, HttpUrls.URL_SCREEN_SHOT);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
 
+        } else {
+            LogCat.e("screenShot", "截屏失败......");
+        }
+    }
+
+    public static boolean createScreenShotFile(Bitmap resultBitmap, File file) {
+        boolean isScreenShot = false;
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
-            boolean isScreenShot = resultBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            isScreenShot = resultBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
 
 
-            if (isScreenShot) {
-                //截图成功
-                LogCat.e("screenShot", "截屏成功......");
 
-                try {
-                    OkHttpUtils.getInstance().doUploadFile(context, file, HttpUrls.URL_SCREEN_SHOT);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            } else {
-                LogCat.e("screenShot", "截屏失败......");
-            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -78,10 +75,6 @@ public class ScreenShotUtils {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-//            if(file != null){
-//                file.delete();
-//            }
 
             try {
                 if (fos != null) {
@@ -98,6 +91,24 @@ public class ScreenShotUtils {
 
 
         }
+        return isScreenShot;
+    }
+
+    public static File initScreenShotFile() {
+        String rootPath = DataUtils.getScreenShotDirectory();
+        File fileRoot = new File(rootPath);
+        if (!fileRoot.exists()) {
+            fileRoot.mkdirs();
+        }
+        File file = new File(rootPath, System.currentTimeMillis() + Constants.FILE_SCREEN_SHOT_NAME);
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return file;
     }
 
 
@@ -254,19 +265,7 @@ public class ScreenShotUtils {
 
     @SuppressWarnings("deprecation")
     public static Bitmap acquireScreenshot(Context context) {
-        String rootPath = DataUtils.getScreenShotDirectory();
-        File fileRoot = new File(rootPath);
-        if (!fileRoot.exists()) {
-            fileRoot.mkdirs();
-        }
-        File file = new File(rootPath, System.currentTimeMillis() + Constants.FILE_SCREEN_SHOT_NAME);
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        File file = initScreenShotFile();
 
         WindowManager mWinManager = (WindowManager) context
                 .getSystemService(Context.WINDOW_SERVICE);

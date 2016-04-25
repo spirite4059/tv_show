@@ -1,7 +1,9 @@
 package com.gochinatv.ad.ui.fragment;
 
-import android.graphics.Bitmap;
+import android.app.LoaderManager;
+import android.content.Loader;
 import android.media.MediaPlayer;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -18,12 +20,13 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.screenshot.Metadata;
+import com.gochinatv.ad.screenshot.MetadataLoader;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
-import com.gochinatv.ad.tools.ScreenShotUtils;
 import com.gochinatv.ad.tools.VideoAdUtils;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.AdDetailResponse;
@@ -32,7 +35,9 @@ import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.VideoHttpService;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -43,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by zfy on 2016/3/16.
  */
-public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener {
+public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener ,LoaderManager.LoaderCallbacks<Metadata> {
 
     private VideoView videoView;
     private LinearLayout loading;
@@ -201,7 +206,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 //        LogCat.e("video", "开始上传截屏文件.....");
         // 7.开启上传截图
-//        startScreenShot();
+        startScreenShot();
 
 
         //  开启轮询接口
@@ -571,6 +576,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 开始截屏
      */
+    private int mId = 0;
     private void startScreenShot() {
         LogCat.e("screenShot", "开始截图.......");
         LogCat.e("screenShot", "当前视频截图位置......." + videoView.getCurrentPosition());
@@ -584,6 +590,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             delay = 10;
         }
 
+
+
         screenShotService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -593,23 +601,33 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
                 AdDetailResponse videoAdBean = getPlayingVideoInfo();
                 long currentPosition = videoView.getCurrentPosition();
+//
+//                Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), currentPosition, videoAdBean.videoPath, screenShotResponse);
+//                if (videoBitmap == null) {
+//                    LogCat.e("screenShot", "videoBitmap == null...........");
+//                    return;
+//                }
+//                // Bitmap resultBitmap = mergeBitmap(bitmap, videoBitmap);
+//
+//                ScreenShotUtils.uploadBitmap(getActivity(), videoBitmap);
+//
+//                // if(bitmap != null){
+//                // bitmap.recycle();
+//                //    bitmap = null;
+//                // }
+//                if (videoBitmap != null) {
+//                    videoBitmap.recycle();
+//                    videoBitmap = null;
+//                }
 
-                Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), currentPosition, videoAdBean.videoPath, screenShotResponse);
-                if (videoBitmap == null) {
-                    LogCat.e("screenShot", "videoBitmap == null...........");
-                    return;
-                }
-                // Bitmap resultBitmap = mergeBitmap(bitmap, videoBitmap);
-
-                ScreenShotUtils.uploadBitmap(getActivity(), videoBitmap);
-
-                // if(bitmap != null){
-                // bitmap.recycle();
-                //    bitmap = null;
-                // }
-                if (videoBitmap != null) {
-                    videoBitmap.recycle();
-                    videoBitmap = null;
+                Bundle bundle = new Bundle();
+                try {
+                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
+                    bundle.putLong("currentPosition", currentPosition);
+                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
+                    mId++;
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
                 }
 
             }
@@ -1169,4 +1187,18 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
+    @Override
+    public Loader<Metadata> onCreateLoader(int id, Bundle args) {
+        return new MetadataLoader(getActivity(), args);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Metadata> loader, Metadata data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Metadata> loader) {
+
+    }
 }

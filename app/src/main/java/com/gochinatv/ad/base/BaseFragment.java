@@ -7,7 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-public abstract class BaseFragment extends Fragment {
+public abstract class BaseFragment extends Fragment
+		{
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -44,6 +45,9 @@ public abstract class BaseFragment extends Fragment {
 	 * 绑定控件的事件，比如button的onclick事件
 	 */
 	protected abstract void bindEvent();
+
+
+
 
 
 

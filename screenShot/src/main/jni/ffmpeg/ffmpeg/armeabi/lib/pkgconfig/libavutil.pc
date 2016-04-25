@@ -1,0 +1,14 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=/Users/fq_mbp/Downloads/Android_project/FFmpegMediaMetadataRetriever-master/gradle/fmmr-library/library/src/main/ffmpeg/ffmpeg-android/arm/lib
+includedir=/Users/fq_mbp/Downloads/Android_project/FFmpegMediaMetadataRetriever-master/gradle/fmmr-library/library/src/main/ffmpeg/ffmpeg-android/arm/include
+
+Name: libavutil
+Description: FFmpeg utility library
+Version: 54.31.100
+Requires: 
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavutil 
+Libs.private: -lm
+Cflags: -I${includedir}
