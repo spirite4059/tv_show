@@ -41,11 +41,6 @@ public class ScreenShotThread extends Thread{
 
     @Override
     public void run() {
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         // 获取整个屏幕除了视频之外的整个截图
         View view = activity.getWindow().getDecorView();
         if(view == null){
