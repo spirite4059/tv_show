@@ -3,6 +3,7 @@ package com.gochinatv.ad.ui.fragment;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.download.DLUtils;
 import com.download.ErrorCodes;
@@ -23,7 +25,6 @@ import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.ScreenShotUtils;
 import com.gochinatv.ad.tools.VideoAdUtils;
-import com.gochinatv.ad.video.MeasureVideoView;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.AdDetailResponse;
 import com.okhtttp.response.AdVideoListResponse;
@@ -44,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener {
 
-    private MeasureVideoView videoView;
+    private VideoView videoView;
     private LinearLayout loading;
     /**
      * 本地数据表
@@ -119,7 +120,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     @Override
     protected void initView(View rootView) {
-        videoView = (MeasureVideoView) rootView.findViewById(R.id.videoView);
+        videoView = (VideoView) rootView.findViewById(R.id.videoView);
         loading = (LinearLayout) rootView.findViewById(R.id.loading);
         tvProgress = (TextView) rootView.findViewById(R.id.tv_progress);
         tvSpeed = (TextView) rootView.findViewById(R.id.tv_internet_speeds);
@@ -140,10 +141,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         // 1.初始化本地缓存表
         LogCat.e("video", "获取本地缓存视频列表.......");
-//        localVideoList = VideoAdUtils.getLocalVideoList(getActivity());
+        localVideoList = VideoAdUtils.getLocalVideoList(getActivity());
 
-        // 获取raw视频
-        localVideoList = VideoAdUtils.getRawVideoList(getActivity());
         LogCat.e("video", "------------------------------");
         if (localVideoList.size() != 0) {
             // 2.获取今日播放的缓存列表
@@ -195,9 +194,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         LogCat.e("video", "请求接口.....");
         // 6.请求视频列表
-//        if (!isDownloadAPK) { // 当有下载任务的时候，就不会再去请求视频列表，全部资源给下载apk
-//            httpRequest();
-//        }
+        if (!isDownloadAPK) { // 当有下载任务的时候，就不会再去请求视频列表，全部资源给下载apk
+            httpRequest();
+        }
 
 
 //        LogCat.e("video", "开始上传截屏文件.....");
@@ -206,7 +205,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
         //  开启轮询接口
-//        handler = new Handler(Looper.getMainLooper());
+        handler = new Handler(Looper.getMainLooper());
 
 
     }
@@ -399,7 +398,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             LogCat.e("video", "需要下载的视频..." + adDetailResponse.adVideoName);
         }
 
-//        prepareDownloading();
+        prepareDownloading();
 
         // 显示开发下载模式，主要是为了显示日志
         showLogMsg(0, 0);
@@ -408,15 +407,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
         // 显示开发下载模式，主要是为了显示日志
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (isAdded() && getActivity() != null) {
-//                    doHttpGetVideoList();
-//                }
-//
-//            }
-//        }, (Constants.isTest ? TEST_TIME_DURATION : pollInterval));
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isAdded() && getActivity() != null) {
+                    doHttpGetVideoList();
+                }
+
+            }
+        }, (Constants.isTest ? TEST_TIME_DURATION : pollInterval));
 
     }
 
@@ -594,9 +593,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
                 AdDetailResponse videoAdBean = getPlayingVideoInfo();
                 long currentPosition = videoView.getCurrentPosition();
-                long duration = videoView.getDuration();
-                float present = currentPosition / (float)duration;
-
 
                 Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), currentPosition, videoAdBean.videoPath, screenShotResponse);
                 if (videoBitmap == null) {
@@ -1100,7 +1096,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      */
     private String getRawVideoUri() {
 //            return "";
-            return DataUtils.getRawVideoUri(getActivity(), R.raw.video_1);
+            return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
     }
 
 

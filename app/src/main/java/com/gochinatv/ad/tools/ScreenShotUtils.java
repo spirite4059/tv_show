@@ -7,8 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
-import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.View;
@@ -18,15 +18,15 @@ import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ScreenShotResponse;
 import com.tools.HttpUrls;
 
-import org.jcodec.api.JCodecException;
-import org.jcodec.api.android.FrameGrab;
-
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+
+import wseemann.media.FFmpegMediaMetadataRetriever;
 
 /**
  * Created by fq_mbp on 16/3/30.
@@ -148,24 +148,32 @@ public class ScreenShotUtils {
         // 获取视频的截图
         Bitmap videoBitmap = null;
         LogCat.e("screenShot", "视频截图的名称  " + filePath);
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        FFmpegMediaMetadataRetriever retriever = new FFmpegMediaMetadataRetriever();
+//        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {// MODE_CAPTURE_FRAME_ONLY
-            retriever.setDataSource(filePath);
+            if (Build.VERSION.SDK_INT >= 14) {//Android4.0以上的设备,必须使用这种方式来设置源播放视频的路径
+                retriever.setDataSource(filePath, new HashMap<String, String>());
+            } else {
+                retriever.setDataSource(filePath);
+            }
+
+            retriever.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_ALBUM);
+            retriever.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_ARTIST);
+            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), FFmpegMediaMetadataRetriever.OPTION_CLOSEST); // frame at 2 seconds
+            byte [] artwork = retriever.getEmbeddedPicture();
+
 //            String timeString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
 //            long duration = Long.parseLong(timeString);
 //            LogCat.e("screenShot", "获取到的视频长度duration：" + duration);
-            LogCat.e("screenShot", "获取到的视频长度currentTime：" + currentTime);
-//            LogCat.e("screenShot", "获取到的视频长度：" + retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
-//            LogCat.e("screenShot", "获取到的视频名称：" + fileName);
-//
+                LogCat.e("screenShot", "获取到的视频长度currentTime：" + currentTime);
 //            long time = (long) (duration * currentTime);
 //            LogCat.e("screenShot", "time：" + time);
             // 时间参数是微妙
-            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), MediaMetadataRetriever.OPTION_CLOSEST); //按视频长度比例选择帧
+//            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), MediaMetadataRetriever.OPTION_CLOSEST_SYNC); //按视频长度比例选择帧
 //            videoBitmap = Bitmap.createBitmap(tempBitmap, 0, 0, width, height, videoMatrix, true);
 //            videoBitmap = resizeImage(tempBitmap, width, height);
             videoBitmap = ThumbnailUtils.extractThumbnail(videoBitmap, width, height);
-            LogCat.e("screenShot", "22视频图片大小 " + videoBitmap.getWidth() + " x " + videoBitmap.getHeight());
+            LogCat.e("screenShot", "22视频图片大小 ....." + videoBitmap.getWidth() + " x " + videoBitmap.getHeight());
 
         } catch (IllegalArgumentException ex) {
             // Assume this is a corrupt video file
@@ -179,21 +187,6 @@ public class ScreenShotUtils {
             }
         }
         return videoBitmap;
-    }
-
-
-
-
-    public static Bitmap getVideoFFScreenShot(Activity activity, long currentTime, String filePath, ScreenShotResponse screenShotResponse) {
-        Bitmap frame = null;
-        try {
-            frame = FrameGrab.getFrame(new File(filePath), currentTime);
-        } catch (JCodecException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return frame;
     }
 
 

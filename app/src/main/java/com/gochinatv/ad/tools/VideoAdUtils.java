@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.download.DLUtils;
-import com.gochinatv.ad.R;
 import com.gochinatv.ad.thread.CacheVideoListThread;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.db.AdDao;
@@ -73,48 +72,6 @@ public class VideoAdUtils {
         if (fileVideo.exists() && fileVideo.isDirectory()) {
             localVideos.addAll(getLocalList(context, fileVideo));
         }
-        return localVideos;
-    }
-
-    public static ArrayList<AdDetailResponse> getRawVideoList(Context context) {
-
-
-        ArrayList<AdDetailResponse> localVideos = new ArrayList<>();
-        AdDetailResponse videoAdBean = new AdDetailResponse();
-        videoAdBean.adVideoName = "3分钟版-wzm4000";
-        videoAdBean.videoPath = DataUtils.getRawVideoUri(context, R.raw.video_1);
-        videoAdBean.adVideoLength = 1000 * 1000 * 20;
-        localVideos.add(videoAdBean);
-
-        AdDetailResponse videoAdBean1 = new AdDetailResponse();
-        videoAdBean1.adVideoName = "video_2";
-        videoAdBean1.videoPath = DataUtils.getRawVideoUri(context, R.raw.video_2);
-        videoAdBean1.adVideoLength = 1000 * 1000 * 20;
-        localVideos.add(videoAdBean1);
-
-        AdDetailResponse videoAdBean2 = new AdDetailResponse();
-        videoAdBean2.adVideoName = "video_3";
-        videoAdBean2.videoPath = DataUtils.getRawVideoUri(context, R.raw.video_3);
-        videoAdBean2.adVideoLength = 1000 * 1000 * 20;
-        localVideos.add(videoAdBean2);
-
-        AdDetailResponse videoAdBean3 = new AdDetailResponse();
-        videoAdBean3.adVideoName = "video_4";
-        videoAdBean3.videoPath = DataUtils.getRawVideoUri(context, R.raw.video_4);
-        videoAdBean3.adVideoLength = 1000 * 1000 * 20;
-        localVideos.add(videoAdBean3);
-
-        AdDetailResponse videoAdBean4 = new AdDetailResponse();
-        videoAdBean4.adVideoName = "video_5";
-        videoAdBean4.videoPath = DataUtils.getRawVideoUri(context, R.raw.video_5);
-        videoAdBean4.adVideoLength = 1000 * 1000 * 20;
-        localVideos.add(videoAdBean4);
-
-//        AdDetailResponse videoAdBean5 = new AdDetailResponse();
-//        videoAdBean5.adVideoName = "美丽中国黛蓝";
-//        videoAdBean5.videoPath = DataUtils.getRawVideoUri(context, R.raw.video_6);
-//        localVideos.add(videoAdBean5);
-
         return localVideos;
     }
 

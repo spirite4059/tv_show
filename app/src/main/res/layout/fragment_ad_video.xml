@@ -7,14 +7,14 @@
     android:background="@android:color/black"
     tools:context="com.gochinatv.ad.MainActivity">
 
-    <com.gochinatv.ad.video.MeasureVideoView
-        android:id="@+id/videoView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <!--<VideoView-->
+    <!--<com.gochinatv.ad.video.MeasureVideoView-->
         <!--android:id="@+id/videoView"-->
         <!--android:layout_width="match_parent"-->
         <!--android:layout_height="match_parent" />-->
+    <VideoView
+        android:id="@+id/videoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <TextView
         android:id="@+id/tv_progress"
