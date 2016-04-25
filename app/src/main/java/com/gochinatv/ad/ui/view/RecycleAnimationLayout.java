@@ -73,7 +73,7 @@ public class RecycleAnimationLayout extends LinearLayout {
     //private int oldOneID,oldTwoID;//前一次的图片广告id
     private ArrayList<Integer> oldIdList,newIdList;
 
-    private int [] localImgArray = new int[]{R.drawable.local1,R.drawable.local2,R.drawable.local3,R.drawable.local4};
+    private int [] localImgArray = new int[]{R.drawable.local_one,R.drawable.local_two,R.drawable.local_three,R.drawable.local_four};
 
     private int oldPositionID;//保存
 
