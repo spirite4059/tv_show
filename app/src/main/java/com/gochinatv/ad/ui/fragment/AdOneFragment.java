@@ -581,14 +581,14 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         LogCat.e("screenShot", "开始截图.......");
         LogCat.e("screenShot", "当前视频截图位置......." + videoView.getCurrentPosition());
         screenShotService = Executors.newScheduledThreadPool(2);
-        if (screenShotResponse != null) {
-            delay = screenShotResponse.screenShotInterval;
-        }else {
-            delay = 60 * 15; // 15分钟
-        }
-        if(Constants.isTest){
-            delay = 10;
-        }
+//        if (screenShotResponse != null) {
+//            delay = screenShotResponse.screenShotInterval;
+//        }else {
+            delay = 1000 * 60 * 15; // 15分钟
+//        }
+//        if(Constants.isTest){
+//            delay = 1000 * 30;
+//        }
 
 
 
@@ -624,6 +624,19 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 try {
                     bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
                     bundle.putLong("currentPosition", currentPosition);
+                    int width = 0;
+                    int height = 0;
+                    if (screenShotResponse == null) {
+                        // 获取状况栏高度
+                        width = getActivity().getWindowManager().getDefaultDisplay().getWidth();
+                        height = getActivity().getWindowManager().getDefaultDisplay().getHeight();
+                    } else {
+                        width = screenShotResponse.screenShotImgW;
+                        height = screenShotResponse.screenShotImgH;
+                    }
+                    bundle.putInt("width", width);
+                    bundle.putInt("height", height);
+
                     AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
                     mId++;
                 } catch (UnsupportedEncodingException e) {
@@ -631,7 +644,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
 
             }
-        }, delay, delay, TimeUnit.SECONDS);
+        }, delay, delay, TimeUnit.MILLISECONDS);
     }
 
     private void startPlayVideo() {
@@ -799,7 +812,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             httpTimer = null;
         }
 
-        DLUtils.init(getActivity()).cancel();
+        DLUtils.cancel();
 
         if (screenShotService != null) {
             screenShotService.shutdownNow();

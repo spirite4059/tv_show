@@ -22,6 +22,7 @@ package com.gochinatv.ad.screenshot;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -42,12 +43,16 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
     private String mUri;
     private Metadata mMetadata;
     private long currentPosition;
+    private int width;
+    private int height;
 
 
     public MetadataLoader(Context context, Bundle args) {
         super(context);
         mUri = args.getString("uri");
         currentPosition = args.getLong("currentPosition");
+        width = args.getInt("width");
+        height = args.getInt("height");
     }
 
     /**
@@ -61,21 +66,21 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
         if (mUri == null) {
             return null;
         }
+
+
         LogCat.e("screenShot", "loadInBackground。。。。。。。。。。");
         Bitmap b = null;
         FFmpegMediaMetadataRetriever fmmr = new FFmpegMediaMetadataRetriever();
         try {
-
             fmmr.setDataSource(mUri);
 
-
             b = fmmr.getFrameAtTime(currentPosition * 1000, FFmpegMediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            b = ThumbnailUtils.extractThumbnail(b, width, height);
             LogCat.e("screenShot", "1。。。。。。。。。。");
             File file = ScreenShotUtils.initScreenShotFile();
             LogCat.e("screenShot", "2。。。。。。。。。。");
             ScreenShotUtils.createScreenShotFile(b, file);
             LogCat.e("screenShot", "3。。。。。。。。。。");
-
 
             if (b != null) {
                 LogCat.e("screenShot", "截图成功。。。。。。。。。。");
