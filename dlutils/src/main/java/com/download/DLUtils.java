@@ -19,11 +19,11 @@ public class DLUtils implements InDLUtils {
 
     private static DLUtils instance;
 
-    private DownloadPrepareThread downloadThread;
+    private static DownloadPrepareThread downloadThread;
 
     private static String downloadingPath;
 
-    private Context context;
+    private static Context context;
 
     private DLUtils(Context context) {
         this.context = context;
@@ -122,7 +122,7 @@ public class DLUtils implements InDLUtils {
     }
 
 
-    public void cancel() {
+    public static void cancel() {
         if (downloadThread != null) {
             downloadThread.cancelDownload();
         }
@@ -130,6 +130,7 @@ public class DLUtils implements InDLUtils {
         downloadingPath = null;
         context = null;
         instance = null;
+        LogCat.e("video", "DLUtils -> cancel.......");
     }
 
 

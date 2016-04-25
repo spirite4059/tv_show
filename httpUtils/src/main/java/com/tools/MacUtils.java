@@ -29,7 +29,7 @@ public class MacUtils {
                 break;
         }
         return macAddress;
-//        return "cc:79:cf:47:41:bc";
+//        return "cc:79:cf:24:35:09";
     }
     /**
      * 获取wifi的mac
