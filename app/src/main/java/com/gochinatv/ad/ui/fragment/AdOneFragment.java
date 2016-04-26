@@ -39,7 +39,7 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * Created by zfy on 2016/3/16.
  */
-public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener{
+public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener {
 
     private VideoView videoView;
     private LinearLayout loading;
@@ -564,9 +564,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    /**
-     * 开始截屏
-     */
+//    /**
+//     * 开始截屏
+//     */
 //    private int mId = 0;
 //    private void startScreenShot() {
 //        LogCat.e("screenShot", "开始截图.......");
@@ -1189,6 +1189,5 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     public void setPollInterval(long pollInterval) {
         this.pollInterval = pollInterval;
     }
-
 
 }
