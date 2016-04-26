@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.download.tools.LogCat;
 import com.gochinatv.db.DLDao;
+import com.gochinatv.db.DownloadInfo;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -41,6 +42,9 @@ public class DownloadThread extends Thread {
     private static final int READ_TIME_OUT = 60000;
     private static final int BUFFER_IN_SIZE = 2048;
     private Context context;
+    private long startPos;
+    private long endPos;
+    private DownloadInfo downloadInfo;
     /**
      *
      * @param downloadUrl:文件下载地址
@@ -50,26 +54,31 @@ public class DownloadThread extends Thread {
      */
 
     public DownloadThread(Context context, URL downloadUrl, File file, int blockSize,
-                              int threadId) {
+                              int threadId, DownloadInfo downloadInfo) {
         this.downloadUrl = downloadUrl;
         this.file = file;
         this.threadId = threadId;
         this.blockSize = blockSize;
         this.context = context;
+        this.downloadInfo = downloadInfo;
     }
     @Override
     public void run() {
-        int startPos = blockSize * (threadId - 1);//开始位置
-        int endPos = blockSize * threadId - 1;//结束位置
+        if(downloadInfo != null){
+            startPos = downloadInfo.endPos;
+        } else {
+            startPos = blockSize * (threadId - 1);//开始位置
+        }
+        endPos = blockSize * threadId - 1;//结束位置
 
-        HttpURLConnection connection = getConnection(startPos, endPos);
+        HttpURLConnection connection = getConnection();
         if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
             // 彻底放弃当前下载
             return;
         }
-        downloadFile(connection, startPos);
+        downloadFile(connection);
     }
-    private HttpURLConnection getConnection(int startPos, int endPos) {
+    private HttpURLConnection getConnection() {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) downloadUrl.openConnection();
@@ -95,7 +104,7 @@ public class DownloadThread extends Thread {
         }
         return connection;
     }
-    private void downloadFile(HttpURLConnection connection, int startPos){
+    private void downloadFile(HttpURLConnection connection){
         downloadLength = 0;
         try {
             bis = new BufferedInputStream(connection.getInputStream());
@@ -160,7 +169,8 @@ public class DownloadThread extends Thread {
 
             // TODO 修改文件的下载值
             try {
-                DLDao.updateOut(sqLiteDatabase, downloadUrl.toString(), downloadLength);
+                long endPosition = startPos + downloadLength;
+                DLDao.updateOut(sqLiteDatabase, downloadUrl.toString(), endPosition);
             }catch (Exception e){
                 e.printStackTrace();
                 errorCode = ErrorCodes.ERROR_DB_UPDATE;
@@ -187,8 +197,7 @@ public class DownloadThread extends Thread {
             }
 
         }
-        // TODO 关闭数据库
-        DLDao.closeDB(sqLiteDatabase);
+
 
 
 
@@ -210,7 +219,13 @@ public class DownloadThread extends Thread {
             isCompleted = true;
             LogCat.e("video", "current thread "  + " has finished,all size:"
                     + downloadLength);
+
+            // 删除当前tid的数据表
+            DLDao.delete(sqLiteDatabase, threadId);
         }
+
+        // TODO 关闭数据库
+        DLDao.closeDB(sqLiteDatabase);
     }
     /**
      * 线程文件是否下载完毕

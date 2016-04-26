@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.tools.LogCat;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -100,7 +99,7 @@ public class DLDao implements IDBConstants {
         return flag;
     }
 
-    private static ArrayList<DownloadInfo> query(Context context, String url) {
+    public static ArrayList<DownloadInfo> query(Context context, String url) {
         Cursor cursor = null;
         boolean flag = false;
         ArrayList<DownloadInfo> arrayList = null;
@@ -113,11 +112,14 @@ public class DLDao implements IDBConstants {
 
                 while (cursor.moveToNext()){
                     DownloadInfo downloadInfo = new DownloadInfo();
-
-
+                    downloadInfo.tid = cursor.getInt(1);
+                    downloadInfo.tname = cursor.getString(2);
+                    downloadInfo.turl = cursor.getString(3);
+                    downloadInfo.tlength = cursor.getLong(4);
+                    downloadInfo.startPos = cursor.getLong(5);
+                    downloadInfo.endPos = cursor.getLong(6);
+                    arrayList.add(downloadInfo);
                 }
-
-
             }
             database.setTransactionSuccessful();
         } catch (Exception e) {
@@ -130,7 +132,7 @@ public class DLDao implements IDBConstants {
                 cursor.close();
             }
         }
-        return flag;
+        return arrayList;
     }
 
 
@@ -186,6 +188,25 @@ public class DLDao implements IDBConstants {
             }
             if (null != database) {
                 database.close();
+            }
+        }
+        return flag;
+    }
+
+    public static synchronized boolean delete(SQLiteDatabase database, int tid) {
+        boolean flag = false;
+        try {
+            database.beginTransaction();
+            int temp = database.delete(DBBASE_DOWNLOAD_TABLE_NAME, tid + " = ?", new String[]{String.valueOf(tid)});
+            if (temp == 0) {
+                flag = true;
+            }
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (database != null) {
+                database.endTransaction();
             }
         }
         return flag;

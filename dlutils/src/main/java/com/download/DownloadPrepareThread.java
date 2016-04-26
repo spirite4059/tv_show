@@ -248,47 +248,21 @@ public class DownloadPrepareThread extends Thread {
 
 
 
+
+        // 检查sql
         int size = threads.length;
-        for (int i = 0; i < size; i++) {
-            // 启动线程，分别下载每个线程需要下载的部分
-            int threadId = i + 1;
-
-            DLDao
-
-
-            threads[i] = new DownloadThread(context, url, file, blockSize, threadId);
-
-
-
-            // 插入数据
-            DownloadInfo downloadInfo = new DownloadInfo();
-            downloadInfo.tid = threadId;
-            downloadInfo.turl = downloadUrl;
-            try {
-                String fileName = file.getName();
-                int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
-                fileName = fileName.substring(0, index);
-                downloadInfo.tname = fileName;
-            }catch (Exception e){
-                e.printStackTrace();
+        ArrayList<DownloadInfo> downloadInfos = DLDao.query(context, downloadUrl);
+        // 线程数变了
+        if(downloadInfos != null && downloadInfos.size() > 0){
+            if(downloadInfos.size() != size){
+                DLDao.delete(context, downloadUrl);
+                startThreadWithOutSql(url, fileSize, blockSize, size);
+            }else {
+                startThreadWithSql(url, blockSize, size, downloadInfos);
             }
-
-            downloadInfo.tlength = fileSize;
-
-            long startPos = blockSize * (threadId - 1);//开始位置
-            downloadInfo.startPos = startPos;
-            DLDao.insert(context, downloadInfo);
-
-
-
-
-            threads[i].start();
-
+        }else {
+            startThreadWithOutSql(url, fileSize, blockSize, size);
         }
-
-
-
-
 
 
         if (errorCode == ErrorCodes.ERROR_DOWNLOAD_EXCUTORS) {
@@ -391,6 +365,50 @@ public class DownloadPrepareThread extends Thread {
         }
 
 
+    }
+
+    private void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos) {
+        for (int i = 0; i < size; i++) {
+            // 启动线程，分别下载每个线程需要下载的部分
+            int threadId = i + 1;
+            DownloadInfo downloadInfo = null;
+            if(threadId < downloadInfos.size()){
+                downloadInfo = downloadInfos.get(threadId);
+            }
+            threads[i] = new DownloadThread(context, url, file, blockSize, threadId, downloadInfo);
+            threads[i].start();
+        }
+    }
+
+    private void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
+        for (int i = 0; i < size; i++) {
+            // 启动线程，分别下载每个线程需要下载的部分
+            int threadId = i + 1;
+
+            // 插入数据
+            DownloadInfo downloadInfo = new DownloadInfo();
+            downloadInfo.tid = threadId;
+            downloadInfo.turl = downloadUrl;
+            try {
+                String fileName = file.getName();
+                int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
+                fileName = fileName.substring(0, index);
+                downloadInfo.tname = fileName;
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            downloadInfo.tlength = fileSize;
+
+            long startPos = blockSize * (threadId - 1);//开始位置
+            downloadInfo.startPos = startPos;
+            DLDao.insert(context, downloadInfo);
+
+
+            threads[i] = new DownloadThread(context, url, file, blockSize, threadId, null);
+            threads[i].start();
+
+        }
     }
 
     private boolean deleteFailFile(int fileSize, int downloadSize) {
