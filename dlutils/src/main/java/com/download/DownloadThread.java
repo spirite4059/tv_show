@@ -132,6 +132,8 @@ public class DownloadThread extends Thread {
         }
         downloadLength = len;
 
+        // TODO 打开数据库
+
         while (len != -1 && !isCancel) {
             try {
                 raf.write(buffer, 0, len);
@@ -143,11 +145,12 @@ public class DownloadThread extends Thread {
             }
 
             if(errorCode == ErrorCodes.ERROR_DOWNLOAD_WRITE){
-                errorCode = ErrorCodes.ERROR_DOWNLOAD_WRITE;
                 // 彻底放弃当前下载
-                // TODO
                 break;
             }
+
+            // TODO 修改文件的下载值
+
 
 //            if(downloadLength > 1028 * 1024){
 //                errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
@@ -162,11 +165,12 @@ public class DownloadThread extends Thread {
             }
             if(errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
                 // 彻底放弃当前下载
-                // TODO
                 break;
             }
             downloadLength += len;
         }
+        // TODO 关闭数据库
+
         if (bis != null) {
             try {
                 bis.close();
