@@ -36,8 +36,8 @@ public class VideoAdUtils {
      */
     public static synchronized void cacheTDVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
         LogCat.e("video", "将今日列表存入数据库........." + cachePlayVideoLists.size());
-        AdDao.getInstance(context).insertAll(true, cachePlayVideoLists);
-        LogCat.e("video", "查询下插入后的个数： " + AdDao.getInstance(context).queryAll(true).size());
+        AdDao.insertAll(context, true, cachePlayVideoLists);
+        LogCat.e("video", "查询下插入后的个数： " + AdDao.queryAll(context, true).size());
     }
 
     /**
@@ -45,9 +45,25 @@ public class VideoAdUtils {
      */
     public static synchronized void cleanSqlVideoList(Context context) {
         LogCat.e("video", "清空数据库........." );
-        AdDao.getInstance(context).deleteAll(true);
-        AdDao.getInstance(context).deleteAll(false);
-        LogCat.e("video", "查询下插入后的个数： " + AdDao.getInstance(context).queryAll(true).size());
+        AdDao.deleteAll(context, true);
+        AdDao.deleteAll(context, false);
+        LogCat.e("video", "查询下插入后的个数： " + AdDao.queryAll(context, true).size());
+    }
+
+
+    /**
+     * 更新数据表的所有数据
+     */
+    public static synchronized void updateSqlVideoList(Context context, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> tDownloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
+        LogCat.e("video", "更新数据库........." );
+        // 删除所有删除列表的video
+        AdDao.deleteAll(context, true, deleteVideos);
+        AdDao.deleteAll(context, false, deleteVideos);
+        // 对于已经存在的数据，不做修改
+        // 对于要下载的数据，加入数据表
+        AdDao.insertAll(context, true, downloadVideos);
+        AdDao.insertAll(context, false, tDownloadVideos);
+        LogCat.e("video", "查询下插入后的个数： " + AdDao.queryAll(context, true).size());
     }
 
     /**
@@ -56,8 +72,8 @@ public class VideoAdUtils {
      */
     public static synchronized void cacheTMVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
         LogCat.e("video", "将今日列表存入数据库........." + cachePlayVideoLists.size());
-        AdDao.getInstance(context).insertAll(false, cachePlayVideoLists);
-        LogCat.e("video", "查询下插入后的个数： " + AdDao.getInstance(context).queryAll(false).size());
+        AdDao.insertAll(context, false, cachePlayVideoLists);
+        LogCat.e("video", "查询下插入后的个数： " + AdDao.queryAll(context, false).size());
     }
 
 
@@ -116,9 +132,9 @@ public class VideoAdUtils {
 
 
     public static void updateVideoPath(boolean isToday, Context context, int vid, String path){
-        AdDao.getInstance(context).update(isToday, vid, AdDao.videoPath, path);
-        if( AdDao.getInstance(context).query(isToday, vid)){
-            LogCat.e("video", "查询修改后的大小： " + AdDao.getInstance(context).queryDetail(isToday, vid).videoPath);
+        AdDao.update(context, isToday, vid, AdDao.videoPath, path);
+        if( AdDao.query(context, isToday, vid)){
+            LogCat.e("video", "查询修改后的大小： " + AdDao.queryDetail(context, isToday, vid).videoPath);
         }
 
 
@@ -157,7 +173,7 @@ public class VideoAdUtils {
      * @return
      */
     public static synchronized ArrayList<AdDetailResponse> getCacheList(Context context, boolean isToday) {
-        ArrayList<AdDetailResponse> cacheTomorrowList = AdDao.getInstance(context).queryAll(isToday);
+        ArrayList<AdDetailResponse> cacheTomorrowList = AdDao.queryAll(context, isToday);
         return cacheTomorrowList;
     }
 

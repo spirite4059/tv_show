@@ -12,30 +12,10 @@ import java.util.ArrayList;
 /**
  * Created by fq_mbp on 15/12/24.
  */
-public class AdDao implements IDBConstants, DaoOperationInterface {
+public class AdDao implements IDBConstants {
 
-    private static AdDao dao;
-    private Context context;
 
-    /**
-     * 使用单例和同步来操作数据库
-     */
-    private AdDao(Context context) {
-        this.context = context;
-    }
-
-    public static AdDao getInstance(Context context) {
-        if (dao == null) {
-            synchronized (AdDao.class) {
-                if (dao == null) {
-                    dao = new AdDao(context);
-                }
-            }
-        }
-        return dao;
-    }
-
-    private SQLiteDatabase getConnection() {
+    private static SQLiteDatabase getConnection(Context context) {
         SQLiteDatabase sqLiteDatabase = null;
         try {
             sqLiteDatabase = new IDBHelper(context).getWritableDatabase();
@@ -46,13 +26,12 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
     }
 
 
-    @Override
-    public synchronized boolean insert(boolean isToday, AdDetailResponse adDetailResponse) {
+    public static synchronized boolean insert(Context context, boolean isToday, AdDetailResponse adDetailResponse) {
         if (adDetailResponse == null) {
             return false;
         }
         boolean temp = false;
-        SQLiteDatabase database = getConnection();
+        SQLiteDatabase database = getConnection(context);
         // 先查看是否存在当前的视频记录
 
         Cursor cursor = null;
@@ -114,12 +93,11 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
         return temp;
     }
 
-    @Override
-    public void insertAll(boolean isToday, ArrayList<AdDetailResponse> adDetailResponses) {
+    public static void insertAll(Context context, boolean isToday, ArrayList<AdDetailResponse> adDetailResponses) {
         if (adDetailResponses == null || adDetailResponses.size() == 0) {
             return;
         }
-        SQLiteDatabase database = getConnection();
+        SQLiteDatabase database = getConnection(context);
         if (database == null) {
             return;
         }
@@ -183,12 +161,11 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
         }
     }
 
-    @Override
-    public synchronized boolean delete(boolean isToday, int id) {
+    public static synchronized boolean delete(Context context, boolean isToday, int id) {
         SQLiteDatabase database = null;
         boolean flag = false;
         try {
-            database = getConnection();
+            database = getConnection(context);
             database.beginTransaction();
             int temp = database.delete((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), "adVideoId = ?", new String[]{String.valueOf(id)});
             if (temp == 0) {
@@ -208,41 +185,54 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
         return flag;
     }
 
-
-    public synchronized boolean deleteAll(boolean isToday) {
+    public static synchronized boolean deleteAll(Context context, boolean isToday) {
         SQLiteDatabase database = null;
         boolean flag = false;
         try {
-            database = getConnection();
+            database = getConnection(context);
             database.beginTransaction();
-
-            int temp = database.delete((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), null, null);
-            if (temp == 0) {
-                flag = true;
-            }
-
+            database.delete(isToday?DBBASE_TD_VIDEOS_TABLE_NAME:DBBASE_TM_VIDEOS_TABLE_NAME, null, null);
             database.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (database != null) {
-                database.endTransaction();
-            }
             if (null != database) {
+                database.endTransaction();
                 database.close();
             }
         }
         return flag;
     }
 
-    @Override
-    public synchronized boolean query(boolean isToday, int id) {
+
+    public static synchronized boolean deleteAll(Context context, boolean isToday, ArrayList<AdDetailResponse> adDetailResponses) {
+        SQLiteDatabase database = null;
+        boolean flag = false;
+        try {
+            database = getConnection(context);
+            database.beginTransaction();
+            for(AdDetailResponse adDetailResponse : adDetailResponses){
+                 database.delete(isToday?DBBASE_TD_VIDEOS_TABLE_NAME:DBBASE_TM_VIDEOS_TABLE_NAME, "where " + adVideoId + " = ?", new String[]{String.valueOf(adDetailResponse.adVideoId)});
+            }
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (null != database) {
+                database.endTransaction();
+                database.close();
+            }
+        }
+        return flag;
+    }
+
+    public static synchronized boolean query(Context context, boolean isToday, int id) {
         SQLiteDatabase database = null;
         Cursor cursor = null;
         boolean flag = false;
         try {
 
-            database = getConnection();
+            database = getConnection(context);
             database.beginTransaction();
             cursor = database.rawQuery((isToday ? SQL_QUERY_ID : SQL_QUERY_ID_TM), new String[]{String.valueOf(id)});
             if (cursor != null && cursor.moveToNext()) {
@@ -269,12 +259,12 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
 
 
 
-    public synchronized AdDetailResponse queryDetail(boolean isToday, int id) {
+    public static synchronized AdDetailResponse queryDetail(Context context, boolean isToday, int id) {
         SQLiteDatabase database = null;
         Cursor cursor = null;
         AdDetailResponse adDetailResponse = null;
         try {
-            database = getConnection();
+            database = getConnection(context);
             database.beginTransaction();
             cursor = database.rawQuery((isToday ? SQL_QUERY_ID : SQL_QUERY_ID_TM), new String[]{String.valueOf(id)});
             if (cursor != null && cursor.moveToFirst()) {
@@ -304,12 +294,12 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
         return adDetailResponse;
     }
 
-    public synchronized AdDetailResponse queryDetail(boolean isToday, String column, String value) {
+    public static synchronized AdDetailResponse queryDetail(Context context, boolean isToday, String column, String value) {
         SQLiteDatabase database = null;
         Cursor cursor = null;
         AdDetailResponse adDetailResponse = null;
         try {
-            database = getConnection();
+            database = getConnection(context);
             database.beginTransaction();
             String sql = "select * from " + (isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME) + " where " + column + " = ?";
 
@@ -351,14 +341,13 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
 //            + adVideoIndex + " int, "
 //            + adVideoLength + " long"
 //            + ")";
-    @Override
-    public ArrayList<AdDetailResponse> queryAll(boolean isToday) {
+    public static ArrayList<AdDetailResponse> queryAll(Context context, boolean isToday) {
         ArrayList<AdDetailResponse> adDetailResponses = null;
         SQLiteDatabase database = null;
         Cursor cursor = null;
         try {
             adDetailResponses = new ArrayList<>();
-            database = getConnection();
+            database = getConnection(context);
             database.beginTransaction();
             cursor = database.rawQuery((isToday ? SQL_QUERY : SQL_QUERY_TM), null);
             while (cursor.moveToNext()) {
@@ -396,12 +385,11 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
         return adDetailResponses;
     }
 
-    @Override
-    public synchronized boolean update(boolean isToday, String fileName, String column, String value) {
+    public static synchronized boolean update(Context context, boolean isToday, String fileName, String column, String value) {
         SQLiteDatabase database = null;
         boolean flag = false;
         try {
-            database = getConnection();
+            database = getConnection(context);
             Cursor cursor = null;
             try {
                 database.beginTransaction();
@@ -450,11 +438,11 @@ public class AdDao implements IDBConstants, DaoOperationInterface {
     }
 
 
-    public synchronized boolean update(boolean isToday, int vid, String column, String value) {
+    public static synchronized boolean update(Context context, boolean isToday, int vid, String column, String value) {
         SQLiteDatabase database = null;
         boolean flag = false;
         try {
-            database = getConnection();
+            database = getConnection(context);
             Cursor cursor = null;
             try {
                 database.beginTransaction();
