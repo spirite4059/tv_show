@@ -191,7 +191,7 @@ public class AdDao implements IDBConstants {
         try {
             database = getConnection(context);
             database.beginTransaction();
-            database.delete(isToday?DBBASE_TD_VIDEOS_TABLE_NAME:DBBASE_TM_VIDEOS_TABLE_NAME, null, null);
+            database.delete(isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME, null, null);
             database.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();
