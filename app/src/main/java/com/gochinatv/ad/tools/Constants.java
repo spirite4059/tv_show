@@ -76,6 +76,13 @@ public class Constants {
     public static boolean isImageTest = true;
 
 
+    /**
+     * --------------------------是否是适配手机-------------------------------
+     */
+    public static boolean isPhone = false;
+
+
+
 
 //    public static final String [] METADATA_KEYS = {
 //            FFmpegMediaMetadataRetriever.METADATA_KEY_ALBUM,

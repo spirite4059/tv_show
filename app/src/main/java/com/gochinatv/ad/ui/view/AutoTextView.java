@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import com.gochinatv.ad.R;
+import com.gochinatv.ad.tools.Constants;
 
 /**
  * Created by zfy on 2016/3/17.
@@ -79,7 +80,13 @@ public class AutoTextView extends TextSwitcher implements
         TextView t = new TextView(mContext);
         t.setTextColor(Color.WHITE);
 
-        t.setTextSize(mHeight);//mHeight
+        if(Constants.isPhone){
+            //适配手机
+            t.setTextSize(12);//mHeight
+        }else{
+            ///适配电视棒
+            t.setTextSize(mHeight);//mHeight
+        }
         t.setMaxLines(1);
         return t;
     }

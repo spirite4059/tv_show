@@ -32,29 +32,49 @@
             android:background="@color/cf1f1f1"
             >
 
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="2"
+                android:background="@android:color/holo_red_dark"
+                >
                 <TextView
                     android:id="@+id/ad_three_text_name"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
                     android:layout_gravity="center_vertical"
-                    android:maxLines="2"
+                    android:maxLines="1"
+                    android:textColor="@android:color/black"
+                    android:paddingLeft="@dimen/d_10dp"
+                    android:textSize="@dimen/d_14sp"
+                    />
+                <TextView
+                    android:id="@+id/ad_three_text_en_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:maxLines="1"
                     android:textColor="@android:color/black"
                     android:paddingLeft="@dimen/d_10dp"
                     android:textSize="@dimen/d_14sp"
                     />
 
-                <TextView
-                    android:id="@+id/ad_three_text_price"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_gravity="center_vertical"
-                    android:maxLines="1"
-                    android:textColor="@android:color/black"
-                    android:gravity="center"
-                    android:textSize="@dimen/d_14sp"
-                    />
+            </LinearLayout>
+
+
+            <TextView
+                android:id="@+id/ad_three_text_price"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:maxLines="1"
+                android:textColor="@android:color/black"
+                android:gravity="center"
+                android:textSize="@dimen/d_14sp"
+                android:background="@android:color/holo_blue_dark"
+                />
 
 
         </LinearLayout>
