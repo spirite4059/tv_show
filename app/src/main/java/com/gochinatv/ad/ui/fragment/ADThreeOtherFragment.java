@@ -276,8 +276,15 @@ public class ADThreeOtherFragment extends BaseFragment {
                 if (!isAdded()) {
                     return;
                 }
-                LogCat.e("RecycleAnimationLayout"," 广告三的接口 ！！！！onError ");
-                initData();
+                if(linearLayout != null){
+                    linearLayout.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogCat.e("RecycleAnimationLayout"," 广告三的接口 ！！！！onError ");
+                            initData();
+                        }
+                    },2000);
+                }
 
 //                if (adThreeBg != null && adThreeBg.getVisibility() == View.GONE) {
 //                    //没有数据显示背景图
@@ -286,8 +293,6 @@ public class ADThreeOtherFragment extends BaseFragment {
 //                    //停在滚动
 //                    linearLayout.stopRecycleAnimation();
 //                }
-
-
             }
         });
 
