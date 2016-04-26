@@ -177,7 +177,8 @@ public class RecycleAnimationLayout extends LinearLayout {
                     if(!TextUtils.isEmpty(imgResponses.get(i).adImgUrl)){
                         int pos = Integer.parseInt(imgResponses.get(i).adImgUrl);
                         if(pos< localImgArray.length){
-                            imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
+                            //imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
+                            bigPic.setImageResource(localImgArray[pos]);
                         }
                     }
 
@@ -317,7 +318,6 @@ public class RecycleAnimationLayout extends LinearLayout {
             //来自本地
             linearLayout.setVisibility(GONE);
             bigPic.setVisibility(VISIBLE);
-            //imageLoader.displayImage("drawable://" + localImgArray[pos], pic, options);
             if(imgResponses.get(position).adImgPrice != null){
                 price.setText(imgResponses.get(position).adImgPrice);
             }else{
@@ -326,7 +326,8 @@ public class RecycleAnimationLayout extends LinearLayout {
             if(!TextUtils.isEmpty(imgResponses.get(position).adImgUrl)){
                 int pos = Integer.parseInt(imgResponses.get(position).adImgUrl);
                 if(pos< localImgArray.length){
-                    imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
+                    //imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
+                    bigPic.setImageResource(localImgArray[pos]);
                 }
             }
         }
