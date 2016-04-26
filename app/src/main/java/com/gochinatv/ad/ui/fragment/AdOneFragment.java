@@ -316,25 +316,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         VideoAdUtils.cleanSqlVideoList(getActivity());
 
 
-        /**
-         * -----------------测试------------------
-         */
-        AdDetailResponse adDetailResponse1 = new AdDetailResponse();
-        adDetailResponse1.adVideoName = "test，做下载测试";
-        adDetailResponse1.adVideoIndex = nextVideoList.get(0).adVideoIndex;
-        adDetailResponse1.adVideoUrl = nextVideoList.get(0).adVideoUrl;
-        adDetailResponse1.adVideoId = 10;
-        nextVideoList.add(adDetailResponse1);
-
-
-//        nextVideoList.remove(0);
-        /**
-         * -----------------测试------------------
-         */
 
         // 将今日列表缓存到本地
         LogCat.e("video", "将今日列表缓存到本地.......");
-//        VideoAdUtils.cacheVideoList(Constants.FILE_CACHE_TD_NAME, currentVideoList);
         VideoAdUtils.cacheTDVideoList(getActivity(), currentVideoList);
         // 2.匹配今天要下载的视频
         LogCat.e("video", "根据今日播放列表，获取下载列表......");

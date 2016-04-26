@@ -189,8 +189,8 @@ public class RecycleAnimationLayout extends LinearLayout {
     private class RecycleRunnable implements Runnable{
         @Override
         public void run() {
-            scrollUp();
             position++;
+            scrollUp();
             handler.postDelayed(recycleRunnable,secondTime);
         }
     }
@@ -366,9 +366,11 @@ public class RecycleAnimationLayout extends LinearLayout {
      * @param secondTime
      */
     public void setSecondTime(int secondTime) {
+        if(secondTime <5000){
+            secondTime = 5000;
+        }
         this.secondTime = secondTime;
     }
-
 
     /**
      * 停止滚动动画

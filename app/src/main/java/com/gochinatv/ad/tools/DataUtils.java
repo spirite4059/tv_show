@@ -618,7 +618,14 @@ public class DataUtils {
 	public static int getDisplayMetricsHeight(Activity context){
 		DisplayMetrics metrics = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		return metrics.heightPixels + getNavigationBarHeight(context);
+		if(Constants.isPhone){
+			//适配手机
+			return metrics.heightPixels;
+		}else{
+			//适配电视棒
+			return metrics.heightPixels + getNavigationBarHeight(context);
+		}
+
 	}
 
 	/**

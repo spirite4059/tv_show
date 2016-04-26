@@ -95,7 +95,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
         HashMap<String,Integer> file_maps = new HashMap<String, Integer>();
         file_maps.put("Hannibal",R.drawable.adtwo);
-        file_maps.put("Big Bang Theory", R.drawable.news3);
+        file_maps.put("Big Bang Theory", R.drawable.ad_two_one);
 
         for(String name : file_maps.keySet()){
             TextSliderView textSliderView = new TextSliderView(getActivity());

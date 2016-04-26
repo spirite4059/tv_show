@@ -56,7 +56,7 @@ public class ADThreeOtherFragment extends BaseFragment {
     private Timer getImgADTimer;//定时器
     private boolean isFirstDoHttp = true;//是否第一次请求
 
-
+    private double width,height;
 
 
     @Override
@@ -76,8 +76,8 @@ public class ADThreeOtherFragment extends BaseFragment {
 
                 //动态布局
                 RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
-                double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
-                double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
+                width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
+                height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
                 double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
                 double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
 
@@ -105,8 +105,14 @@ public class ADThreeOtherFragment extends BaseFragment {
     @Override
     protected void init() {
         getImgADTime = Constants.isImageTest? 30*1000:3*60*1000;
-        double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
-        double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
+        //double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
+        //double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
+        if(width == 0){
+            width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
+        }
+        if(height == 0){
+            height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
+        }
         linearLayout.setItemWidth((int) Math.floor(width));
         linearLayout.setItemHeight((int) Math.floor(height / 2));
         LogCat.e("width: " + (int) Math.floor(width) + "     height:" + (int) Math.floor(height / 2));
