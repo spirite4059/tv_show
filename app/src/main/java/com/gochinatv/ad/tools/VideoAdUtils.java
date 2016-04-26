@@ -47,7 +47,6 @@ public class VideoAdUtils {
         LogCat.e("video", "清空数据库........." );
         AdDao.deleteAll(context, true);
         AdDao.deleteAll(context, false);
-        LogCat.e("video", "查询下插入后的个数： " + AdDao.queryAll(context, true).size());
     }
 
 
