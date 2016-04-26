@@ -1,9 +1,6 @@
 package com.gochinatv.ad.ui.fragment;
 
-import android.app.LoaderManager;
-import android.content.Loader;
 import android.media.MediaPlayer;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -20,8 +17,6 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.screenshot.Metadata;
-import com.gochinatv.ad.screenshot.MetadataLoader;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
@@ -35,20 +30,16 @@ import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.VideoHttpService;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by zfy on 2016/3/16.
  */
-public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener ,LoaderManager.LoaderCallbacks<Metadata> {
+public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener{
 
     private VideoView videoView;
     private LinearLayout loading;
@@ -206,7 +197,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 //        LogCat.e("video", "开始上传截屏文件.....");
         // 7.开启上传截图
-        startScreenShot();
+//        startScreenShot();
 
 
         //  开启轮询接口
@@ -576,76 +567,76 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 开始截屏
      */
-    private int mId = 0;
-    private void startScreenShot() {
-        LogCat.e("screenShot", "开始截图.......");
-        LogCat.e("screenShot", "当前视频截图位置......." + videoView.getCurrentPosition());
-        screenShotService = Executors.newScheduledThreadPool(2);
-//        if (screenShotResponse != null) {
-//            delay = screenShotResponse.screenShotInterval;
-//        }else {
-            delay = 1000 * 60 * 15; // 15分钟
-//        }
-//        if(Constants.isTest){
-//            delay = 1000 * 30;
-//        }
-
-
-
-        screenShotService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                LogCat.e("screenShot", "开始进行截图...........");
-                if (getActivity() == null || isDetached()) {
-                    return;
-                }
-                AdDetailResponse videoAdBean = getPlayingVideoInfo();
-                long currentPosition = videoView.getCurrentPosition();
+//    private int mId = 0;
+//    private void startScreenShot() {
+//        LogCat.e("screenShot", "开始截图.......");
+//        LogCat.e("screenShot", "当前视频截图位置......." + videoView.getCurrentPosition());
+//        screenShotService = Executors.newScheduledThreadPool(2);
+////        if (screenShotResponse != null) {
+////            delay = screenShotResponse.screenShotInterval;
+////        }else {
+//            delay = 1000 * 60 * 15; // 15分钟
+////        }
+////        if(Constants.isTest){
+////            delay = 1000 * 30;
+////        }
 //
-//                Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), currentPosition, videoAdBean.videoPath, screenShotResponse);
-//                if (videoBitmap == null) {
-//                    LogCat.e("screenShot", "videoBitmap == null...........");
+//
+//
+//        screenShotService.scheduleAtFixedRate(new Runnable() {
+//            @Override
+//            public void run() {
+//                LogCat.e("screenShot", "开始进行截图...........");
+//                if (getActivity() == null || isDetached()) {
 //                    return;
 //                }
-//                // Bitmap resultBitmap = mergeBitmap(bitmap, videoBitmap);
+//                AdDetailResponse videoAdBean = getPlayingVideoInfo();
+//                long currentPosition = videoView.getCurrentPosition();
+////
+////                Bitmap videoBitmap = ScreenShotUtils.getVideoScreenShot(getActivity(), currentPosition, videoAdBean.videoPath, screenShotResponse);
+////                if (videoBitmap == null) {
+////                    LogCat.e("screenShot", "videoBitmap == null...........");
+////                    return;
+////                }
+////                // Bitmap resultBitmap = mergeBitmap(bitmap, videoBitmap);
+////
+////                ScreenShotUtils.uploadBitmap(getActivity(), videoBitmap);
+////
+////                // if(bitmap != null){
+////                // bitmap.recycle();
+////                //    bitmap = null;
+////                // }
+////                if (videoBitmap != null) {
+////                    videoBitmap.recycle();
+////                    videoBitmap = null;
+////                }
 //
-//                ScreenShotUtils.uploadBitmap(getActivity(), videoBitmap);
+//                Bundle bundle = new Bundle();
+//                try {
+//                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
+//                    bundle.putLong("currentPosition", currentPosition);
+//                    int width = 0;
+//                    int height = 0;
+//                    if (screenShotResponse == null) {
+//                        // 获取状况栏高度
+//                        width = getActivity().getWindowManager().getDefaultDisplay().getWidth();
+//                        height = getActivity().getWindowManager().getDefaultDisplay().getHeight();
+//                    } else {
+//                        width = screenShotResponse.screenShotImgW;
+//                        height = screenShotResponse.screenShotImgH;
+//                    }
+//                    bundle.putInt("width", width);
+//                    bundle.putInt("height", height);
 //
-//                // if(bitmap != null){
-//                // bitmap.recycle();
-//                //    bitmap = null;
-//                // }
-//                if (videoBitmap != null) {
-//                    videoBitmap.recycle();
-//                    videoBitmap = null;
+//                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
+//                    mId++;
+//                } catch (UnsupportedEncodingException e) {
+//                    e.printStackTrace();
 //                }
-
-                Bundle bundle = new Bundle();
-                try {
-                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
-                    bundle.putLong("currentPosition", currentPosition);
-                    int width = 0;
-                    int height = 0;
-                    if (screenShotResponse == null) {
-                        // 获取状况栏高度
-                        width = getActivity().getWindowManager().getDefaultDisplay().getWidth();
-                        height = getActivity().getWindowManager().getDefaultDisplay().getHeight();
-                    } else {
-                        width = screenShotResponse.screenShotImgW;
-                        height = screenShotResponse.screenShotImgH;
-                    }
-                    bundle.putInt("width", width);
-                    bundle.putInt("height", height);
-
-                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
-                    mId++;
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }, delay, delay, TimeUnit.MILLISECONDS);
-    }
+//
+//            }
+//        }, delay, delay, TimeUnit.MILLISECONDS);
+//    }
 
     private void startPlayVideo() {
         String playingVideoName = null;
@@ -1200,18 +1191,4 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    @Override
-    public Loader<Metadata> onCreateLoader(int id, Bundle args) {
-        return new MetadataLoader(getActivity(), args);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Metadata> loader, Metadata data) {
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Metadata> loader) {
-
-    }
 }
