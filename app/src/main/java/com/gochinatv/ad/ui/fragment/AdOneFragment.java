@@ -350,7 +350,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             VideoAdUtils.reconnectedPrepare(downloadLists, prepareDownloadLists);
             // 6.再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表
             LogCat.e("video", "再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表......");
-            removeTomorrowVideos(deleteLists, nextVideoList);
+            removeTomorrowVideos(nextVideoList);
             LogCat.e("video", "最终的删除列表......");
             for (AdDetailResponse adDetailResponse : deleteLists) {
                 LogCat.e("video", "删除列表视频：" + adDetailResponse.adVideoName);
@@ -653,7 +653,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    private void removeTomorrowVideos(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> tomorrowList) {
+    private void removeTomorrowVideos(ArrayList<AdDetailResponse> tomorrowList) {
         // 获取明日需要用到的视频
         ArrayList<AdDetailResponse> preparePlayList = VideoAdUtils.getTodayPlayVideoList(localVideoList, tomorrowList);
 

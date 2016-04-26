@@ -409,23 +409,17 @@ public class AdDao implements IDBConstants {
                 }
             }
             // 如果存在，直接返回插入成功
-            if (!flag) {
-                return false;
+            if (flag) {
+                database.beginTransaction();
+                ContentValues updatedValues = new ContentValues();
+                updatedValues.put(column, value);
+                int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoName + " = ?", new String[]{fileName});
+                if (temp == 0) {
+                    flag = true;
+                }
+                database.setTransactionSuccessful();
+                database.endTransaction();
             }
-            if (database == null) {
-                return false;
-            }
-
-
-            database.beginTransaction();
-            ContentValues updatedValues = new ContentValues();
-            updatedValues.put(column, value);
-            int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoName + " = ?", new String[]{fileName});
-            if (temp == 0) {
-                flag = true;
-            }
-            database.setTransactionSuccessful();
-            database.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -462,23 +456,19 @@ public class AdDao implements IDBConstants {
                 }
             }
             // 如果存在，直接返回插入成功
-            if (!flag) {
-                return false;
-            }
-            if (database == null) {
-                return false;
+            if (flag) {
+                database.beginTransaction();
+                ContentValues updatedValues = new ContentValues();
+                updatedValues.put(column, value);
+                int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoId + " = ?", new String[]{String.valueOf(vid)});
+                if (temp == 0) {
+                    flag = true;
+                }
+                database.setTransactionSuccessful();
+                database.endTransaction();
             }
 
 
-            database.beginTransaction();
-            ContentValues updatedValues = new ContentValues();
-            updatedValues.put(column, value);
-            int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoId + " = ?", new String[]{String.valueOf(vid)});
-            if (temp == 0) {
-                flag = true;
-            }
-            database.setTransactionSuccessful();
-            database.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
