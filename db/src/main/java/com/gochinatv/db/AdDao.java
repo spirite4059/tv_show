@@ -54,42 +54,33 @@ public class AdDao implements IDBConstants {
             }
         }
         // 如果存在，直接返回插入成功
-        if (flag) {
-            return true;
-        }
-        if (database == null) {
-            return false;
-        }
+        if (!flag && database != null) {
+            try {
+                database.beginTransaction();
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("adVideoId", adDetailResponse.adVideoId);
+                contentValues.put("adVideoName", adDetailResponse.adVideoName);
+                contentValues.put("adVideoUrl", adDetailResponse.adVideoUrl);
+                contentValues.put("videoPath", adDetailResponse.videoPath);
+                contentValues.put("adVideoIndex", adDetailResponse.adVideoIndex);
+                contentValues.put("adVideoLength", adDetailResponse.adVideoLength);
 
-        database.beginTransaction();
-//        String SQL_INSERT = "insert into " + DBBASE_TD_VIDEOS_TABLE_NAME + " (" + adVideoId
-//                + ", " + adVideoName + ", " + adVideoUrl + ", "
-//                + videoPath + ", " + adVideoIndex + ", "
-//                + adVideoLength +  ") values (?,?,?,?,?,?,?)";
-        try {
-
-            ContentValues contentValues = new ContentValues();
-            contentValues.put("adVideoId", adDetailResponse.adVideoId);
-            contentValues.put("adVideoName", adDetailResponse.adVideoName);
-            contentValues.put("adVideoUrl", adDetailResponse.adVideoUrl);
-            contentValues.put("videoPath", adDetailResponse.videoPath);
-            contentValues.put("adVideoIndex", adDetailResponse.adVideoIndex);
-            contentValues.put("adVideoLength", adDetailResponse.adVideoLength);
-
-            database.insert((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), null, contentValues);
-            database.setTransactionSuccessful();
-            temp = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            temp = false;
-        } finally {
-            if (database != null) {
-                database.endTransaction();
-            }
-            if (null != database) {
-                database.close();
+                database.insert((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), null, contentValues);
+                database.setTransactionSuccessful();
+                temp = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                temp = false;
+            } finally {
+                if (database != null) {
+                    database.endTransaction();
+                }
+                if (null != database) {
+                    database.close();
+                }
             }
         }
+
         return temp;
     }
 
@@ -212,7 +203,7 @@ public class AdDao implements IDBConstants {
             database = getConnection(context);
             database.beginTransaction();
             for(AdDetailResponse adDetailResponse : adDetailResponses){
-                 database.delete(isToday?DBBASE_TD_VIDEOS_TABLE_NAME:DBBASE_TM_VIDEOS_TABLE_NAME, "where " + adVideoId + " = ?", new String[]{String.valueOf(adDetailResponse.adVideoId)});
+                 database.delete(isToday?DBBASE_TD_VIDEOS_TABLE_NAME:DBBASE_TM_VIDEOS_TABLE_NAME, adVideoId + " = ?", new String[]{String.valueOf(adDetailResponse.adVideoId)});
             }
             database.setTransactionSuccessful();
         } catch (Exception e) {
@@ -409,23 +400,18 @@ public class AdDao implements IDBConstants {
                 }
             }
             // 如果存在，直接返回插入成功
-            if (!flag) {
-                return false;
-            }
-            if (database == null) {
-                return false;
+            if (flag) {
+                database.beginTransaction();
+                ContentValues updatedValues = new ContentValues();
+                updatedValues.put(column, value);
+                int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoName + " = ?", new String[]{fileName});
+                if (temp == 0) {
+                    flag = true;
+                }
+                database.setTransactionSuccessful();
+                database.endTransaction();
             }
 
-
-            database.beginTransaction();
-            ContentValues updatedValues = new ContentValues();
-            updatedValues.put(column, value);
-            int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoName + " = ?", new String[]{fileName});
-            if (temp == 0) {
-                flag = true;
-            }
-            database.setTransactionSuccessful();
-            database.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -462,23 +448,17 @@ public class AdDao implements IDBConstants {
                 }
             }
             // 如果存在，直接返回插入成功
-            if (!flag) {
-                return false;
+            if (flag) {
+                database.beginTransaction();
+                ContentValues updatedValues = new ContentValues();
+                updatedValues.put(column, value);
+                int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoId + " = ?", new String[]{String.valueOf(vid)});
+                if (temp == 0) {
+                    flag = true;
+                }
+                database.setTransactionSuccessful();
+                database.endTransaction();
             }
-            if (database == null) {
-                return false;
-            }
-
-
-            database.beginTransaction();
-            ContentValues updatedValues = new ContentValues();
-            updatedValues.put(column, value);
-            int temp = database.update((isToday ? DBBASE_TD_VIDEOS_TABLE_NAME : DBBASE_TM_VIDEOS_TABLE_NAME), updatedValues, adVideoId + " = ?", new String[]{String.valueOf(vid)});
-            if (temp == 0) {
-                flag = true;
-            }
-            database.setTransactionSuccessful();
-            database.endTransaction();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

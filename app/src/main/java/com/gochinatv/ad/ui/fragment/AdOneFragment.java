@@ -312,14 +312,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         ArrayList<AdDetailResponse> nextVideoList = getDistinctVideoList(response.next);
 
 
-        // 删除所有旧记录
-        VideoAdUtils.cleanSqlVideoList(getActivity());
 
 
-
-        // 将今日列表缓存到本地
-        LogCat.e("video", "将今日列表缓存到本地.......");
-        VideoAdUtils.cacheTDVideoList(getActivity(), currentVideoList);
         // 2.匹配今天要下载的视频
         LogCat.e("video", "根据今日播放列表，获取下载列表......");
         downloadLists = VideoAdUtils.getDownloadList(localVideoList, currentVideoList);
@@ -336,29 +330,37 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         playVideoLists = VideoAdUtils.getTodayPlayVideoList(localVideoList, currentVideoList);
         LogCat.e("video", "------------------------------");
 
+        // 更新今日数据表
+        LogCat.e("video", "根据今日下载列表和今日删除列表，更新sql表.......");
+        VideoAdUtils.updateSqlVideoList(getActivity(), true, downloadLists, deleteLists);
+
         if (response.next != null && response.next.size() != 0) {
-            // 11.将明日播放列表缓存到本地
-            LogCat.e("video", "将明日播放列表缓存到本地......");
-//            VideoAdUtils.cacheVideoList(Constants.FILE_CACHE_NAME, nextVideoList);
-            VideoAdUtils.cacheTMVideoList(getActivity(), nextVideoList);
             // 5.匹配明天要下载的视频
             LogCat.e("video", "根据明日播放列表，获取下载列表......");
             prepareDownloadLists = VideoAdUtils.getDownloadList(localVideoList, nextVideoList);
             LogCat.e("video", "------------------------------");
-            // 匹对今天的下载列表，提出重复下载的视频
-            LogCat.e("video", "开始处理重复的下载任务......");
-            VideoAdUtils.reconnectedPrepare(downloadLists, prepareDownloadLists);
+            // 得到明日列表需要删除的文件
+            ArrayList<AdDetailResponse> deleteListTomorrow = VideoAdUtils.getDeleteList(localVideoList, nextVideoList);
+
+            // 更新sql表
+            LogCat.e("video", "根据明日需要下载的视频列表和明日的删除列表，更新sql表......");
+            VideoAdUtils.updateSqlVideoList(getActivity(), false, prepareDownloadLists, deleteListTomorrow);
+
+
             // 6.再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表
             LogCat.e("video", "再次匹配要删除的视频列表,去除明日需要用到的视频，然后得到最终的删除列表......");
-            removeTomorrowVideos(deleteLists, nextVideoList);
+            removeTomorrowVideos(nextVideoList);
             LogCat.e("video", "最终的删除列表......");
             for (AdDetailResponse adDetailResponse : deleteLists) {
                 LogCat.e("video", "删除列表视频：" + adDetailResponse.adVideoName);
             }
+
             LogCat.e("video", "------------------------------");
+            // 匹对今天的下载列表，提出重复下载的视频
+            LogCat.e("video", "开始处理重复的下载任务......");
+            VideoAdUtils.reconnectedPrepare(downloadLists, prepareDownloadLists);
+            // 11.将明日播放列表缓存到本地
         }
-
-
         // 9.进行删除控制
         if (deleteLists.size() > 0) {
             LogCat.e("video", "开始执行删除操作......");
@@ -653,7 +655,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    private void removeTomorrowVideos(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> tomorrowList) {
+    private void removeTomorrowVideos(ArrayList<AdDetailResponse> tomorrowList) {
         // 获取明日需要用到的视频
         ArrayList<AdDetailResponse> preparePlayList = VideoAdUtils.getTodayPlayVideoList(localVideoList, tomorrowList);
 

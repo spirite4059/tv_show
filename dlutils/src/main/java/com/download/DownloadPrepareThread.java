@@ -12,6 +12,8 @@ import com.download.tools.Constants;
 import com.download.tools.LogCat;
 import com.download.tools.ToolUtils;
 import com.gochinatv.db.AdDao;
+import com.gochinatv.db.DLDao;
+import com.gochinatv.db.DownloadInfo;
 import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
@@ -244,13 +246,50 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
+
+
         int size = threads.length;
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
-            threads[i] = new DownloadThread(url, file, blockSize,
-                    (i + 1));
+            int threadId = i + 1;
+
+            DLDao
+
+
+            threads[i] = new DownloadThread(context, url, file, blockSize, threadId);
+
+
+
+            // 插入数据
+            DownloadInfo downloadInfo = new DownloadInfo();
+            downloadInfo.tid = threadId;
+            downloadInfo.turl = downloadUrl;
+            try {
+                String fileName = file.getName();
+                int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
+                fileName = fileName.substring(0, index);
+                downloadInfo.tname = fileName;
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            downloadInfo.tlength = fileSize;
+
+            long startPos = blockSize * (threadId - 1);//开始位置
+            downloadInfo.startPos = startPos;
+            DLDao.insert(context, downloadInfo);
+
+
+
+
             threads[i].start();
+
         }
+
+
+
+
+
 
         if (errorCode == ErrorCodes.ERROR_DOWNLOAD_EXCUTORS) {
             setErrorMsg(errorCode);

@@ -53,16 +53,23 @@ public class VideoAdUtils {
     /**
      * 更新数据表的所有数据
      */
-    public static synchronized void updateSqlVideoList(Context context, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> tDownloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
+    public static synchronized void updateSqlVideoList(Context context, boolean isToday, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
         LogCat.e("video", "更新数据库........." );
         // 删除所有删除列表的video
-        AdDao.deleteAll(context, true, deleteVideos);
-        AdDao.deleteAll(context, false, deleteVideos);
+        AdDao.deleteAll(context, isToday, deleteVideos);
         // 对于已经存在的数据，不做修改
         // 对于要下载的数据，加入数据表
-        AdDao.insertAll(context, true, downloadVideos);
-        AdDao.insertAll(context, false, tDownloadVideos);
-        LogCat.e("video", "查询下插入后的个数： " + AdDao.queryAll(context, true).size());
+        AdDao.insertAll(context, isToday, downloadVideos);
+
+        ArrayList<AdDetailResponse> sqlList = AdDao.queryAll(context, isToday);
+        if(sqlList != null){
+            LogCat.e("video", "查询下插入后的个数： " + sqlList.size());
+            for(AdDetailResponse adDetailResponse : sqlList){
+                LogCat.e("video", "数据表video： " + adDetailResponse.adVideoName + ", length: " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
+            }
+
+        }
+
     }
 
     /**

@@ -1,6 +1,10 @@
 package com.download;
 
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+
 import com.download.tools.LogCat;
+import com.gochinatv.db.DLDao;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -36,6 +40,7 @@ public class DownloadThread extends Thread {
     private static final int CONNECT_TIME_OUT = 60000;
     private static final int READ_TIME_OUT = 60000;
     private static final int BUFFER_IN_SIZE = 2048;
+    private Context context;
     /**
      *
      * @param downloadUrl:文件下载地址
@@ -43,12 +48,14 @@ public class DownloadThread extends Thread {
      * @param blockSize:下载数据长度
      * @param threadId:线程ID
      */
-    public DownloadThread(URL downloadUrl, File file, int blockSize,
+
+    public DownloadThread(Context context, URL downloadUrl, File file, int blockSize,
                               int threadId) {
         this.downloadUrl = downloadUrl;
         this.file = file;
         this.threadId = threadId;
         this.blockSize = blockSize;
+        this.context = context;
     }
     @Override
     public void run() {
@@ -133,7 +140,7 @@ public class DownloadThread extends Thread {
         downloadLength = len;
 
         // TODO 打开数据库
-
+        SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
         while (len != -1 && !isCancel) {
             try {
                 raf.write(buffer, 0, len);
@@ -149,8 +156,19 @@ public class DownloadThread extends Thread {
                 break;
             }
 
-            // TODO 修改文件的下载值
+            downloadLength += len;
 
+            // TODO 修改文件的下载值
+            try {
+                DLDao.updateOut(sqLiteDatabase, downloadUrl.toString(), downloadLength);
+            }catch (Exception e){
+                e.printStackTrace();
+                errorCode = ErrorCodes.ERROR_DB_UPDATE;
+            }
+            if(errorCode == ErrorCodes.ERROR_DB_UPDATE){
+                // 彻底放弃当前下载
+                break;
+            }
 
 //            if(downloadLength > 1028 * 1024){
 //                errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
@@ -167,9 +185,12 @@ public class DownloadThread extends Thread {
                 // 彻底放弃当前下载
                 break;
             }
-            downloadLength += len;
+
         }
         // TODO 关闭数据库
+        DLDao.closeDB(sqLiteDatabase);
+
+
 
         if (bis != null) {
             try {

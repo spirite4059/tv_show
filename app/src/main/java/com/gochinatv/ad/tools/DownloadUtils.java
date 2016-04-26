@@ -8,6 +8,7 @@ import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 
 import java.math.BigDecimal;
 
+import static com.download.ErrorCodes.ERROR_DB_UPDATE;
 import static com.download.ErrorCodes.ERROR_DOWNLOADING_READ;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_CONN;
@@ -205,6 +206,9 @@ public class DownloadUtils {
                 break;
             case ERROR_DOWNLOAD_EXCUTORS:
                 errorMsg = "error：线程池出错";
+                break;
+            case ERROR_DB_UPDATE:
+                errorMsg = "error：数据库更新下载内容时出错";
                 break;
             default:
                 errorMsg = "error：未知的异常";
