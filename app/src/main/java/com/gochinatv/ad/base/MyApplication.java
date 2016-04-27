@@ -3,7 +3,6 @@ package com.gochinatv.ad.base;
 import android.app.Application;
 import android.text.TextUtils;
 
-import com.facebook.drawee.backends.pipeline.Fresco;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
@@ -30,9 +29,11 @@ public class MyApplication extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
-        Fresco.initialize(this);
         try {
             String mac = TextUtils.isEmpty(DataUtils.getMacAddress(this)) ? "" : DataUtils.getMacAddress(this);
+            if(!TextUtils.isEmpty(mac)){
+                mac = mac.replaceAll(":", "");
+            }
             LogCat.e("mac: " + mac);
             AnalyticsConfig.setChannel(mac);
         } catch (Exception e) {

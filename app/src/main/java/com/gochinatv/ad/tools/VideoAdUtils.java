@@ -385,9 +385,7 @@ public class VideoAdUtils {
                     long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
                     long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
                     String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
-
                     LogCat.e("video", str);
-
                     LogCat.e("video", "上报开机时长。。。。。。。。");
                 }
             }
