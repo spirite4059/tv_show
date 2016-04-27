@@ -13,6 +13,8 @@ public class Constants {
      */
     public static final String SHARE_KEY_DURATION = "SHARE_KEY_DURATION";
     public static final String SHARE_KEY_SERVER_TIME = "SHARE_KEY_SERVER_TIME";
+    public static final String SHARE_KEY_UMENG = "SHARE_KEY_UMENG";
+    public static final String SHARE_KEY_MAC = "SHARE_KEY_MAC";
 
     /**
      * --------------------------File-------------------------------
@@ -80,6 +82,7 @@ public class Constants {
      * --------------------------是否是适配手机-------------------------------
      */
     public static boolean isPhone = false;
+
 
 
 

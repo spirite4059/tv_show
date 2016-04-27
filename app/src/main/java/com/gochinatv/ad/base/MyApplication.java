@@ -1,10 +1,7 @@
 package com.gochinatv.ad.base;
 
 import android.app.Application;
-import android.text.TextUtils;
 
-import com.gochinatv.ad.tools.DataUtils;
-import com.gochinatv.ad.tools.LogCat;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.cache.memory.impl.LRULimitedMemoryCache;
@@ -13,36 +10,23 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
 import com.nostra13.universalimageloader.utils.StorageUtils;
-import com.umeng.analytics.AnalyticsConfig;
-import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
 
 /**
  * Created by fq_mbp on 16/1/28.
  */
-public class MyApplication extends Application{
+public class MyApplication extends Application {
 
     private File cacheDir = null;
+
 
 
     @Override
     public void onCreate() {
         super.onCreate();
-        try {
-            String mac = TextUtils.isEmpty(DataUtils.getMacAddress(this)) ? "" : DataUtils.getMacAddress(this);
-            if(!TextUtils.isEmpty(mac)){
-                mac = mac.replaceAll(":", "");
-            }
-            LogCat.e("mac: " + mac);
-            AnalyticsConfig.setChannel(mac);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        MobclickAgent.openActivityDurationTrack(false);
-        MobclickAgent.setCatchUncaughtExceptions(true);
-        MobclickAgent.setDebugMode(false);
+
 
         cacheDir = StorageUtils.getOwnCacheDirectory(this, "imageloader/Cache");
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
@@ -71,6 +55,9 @@ public class MyApplication extends Application{
         ImageLoader.getInstance().init(config); // 初始化
 
     }
+
+
+
 
     @Override
     public void onLowMemory() {

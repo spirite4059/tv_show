@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,6 +26,7 @@ import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeOtherFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
@@ -36,6 +38,7 @@ import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.ADHttpService;
 import com.tools.HttpUrls;
+import com.umeng.analytics.AnalyticsConfig;
 import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
@@ -104,19 +107,23 @@ public class MainActivity extends Activity {
 
 
     private void init() {
+        handler = new Handler(Looper.getMainLooper());
+        initUmeng();
+
+
         /**
          * 隐藏NavigationBar
          */
         hideNavigationBar();
 
-        if(DataUtils.isNetworkConnected(this)){
+        if (DataUtils.isNetworkConnected(this)) {
             LogCat.e("网络已连接，请求接口");
             doHttpUpdate(MainActivity.this);
             doGetDeviceInfo();
-        }else{
+        } else {
             LogCat.e("网络未连接，继续判断网络是否连接");
-            handler = new Handler();
-            handler.postDelayed(runnable,3000);
+
+            handler.postDelayed(runnable, 3000);
 
         }
 
@@ -125,34 +132,62 @@ public class MainActivity extends Activity {
         /**
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
-        if(!Constants.isTest){
+        if (!Constants.isTest) {
             DataUtils.startAppServer(this);
         }
 
     }
 
+
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
             runnableTimes++;
-            if(DataUtils.isNetworkConnected(MainActivity.this)){
+            if (DataUtils.isNetworkConnected(MainActivity.this)) {
                 LogCat.e("网络已连接，请求接口，并且移除runnable");
                 handler.removeCallbacks(runnable);
                 doHttpUpdate(MainActivity.this);
                 doGetDeviceInfo();
-            }else{
-                if(runnableTimes >4){
+            } else {
+                if (runnableTimes > 4) {
                     LogCat.e("请求5次后不再请求，进入广告一");
                     isUpgradeSucceed = true;
                     isGetDerviceSucceed = true;
                     loadFragmentTwo(isHasUpgrade);
-                }else{
+                } else {
                     LogCat.e("网络未连接，继续判断网络是否连接");
-                    handler.postDelayed(runnable,3000);
+                    handler.postDelayed(runnable, 3000);
                 }
             }
         }
     };
+
+    private void initUmeng() {
+        if(isFinishing()){
+            return;
+        }
+        String mac = DataUtils.getMacAddress(MainActivity.this);
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
+        if (!TextUtils.isEmpty(mac)) {
+            final String macAddress = mac.replaceAll(":", "");
+            LogCat.e("mac: " + macAddress);
+            AnalyticsConfig.setChannel(mac);
+            MobclickAgent.openActivityDurationTrack(false);
+            MobclickAgent.setCatchUncaughtExceptions(true);
+            MobclickAgent.setDebugMode(false);
+            if(sharedPreference != null){
+                sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
+            }
+        }else {
+            if(sharedPreference != null){
+                sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
+            }
+        }
+    }
+
+
+
+
 
 
     private void deleteUpdateApk() {
@@ -193,11 +228,13 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop() {
-        super.onStop();
+
         DLUtils.cancel();
-        if(handler != null && runnable != null){
+        if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
         }
+
+        super.onStop();
     }
 
     /**
@@ -518,7 +555,7 @@ public class MainActivity extends Activity {
     private LayoutResponse fourLayout;//广告四布局
 
     private void loadFragmentTwo(boolean isDownload) {
-        LogCat.e(" isUpgradeSucceed "+ isUpgradeSucceed +"  isGetDerviceSucceed    " + isGetDerviceSucceed);
+        LogCat.e(" isUpgradeSucceed " + isUpgradeSucceed + "  isGetDerviceSucceed    " + isGetDerviceSucceed);
         //当升级和广告体接口都完成后，才加载布局
         if (isUpgradeSucceed && isGetDerviceSucceed) {
             rootLayout.setBackground(null);
@@ -631,7 +668,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        MobclickAgent.onResume(this);
+
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            LogCat.e("mac", "umeng可以使用。。。。。");
+            MobclickAgent.onResume(this);
+        }
+
+
 
 //        LogCat.e("debug", "info: " + getDeviceInfo(this));
 
@@ -641,8 +686,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        MobclickAgent.onPause(this);
-
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            LogCat.e("mac", "umeng可以使用。。。。。");
+            MobclickAgent.onPause(this);
+        }
     }
 
     /**
@@ -694,7 +743,6 @@ public class MainActivity extends Activity {
 
         getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
     }
-
 
 
     @SuppressLint("NewApi")
