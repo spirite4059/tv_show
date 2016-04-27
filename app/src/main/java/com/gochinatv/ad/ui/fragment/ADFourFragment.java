@@ -107,15 +107,16 @@ public class ADFourFragment extends BaseFragment {
 
     @Override
     protected void init() {
-        autoTextView.setText("For more information about GoChina Media, please contact clientservice@gochinatv.com");
+        autoTextView.setText("For more information about GoChina Media, please contact clientservice@gochinatv.com.");
         textList = new ArrayList<>();
         textList.add("Please call our service team at 1-877-227-5717");
         textList.add("Interested in installation of our TV in your restaurant?");
         textList.add("Please visit http://h5.eqxiu.com/s/LW4ukoLZ");
-        textList.add("Join our partner recruitment plan");
-        textList.add("Please contact us via clientservice@gochinatv.com or wechat: 13034624085");
+        textList.add("Join our partner recruitment plan.");
+        textList.add("Win a $10 dollar referral fee for each successfully recommendation.");
+        textList.add("Please contact us via clientservice@gochinatv.com or wechat: 13034624085.");
         textList.add("Advertising client please contact globalsales@gochinatv.com");
-        textList.add("For more information about GoChina Media, please contact clientservice@gochinatv.com");
+        textList.add("For more information about GoChina Media, please contact clientservice@gochinatv.com.");
         if(textList.size()>1){
             LogCat.e("ADFourFragment 第一次开启滚动 ");
             i = 0;

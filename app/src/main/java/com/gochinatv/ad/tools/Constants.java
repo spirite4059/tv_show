@@ -75,7 +75,7 @@ public class Constants {
     /**
      * --------------------------是否是3号位测试-------------------------------
      */
-    public static boolean isImageTest = true;
+    public static boolean isImageTest = false;
 
 
     /**
