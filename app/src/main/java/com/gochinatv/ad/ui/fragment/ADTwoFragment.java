@@ -17,6 +17,7 @@ import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.okhtttp.response.LayoutResponse;
+import com.umeng.analytics.MobclickAgent;
 
 import java.util.HashMap;
 
@@ -94,8 +95,8 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
     protected void init() {
 
         HashMap<String,Integer> file_maps = new HashMap<String, Integer>();
-        file_maps.put("Hannibal",R.drawable.adtwo);
-        file_maps.put("Big Bang Theory", R.drawable.ad_two_one);
+        file_maps.put("Hannibal",R.drawable.ad_two_one);
+        file_maps.put("Big Bang Theory", R.drawable.ad_two_two);
 
         for(String name : file_maps.keySet()){
             TextSliderView textSliderView = new TextSliderView(getActivity());
@@ -167,4 +168,20 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
     public void onSliderClick(BaseSliderView slider) {
 
     }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onPageStart("MainActivity");
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPageEnd("MainActivity");
+    }
+
+
 }

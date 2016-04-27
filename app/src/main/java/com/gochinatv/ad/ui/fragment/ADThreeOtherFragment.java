@@ -20,6 +20,7 @@ import com.okhtttp.response.AdImgResponse;
 import com.okhtttp.response.AdThreeDataResponse;
 import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.service.ADHttpService;
+import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -398,5 +399,18 @@ public class ADThreeOtherFragment extends BaseFragment {
 //        }
 //    }
 
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MobclickAgent.onPageStart("MainActivity");
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        MobclickAgent.onPageEnd("MainActivity");
+    }
 
 }

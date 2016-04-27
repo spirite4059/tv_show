@@ -77,6 +77,9 @@ public class RecycleAnimationLayout extends LinearLayout {
 
     private int oldPositionID;//保存
 
+    //
+    private int newScrollerY;
+
 
     public RecycleAnimationLayout(Context context) {
         super(context);
@@ -219,6 +222,8 @@ public class RecycleAnimationLayout extends LinearLayout {
     private void scrollUp(){
         LogCat.e("RecycleAnimationLayout","开始向上滚动 scrollUp ");
         isViewUp = true;//将其置为滑动上面去了
+        //oldScrollerY = mScroller.getCurrY();
+        LogCat.e("RecycleAnimationLayout", "scrollUp  Y的偏移量 oldScrollerY :  "  +  mScroller.getCurrY() );
         mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), 0, itemHeight, duration * 1000);
         invalidate();
 
@@ -230,7 +235,9 @@ public class RecycleAnimationLayout extends LinearLayout {
     private void scrollDown(){
         LogCat.e("RecycleAnimationLayout","开始向下滚动 scrollDown ");
         isViewUp = false;//将其置为恢复原来状态了
-        mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), 0, -itemHeight, 0);
+        newScrollerY = mScroller.getCurrY();
+        LogCat.e("RecycleAnimationLayout", " scrollDown Y的偏移量 newScrollerY :  " + newScrollerY);
+        mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), 0, -(newScrollerY), 0);
         invalidate();
 
     }
