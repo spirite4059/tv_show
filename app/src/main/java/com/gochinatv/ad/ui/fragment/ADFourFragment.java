@@ -11,8 +11,10 @@ import android.widget.RelativeLayout;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
+import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.view.AutoTextView;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADFourResponse;
@@ -297,13 +299,21 @@ public class ADFourFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        MobclickAgent.onPageStart("MainActivity");
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            MobclickAgent.onPageStart("ADFourFragment");
+        }
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        MobclickAgent.onPageEnd("MainActivity");
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            MobclickAgent.onPageEnd("ADFourFragment");
+        }
     }
 }

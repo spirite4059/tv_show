@@ -14,8 +14,10 @@ import com.daimajia.slider.library.SliderTypes.TextSliderView;
 import com.daimajia.slider.library.Tricks.ViewPagerEx.OnPageChangeListener;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
+import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.okhtttp.response.LayoutResponse;
 import com.umeng.analytics.MobclickAgent;
 
@@ -96,7 +98,6 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
         HashMap<String,Integer> file_maps = new HashMap<String, Integer>();
         file_maps.put("Hannibal",R.drawable.ad_two_one);
-        file_maps.put("Big Bang Theory", R.drawable.ad_two_two);
 
         for(String name : file_maps.keySet()){
             TextSliderView textSliderView = new TextSliderView(getActivity());
@@ -120,7 +121,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
         //mDemoSlider.setCustomAnimation(new DescriptionAnimation());
         mDemoSlider.setDuration(10000);
         mDemoSlider.addOnPageChangeListener(this);
-
+        mDemoSlider.stopAutoCycle();//不滚动
 
 
 
@@ -173,14 +174,23 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
     @Override
     public void onResume() {
         super.onResume();
-        MobclickAgent.onPageStart("MainActivity");
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            MobclickAgent.onPageStart("ADTwoFragment");
+        }
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        MobclickAgent.onPageEnd("MainActivity");
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            LogCat.e("mac", "umeng可以使用。。。。。");
+            MobclickAgent.onPageEnd("ADTwoFragment");
+        }
     }
 
 
