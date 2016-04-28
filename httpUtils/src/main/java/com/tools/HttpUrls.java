@@ -50,5 +50,5 @@ public class HttpUrls {
     /**
      * 广告三
      */
-    public static final String URL_SCREEN_SHOT = "http://210.14.151.100:8090/api/device_v1/uploadImage";
+    public static final String URL_SCREEN_SHOT = "http://api.bm.gochinatv.com/api/device_v1/uploadImage";
 }

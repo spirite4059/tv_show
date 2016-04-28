@@ -41,9 +41,9 @@ public class OkHttpUtils {
     private OkHttpClient mOkHttpClient;
     private Handler mDelivery;
     private Gson mGson;
-    private static final int OK_HTTP_READ_TIME_OUT = 10000;
-    private static final int OK_HTTP_WRITE_TIME_OUT = 10000;
-    private static final int OK_HTTP_CONNECT_TIME_OUT = 10000;
+    private static final int OK_HTTP_READ_TIME_OUT = 30000;
+    private static final int OK_HTTP_WRITE_TIME_OUT = 30000;
+    private static final int OK_HTTP_CONNECT_TIME_OUT = 30000;
 
     private static final int OK_HTTP_CACHE_SIZE = 1024 * 1024 * 10;   // 缓存200K
 
@@ -169,7 +169,7 @@ public class OkHttpUtils {
 
 
 
-    public void doUploadFile(Context context, File file, String url) throws IOException {
+    public void doUploadFile(Context context, File file, String url, long duration, String name) throws IOException {
         RequestBody fileBody = RequestBody.create(MediaType.parse("application/octet-stream"), file);
 
         RequestBody requestBody = new MultipartBody.Builder()
@@ -177,6 +177,8 @@ public class OkHttpUtils {
                 .addPart(fileBody)
                 .addFormDataPart("file", file.getName(), fileBody)
                 .addFormDataPart("mac", MacUtils.getMacAddress(context))
+                .addFormDataPart("duration", String.valueOf(duration))
+                .addFormDataPart("name", name)
                 .build();
 
         Request request = new Request.Builder()

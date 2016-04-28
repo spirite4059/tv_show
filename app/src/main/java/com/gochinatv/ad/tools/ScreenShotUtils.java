@@ -5,21 +5,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.os.Build;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.View;
-import android.view.WindowManager;
 
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ScreenShotResponse;
-import com.tools.HttpUrls;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -32,19 +26,21 @@ import java.util.HashMap;
  */
 public class ScreenShotUtils {
 
-    public static void uploadBitmap(Context context, Bitmap resultBitmap) {
+    private static final String ULR = "http://api.bm.gochinatv.com/device_v1/uploadImage";
+
+    public static void uploadBitmap(Context context, Bitmap resultBitmap, long duration, String name) {
         File file = initScreenShotFile();
         boolean isScreenShot = createScreenShotFile(resultBitmap, file);
-        uploadFile(context, file, isScreenShot);
+        uploadFile(context, file, isScreenShot, duration, name);
 
     }
 
-    private static void uploadFile(Context context, File file, boolean isScreenShot) {
+    private static void uploadFile(Context context, File file, boolean isScreenShot, long duration, String name) {
         if (isScreenShot) {
             //截图成功
-            LogCat.e("screenShot", "截屏成功......");
+            LogCat.e("screenShot", "开始上传......");
             try {
-                OkHttpUtils.getInstance().doUploadFile(context, file, HttpUrls.URL_SCREEN_SHOT);
+                OkHttpUtils.getInstance().doUploadFile(context, file, ULR, duration, name);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -55,14 +51,14 @@ public class ScreenShotUtils {
     }
 
     public static boolean createScreenShotFile(Bitmap resultBitmap, File file) {
+        if(file == null || !file.exists() || resultBitmap == null || resultBitmap.isRecycled()){
+            return false;
+        }
         boolean isScreenShot = false;
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
             isScreenShot = resultBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-
-
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } finally {
@@ -263,61 +259,6 @@ public class ScreenShotUtils {
 
 
 
-    @SuppressWarnings("deprecation")
-    public static Bitmap acquireScreenshot(Context context) {
-        File file = initScreenShotFile();
-
-        WindowManager mWinManager = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics metrics = new DisplayMetrics();
-        Display display = mWinManager.getDefaultDisplay();
-        display.getMetrics(metrics);
-        // 屏幕高
-        int height = metrics.heightPixels;
-        // 屏幕的宽
-        int width = metrics.widthPixels;
-
-        int pixelformat = display.getPixelFormat();
-        PixelFormat localPixelFormat1 = new PixelFormat();
-        PixelFormat.getPixelFormatInfo(pixelformat, localPixelFormat1);
-        // 位深
-        int deepth = localPixelFormat1.bytesPerPixel;
-
-        byte[] arrayOfByte = new byte[height * width * deepth];
-        try {
-            // 读取设备缓存，获取屏幕图像流
-            InputStream localInputStream = readAsRoot();
-            DataInputStream localDataInputStream = new DataInputStream(
-                    localInputStream);
-            localDataInputStream.readFully(arrayOfByte);
-            localInputStream.close();
-
-            int[] tmpColor = new int[width * height];
-            int r, g, b;
-            for (int j = 0; j < width * height * deepth; j += deepth) {
-                b = arrayOfByte[j] & 0xff;
-                g = arrayOfByte[j + 1] & 0xff;
-                r = arrayOfByte[j + 2] & 0xff;
-                tmpColor[j / deepth] = (r << 16) | (g << 8) | b | (0xff000000);
-            }
-            // 构建bitmap
-            Bitmap scrBitmap = Bitmap.createBitmap(tmpColor, width, height,
-                    Bitmap.Config.RGB_565);
-
-
-
-
-
-            uploadBitmap(context, scrBitmap);
-            return scrBitmap;
-
-        } catch (Exception e) {
-            LogCat.e("screenShot", "#### 读取屏幕截图失败");
-            e.printStackTrace();
-        }
-        return null;
-
-    }
 
     /**
      * @Title: readAsRoot

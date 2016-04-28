@@ -12,7 +12,6 @@ import android.view.View;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
-import com.okhtttp.OkHttpUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -132,11 +131,11 @@ public class ScreenShotThread extends Thread{
                 //截图成功
                 LogCat.e("截屏成功......");
 
-                try {
-                    OkHttpUtils.getInstance().doUploadFile(activity, file, "http://210.14.151.100:8090/api/device_v1/uploadImage");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {
+////                    OkHttpUtils.getInstance().doUploadFile(activity, file, "http://210.14.151.100:8090/api/device_v1/uploadImage");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
 
             }
         } catch (FileNotFoundException e) {

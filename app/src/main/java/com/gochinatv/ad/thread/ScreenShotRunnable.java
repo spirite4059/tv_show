@@ -42,7 +42,7 @@ public class ScreenShotRunnable implements Runnable{
         }
 //        Bitmap resultBitmap = mergeBitmap(bitmap, videoBitmap);
 
-        ScreenShotUtils.uploadBitmap(activity, videoBitmap);
+//        ScreenShotUtils.uploadBitmap(activity, videoBitmap);
 
 //        if(bitmap != null){
 //            bitmap.recycle();
