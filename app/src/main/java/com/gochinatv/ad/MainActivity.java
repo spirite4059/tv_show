@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
         /**
          * 隐藏NavigationBar
          */
-        hideNavigationBar();
+        DataUtils.hideNavigationBar(this);
 
         if (DataUtils.isNetworkConnected(this)) {
             LogCat.e("网络已连接，请求接口");
@@ -122,9 +122,7 @@ public class MainActivity extends Activity {
             doGetDeviceInfo();
         } else {
             LogCat.e("网络未连接，继续判断网络是否连接");
-
             handler.postDelayed(runnable, 10000);
-
         }
 
         // 删除升级安装包
@@ -133,7 +131,7 @@ public class MainActivity extends Activity {
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
-            //DataUtils.startAppServer(this);
+            DataUtils.startAppServer(this);
         }
 
     }
@@ -174,13 +172,13 @@ public class MainActivity extends Activity {
             AnalyticsConfig.setChannel(mac);
             MobclickAgent.openActivityDurationTrack(false);
             MobclickAgent.setCatchUncaughtExceptions(true);
-            MobclickAgent.setDebugMode(false);
+            MobclickAgent.setDebugMode(true);
             if(sharedPreference != null){
                 sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
             }
         }else {
             if(sharedPreference != null){
-                sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
+                sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, false);
             }
         }
     }
@@ -702,47 +700,7 @@ public class MainActivity extends Activity {
 //    }
 
 
-    /**
-     * Detects and toggles immersive mode (also known as "hidey bar" mode).
-     */
-    public void hideNavigationBar() {
 
-        // The UI options currently enabled are represented by a bitfield.
-        // getSystemUiVisibility() gives us that bitfield.
-        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
-        int newUiOptions = uiOptions;
-        boolean isImmersiveModeEnabled =
-                ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
-        if (isImmersiveModeEnabled) {
-            LogCat.e("video", "Turning immersive mode mode off. ");
-        } else {
-            LogCat.e("video", "Turning immersive mode mode on.");
-        }
-
-        // Navigation bar hiding:  Backwards compatible to ICS.
-        if (Build.VERSION.SDK_INT >= 14) {
-            newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        }
-
-        // Status bar hiding: Backwards compatible to Jellybean
-        if (Build.VERSION.SDK_INT >= 16) {
-            newUiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        }
-
-        // Immersive mode: Backward compatible to KitKat.
-        // Note that this flag doesn't do anything by itself, it only augments the behavior
-        // of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
-        // all three flags are being toggled together.
-        // Note that there are two immersive mode UI flags, one of which is referred to as "sticky".
-        // Sticky immersive mode differs in that it makes the navigation and status bars
-        // semi-transparent, and the UI flag does not get cleared when the user interacts with
-        // the screen.
-        if (Build.VERSION.SDK_INT >= 18) {
-            newUiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        }
-
-        getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
-    }
 
 
     @SuppressLint("NewApi")

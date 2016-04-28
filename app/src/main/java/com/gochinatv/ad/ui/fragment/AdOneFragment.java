@@ -791,7 +791,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
                 boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
                 if(isHasMac){
-                    LogCat.e("mac", "umeng可以使用。。。。。");
+                    LogCat.e("mac", "umeng可以使用。。。。。统计播放时长");
                     MobclickAgent.onEvent(getActivity(), "duration", str);
                 }
 
@@ -1059,8 +1059,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
             boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
             if(isHasMac){
-                LogCat.e("mac", "umeng可以使用。。。。。");
-                MobclickAgent.onEvent(getActivity(), "video_play_times", adDetailResponse.adVideoName);
+                LogCat.e("mac", "umeng可以使用。。。。。添加播放次数" + adDetailResponse.adVideoName);
+                MobclickAgent.onEvent(getActivity(), "video_play_times: ", adDetailResponse.adVideoName);
             }
 
         }
