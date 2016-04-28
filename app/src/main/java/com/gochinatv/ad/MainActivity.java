@@ -123,7 +123,7 @@ public class MainActivity extends Activity {
         } else {
             LogCat.e("网络未连接，继续判断网络是否连接");
 
-            handler.postDelayed(runnable, 3000);
+            handler.postDelayed(runnable, 10000);
 
         }
 
@@ -133,7 +133,7 @@ public class MainActivity extends Activity {
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
-            DataUtils.startAppServer(this);
+            //DataUtils.startAppServer(this);
         }
 
     }
@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
                     loadFragmentTwo(isHasUpgrade);
                 } else {
                     LogCat.e("网络未连接，继续判断网络是否连接");
-                    handler.postDelayed(runnable, 3000);
+                    handler.postDelayed(runnable, 10000);
                 }
             }
         }
