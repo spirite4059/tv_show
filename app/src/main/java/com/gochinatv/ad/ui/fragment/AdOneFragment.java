@@ -96,7 +96,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 测试的时间间隔
      */
-    private final int TEST_TIME_DURATION = 1000 * 30;
+    private final int TEST_TIME_DURATION = 1000 * 60;
     /**
      * 最多进行重试的次数
      */
@@ -294,11 +294,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         LogCat.e( "video", "url: " + url);
         if (response == null) {
             // 默认继续播放之前的缓存文件
+            // 显示开发下载模式，主要是为了显示日志
+            rollPoling();
             return;
         }
 
         if (response == null || response.current == null || response.current.size() == 0) {
             // 默认继续播放之前的缓存文件
+            // 显示开发下载模式，主要是为了显示日志
+            rollPoling();
             return;
         }
 
@@ -390,8 +394,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         LogCat.e("video", "++++++++++++++++++++++++++++++++++++++++++++++++");
 
 
+        rollPoling();
+    }
 
-        // 显示开发下载模式，主要是为了显示日志
+    // 轮询接口
+    private void rollPoling() {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -401,7 +408,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
             }
         }, (Constants.isTest ? TEST_TIME_DURATION : pollInterval));
-
     }
 
 

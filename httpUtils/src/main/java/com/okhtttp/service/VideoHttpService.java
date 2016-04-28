@@ -19,16 +19,8 @@ public class VideoHttpService {
 
     public static void doHttpGetVideoList(Context context, OkHttpCallBack<AdVideoListResponse> listener){
         Map<String, String> params = new HashMap<>();
-//        params.put("mac", MacUtils.getMacAddress(context));
-//        params.put("mac", "rf-ed-rt-ws");
-//        try {
-//            String mac = URLEncoder.encode("cc:79:cf:88:88:88", "UTF-8");
-//            LogCat.e("mac: " + mac);
-//            params.put("mac", mac);
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
         params.put("mac", MacUtils.getMacAddress(context));
+//        params.put("time", "2016-04-30");
         OkHttpUtils.getInstance().doHttpGet(HTTP_URL_GET_VIDEO_LIST, params, listener);
     }
 

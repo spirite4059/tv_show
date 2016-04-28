@@ -467,7 +467,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onDownloadProgress(long progress, long fileSize) {
-
+                
             }
         });
 
