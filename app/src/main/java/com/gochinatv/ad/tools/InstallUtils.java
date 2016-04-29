@@ -39,7 +39,7 @@ public class InstallUtils {
             }
             if(hasRootPermission()){
                 //  have  root
-                Toast.makeText(context, "提醒：提醒：即将开始安装新版本，稍后自动重启！", Toast.LENGTH_LONG).show();
+//                Toast.makeText(context, "提醒：提醒：即将开始安装新版本，稍后自动重启！", Toast.LENGTH_LONG).show();
                 SharedPreference.getSharedPreferenceUtils(context).saveDate("isClientInstall", true);
                 LogCat.e("获取到root权限，开始静默升级。。。。。。。");
                 installSilent(context, apkFile.getAbsolutePath(), true);
@@ -48,7 +48,7 @@ public class InstallUtils {
 //                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
                 SharedPreference.getSharedPreferenceUtils(context).saveDate("isClientInstall", true);
                 LogCat.e("获取到系统权限，开始静默升级。。。。。。。");
-                Toast.makeText(context,"提醒：即将开始安装新版本，稍后自动重启！",Toast.LENGTH_LONG).show();
+//                Toast.makeText(context,"提醒：即将开始安装新版本，稍后自动重启！",Toast.LENGTH_LONG).show();
                 installSilent(context, apkFile.getAbsolutePath(), false);
 
             }else {

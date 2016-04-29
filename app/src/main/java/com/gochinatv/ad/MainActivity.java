@@ -7,10 +7,12 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
@@ -197,30 +200,30 @@ public class MainActivity extends Activity {
 
     private void testInstall() {
         //
-//        File file = Environment.getExternalStorageDirectory();
-////
-//        File fileApk = new File(file.getAbsolutePath() + "/Music/test.apk");
+        File file = Environment.getExternalStorageDirectory();
 //
-//        LogCat.e("fileApk: " + fileApk.getAbsolutePath());
-////
-//        PackageInfo pInfo = null;
-//        try {
-//            pInfo = getPackageManager().getPackageInfo("com.gochinatv.ad", 0);
-//        } catch (PackageManager.NameNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        if(InstallUtils.hasRootPermission()){
-//            //  have  root
-//            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), true);
-//            Toast.makeText(this, "提醒：获取到root权限，可以静默升级！", Toast.LENGTH_LONG).show();
-//            // rootClientInstall(apkFile.getAbsolutePath());
-//        }else if (InstallUtils.isSystemApp(pInfo) || InstallUtils.isSystemUpdateApp(pInfo)){
-////                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
-//            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), false);
-//            Toast.makeText(this,"提醒：获取到系统权限，可以静默升级！",Toast.LENGTH_LONG).show();
-//        }else {
-//            Toast.makeText(this,"提醒：没有获取到系统权限和root权限，请选择普通安装！",Toast.LENGTH_LONG).show();
-//        }
+        File fileApk = new File(file.getAbsolutePath() + "/Music/test.apk");
+
+        LogCat.e("fileApk: " + fileApk.getAbsolutePath());
+//
+        PackageInfo pInfo = null;
+        try {
+            pInfo = getPackageManager().getPackageInfo("com.gochinatv.ad", 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        if(InstallUtils.hasRootPermission()){
+            //  have  root
+            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), true);
+            Toast.makeText(this, "提醒：获取到root权限，可以静默升级！", Toast.LENGTH_LONG).show();
+            // rootClientInstall(apkFile.getAbsolutePath());
+        }else if (InstallUtils.isSystemApp(pInfo) || InstallUtils.isSystemUpdateApp(pInfo)){
+//                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
+            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), false);
+            Toast.makeText(this,"提醒：获取到系统权限，可以静默升级！",Toast.LENGTH_LONG).show();
+        }else {
+            Toast.makeText(this,"提醒：没有获取到系统权限和root权限，请选择普通安装！",Toast.LENGTH_LONG).show();
+        }
     }
 
 
@@ -230,6 +233,7 @@ public class MainActivity extends Activity {
         DLUtils.cancel();
         if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
+            handler = null;
         }
 
         super.onStop();
@@ -325,6 +329,12 @@ public class MainActivity extends Activity {
                                     LogCat.e("需要升级。。。。。");
                                     // 去下载当前的apk
                                     isHasUpgrade = true;
+
+
+//                                    testInstall();
+
+
+
                                     downloadAPK();
                                     // 加载布局.但是不让AdOneFragment，下载视频
                                     //loadFragment(true);
