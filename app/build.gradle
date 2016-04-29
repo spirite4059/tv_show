@@ -14,7 +14,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 23
         versionCode 11
-        versionName "1.2.2"
+        versionName "1.2.3"
         // dex突破65535的限制
         multiDexEnabled true
         //    5697616167e58e3881002b8e
