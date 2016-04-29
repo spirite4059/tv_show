@@ -377,7 +377,9 @@ public class FFmpegMediaMetadataRetriever
         BitmapFactory.Options bitmapOptionsCache = new BitmapFactory.Options();
         //bitmapOptionsCache.inPreferredConfig = getInPreferredConfig();
         bitmapOptionsCache.inDither = false;
-    	
+        bitmapOptionsCache.inPreferredConfig=null;  /*设置让解码器以最佳方式解码*/
+        bitmapOptionsCache.inSampleSize = 4;
+
         byte [] picture = _getFrameAtTime(timeUs, option);
         
         if (picture != null) {

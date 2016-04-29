@@ -18,7 +18,7 @@ android {
         // dex突破65535的限制
         multiDexEnabled true
         //    5697616167e58e3881002b8e
-        manifestPlaceholders = [UMENG_APPKEY_VALUE: "57207b2b67e58ee58700081a"]
+        manifestPlaceholders = [UMENG_APPKEY_VALUE: "56aad2f3e0f55a8655002111"]
     }
     // 禁用lint报错
     lintOptions {

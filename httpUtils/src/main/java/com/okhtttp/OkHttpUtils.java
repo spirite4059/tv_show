@@ -112,6 +112,41 @@ public class OkHttpUtils {
         });
     }
 
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+
+    public <T> void doHttpPost(final String url, Object obj, final OkHttpCallBack<T> okHttpCallBack) {
+        Gson gson = new Gson();
+        String json = gson.toJson(obj);
+        RequestBody body = RequestBody.create(JSON, json);
+        final Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Call call = mOkHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                sendFailedStringCallback(url, e, okHttpCallBack);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response != null && response.body() != null) {
+                    String json = response.body().string();
+                    if (!TextUtils.isEmpty(json)) {
+                        try {
+                            sendSuccessResultCallback(url, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
+                        }catch (Exception e){
+                            sendFailedStringCallback(url, e, okHttpCallBack);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
 
     public <T> void doHttpGet(String url, Map params, final OkHttpCallBack<T> okHttpCallBack) {
         final String realUrl = getParamsUrl(url, params);
