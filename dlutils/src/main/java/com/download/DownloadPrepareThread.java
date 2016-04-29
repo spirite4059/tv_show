@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.text.TextUtils;
 
 import com.download.dllistener.OnDownloadStatusListener;
 import com.download.tools.CacheVideoListThread;
@@ -172,10 +173,12 @@ public class DownloadPrepareThread extends Thread {
         LogCat.e("video", "将文件大小写入数据库.......");
         try {
             String fileName = file.getName();
-            int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
-            fileName = fileName.substring(0, index);
-            AdDao.update(context, isToday, fileName, AdDao.adVideoLength, String.valueOf(fileSize));
-            LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, isToday, AdDao.adVideoName, fileName).adVideoLength);
+            if(!TextUtils.isEmpty(fileName) && fileName.contains(Constants.FILE_DOWNLOAD_EXTENSION)){
+                int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
+                fileName = fileName.substring(0, index);
+                AdDao.update(context, isToday, fileName, AdDao.adVideoLength, String.valueOf(fileSize));
+                LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, isToday, AdDao.adVideoName, fileName).adVideoLength);
+            }
         }catch (Exception e){
             e.printStackTrace();
         }

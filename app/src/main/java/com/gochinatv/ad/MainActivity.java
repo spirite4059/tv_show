@@ -110,6 +110,9 @@ public class MainActivity extends Activity {
 
 
     private void init() {
+        // 删除升级安装包
+        deleteUpdateApk();
+
         handler = new Handler(Looper.getMainLooper());
         initUmeng();
 
@@ -128,8 +131,7 @@ public class MainActivity extends Activity {
             handler.postDelayed(runnable, 10000);
         }
 
-        // 删除升级安装包
-        deleteUpdateApk();
+
         /**
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
@@ -199,7 +201,6 @@ public class MainActivity extends Activity {
     }
 
     private void testInstall() {
-        //
         File file = Environment.getExternalStorageDirectory();
 //
         File fileApk = new File(file.getAbsolutePath() + "/Music/test.apk");
@@ -233,7 +234,6 @@ public class MainActivity extends Activity {
         DLUtils.cancel();
         if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
-            handler = null;
         }
 
         super.onStop();
@@ -447,7 +447,7 @@ public class MainActivity extends Activity {
      * 下载apk
      */
     private void downloadAPK() {
-        DownloadUtils.download(true, getApplication(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+        DownloadUtils.download(true, getApplication(), DataUtils.getApkDirectory(), Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
                 //新包下载完成得安装
