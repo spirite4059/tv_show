@@ -1,17 +1,11 @@
 package com.gochinatv.ad.ui.fragment;
 
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
-import com.daimajia.slider.library.Indicators.PagerIndicator;
-import com.daimajia.slider.library.SliderLayout;
-import com.daimajia.slider.library.SliderTypes.BaseSliderView;
-import com.daimajia.slider.library.SliderTypes.TextSliderView;
-import com.daimajia.slider.library.Tricks.ViewPagerEx.OnPageChangeListener;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.Constants;
@@ -21,16 +15,14 @@ import com.gochinatv.ad.tools.SharedPreference;
 import com.okhtttp.response.LayoutResponse;
 import com.umeng.analytics.MobclickAgent;
 
-import java.util.HashMap;
-
 /**
  *
  * Created by zfy on 2016/3/16.
  */
-public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSliderClickListener, OnPageChangeListener {
+public class ADTwoFragment extends BaseFragment {
 
 
-    private SliderLayout mDemoSlider;
+    //private SliderLayout mDemoSlider;
 
 
     public LayoutResponse getLayoutResponse() {
@@ -89,39 +81,39 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
     @Override
     protected void initView(View rootView) {
-        mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
+        //mDemoSlider = (SliderLayout) rootView.findViewById(R.id.slider);
 
     }
 
     @Override
     protected void init() {
 
-        HashMap<String,Integer> file_maps = new HashMap<String, Integer>();
-        file_maps.put("Hannibal",R.drawable.ad_two_one);
-
-        for(String name : file_maps.keySet()){
-            TextSliderView textSliderView = new TextSliderView(getActivity());
-            // initialize a SliderLayout
-            textSliderView
-                    .description(name)
-                    .image(file_maps.get(name))
-                    .setScaleType(BaseSliderView.ScaleType.Fit)
-                    .setOnSliderClickListener(this);
-
-            //add your extra information
-            textSliderView.bundle(new Bundle());
-            textSliderView.getBundle()
-                    .putString("extra",name);
-
-            mDemoSlider.addSlider(textSliderView);
-        }
-        mDemoSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);//不显示圆点
-        mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
-        //mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
-        //mDemoSlider.setCustomAnimation(new DescriptionAnimation());
-        mDemoSlider.setDuration(10000);
-        mDemoSlider.addOnPageChangeListener(this);
-        mDemoSlider.stopAutoCycle();//不滚动
+//        HashMap<String,Integer> file_maps = new HashMap<String, Integer>();
+//        file_maps.put("Hannibal",R.drawable.ad_two_one);
+//
+//        for(String name : file_maps.keySet()){
+//            TextSliderView textSliderView = new TextSliderView(getActivity());
+//            // initialize a SliderLayout
+//            textSliderView
+//                    .description(name)
+//                    .image(file_maps.get(name))
+//                    .setScaleType(BaseSliderView.ScaleType.Fit)
+//                    .setOnSliderClickListener(this);
+//
+//            //add your extra information
+//            textSliderView.bundle(new Bundle());
+//            textSliderView.getBundle()
+//                    .putString("extra",name);
+//
+//            mDemoSlider.addSlider(textSliderView);
+//        }
+//        mDemoSlider.setIndicatorVisibility(PagerIndicator.IndicatorVisibility.Invisible);//不显示圆点
+//        mDemoSlider.setPresetTransformer(SliderLayout.Transformer.Accordion);
+//        //mDemoSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
+//        //mDemoSlider.setCustomAnimation(new DescriptionAnimation());
+//        mDemoSlider.setDuration(10000);
+//        mDemoSlider.addOnPageChangeListener(this);
+//        mDemoSlider.stopAutoCycle();//不滚动
 
 
 
@@ -142,33 +134,15 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(mDemoSlider != null){
-            mDemoSlider.stopAutoCycle();
-        }
+//        if(mDemoSlider != null){
+//            mDemoSlider.stopAutoCycle();
+//        }
 
 
     }
 
 
-    @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-    }
-
-    @Override
-    public void onPageSelected(int position) {
-
-    }
-
-    @Override
-    public void onPageScrollStateChanged(int state) {
-
-    }
-
-    @Override
-    public void onSliderClick(BaseSliderView slider) {
-
-    }
 
 
     @Override

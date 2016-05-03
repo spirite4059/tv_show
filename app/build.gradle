@@ -7,7 +7,7 @@ def releaseTime() {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
         applicationId "com.gochinatv.ad"
@@ -18,7 +18,7 @@ android {
         // dex突破65535的限制
         multiDexEnabled true
         //    5697616167e58e3881002b8e
-        manifestPlaceholders = [UMENG_APPKEY_VALUE: "57207b2b67e58ee58700081a"]
+        manifestPlaceholders = [UMENG_APPKEY_VALUE: "5728740de0f55a330a000203"]
     }
     // 禁用lint报错
     lintOptions {
@@ -48,6 +48,7 @@ android {
                         def fileName = "cr_v${defaultConfig.versionName}_${releaseTime()}.apk"
                         output.outputFile = new File(outputFile.parent, fileName)
                     }
+
                 }
             }
         }
@@ -65,12 +66,10 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile project(':dlutils')
-    compile project(':library')
     compile project(':db')
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'com.android.support:recyclerview-v7:23.2.0'
-    compile project(':screenShot')
 }

@@ -24,7 +24,7 @@ public abstract class BaseFragment extends Fragment
 		init();
 		bindEvent();
 	}
-	
+
 
 	/**
 	 * 初始化控件，比如findViewById

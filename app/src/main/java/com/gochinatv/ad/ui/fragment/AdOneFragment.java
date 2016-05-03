@@ -1,9 +1,6 @@
 package com.gochinatv.ad.ui.fragment;
 
-import android.app.LoaderManager;
-import android.content.Loader;
 import android.media.MediaPlayer;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -20,8 +17,6 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.screenshot.Metadata;
-import com.gochinatv.ad.screenshot.MetadataLoader;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
@@ -37,9 +32,7 @@ import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.VideoHttpService;
 import com.umeng.analytics.MobclickAgent;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -50,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by zfy on 2016/3/16.
  */
-public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener, LoaderManager.LoaderCallbacks<Metadata> {
+public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener{
 
     private VideoView videoView;
     private LinearLayout loading;
@@ -591,36 +584,36 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         screenShotService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                LogCat.e("screenShot", "开始进行截图...........");
-                if (getActivity() == null || isDetached()) {
-                    return;
-                }
-                AdDetailResponse videoAdBean = getPlayingVideoInfo();
-                long currentPosition = videoView.getCurrentPosition();
-
-                Bundle bundle = new Bundle();
-                try {
-                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
-                    bundle.putLong("currentPosition", currentPosition);
-                    int width = 0;
-                    int height = 0;
-                    if (screenShotResponse == null) {
-                        // 获取状况栏高度
-                        width = getActivity().getWindowManager().getDefaultDisplay().getWidth();
-                        height = getActivity().getWindowManager().getDefaultDisplay().getHeight();
-                    } else {
-                        width = screenShotResponse.screenShotImgW;
-                        height = screenShotResponse.screenShotImgH;
-                    }
-                    bundle.putInt("width", width);
-                    bundle.putInt("height", height);
-                    bundle.putString("adName", videoAdBean.adVideoName);
-
-                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
-                    mId++;
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+//                LogCat.e("screenShot", "开始进行截图...........");
+//                if (getActivity() == null || isDetached()) {
+//                    return;
+//                }
+//                AdDetailResponse videoAdBean = getPlayingVideoInfo();
+//                long currentPosition = videoView.getCurrentPosition();
+//
+//                Bundle bundle = new Bundle();
+//                try {
+//                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
+//                    bundle.putLong("currentPosition", currentPosition);
+//                    int width = 0;
+//                    int height = 0;
+//                    if (screenShotResponse == null) {
+//                        // 获取状况栏高度
+//                        width = getActivity().getWindowManager().getDefaultDisplay().getWidth();
+//                        height = getActivity().getWindowManager().getDefaultDisplay().getHeight();
+//                    } else {
+//                        width = screenShotResponse.screenShotImgW;
+//                        height = screenShotResponse.screenShotImgH;
+//                    }
+//                    bundle.putInt("width", width);
+//                    bundle.putInt("height", height);
+//                    bundle.putString("adName", videoAdBean.adVideoName);
+//
+//                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
+//                    mId++;
+//                } catch (UnsupportedEncodingException e) {
+//                    e.printStackTrace();
+//                }
 
             }
         }, delay, delay, TimeUnit.MILLISECONDS);
@@ -786,10 +779,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 if(isHasMac){
                     LogCat.e("mac", "umeng可以使用。。。。。统计播放时长");
                     MobclickAgent.onEvent(getActivity(), "duration", str);
+//                    if(TextUtils.isEmpty(MacUtils.getMacAddress(getActivity()))){
+//                        MobclickAgent.onEvent(getActivity(), "duration", str);
+//                    }else{
+//                        MobclickAgent.onEvent(getActivity(), "duration", str+"--"+ MacUtils.getMacAddress(getActivity()));
+//                    }
                 }
-
-
-
             }
         }
         super.onStop();
@@ -1053,7 +1048,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
             if(isHasMac){
                 LogCat.e("mac", "umeng可以使用。。。。。添加播放次数" + adDetailResponse.adVideoName);
-                MobclickAgent.onEvent(getActivity(), "video_play_times: ", adDetailResponse.adVideoName);
+                MobclickAgent.onEvent(getActivity(), "video_play_times", adDetailResponse.adVideoName);
+//                if(TextUtils.isEmpty(MacUtils.getMacAddress(getActivity()))){
+//
+//                }else{
+//                    MobclickAgent.onEvent(getActivity(), "video_play_times", adDetailResponse.adVideoName+"--"+MacUtils.getMacAddress(getActivity()));
+//                }
+
             }
 
         }
@@ -1244,18 +1245,18 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    @Override
-    public Loader<Metadata> onCreateLoader(int id, Bundle args) {
-        return new MetadataLoader(getActivity(), args);
-    }
+//    @Override
+//    public Loader<Metadata> onCreateLoader(int id, Bundle args) {
+//        return new MetadataLoader(getActivity(), args);
+//    }
 
-    @Override
-    public void onLoadFinished(Loader<Metadata> loader, Metadata data) {
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Metadata> loader) {
-
-    }
+//    @Override
+//    public void onLoadFinished(Loader<Metadata> loader, Metadata data) {
+//
+//    }
+//
+//    @Override
+//    public void onLoaderReset(Loader<Metadata> loader) {
+//
+//    }
 }

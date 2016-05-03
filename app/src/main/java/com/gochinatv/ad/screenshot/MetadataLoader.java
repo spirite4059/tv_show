@@ -15,7 +15,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *//*
+
 
 package com.gochinatv.ad.screenshot;
 
@@ -32,9 +33,11 @@ import com.gochinatv.ad.tools.ScreenShotUtils;
 import wseemann.media.FFmpegMediaMetadataRetriever;
 
 
+*/
 /**
  * A custom Loader that loads all of the installed applications.
- */
+ *//*
+
 public class MetadataLoader extends AsyncTaskLoader<Metadata> {
     // TODO fix this
     //final InterestingConfigChanges mLastConfig = new InterestingConfigChanges();
@@ -57,11 +60,13 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
 
     }
 
-    /**
+    */
+/**
      * This is where the bulk of our work is done.  This function is
      * called in a background thread and should generate a new set of
      * data to be published by the loader.
-     */
+     *//*
+
     @Override
     public Metadata loadInBackground() {
         // Retrieve all metadata.
@@ -103,11 +108,13 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
         return mMetadata;
     }
 
-    /**
+    */
+/**
      * Called when there is new data to deliver to the client.  The
      * super class will take care of delivering it; the implementation
      * here just adds a little more logic.
-     */
+     *//*
+
     @Override
     public void deliverResult(Metadata metadata) {
 
@@ -134,9 +141,11 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
         }
     }
 
-    /**
+    */
+/**
      * Handles a request to start the Loader.
-     */
+     *//*
+
     @Override
     protected void onStartLoading() {
         if (mMetadata != null) {
@@ -153,18 +162,22 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
         }
     }
 
-    /**
+    */
+/**
      * Handles a request to stop the Loader.
-     */
+     *//*
+
     @Override
     protected void onStopLoading() {
         // Attempt to cancel the current load task if possible.
         cancelLoad();
     }
 
-    /**
+    */
+/**
      * Handles a request to cancel a load.
-     */
+     *//*
+
     @Override
     public void onCanceled(Metadata metadata) {
         super.onCanceled(metadata);
@@ -174,9 +187,11 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
         onReleaseResources(metadata);
     }
 
-    /**
+    */
+/**
      * Handles a request to completely reset the Loader.
-     */
+     *//*
+
     @Override
     protected void onReset() {
         super.onReset();
@@ -192,12 +207,14 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
         }
     }
 
-    /**
+    */
+/**
      * Helper function to take care of releasing resources associated
      * with an actively loaded data set.
-     */
+     *//*
+
     protected void onReleaseResources(Metadata metadata) {
         // For a simple List<> there is nothing to do.  For something
         // like a Cursor, we would close it here.
     }
-}
+}*/
