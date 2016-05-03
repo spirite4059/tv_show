@@ -1060,7 +1060,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
             if(isHasMac){
                 LogCat.e("mac", "umeng可以使用。。。。。添加播放次数" + adDetailResponse.adVideoName);
-                MobclickAgent.onEvent(getActivity(), "video_play_times: ", adDetailResponse.adVideoName);
+                MobclickAgent.onEvent(getActivity(), "video_play_times", adDetailResponse.adVideoName);
             }
 
         }
