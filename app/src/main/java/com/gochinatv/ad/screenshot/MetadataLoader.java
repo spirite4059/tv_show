@@ -21,14 +21,8 @@ package com.gochinatv.ad.screenshot;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.Log;
 
-import com.gochinatv.ad.tools.LogCat;
-import com.gochinatv.ad.tools.ScreenShotUtils;
-
-import wseemann.media.FFmpegMediaMetadataRetriever;
 
 
 /**
@@ -69,30 +63,30 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
         }
 
 
-        LogCat.e("screenShot", "loadInBackground。。。。。。。。。。");
-        Bitmap b = null;
-        FFmpegMediaMetadataRetriever fmmr = null;
-        try {
-            fmmr = new FFmpegMediaMetadataRetriever();
-            fmmr.setDataSource(mUri);
-
-            b = fmmr.getFrameAtTime(currentPosition * 1000, FFmpegMediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-//            b = ThumbnailUtils.extractThumbnail(b, width, height);
-            if (b != null) {
-                LogCat.e("screenShot", "截图成功。。。。。。。。。。");
-                ScreenShotUtils.uploadBitmap(getContext(), b, currentPosition, adVideoName);
-            } else {
-                Log.e(MetadataLoader.class.getName(), "Failed to extract frame");
-            }
-        } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
-        } finally {
-            fmmr.release();
-
-            if (b != null) {
-                b.recycle();
-            }
-        }
+//        LogCat.e("screenShot", "loadInBackground。。。。。。。。。。");
+//        Bitmap b = null;
+//        FFmpegMediaMetadataRetriever fmmr = null;
+//        try {
+//            fmmr = new FFmpegMediaMetadataRetriever();
+//            fmmr.setDataSource(mUri);
+//
+//            b = fmmr.getFrameAtTime(currentPosition * 1000, FFmpegMediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+////            b = ThumbnailUtils.extractThumbnail(b, width, height);
+//            if (b != null) {
+//                LogCat.e("screenShot", "截图成功。。。。。。。。。。");
+//                ScreenShotUtils.uploadBitmap(getContext(), b, currentPosition, adVideoName);
+//            } else {
+//                Log.e(MetadataLoader.class.getName(), "Failed to extract frame");
+//            }
+//        } catch (IllegalArgumentException ex) {
+//            ex.printStackTrace();
+//        } finally {
+//            fmmr.release();
+//
+//            if (b != null) {
+//                b.recycle();
+//            }
+//        }
 
 
         // Sort the list.

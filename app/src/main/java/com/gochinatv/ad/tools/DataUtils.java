@@ -32,6 +32,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URLEncoder;
@@ -668,12 +669,12 @@ public class DataUtils {
 	public static int getDisplayMetricsHeight(Activity context){
 		DisplayMetrics metrics = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		if(Constants.isPhone){
+		if(checkDeviceHasNavigationBar(context)){
 			//适配手机
-			return metrics.heightPixels;
+			return metrics.heightPixels + getNavigationBarHeight(context);
 		}else{
 			//适配电视棒
-			return metrics.heightPixels + getNavigationBarHeight(context);
+			return metrics.heightPixels;
 		}
 
 	}
@@ -687,7 +688,42 @@ public class DataUtils {
 		return metrics.heightPixels;
 	}
 
+	//获取是否存在NavigationBar
+	public static boolean checkDeviceHasNavigationBar(Context context) {
+		boolean hasNavigationBar = false;
+		Resources rs = context.getResources();
+		int id = rs.getIdentifier("config_showNavigationBar", "bool", "android");
+		if (id > 0) {
+			hasNavigationBar = rs.getBoolean(id);
+		}
+		try {
+			Class systemPropertiesClass = Class.forName("android.os.SystemProperties");
+			Method m = systemPropertiesClass.getMethod("get", String.class);
+			String navBarOverride = (String) m.invoke(systemPropertiesClass, "qemu.hw.mainkeys");
+			if ("1".equals(navBarOverride)) {
+				hasNavigationBar = false;
+			} else if ("0".equals(navBarOverride)) {
+				hasNavigationBar = true;
+			}
+		} catch (Exception e) {
 
+		}
+		return hasNavigationBar;
+	}
+
+//	public static boolean checkDeviceHasNavigationBar(Context activity) {
+//		//通过判断设备是否有返回键、菜单键(不是虚拟键,是手机屏幕外的按键)来确定是否有navigation bar
+////		boolean hasMenuKey = ViewConfiguration.get(activity)
+////				.hasPermanentMenuKey();
+//		boolean hasBackKey = KeyCharacterMap
+//				.deviceHasKey(KeyEvent.KEYCODE_BACK);
+//
+//		if (!hasBackKey) {
+//			// 做任何你需要做的,这个设备有一个导航栏
+//			return true;
+//		}
+//		return false;
+//	}
 
 	/**
 	 * NavigationBar的高度
@@ -700,6 +736,7 @@ public class DataUtils {
 				"dimen", "android");
 		//获取NavigationBar的高度
 		int height = resources.getDimensionPixelSize(resourceId);
+
 		return height;
 	}
 

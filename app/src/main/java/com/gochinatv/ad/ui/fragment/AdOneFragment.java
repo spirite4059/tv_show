@@ -1,9 +1,6 @@
 package com.gochinatv.ad.ui.fragment;
 
-import android.app.LoaderManager;
-import android.content.Loader;
 import android.media.MediaPlayer;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -20,13 +17,12 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.screenshot.Metadata;
-import com.gochinatv.ad.screenshot.MetadataLoader;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.ScreenShotUtils;
 import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.tools.VideoAdUtils;
 import com.okhtttp.OkHttpCallBack;
@@ -37,9 +33,7 @@ import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.VideoHttpService;
 import com.umeng.analytics.MobclickAgent;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -50,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by zfy on 2016/3/16.
  */
-public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener, LoaderManager.LoaderCallbacks<Metadata> {
+public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener {
 
     private VideoView videoView;
     private LinearLayout loading;
@@ -210,7 +204,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 //        LogCat.e("video", "开始上传截屏文件.....");
         // 7.开启上传截图
-        startScreenShot();
+//        startScreenShot();
 
 
         //  开启轮询接口
@@ -524,6 +518,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     }else {
                         speed = current / K_SIZE + "MB/s";
                     }
+                    LogCat.e("video", "speed: " + speed);
                     tvSpeed.setText("speed: " + speed);
 
                     oldProgress = progress;
@@ -601,30 +596,34 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 AdDetailResponse videoAdBean = getPlayingVideoInfo();
                 long currentPosition = videoView.getCurrentPosition();
 
-                Bundle bundle = new Bundle();
-                try {
-                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
-                    bundle.putLong("currentPosition", currentPosition);
-                    int width = 0;
-                    int height = 0;
-                    if (screenShotResponse == null) {
-                        // 获取状况栏高度
-                        width = getActivity().getWindowManager().getDefaultDisplay().getWidth();
-                        height = getActivity().getWindowManager().getDefaultDisplay().getHeight();
-                    } else {
-                        width = screenShotResponse.screenShotImgW;
-                        height = screenShotResponse.screenShotImgH;
-                    }
-                    bundle.putInt("width", width);
-                    bundle.putInt("height", height);
-                    bundle.putString("adName", videoAdBean.adVideoName);
+                ScreenShotUtils.screenShotByJcodec(videoAdBean.videoPath, currentPosition);
 
-                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
-                    mId++;
 
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+
+//                Bundle bundle = new Bundle();
+//                try {
+//                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
+//                    bundle.putLong("currentPosition", currentPosition);
+//                    int width = 0;
+//                    int height = 0;
+//                    if (screenShotResponse == null) {
+//                        // 获取状况栏高度
+//                        width = getActivity().getWindowManager().getDefaultDisplay().getWidth();
+//                        height = getActivity().getWindowManager().getDefaultDisplay().getHeight();
+//                    } else {
+//                        width = screenShotResponse.screenShotImgW;
+//                        height = screenShotResponse.screenShotImgH;
+//                    }
+//                    bundle.putInt("width", width);
+//                    bundle.putInt("height", height);
+//                    bundle.putString("adName", videoAdBean.adVideoName);
+//
+////                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
+//                    mId++;
+//
+//                } catch (UnsupportedEncodingException e) {
+//                    e.printStackTrace();
+//                }
 
             }
         }, delay, delay, TimeUnit.MILLISECONDS);
@@ -1243,19 +1242,4 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     }
 
-
-    @Override
-    public Loader<Metadata> onCreateLoader(int id, Bundle args) {
-        return new MetadataLoader(getActivity(), args);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Metadata> loader, Metadata data) {
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Metadata> loader) {
-
-    }
 }
