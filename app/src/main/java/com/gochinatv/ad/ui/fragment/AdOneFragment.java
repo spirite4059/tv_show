@@ -22,6 +22,7 @@ import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.ScreenShotUtils;
 import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.tools.VideoAdUtils;
 import com.okhtttp.OkHttpCallBack;
@@ -517,6 +518,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     }else {
                         speed = current / K_SIZE + "MB/s";
                     }
+                    LogCat.e("video", "speed: " + speed);
                     tvSpeed.setText("speed: " + speed);
 
                     oldProgress = progress;
@@ -594,7 +596,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 AdDetailResponse videoAdBean = getPlayingVideoInfo();
                 long currentPosition = videoView.getCurrentPosition();
 
-
+                ScreenShotUtils.screenShotByJcodec(videoAdBean.videoPath, currentPosition);
 
 
 

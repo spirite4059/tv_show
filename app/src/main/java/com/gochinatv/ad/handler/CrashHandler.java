@@ -8,7 +8,7 @@ import android.widget.Toast;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.okhtttp.OkHttpCallBack;
-import com.okhtttp.response.AdVideoListResponse;
+import com.okhtttp.request.ErrorMsgRequest;
 import com.okhtttp.service.ErrorHttpServer;
 
 import java.io.File;
@@ -176,9 +176,9 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
             });
 
 
-            ErrorHttpServer.doHttpUpLog(mContext, errorMsg, new OkHttpCallBack<AdVideoListResponse>() {
+            ErrorHttpServer.doHttpUpLog(mContext, errorMsg, new OkHttpCallBack<ErrorMsgRequest>() {
                 @Override
-                public void onSuccess(String url, AdVideoListResponse response) {
+                public void onSuccess(String url, ErrorMsgRequest response) {
                     LogCat.e("video", "错误日志上传成功...........");
 
                 }

@@ -91,6 +91,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // 情况fragment的状态，保证getActivity不为null
         cleanFragmentState(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -138,7 +139,7 @@ public class MainActivity extends Activity {
         if (!Constants.isTest) {
             DataUtils.startAppServer(this);
         }
-
+        LogCat.e("video", "navigationbar.:****-++++++++++++++ " + DataUtils.checkDeviceHasNavigationBar(this));
     }
 
 
