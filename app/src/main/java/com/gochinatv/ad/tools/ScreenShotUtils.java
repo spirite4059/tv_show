@@ -14,8 +14,6 @@ import android.view.View;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ScreenShotResponse;
 
-import org.jcodec.api.android.FrameGrab;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -295,7 +293,7 @@ public class ScreenShotUtils {
 //            frameGrab.seekToFramePrecise(150);
 //            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 //            frameGrab.getFrame(bitmap);
-            bitmap = FrameGrab.getFrame(fileVideo, duration / 1000);
+//            bitmap = FrameGrab.getFrame(fileVideo, duration / 1000);
             LogCat.e("screen", "getVdieoScreenShot..................2");
         }catch (Exception e){
             e.printStackTrace();

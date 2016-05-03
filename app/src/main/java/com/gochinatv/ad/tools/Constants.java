@@ -33,7 +33,6 @@ public class Constants {
     public static final String FILE_OLD_DIRECTORY = "gochinatv" + File.separator;
     public static final String FILE_DIRECTORY_VIDEO = "video" + File.separator;
     public static final String FILE_DIRECTORY_APK = "apkFile" + File.separator;
-    public static final String FILE_DIRECTORY_LOG = "logCat" + File.separator;
     public static final String FILE_DIRECTORY_CACHE = "cache" + File.separator;
     public static final String FILE_DIRECTORY_SCREEN_SHOT = "screenShot" + File.separator;
     public static final String FILE_DIRECTORY_PRE_VIDEO = "prepareVideo" + File.separator;
@@ -45,6 +44,7 @@ public class Constants {
     public static final String FILE_DOWNLOAD_EXTENSION = ".mp4";
     public static final String FILE_APK_NAME = "VegoPlus.apk";
     public static final String FILE_LOG_NAME = "catch_log";
+    public static final String FILE_DIRECTORY_LOG = "logCat";
 
     /**
      * --------------------------Intent-------------------------------

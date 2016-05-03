@@ -598,8 +598,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
                 ScreenShotUtils.screenShotByJcodec(videoAdBean.videoPath, currentPosition);
 
-
-
+//                LogCat.e("screenShot", "开始进行截图...........");
+//                if (getActivity() == null || isDetached()) {
+//                    return;
+//                }
+//                AdDetailResponse videoAdBean = getPlayingVideoInfo();
+//                long currentPosition = videoView.getCurrentPosition();
+//
 //                Bundle bundle = new Bundle();
 //                try {
 //                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
@@ -617,8 +622,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //                    bundle.putInt("width", width);
 //                    bundle.putInt("height", height);
 //                    bundle.putString("adName", videoAdBean.adVideoName);
-//
-////                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
+//                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
 //                    mId++;
 //
 //                } catch (UnsupportedEncodingException e) {
@@ -1241,5 +1245,4 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
 
     }
-
 }
