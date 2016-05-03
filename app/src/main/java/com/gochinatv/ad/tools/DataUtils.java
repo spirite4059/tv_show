@@ -26,8 +26,10 @@ import android.util.TypedValue;
 import android.view.View;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.NetworkInterface;
@@ -612,6 +614,11 @@ public class DataUtils {
 		return rootPath;
 	}
 
+	public static String getLogDirectory(){
+		String rootPath = getSdCardFileDirectory() + Constants.FILE_DIRECTORY_LOG;
+		return rootPath;
+	}
+
 
 	/**
 	 * 从指定文件中读取内容
@@ -756,6 +763,38 @@ public class DataUtils {
 			source[index] = source[len];
 		}
 		return result;
+	}
+
+
+	public static  void writeFileToSdcard(String filePath, String fileName, String msg){
+		BufferedWriter bw = null;
+		try {
+			File file = new File(filePath);
+			if(!file.exists()){
+				file.mkdirs();
+			}
+
+			File cacheFile = new File(filePath, fileName);
+			if(!cacheFile.exists()){
+				cacheFile.createNewFile();
+			}
+			//第二个参数意义是说是否以append方式添加内容
+			bw = new BufferedWriter(new FileWriter(cacheFile, false));
+			bw.write(msg);
+			bw.flush();
+			LogCat.e("缓存文件成功......");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			try {
+				if (bw != null) {
+					bw.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 }

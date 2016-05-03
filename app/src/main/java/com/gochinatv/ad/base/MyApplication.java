@@ -2,6 +2,7 @@ package com.gochinatv.ad.base;
 
 import android.app.Application;
 
+import com.gochinatv.ad.handler.CrashHandler;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.cache.memory.impl.LRULimitedMemoryCache;
@@ -25,7 +26,10 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        // 异常处理，不需要处理时注释掉这两句即可！
+        CrashHandler crashHandler = CrashHandler.getInstance();
+        // 注册crashHandler
+        crashHandler.init(getApplicationContext());
 
 
         cacheDir = StorageUtils.getOwnCacheDirectory(this, "imageloader/Cache");

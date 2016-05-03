@@ -13,12 +13,12 @@ android {
         applicationId "com.gochinatv.ad"
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 11
-        versionName "1.2.2"
+        versionCode 9
+        versionName "1.2.3"
         // dex突破65535的限制
         multiDexEnabled true
         //    5697616167e58e3881002b8e
-        manifestPlaceholders = [UMENG_APPKEY_VALUE: "5728740de0f55a330a000203"]
+        manifestPlaceholders = [UMENG_APPKEY_VALUE: "56aad2f3e0f55a8655002111"]
     }
     // 禁用lint报错
     lintOptions {
@@ -48,7 +48,6 @@ android {
                         def fileName = "cr_v${defaultConfig.versionName}_${releaseTime()}.apk"
                         output.outputFile = new File(outputFile.parent, fileName)
                     }
-
                 }
             }
         }

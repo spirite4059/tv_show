@@ -23,7 +23,6 @@ package com.gochinatv.ad.screenshot;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -83,7 +82,7 @@ public class MetadataLoader extends AsyncTaskLoader<Metadata> {
             fmmr.setDataSource(mUri);
 
             b = fmmr.getFrameAtTime(currentPosition * 1000, FFmpegMediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-            b = ThumbnailUtils.extractThumbnail(b, width, height);
+//            b = ThumbnailUtils.extractThumbnail(b, width, height);
             if (b != null) {
                 LogCat.e("screenShot", "截图成功。。。。。。。。。。");
                 ScreenShotUtils.uploadBitmap(getContext(), b, currentPosition, adVideoName);
