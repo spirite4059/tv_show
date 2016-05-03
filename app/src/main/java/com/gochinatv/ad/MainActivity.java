@@ -194,7 +194,7 @@ public class MainActivity extends Activity {
 
 
     private void deleteUpdateApk() {
-        File file = new File(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
+        File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
         if (file.exists()) {
             file.delete();
         }

@@ -50,7 +50,7 @@ public class ScreenShotUtils {
         }
     }
 
-    public static boolean createScreenShotFile(Bitmap resultBitmap, File file) {
+    private static boolean createScreenShotFile(Bitmap resultBitmap, File file) {
         if(file == null || !file.exists() || resultBitmap == null || resultBitmap.isRecycled()){
             return false;
         }
@@ -90,7 +90,7 @@ public class ScreenShotUtils {
         return isScreenShot;
     }
 
-    public static File initScreenShotFile() {
+    private static File initScreenShotFile() {
         String rootPath = DataUtils.getScreenShotDirectory();
         File fileRoot = new File(rootPath);
         if (!fileRoot.exists()) {
@@ -133,7 +133,7 @@ public class ScreenShotUtils {
     }
 
 
-    public static Bitmap getVideoScreenShot(Activity activity, long currentTime, String filePath, ScreenShotResponse screenShotResponse) {
+    private static Bitmap getVideoScreenShot(Activity activity, long currentTime, String filePath, ScreenShotResponse screenShotResponse) {
         int width = 0;
         int height = 0;
         if (currentTime < 0) {
@@ -198,7 +198,7 @@ public class ScreenShotUtils {
 
 
 
-    public static Bitmap resizeImage(Bitmap bitmap, int w, int h) {
+    private static Bitmap resizeImage(Bitmap bitmap, int w, int h) {
         Bitmap BitmapOrg = bitmap;
         int width = BitmapOrg.getWidth();
         int height = BitmapOrg.getHeight();
@@ -267,12 +267,48 @@ public class ScreenShotUtils {
      * @throws
      */
     private static final String DEVICE_NAME = "/dev/graphics/fb0";
-    public static InputStream readAsRoot() throws Exception {
+    private static InputStream readAsRoot() throws Exception {
         File deviceFile = new File(DEVICE_NAME);
         Process localProcess = Runtime.getRuntime().exec("su");
         String str = "cat " + deviceFile.getAbsolutePath() + "\n";
         localProcess.getOutputStream().write(str.getBytes());
         return localProcess.getInputStream();
     }
+
+
+
+
+
+    private static Bitmap getVdieoScreenShot(){
+        Bitmap bitmap = null;
+        try{
+//            FrameGrab frameGrab = new FrameGrab(new FileChannelWrapper());
+//            bitmap = FrameGrab.getFrame()
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return bitmap;
+
+    }
+
+
+
+    public static void screenShotByJcodec(long duration){
+        File file = initScreenShotFile();
+
+
+//        boolean isScreenShot = createScreenShotFile(resultBitmap, file);
+//
+//
+//
+//        uploadFile(context, file, isScreenShot, duration, name);
+
+    }
+
+
+
+
+
 
 }
