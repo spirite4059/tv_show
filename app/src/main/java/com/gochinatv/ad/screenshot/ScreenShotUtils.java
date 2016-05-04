@@ -1,4 +1,4 @@
-package com.gochinatv.ad.tools;
+package com.gochinatv.ad.screenshot;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,11 +6,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.media.MediaMetadataRetriever;
-import android.media.ThumbnailUtils;
-import android.os.Build;
 import android.view.View;
 
+import com.gochinatv.ad.tools.Constants;
+import com.gochinatv.ad.tools.DataUtils;
+import com.gochinatv.ad.tools.LogCat;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ScreenShotResponse;
 
@@ -19,7 +19,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 
 /**
  * Created by fq_mbp on 16/3/30.
@@ -28,14 +27,40 @@ public class ScreenShotUtils {
 
     private static final String ULR = "http://api.bm.gochinatv.com/device_v1/uploadImage";
 
-    public static void uploadBitmap(Context context, Bitmap resultBitmap, long duration, String name) {
+    private VideoGrab videoGrab;
+
+
+    public void setScreenShotPolicy(VideoGrab videoGrab){
+        this.videoGrab = videoGrab;
+    }
+
+    public void screenShot(Context context, String videoPath, long duration, ScreenShotResponse screenShotResponse){
+        if(videoGrab == null){
+            return;
+        }
+        // 获取本地视频文件
+        File videoFile = getVideoFile(videoPath);
+        // 根据不同的策略获取不同的图片
+        Bitmap bitmap = videoGrab.getVideoGrab(videoFile, duration, screenShotResponse.screenShotImgW, screenShotResponse.screenShotImgH);
+        // 初始化截图本地文件
         File file = initScreenShotFile();
-        boolean isScreenShot = createScreenShotFile(resultBitmap, file);
-        uploadFile(context, file, isScreenShot, duration, name);
+        if(!file.exists()){
+            LogCat.e("screenShot", "本地截图缓存创建失败.......");
+            return;
+        }
+        // 将截图文件写入本地
+        boolean isScreenShot = createScreenShotFile(bitmap, file);
+        if(isScreenShot){
+            uploadFile(context, file, isScreenShot, duration, file.getName());
+        }
 
     }
 
-    private static void uploadFile(Context context, File file, boolean isScreenShot, long duration, String name) {
+
+
+
+
+    private void uploadFile(Context context, File file, boolean isScreenShot, long duration, String name) {
         if (isScreenShot) {
             //截图成功
             LogCat.e("screenShot", "开始上传......");
@@ -50,7 +75,7 @@ public class ScreenShotUtils {
         }
     }
 
-    private static boolean createScreenShotFile(Bitmap resultBitmap, File file) {
+    private boolean createScreenShotFile(Bitmap resultBitmap, File file) {
         if(file == null || !file.exists() || resultBitmap == null || resultBitmap.isRecycled()){
             return false;
         }
@@ -90,7 +115,7 @@ public class ScreenShotUtils {
         return isScreenShot;
     }
 
-    private static File initScreenShotFile() {
+    private File initScreenShotFile() {
         String rootPath = DataUtils.getScreenShotDirectory();
         File fileRoot = new File(rootPath);
         if (!fileRoot.exists()) {
@@ -108,7 +133,9 @@ public class ScreenShotUtils {
     }
 
 
-    public static Bitmap getFullScreenShot(Activity activity) {
+
+
+    private Bitmap getFullScreenShot(Activity activity) {
         // 获取整个屏幕除了视频之外的整个截图
         View view = activity.getWindow().getDecorView();
         if (view == null) {
@@ -131,71 +158,6 @@ public class ScreenShotUtils {
         view.destroyDrawingCache();
         return bitmap;
     }
-
-
-    private static Bitmap getVideoScreenShot(Activity activity, long currentTime, String filePath, ScreenShotResponse screenShotResponse) {
-        int width = 0;
-        int height = 0;
-        if (currentTime < 0) {
-            return null;
-        }
-
-        if (screenShotResponse == null) {
-            // 获取状况栏高度
-            width = activity.getWindowManager().getDefaultDisplay().getWidth();
-            height = activity.getWindowManager().getDefaultDisplay().getHeight();
-        } else {
-            width = screenShotResponse.screenShotImgW;
-            height = screenShotResponse.screenShotImgH;
-        }
-
-//        LogCat.e("screenShot", "视频截图的大小  " + width + " x " + height + "，截图时间："  + format(currentTime));
-        LogCat.e("screenShot", "视频截图的大小  " + width + " x " + height);
-        // 获取视频的截图
-        Bitmap videoBitmap = null;
-        LogCat.e("screenShot", "视频截图的名称  " + filePath);
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        try {// MODE_CAPTURE_FRAME_ONLY
-            if (Build.VERSION.SDK_INT >= 14) {//Android4.0以上的设备,必须使用这种方式来设置源播放视频的路径
-                retriever.setDataSource(filePath, new HashMap<String, String>());
-            } else {
-                retriever.setDataSource(filePath);
-            }
-
-            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), MediaMetadataRetriever.OPTION_CLOSEST); // frame at 2 seconds
-            byte [] artwork = retriever.getEmbeddedPicture();
-
-//            String timeString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-//            long duration = Long.parseLong(timeString);
-//            LogCat.e("screenShot", "获取到的视频长度duration：" + duration);
-                LogCat.e("screenShot", "获取到的视频长度currentTime：" + currentTime);
-//            long time = (long) (duration * currentTime);
-//            LogCat.e("screenShot", "time：" + time);
-            // 时间参数是微妙
-//            videoBitmap = retriever.getFrameAtTime((currentTime * 1000), MediaMetadataRetriever.OPTION_CLOSEST_SYNC); //按视频长度比例选择帧
-//            videoBitmap = Bitmap.createBitmap(tempBitmap, 0, 0, width, height, videoMatrix, true);
-//            videoBitmap = resizeImage(tempBitmap, width, height);
-            videoBitmap = ThumbnailUtils.extractThumbnail(videoBitmap, width, height);
-            LogCat.e("screenShot", "22视频图片大小 ....." + videoBitmap.getWidth() + " x " + videoBitmap.getHeight());
-
-        } catch (IllegalArgumentException ex) {
-            // Assume this is a corrupt video file
-            ex.printStackTrace();
-        } finally {
-            try {
-                retriever.release();
-            } catch (RuntimeException ex) {
-                // Ignore failures while cleaning up.
-                ex.printStackTrace();
-            }
-        }
-        return videoBitmap;
-    }
-
-
-
-
-
 
 
     private static Bitmap resizeImage(Bitmap bitmap, int w, int h) {
@@ -234,7 +196,7 @@ public class ScreenShotUtils {
     }
 
 
-    public static String format(long ms) {//将毫秒数换算成x天x时x分x秒x毫秒
+    private String format(long ms) {//将毫秒数换算成x天x时x分x秒x毫秒
         int ss = 1000;
         int mi = ss * 60;
         int hh = mi * 60;
@@ -282,46 +244,6 @@ public class ScreenShotUtils {
     private static File getVideoFile(String filePath){
         return new File(filePath);
     }
-
-    private synchronized static Bitmap getVdieoScreenShot(File fileVideo, long duration, int width, int height){
-
-        LogCat.e("screen", "getVdieoScreenShot..................123123123123");
-        Bitmap bitmap = null;
-        try{
-//            FrameGrab frameGrab = new FrameGrab(new FileChannelWrapper(new FileInputStream(fileVideo).getChannel()));
-//            LogCat.e("screen", "getVdieoScreenShot..................1");
-//            frameGrab.seekToFramePrecise(150);
-//            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//            frameGrab.getFrame(bitmap);
-//            bitmap = FrameGrab.getFrame(fileVideo, duration / 1000);
-            LogCat.e("screen", "getVdieoScreenShot..................2");
-        }catch (Exception e){
-            e.printStackTrace();
-            LogCat.e("screen", "getVdieoScreenShot.................." +e.getLocalizedMessage());
-        }
-        return bitmap;
-
-    }
-
-
-
-    public static void screenShotByJcodec(String filePath, long duration){
-        File fileVideo = getVideoFile(filePath);
-        LogCat.e("screen", "screenShotByJcodec..................1");
-
-        Bitmap bitmap = getVdieoScreenShot(fileVideo, duration, 500, 200);
-        LogCat.e("screen", "screenShotByJcodec..................2");
-        File fileLocal = initScreenShotFile();
-        LogCat.e("screen", "screenShotByJcodec..................3");
-        createScreenShotFile(bitmap, fileLocal);
-
-
-
-
-
-
-    }
-
 
 
 

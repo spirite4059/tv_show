@@ -17,12 +17,13 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.screenshot.MediaMetadataPolicy;
+import com.gochinatv.ad.screenshot.ScreenShotUtils;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
-import com.gochinatv.ad.tools.ScreenShotUtils;
 import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.tools.VideoAdUtils;
 import com.okhtttp.OkHttpCallBack;
@@ -596,7 +597,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 AdDetailResponse videoAdBean = getPlayingVideoInfo();
                 long currentPosition = videoView.getCurrentPosition();
 
-                ScreenShotUtils.screenShotByJcodec(videoAdBean.videoPath, currentPosition);
+                ScreenShotUtils screenShotUtils = new ScreenShotUtils();
+                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
+//                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
+                screenShotUtils.screenShot(getActivity(), videoAdBean.videoPath, currentPosition, screenShotResponse);
 
 //                LogCat.e("screenShot", "开始进行截图...........");
 //                if (getActivity() == null || isDetached()) {

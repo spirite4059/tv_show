@@ -69,8 +69,8 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile project(':dlutils')
     compile project(':db')
-    compile 'com.umeng.analytics:analytics:latest.integration'
-    compile 'com.android.support:recyclerview-v7:23.2.0'
-    compile 'org.jcodec:jcodec-android:0.1.9'
 
+    compile 'com.umeng.analytics:analytics:latest.integration'
+    compile 'com.android.support:recyclerview-v7:24.0.0-alpha2'
+    compile 'org.jcodec:jcodec-android:0.1.9'
 }
