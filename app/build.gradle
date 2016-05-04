@@ -72,4 +72,5 @@ dependencies {
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile 'org.jcodec:jcodec-android:0.1.9'
     compile project(':statistics')
+    compile 'com.android.support:appcompat-v7:23.2.1'
 }
