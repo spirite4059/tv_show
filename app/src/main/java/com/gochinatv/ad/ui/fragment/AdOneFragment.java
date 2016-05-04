@@ -773,28 +773,28 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     public void onStop() {
         LogCat.e("video", "onStop...................");
         release();
-        if (startReportTime > 0) {
-            long duration = System.currentTimeMillis() - startReportTime;
-            if (duration > 0) {
-                long day = duration / (24 * 60 * 60 * 1000);
-                long hour = (duration / (60 * 60 * 1000) - day * 24);
-                long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
-                long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-                String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
-                LogCat.e("video", str);
-                LogCat.e("video", "上报开机时长。。。。。。。。");
-
-                SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
-                boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
-                if(isHasMac){
-                    LogCat.e("mac", "umeng可以使用。。。。。统计播放时长");
-                    MobclickAgent.onEvent(getActivity(), "duration", str);
-                }
-
-
-
-            }
-        }
+//        if (startReportTime > 0) {
+//            long duration = System.currentTimeMillis() - startReportTime;
+//            if (duration > 0) {
+//                long day = duration / (24 * 60 * 60 * 1000);
+//                long hour = (duration / (60 * 60 * 1000) - day * 24);
+//                long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
+//                long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
+//                String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
+//                LogCat.e("video", str);
+//                LogCat.e("video", "上报开机时长。。。。。。。。");
+//
+//                SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+//                boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+//                if(isHasMac){
+//                    LogCat.e("mac", "umeng可以使用。。。。。统计播放时长");
+//                    MobclickAgent.onEvent(getActivity(), "duration", str);
+//                }
+//
+//
+//
+//            }
+//        }
         super.onStop();
 
     }
