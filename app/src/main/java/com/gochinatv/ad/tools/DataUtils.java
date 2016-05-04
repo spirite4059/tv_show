@@ -31,7 +31,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.lang.reflect.Method;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -833,5 +836,23 @@ public class DataUtils {
 		}
 
 	}
+
+
+	public static String getThrowableMsg(Throwable ex){
+		StringBuffer sb = new StringBuffer();
+		Writer writer = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(writer);
+		ex.printStackTrace(printWriter);
+		Throwable cause = ex.getCause();
+		while (cause != null) {
+			cause.printStackTrace(printWriter);
+			cause = cause.getCause();
+		}
+		printWriter.close();
+		String result = writer.toString();
+		sb.append(result); //将写入的结果
+		return sb.toString();
+	}
+
 
 }
