@@ -70,7 +70,6 @@ dependencies {
     compile project(':dlutils')
     compile project(':db')
     compile 'com.umeng.analytics:analytics:latest.integration'
-    compile 'com.android.support:recyclerview-v7:24.0.0-alpha2'
     compile 'org.jcodec:jcodec-android:0.1.9'
     compile project(':statistics')
 }
