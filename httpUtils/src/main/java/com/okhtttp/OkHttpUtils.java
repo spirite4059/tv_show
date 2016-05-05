@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
+import com.okhtttp.response.ErrorResponse;
 import com.tools.LogCat;
 import com.tools.MacUtils;
 
@@ -15,7 +16,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -92,7 +96,6 @@ public class OkHttpUtils {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
                 sendFailedStringCallback(url, e, okHttpCallBack);
             }
 
@@ -101,12 +104,18 @@ public class OkHttpUtils {
                 if (response != null && response.body() != null) {
                     String json = response.body().string();
                     if (!TextUtils.isEmpty(json)) {
-                        try {
-                            sendSuccessResultCallback(url, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
-                        }catch (Exception e){
-                            sendFailedStringCallback(url, e, okHttpCallBack);
+                        if(okHttpCallBack != null){
+                            try {
+                                sendSuccessResultCallback(url, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
+                            }catch (Exception e){
+                                sendFailedStringCallback(url, e, okHttpCallBack);
+                            }
                         }
+                    }else {
+                        sendFailedStringCallback(url, null, okHttpCallBack);
                     }
+                }else {
+                    sendFailedStringCallback(url, null, okHttpCallBack);
                 }
             }
         });
@@ -116,35 +125,51 @@ public class OkHttpUtils {
 
 
     public <T> void doHttpPost(final String url, Object obj, final OkHttpCallBack<T> okHttpCallBack) {
-        Gson gson = new Gson();
-        String json = gson.toJson(obj);
-        RequestBody body = RequestBody.create(JSON, json);
-        final Request request = new Request.Builder()
-                .url(url)
-                .post(body)
-                .build();
-        Call call = mOkHttpClient.newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                sendFailedStringCallback(url, e, okHttpCallBack);
-            }
+        try {
+            Gson gson = new Gson();
+            String json = gson.toJson(obj);
+            RequestBody body = RequestBody.create(JSON, json);
+            final Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response != null && response.body() != null) {
-                    String json = response.body().string();
-                    if (!TextUtils.isEmpty(json)) {
-                        try {
-                            sendSuccessResultCallback(url, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
-                        }catch (Exception e){
-                            sendFailedStringCallback(url, e, okHttpCallBack);
+            Call call = mOkHttpClient.newCall(request);
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    sendFailedStringCallback(url, e, okHttpCallBack);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response != null && response.body() != null) {
+                        LogCat.e("error", "onResponse...............");
+                        String json = response.body().string();
+                        if (!TextUtils.isEmpty(json)) {
+                            if(okHttpCallBack != null){
+                                try {
+                                    ErrorResponse errorResponse = (ErrorResponse) mGson.<T>fromJson(json, okHttpCallBack.mType);
+                                    LogCat.e("error", "sendSuccessResultCallback..............."  + errorResponse.currentTime);
+
+                                    sendSuccessResultCallback(url, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
+
+                                }catch (Exception e){
+                                    sendFailedStringCallback(url, e, okHttpCallBack);
+                                    LogCat.e("error", "sendFailedStringCallback...............");
+                                }
+                            }
+                        }else {
+                            sendFailedStringCallback(url, null, okHttpCallBack);
                         }
+                    }else {
+                        sendFailedStringCallback(url, null, okHttpCallBack);
                     }
                 }
-            }
-        });
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -157,7 +182,6 @@ public class OkHttpUtils {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
                 sendFailedStringCallback(realUrl, e, okHttpCallBack);
             }
 
@@ -165,15 +189,19 @@ public class OkHttpUtils {
             public void onResponse(Call call, Response response) throws IOException {
                 if (response != null && response.body() != null) {
                     String json = response.body().string();
-//                    LogCat.e("json: " + json);
-//                    LogCat.e("realUrl: " + realUrl);
                     if (!TextUtils.isEmpty(json)) {
-                        try {
-                            sendSuccessResultCallback(realUrl, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
-                        }catch (Exception e){
-                            sendFailedStringCallback(realUrl, e, okHttpCallBack);
+                        if(okHttpCallBack != null){
+                            try {
+                                sendSuccessResultCallback(realUrl, mGson.<T>fromJson(json, okHttpCallBack.mType), okHttpCallBack);
+                            }catch (Exception e){
+                                sendFailedStringCallback(realUrl, e, okHttpCallBack);
+                            }
                         }
+                    }else {
+                        sendFailedStringCallback(realUrl, null, okHttpCallBack);
                     }
+                }else {
+                    sendFailedStringCallback(realUrl, null, okHttpCallBack);
                 }
             }
         });
@@ -205,12 +233,12 @@ public class OkHttpUtils {
 
 
     public void doUploadFile(Context context, File file, String url, long duration, String name) throws IOException {
-        RequestBody fileBody = RequestBody.create(MediaType.parse("application/octet-stream"), file);
+//        RequestBody fileBody = RequestBody.create(MediaType.parse("application/octet-stream"), file);
 
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addPart(fileBody)
-                .addFormDataPart("file", file.getName(), fileBody)
+//                .addPart(fileBody)
+//                .addFormDataPart("file", file.getName(), fileBody)
                 .addFormDataPart("mac", MacUtils.getMacAddress(context))
                 .addFormDataPart("duration", String.valueOf(duration))
                 .addFormDataPart("name", name)
@@ -302,8 +330,14 @@ public class OkHttpUtils {
         mDelivery.post(new Runnable() {
             @Override
             public void run() {
-                if (okHttpCallBack != null)
-                    okHttpCallBack.onError(url, e.getMessage());
+                if (okHttpCallBack != null){
+                    String errorMsg = null;
+                    if(e != null){
+                        errorMsg = getThrowableMsg(e);
+                    }
+                    okHttpCallBack.onError(url, errorMsg);
+                }
+
             }
         });
     }
@@ -543,4 +577,21 @@ public class OkHttpUtils {
         }
     }
 
+
+
+    private String getThrowableMsg(Throwable ex){
+        StringBuffer sb = new StringBuffer();
+        Writer writer = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(writer);
+        ex.printStackTrace(printWriter);
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            cause.printStackTrace(printWriter);
+            cause = cause.getCause();
+        }
+        printWriter.close();
+        String result = writer.toString();
+        sb.append(result); //将写入的结果
+        return sb.toString();
+    }
 }

@@ -39,6 +39,7 @@ public class DownloadUtils {
             appContext = context.getApplicationContext();
         }catch (Exception e){
             e.printStackTrace();
+
         }
         if(appContext == null){
             return;

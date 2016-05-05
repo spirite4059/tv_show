@@ -10,14 +10,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import com.download.DLUtils;
 import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.screenshot.MediaMetadataPolicy;
 import com.gochinatv.ad.screenshot.ScreenShotUtils;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
@@ -26,6 +24,7 @@ import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.tools.VideoAdUtils;
+import com.gochinatv.ad.video.MeasureVideoView;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.AdDetailResponse;
 import com.okhtttp.response.AdVideoListResponse;
@@ -47,7 +46,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener {
 
-    private VideoView videoView;
+    private MeasureVideoView videoView;
     private LinearLayout loading;
     /**
      * 本地数据表
@@ -116,6 +115,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private long pollInterval;
 
 
+
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
         return getRelativeLayout(inflater, container);
@@ -124,7 +124,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     @Override
     protected void initView(View rootView) {
-        videoView = (VideoView) rootView.findViewById(R.id.videoView);
+        videoView = (MeasureVideoView) rootView.findViewById(R.id.videoView);
         loading = (LinearLayout) rootView.findViewById(R.id.loading);
         tvProgress = (TextView) rootView.findViewById(R.id.tv_progress);
         tvSpeed = (TextView) rootView.findViewById(R.id.tv_internet_speeds);
@@ -134,6 +134,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     protected void init() {
         // 显示loading加载状态
         showLoading();
+
         // 记录开始时间
         startReportTime = System.currentTimeMillis();
         // 先判断sdcard状态是否可用，如果不可用，直接播放本地视频
@@ -142,6 +143,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             playPresetVideo();
             return;
         }
+
+
 
         // 1.初始化本地缓存表
         LogCat.e("video", "获取本地缓存视频列表.......");
@@ -205,7 +208,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 //        LogCat.e("video", "开始上传截屏文件.....");
         // 7.开启上传截图
-//        startScreenShot();
+        startScreenShot();
 
 
         //  开启轮询接口
@@ -219,6 +222,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     @Override
     protected void bindEvent() {
+//        videoView.setOnStartVideoListener(new TextureMediaPlayer.OnStartVideoListener() {
+//            @Override
+//            public void onStartVideo() {
+//                // 4.播放缓存列表
+//                LogCat.e("video", "查找可以播放的视频.....");
+//                startPlayVideo();
+//            }
+//        });
+
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
@@ -598,8 +610,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 long currentPosition = videoView.getCurrentPosition();
 
                 ScreenShotUtils screenShotUtils = new ScreenShotUtils();
-                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
+//                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
 //                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
+//                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
+
+
                 screenShotUtils.screenShot(getActivity(), videoAdBean.videoPath, currentPosition, screenShotResponse);
 
 //                LogCat.e("screenShot", "开始进行截图...........");
@@ -777,28 +792,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     public void onStop() {
         LogCat.e("video", "onStop...................");
         release();
-//        if (startReportTime > 0) {
-//            long duration = System.currentTimeMillis() - startReportTime;
-//            if (duration > 0) {
-//                long day = duration / (24 * 60 * 60 * 1000);
-//                long hour = (duration / (60 * 60 * 1000) - day * 24);
-//                long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
-//                long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-//                String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
-//                LogCat.e("video", str);
-//                LogCat.e("video", "上报开机时长。。。。。。。。");
-//
-//                SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
-//                boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
-//                if(isHasMac){
-//                    LogCat.e("mac", "umeng可以使用。。。。。统计播放时长");
-//                    MobclickAgent.onEvent(getActivity(), "duration", str);
-//                }
-//
-//
-//
-//            }
-//        }
         super.onStop();
 
     }
@@ -1249,4 +1242,5 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
 
     }
+
 }

@@ -6,9 +6,8 @@ package com.okhtttp.request;
 public class ErrorMsgRequest {
 
     public String mac;
-    public String errorMsg;
-    public String versionCode;
-    public String versionName;
-    public String sdk;
+    public String msg;
+    public int type;
+
 
 }

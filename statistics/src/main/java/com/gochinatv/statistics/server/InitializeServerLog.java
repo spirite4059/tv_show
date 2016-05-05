@@ -16,7 +16,7 @@ public class InitializeServerLog {
         if(map == null){
             return;
         }
-        String url = "http://47.89.179.118:9090/app-api2/device_v1/updateDevice";
+        String url = "http://api.bm.gochinatv.com/app-api2/device_v1/updateDevice";
         OkHttpUtils.getInstance().doHttpGet(url,map,listener);
 
     }

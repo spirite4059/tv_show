@@ -24,7 +24,7 @@ import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.statistics.SendStatisticsLog;
+import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
@@ -108,7 +108,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // 情况fragment的状态，保证getActivity不为null
         cleanFragmentState(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -132,14 +131,29 @@ public class MainActivity extends Activity {
         deleteUpdateApk();
 
         handler = new Handler(Looper.getMainLooper());
-        initUmeng();
 
+        initUmeng();
 
         /**
          * 隐藏NavigationBar
          */
         DataUtils.hideNavigationBar(this);
 
+        // 请求网络
+        doHttp();
+
+        /**
+         * 如果要启动测试，需要注释此段代码，否则无法正常启动
+         */
+        if (!Constants.isTest) {
+            DataUtils.startAppServer(this);
+        }
+
+        throw new NullPointerException("asdfasdfsdf");
+
+    }
+
+    private void doHttp() {
         if (DataUtils.isNetworkConnected(this)) {
             LogCat.e("网络已连接，请求接口");
             doHttpUpdate(MainActivity.this);
@@ -149,15 +163,6 @@ public class MainActivity extends Activity {
             LogCat.e("网络未连接，继续判断网络是否连接");
             handler.postDelayed(runnable, 10000);
         }
-
-
-        /**
-         * 如果要启动测试，需要注释此段代码，否则无法正常启动
-         */
-        if (!Constants.isTest) {
-            DataUtils.startAppServer(this);
-        }
-        LogCat.e("video", "navigationbar.:****-++++++++++++++ " + DataUtils.checkDeviceHasNavigationBar(this));
     }
 
 

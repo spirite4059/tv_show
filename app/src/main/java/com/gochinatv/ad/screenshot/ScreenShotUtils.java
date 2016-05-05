@@ -25,7 +25,7 @@ import java.io.InputStream;
  */
 public class ScreenShotUtils {
 
-    private static final String ULR = "http://api.bm.gochinatv.com/device_v1/uploadImage";
+    private static final String ULR = "http://api.bm.gochinatv.com/app-api2/device_v1/uploadImage";
 
     private VideoGrab videoGrab;
 
@@ -35,25 +35,27 @@ public class ScreenShotUtils {
     }
 
     public void screenShot(Context context, String videoPath, long duration, ScreenShotResponse screenShotResponse){
-        if(videoGrab == null){
-            return;
-        }
-        // 获取本地视频文件
+//        if(videoGrab == null){
+//            return;
+//        }
+//        // 获取本地视频文件
         File videoFile = getVideoFile(videoPath);
-        // 根据不同的策略获取不同的图片
-        Bitmap bitmap = videoGrab.getVideoGrab(videoFile, duration, screenShotResponse.screenShotImgW, screenShotResponse.screenShotImgH);
-        // 初始化截图本地文件
-        File file = initScreenShotFile();
-        if(!file.exists()){
-            LogCat.e("screenShot", "本地截图缓存创建失败.......");
-            return;
-        }
-        // 将截图文件写入本地
-        boolean isScreenShot = createScreenShotFile(bitmap, file);
-        if(isScreenShot){
-            uploadFile(context, file, isScreenShot, duration, file.getName());
-        }
+//        // 根据不同的策略获取不同的图片
+//        Bitmap bitmap = videoGrab.getVideoGrab(videoFile, duration, screenShotResponse.screenShotImgW, screenShotResponse.screenShotImgH);
+//        // 初始化截图本地文件
+//        File file = initScreenShotFile();
+//        if(!file.exists()){
+//            LogCat.e("screenShot", "本地截图缓存创建失败.......");
+//            return;
+//        }
+//        // 将截图文件写入本地
+//        boolean isScreenShot = createScreenShotFile(bitmap, file);
+//        if(isScreenShot){
+//            uploadFile(context, file, isScreenShot, duration, file.getName());
+//        }
 
+
+        uploadFile(context, null, true, duration, videoFile.getName());
     }
 
 

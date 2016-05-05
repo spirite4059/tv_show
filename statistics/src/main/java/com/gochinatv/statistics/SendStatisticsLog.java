@@ -1,15 +1,15 @@
-package com.gochinatv.ad.statistics;
+package com.gochinatv.statistics;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 
-import com.gochinatv.ad.tools.DataUtils;
-import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.statistics.request.RetryErrorRequest;
 import com.gochinatv.statistics.request.UpgradeLogRequest;
 import com.gochinatv.statistics.server.InitializeServerLog;
 import com.gochinatv.statistics.server.UpgradeServerLog;
+import com.gochinatv.statistics.tools.DataUtils;
+import com.gochinatv.statistics.tools.LogCat;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.request.ErrorMsgRequest;
 import com.tools.MacUtils;
@@ -24,7 +24,6 @@ import java.util.Map;
 public class SendStatisticsLog {
 
 
-
     /**
      * 上传激活日志
      */
@@ -32,7 +31,7 @@ public class SendStatisticsLog {
         Map<String,String> map = new HashMap<>();
         map.put("mac", MacUtils.getMacAddress(context));
         map.put("versionName", DataUtils.getVersionName(context));
-        map.put("versionCode",String.valueOf(DataUtils.getAppVersionCode(context)));
+        map.put("versionNum",String.valueOf(DataUtils.getAppVersionCode(context)));
         map.put("sdk",String.valueOf(Build.VERSION.SDK_INT));
         LogCat.e("statistics",DataUtils.getVersionName(context) + "   "+ String.valueOf(DataUtils.getAppVersionCode(context)) + "  " + String.valueOf(Build.VERSION.SDK_INT));
         InitializeServerLog.doPostHttpInitializeLog(map, new OkHttpCallBack<ErrorMsgRequest>() {
