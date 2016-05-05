@@ -7,6 +7,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 
+import com.google.gson.Gson;
+
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
@@ -130,5 +132,19 @@ public class MacUtils {
         return 0;
     }
 
+
+
+    /**
+     * 将实体类转换成json字符串
+     * @param
+     * @param o 实体类型
+     * @return
+     */
+    public static String getJsonStringByEntity(Object o) {
+        String strJson = "";
+        Gson gson = new Gson();
+        strJson = gson.toJson(o);
+        return strJson;
+    }
 
 }

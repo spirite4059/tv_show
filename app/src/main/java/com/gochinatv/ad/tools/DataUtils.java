@@ -115,6 +115,29 @@ public class DataUtils {
 		return packInfo == null ? "" : packInfo.versionName;
 	}
 
+
+	/**
+	 * 获取当前应用版本号
+	 *
+	 * @return
+	 * @throws NameNotFoundException
+	 */
+	public static Integer getAppVersionCode(Context context) {
+		PackageManager packageManager = context.getPackageManager();
+
+		// getPackageName()是你当前类的包名，0代表是获取版本信息
+		PackageInfo packInfo = null;
+		try {
+			packInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
+		return packInfo == null ? 0 : packInfo.versionCode;
+	}
+
+
+
+
 	/**
 	 * 获取运营商代号:IMSI号前面3位460是国家，紧接着后面2位00 02是中国移动，01是中国联通，03是中国电信。
 	 * 

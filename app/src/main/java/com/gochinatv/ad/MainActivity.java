@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.statistics.SendStatisticsLog;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
@@ -34,6 +35,7 @@ import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeOtherFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
+import com.gochinatv.statistics.request.RetryErrorRequest;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ADDeviceDataResponse;
@@ -47,6 +49,7 @@ import com.umeng.analytics.MobclickAgent;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,6 +91,20 @@ public class MainActivity extends Activity {
     private int runnableTimes;//post-Runnable的次数
     //private Runnable runnable;
 
+
+    /**
+     * 升级接口日志
+     */
+    private ArrayList<RetryErrorRequest> upgradeLogList;
+
+    /**
+     * 布局接口日志
+     */
+    private ArrayList<RetryErrorRequest> layoutLogList;
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,6 +144,7 @@ public class MainActivity extends Activity {
             LogCat.e("网络已连接，请求接口");
             doHttpUpdate(MainActivity.this);
             doGetDeviceInfo();
+            SendStatisticsLog.sendInitializeLog(this);//提交激活日志
         } else {
             LogCat.e("网络未连接，继续判断网络是否连接");
             handler.postDelayed(runnable, 10000);
@@ -152,6 +170,7 @@ public class MainActivity extends Activity {
                 handler.removeCallbacks(runnable);
                 doHttpUpdate(MainActivity.this);
                 doGetDeviceInfo();
+                SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
             } else {
                 if (runnableTimes > 4) {
                     LogCat.e("请求5次后不再请求，进入广告一");
@@ -178,7 +197,7 @@ public class MainActivity extends Activity {
             AnalyticsConfig.setChannel(mac);
             MobclickAgent.openActivityDurationTrack(false);
             MobclickAgent.setCatchUncaughtExceptions(true);
-            MobclickAgent.setDebugMode(true);
+            MobclickAgent.setDebugMode(false);
             if(sharedPreference != null){
                 sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
             }
@@ -384,6 +403,12 @@ public class MainActivity extends Activity {
                     public void onError(String url, String errorMsg) {
                         LogCat.e("请求接口出错，无法升级。。。。。" + url);
                         doError();
+                        //存储错误日志
+                        upgradeLogList = new ArrayList<RetryErrorRequest>();
+                        RetryErrorRequest request = new RetryErrorRequest();
+                        request.retry = String.valueOf(reTryTimes);
+                        request.errorMsg = errorMsg;
+                        upgradeLogList.add(request);
                     }
                 });
 
@@ -544,8 +569,12 @@ public class MainActivity extends Activity {
 
                 LogCat.e("请求广告体接口失败。。。。。" + url);
                 doError();
-
-
+                //存储布局接口失败信息
+                layoutLogList = new ArrayList<RetryErrorRequest>();
+                RetryErrorRequest request = new RetryErrorRequest();
+                request.retry = String.valueOf(reTryTimesTwo);
+                request.errorMsg = errorMsg;
+                layoutLogList.add(request);
             }
         });
 
@@ -771,4 +800,13 @@ public class MainActivity extends Activity {
 
         return null;
     }
+
+
+    /**
+     * 上报
+     */
+
+
+
+
 }
