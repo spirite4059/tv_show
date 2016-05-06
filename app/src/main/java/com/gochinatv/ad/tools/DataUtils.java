@@ -405,6 +405,29 @@ public class DataUtils {
 	}
 
 
+
+	public static String getFormatTime(long time){
+		if(time <= 0){
+			return "";
+		}
+		String timeFormat = getFormatTime(time, "yyyy-MM-dd hh:mm:ss");
+		return timeFormat;
+	}
+
+	public static String getFormatTime(long time, String format){
+		if(time <= 0){
+			return "";
+		}
+		String timeFormat = "";
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat(format);
+			timeFormat = sdf.format(new Date(time));
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		return timeFormat;
+	}
+
 	/**
 	 * 获取有线mac
 	 *

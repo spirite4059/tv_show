@@ -21,6 +21,7 @@ public class VideoAdUtils {
 
     /**
      * 缓存视频
+     *
      * @param fileName
      * @param cachePlayVideoLists
      */
@@ -32,6 +33,7 @@ public class VideoAdUtils {
 
     /**
      * 缓存视频
+     *
      * @param cachePlayVideoLists
      */
     public static synchronized void cacheTDVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
@@ -44,7 +46,7 @@ public class VideoAdUtils {
      * 清空数据表的所有数据
      */
     public static synchronized void cleanSqlVideoList(Context context) {
-        LogCat.e("video", "清空数据库........." );
+        LogCat.e("video", "清空数据库.........");
         AdDao.deleteAll(context, true);
         AdDao.deleteAll(context, false);
     }
@@ -54,7 +56,7 @@ public class VideoAdUtils {
      * 更新数据表的所有数据
      */
     public static synchronized void updateSqlVideoList(Context context, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> tDownloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
-        LogCat.e("video", "更新数据库........." );
+        LogCat.e("video", "更新数据库.........");
         // 删除所有删除列表的video
         AdDao.deleteAll(context, true, deleteVideos);
         AdDao.deleteAll(context, false, deleteVideos);
@@ -67,6 +69,7 @@ public class VideoAdUtils {
 
     /**
      * 缓存视频
+     *
      * @param cachePlayVideoLists
      */
     public static synchronized void cacheTMVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
@@ -130,9 +133,9 @@ public class VideoAdUtils {
     }
 
 
-    public static void updateVideoPath(boolean isToday, Context context, int vid, String path){
+    public static void updateVideoPath(boolean isToday, Context context, int vid, String path) {
         AdDao.update(context, isToday, vid, AdDao.videoPath, path);
-        if( AdDao.query(context, isToday, vid)){
+        if (AdDao.query(context, isToday, vid)) {
             LogCat.e("video", "查询修改后的大小： " + AdDao.queryDetail(context, isToday, vid).videoPath);
         }
 
@@ -177,7 +180,6 @@ public class VideoAdUtils {
     }
 
 
-
     /**
      * 根据本地缓存视频列表和明日播放列，得出当前的视频播放列表
      *
@@ -213,18 +215,17 @@ public class VideoAdUtils {
     }
 
 
-
     /**
      * 提出重复下载的视频 最终获得明日下载列表
      */
     public static ArrayList<AdDetailResponse> reconnectedPrepare(ArrayList<AdDetailResponse> downloadLists, ArrayList<AdDetailResponse> prepareDownloadLists) {
         ArrayList<AdDetailResponse> tomorrowList = new ArrayList<>();
         int downloadsSize = downloadLists.size();
-        for(int i = 0; i < prepareDownloadLists.size(); i++){
+        for (int i = 0; i < prepareDownloadLists.size(); i++) {
             AdDetailResponse prepareVideo = prepareDownloadLists.get(i);
-            for(int j = 0; j < downloadsSize; j++){
+            for (int j = 0; j < downloadsSize; j++) {
                 AdDetailResponse downloadVideo = downloadLists.get(j);
-                if(!TextUtils.isEmpty(prepareVideo.adVideoName) && prepareVideo.adVideoName.equals(downloadVideo.adVideoName)){
+                if (!TextUtils.isEmpty(prepareVideo.adVideoName) && prepareVideo.adVideoName.equals(downloadVideo.adVideoName)) {
                     prepareDownloadLists.remove(i);
                     LogCat.e("video", "剔除重复下载的视频：" + prepareVideo.adVideoName);
                     --i;
@@ -234,7 +235,7 @@ public class VideoAdUtils {
         }
         LogCat.e("video", "------------------------------");
         LogCat.e("video", "最终的明日下载列表.......");
-        for(AdDetailResponse adDetailResponse : prepareDownloadLists){
+        for (AdDetailResponse adDetailResponse : prepareDownloadLists) {
             LogCat.e("video", "明日下载视频：" + adDetailResponse.adVideoName);
         }
         LogCat.e("video", "------------------------------");
@@ -336,6 +337,7 @@ public class VideoAdUtils {
     /**
      * 检测localVideoList列表文件完整性
      * 根据今明两日的文件列表检查localVideoList列表文件的完整性
+     *
      * @param cacheTodayList
      */
     public static void checkFileLength(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
@@ -372,28 +374,30 @@ public class VideoAdUtils {
         sharedPreference.saveDate(Constants.SHARE_KEY_DURATION, System.currentTimeMillis());
     }
 
-    public static void computeTime(Context context) {
-        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(context);
+    public static String computeTime(long time) {
+        String str = null;
         // 计算离开的时候总时长
         try {
-            long startLong = sharedPreference.getDate(Constants.SHARE_KEY_DURATION, 0L);
-            if (startLong != 0) {
-                long duration = System.currentTimeMillis() - startLong;
-                if (duration > 0) {
-                    long day = duration / (24 * 60 * 60 * 1000);
-                    long hour = (duration / (60 * 60 * 1000) - day * 24);
-                    long min = ((duration / (60 * 1000)) - day * 24 * 60 - hour * 60);
-                    long s = (duration / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-                    String str = day + "天  " + hour + "时" + min + "分" + s + "秒";
-                    LogCat.e("video", str);
-                    LogCat.e("video", "上报开机时长。。。。。。。。");
-                }
+            long hour = time / (60 * 60 * 1000);
+            String hourStr = String.valueOf(hour);
+            if(hour < 10){
+                hourStr = "0" + hourStr;
             }
+            long min = ((time / (60 * 1000)) - hour * 60);
+            String minStr = String.valueOf(min);
+            if(hour < 10){
+                minStr = "0" + minStr;
+            }
+            long second = (time / 1000 - hour * 60 * 60 - min * 60);
+            String secondStr = String.valueOf(second);
+            if(hour < 10){
+                secondStr = "0" + secondStr;
+            }
+            str = hour + ":" + min + ":" + secondStr;
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            sharedPreference.saveDate(Constants.SHARE_KEY_DURATION, 0);
         }
+        return str;
     }
 
 }

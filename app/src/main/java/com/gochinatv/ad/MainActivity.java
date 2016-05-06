@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.tools.UmengUtils;
 import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
@@ -546,6 +547,8 @@ public class MainActivity extends Activity {
                 isGetDerviceSucceed = true;
                 //加载布局
                 loadFragmentTwo(isHasUpgrade);
+
+                UmengUtils.onEvent(MainActivity.this, UmengUtils.UMENG_APP_START_TIME, DataUtils.getFormatTime(adDeviceDataResponse.currentTime));
 
             }
 
