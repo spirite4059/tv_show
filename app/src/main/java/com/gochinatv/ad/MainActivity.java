@@ -149,7 +149,7 @@ public class MainActivity extends Activity {
             DataUtils.startAppServer(this);
         }
 
-        throw new NullPointerException("asdfasdfsdf");
+
 
     }
 
