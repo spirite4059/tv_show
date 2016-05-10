@@ -11,14 +11,17 @@ import android.widget.RelativeLayout;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
+import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.view.AutoTextView;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADFourResponse;
 import com.okhtttp.response.ADTextRseponse;
 import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.service.ADHttpService;
+import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -104,11 +107,16 @@ public class ADFourFragment extends BaseFragment {
 
     @Override
     protected void init() {
-        autoTextView.setText("2016/03/31 19:00 Tuesday,Washington DC      内容合作Contact us:Service@gochinatv.com");
+        autoTextView.setText("For more information about GoChina Media, please contact clientservice@gochinatv.com.");
         textList = new ArrayList<>();
-        textList.add("2016/03/31 19:00 Tuesday,Washington DC");
-        textList.add("内容合作Contact us:Service@gochinatv.com");
-        textList.add("2016/03/31 19:00 Tuesday,Washington DC      内容合作Contact us:Service@gochinatv.com");
+        textList.add("Please call our service team at 1-877-227-5717");
+        textList.add("Interested in installation of our TV in your restaurant?");
+        textList.add("Please visit http://h5.eqxiu.com/s/LW4ukoLZ");
+        textList.add("Join our partner recruitment plan.");
+        textList.add("Win a $10 dollar referral fee for each successfully recommendation.");
+        textList.add("Please contact us via clientservice@gochinatv.com or wechat: 13034624085.");
+        textList.add("Advertising client please contact globalsales@gochinatv.com");
+        textList.add("For more information about GoChina Media, please contact clientservice@gochinatv.com.");
         if(textList.size()>1){
             LogCat.e("ADFourFragment 第一次开启滚动 ");
             i = 0;
@@ -287,4 +295,26 @@ public class ADFourFragment extends BaseFragment {
 
     }
 
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            MobclickAgent.onPageStart("ADFourFragment");
+        }
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            MobclickAgent.onPageEnd("ADFourFragment");
+        }
+    }
 }

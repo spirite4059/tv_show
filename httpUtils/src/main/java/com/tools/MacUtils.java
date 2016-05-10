@@ -114,6 +114,9 @@ public class MacUtils {
      * @return 有线 1； 无线 2; 无网络 0
      */
     public static int checkNetStatus(Context context) {
+        if(context == null){
+            return 0;
+        }
         ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = conn.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
         // 有有线连接

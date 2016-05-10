@@ -13,12 +13,12 @@ android {
         applicationId "com.gochinatv.ad"
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 10
-        versionName "1.2.1"
+        versionCode 12
+        versionName "2.1.1"
         // dex突破65535的限制
         multiDexEnabled true
         //    5697616167e58e3881002b8e
-        manifestPlaceholders = [UMENG_APPKEY_VALUE: "56aad2f3e0f55a8655002111"]
+        manifestPlaceholders = [UMENG_APPKEY_VALUE: "572c1246e0f55aa6c5001533"]
     }
     // 禁用lint报错
     lintOptions {
@@ -68,8 +68,9 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile project(':dlutils')
-    compile project(':library')
-    compile 'com.umeng.analytics:analytics:latest.integration'
-    compile 'com.android.support:recyclerview-v7:23.2.0'
     compile project(':db')
+    compile 'com.umeng.analytics:analytics:latest.integration'
+    compile 'org.jcodec:jcodec-android:0.1.9'
+    compile project(':statistics')
+    compile 'com.android.support:appcompat-v7:23.2.1'
 }

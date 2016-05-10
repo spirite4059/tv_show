@@ -54,7 +54,7 @@ public class RecycleAnimationLayout extends LinearLayout {
     }
 
     private int position = 2;//当前是imgResponses的位置
-    private int duration = 2;//动画时间（秒）
+    private int duration = 1;//动画时间（秒）
 
 
 
@@ -76,6 +76,9 @@ public class RecycleAnimationLayout extends LinearLayout {
     private int [] localImgArray = new int[]{R.drawable.local_one,R.drawable.local_two,R.drawable.local_three,R.drawable.local_four};
 
     private int oldPositionID;//保存
+
+    //
+    private int newScrollerY;
 
 
     public RecycleAnimationLayout(Context context) {
@@ -128,14 +131,27 @@ public class RecycleAnimationLayout extends LinearLayout {
                 params.width = itemWidth;
                 params.height = itemHeight;
                 view.setLayoutParams(params);
-                LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.itme_ad_three_lin);
-                ImageView bigPic = (ImageView) view.findViewById(R.id.itme_ad_three_img);
-                TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);
+                LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.itme_ad_three_lin);//服务器layout
+                ImageView bigPic = (ImageView) view.findViewById(R.id.itme_ad_three_img);//本地图
+                TextView name = (TextView)view.findViewById(R.id.ad_three_text_name);//中文菜名
+                TextView enName = (TextView)view.findViewById(R.id.ad_three_text_en_name);//英文菜名
+
                 if(imgResponses.get(i).adImgName != null){
                     name.setText(imgResponses.get(i).adImgName);
+                }else{
+                    name.setText("");
                 }
-                TextView price = (TextView)view.findViewById(R.id.ad_three_text_price);
-                ImageView pic = (ImageView)view.findViewById(R.id.ad_three_img);
+
+                if(TextUtils.isEmpty(imgResponses.get(i).adImagEName)){
+                    enName.setVisibility(GONE);
+                }else{
+                    enName.setVisibility(VISIBLE);
+                    enName.setText(imgResponses.get(i).adImagEName);
+                }
+
+
+                TextView price = (TextView)view.findViewById(R.id.ad_three_text_price);//价格
+                ImageView pic = (ImageView)view.findViewById(R.id.ad_three_img);//服务器图片
                 if(imgResponses.get(i).isFromServer){
                     //来自服务器
 
@@ -144,6 +160,8 @@ public class RecycleAnimationLayout extends LinearLayout {
 
                     if(imgResponses.get(i).adImgPrice != null){
                         price.setText(imgResponses.get(i).adImgPrice);
+                    }else{
+                        price.setText("");
                     }
                     if(!TextUtils.isEmpty(imgResponses.get(i).adImgUrl)){
                         imageLoader.displayImage(imgResponses.get(i).adImgUrl, pic, options);
@@ -156,11 +174,14 @@ public class RecycleAnimationLayout extends LinearLayout {
 
                     if(imgResponses.get(i).adImgPrice != null){
                         price.setText(imgResponses.get(i).adImgPrice);
+                    }else{
+                        price.setText("");
                     }
                     if(!TextUtils.isEmpty(imgResponses.get(i).adImgUrl)){
                         int pos = Integer.parseInt(imgResponses.get(i).adImgUrl);
                         if(pos< localImgArray.length){
-                            imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
+                            //imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
+                            bigPic.setImageResource(localImgArray[pos]);
                         }
                     }
 
@@ -201,6 +222,8 @@ public class RecycleAnimationLayout extends LinearLayout {
     private void scrollUp(){
         LogCat.e("RecycleAnimationLayout","开始向上滚动 scrollUp ");
         isViewUp = true;//将其置为滑动上面去了
+        //oldScrollerY = mScroller.getCurrY();
+        LogCat.e("RecycleAnimationLayout", "scrollUp  Y的偏移量 oldScrollerY :  "  +  mScroller.getCurrY() );
         mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), 0, itemHeight, duration * 1000);
         invalidate();
 
@@ -212,7 +235,9 @@ public class RecycleAnimationLayout extends LinearLayout {
     private void scrollDown(){
         LogCat.e("RecycleAnimationLayout","开始向下滚动 scrollDown ");
         isViewUp = false;//将其置为恢复原来状态了
-        mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), 0, -itemHeight, 0);
+        newScrollerY = mScroller.getCurrY();
+        LogCat.e("RecycleAnimationLayout", " scrollDown Y的偏移量 newScrollerY :  " + newScrollerY);
+        mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), 0, -(newScrollerY), 0);
         invalidate();
 
     }
@@ -264,25 +289,33 @@ public class RecycleAnimationLayout extends LinearLayout {
             }
         }
 
-        LinearLayout linearLayout = (LinearLayout) reuseView.findViewById(R.id.itme_ad_three_lin);
-        ImageView bigPic = (ImageView) reuseView.findViewById(R.id.itme_ad_three_img);
-        TextView name = (TextView) reuseView.findViewById(R.id.ad_three_text_name);
+        LinearLayout linearLayout = (LinearLayout) reuseView.findViewById(R.id.itme_ad_three_lin);//服务器layout
+        ImageView bigPic = (ImageView) reuseView.findViewById(R.id.itme_ad_three_img);//本地图
+        TextView name = (TextView) reuseView.findViewById(R.id.ad_three_text_name);//中文菜名
         if(imgResponses.get(position).adImgName != null){
             name.setText(imgResponses.get(position).adImgName);
+        }else{
+            name.setText("");
         }
-        //name.setText(imgResponses.get(position).adImgName);
-        TextView price = (TextView) reuseView.findViewById(R.id.ad_three_text_price);
-        //price.setText(imgResponses.get(position).adImgPrice + "元");
-        ImageView pic = (ImageView)reuseView.findViewById(R.id.ad_three_img);
-        //imageLoader.displayImage(imgResponses.get(position).adImgUrl, pic, options);
+        TextView enName = (TextView)reuseView.findViewById(R.id.ad_three_text_en_name);//英文菜名
+        if(TextUtils.isEmpty(imgResponses.get(position).adImagEName)){
+            enName.setVisibility(GONE);
+        }else{
+            enName.setVisibility(VISIBLE);
+            enName.setText(imgResponses.get(position).adImagEName);
+        }
+
+        TextView price = (TextView) reuseView.findViewById(R.id.ad_three_text_price);//价格
+        ImageView pic = (ImageView)reuseView.findViewById(R.id.ad_three_img);//服务器图片
         if(imgResponses.get(position).isFromServer){
             //来自服务器
             linearLayout.setVisibility(VISIBLE);
             bigPic.setVisibility(GONE);
 
-
             if(imgResponses.get(position).adImgPrice != null){
                 price.setText(imgResponses.get(position).adImgPrice);
+            }else{
+                price.setText("");
             }
             if(!TextUtils.isEmpty(imgResponses.get(position).adImgUrl)){
                 imageLoader.displayImage(imgResponses.get(position).adImgUrl, pic, options);
@@ -292,14 +325,16 @@ public class RecycleAnimationLayout extends LinearLayout {
             //来自本地
             linearLayout.setVisibility(GONE);
             bigPic.setVisibility(VISIBLE);
-            //imageLoader.displayImage("drawable://" + localImgArray[pos], pic, options);
             if(imgResponses.get(position).adImgPrice != null){
                 price.setText(imgResponses.get(position).adImgPrice);
+            }else{
+                price.setText("");
             }
             if(!TextUtils.isEmpty(imgResponses.get(position).adImgUrl)){
                 int pos = Integer.parseInt(imgResponses.get(position).adImgUrl);
                 if(pos< localImgArray.length){
-                    imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
+                    //imageLoader.displayImage("drawable://" + localImgArray[pos], bigPic, options);
+                    bigPic.setImageResource(localImgArray[pos]);
                 }
             }
         }

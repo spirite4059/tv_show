@@ -1,13 +1,5 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-        <!-- Customize your theme here. -->
-        <!--<item adVideoName="colorPrimary">@color/colorPrimary</item>-->
-        <!--<item adVideoName="colorPrimaryDark">@color/colorPrimaryDark</item>-->
-        <!--<item adVideoName="colorAccent">@color/colorAccent</item>-->
-    </style>
-
 
     <style name="ThemeDialog" parent="@android:style/Theme.Dialog">
         <item name="android:windowFullscreen">true</item>

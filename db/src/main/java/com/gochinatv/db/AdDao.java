@@ -411,7 +411,10 @@ public class AdDao implements IDBConstants {
                 database.setTransactionSuccessful();
                 database.endTransaction();
             }
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -459,6 +462,11 @@ public class AdDao implements IDBConstants {
                 database.setTransactionSuccessful();
                 database.endTransaction();
             }
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> master
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

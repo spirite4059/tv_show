@@ -15,22 +15,12 @@ import java.util.Map;
  */
 public class VideoHttpService {
 
-//    private static final String HTTP_URL_GET_VIDEO_LIST = "http://192.168.2.196:8080/api/ad_v1/getAdList";
-    private static final String HTTP_URL_GET_VIDEO_LIST = "http://210.14.151.100:8090/api/ad_v1/getAdList";
-//                                                           http://210.14.151.100:8090/api/ad_v1/getAdList?mac=cc-79-cf-88-88-88
+    private static final String HTTP_URL_GET_VIDEO_LIST = "http://api.bm.gochinatv.com/ad_v1/getAdList";
 
     public static void doHttpGetVideoList(Context context, OkHttpCallBack<AdVideoListResponse> listener){
         Map<String, String> params = new HashMap<>();
-//        params.put("mac", MacUtils.getMacAddress(context));
-//        params.put("mac", "rf-ed-rt-ws");
-//        try {
-//            String mac = URLEncoder.encode("cc:79:cf:88:88:88", "UTF-8");
-//            LogCat.e("mac: " + mac);
-//            params.put("mac", mac);
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
         params.put("mac", MacUtils.getMacAddress(context));
+//        params.put("time", "2016-04-30");
         OkHttpUtils.getInstance().doHttpGet(HTTP_URL_GET_VIDEO_LIST, params, listener);
     }
 

@@ -28,9 +28,25 @@ import static com.download.ErrorCodes.ERROR_THREAD_NUMBERS;
  */
 public class DownloadUtils {
 
+    private static final int THREAD_NUMBER = 2;
 
     public static void download(boolean isToday, Context context, String dir, String fileName, String fileUrl, final OnUpgradeStatusListener listener) {
-        DLUtils.init(context.getApplicationContext()).download(isToday, dir, fileName, fileUrl, 2, new OnDownloadStatusListener() {
+        if(context == null){
+            return;
+        }
+        Context appContext = null;
+
+        try {
+            appContext = context.getApplicationContext();
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
+        if(appContext == null){
+            return;
+        }
+
+        DLUtils.init(context.getApplicationContext()).download(isToday, dir, fileName, fileUrl, THREAD_NUMBER, new OnDownloadStatusListener() {
 
             private long fileLength;
 

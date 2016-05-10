@@ -18,10 +18,12 @@ import java.util.Map;
  */
 public class ADHttpService {
 
+    private static final String BASE_HTTP_URL = "http://api.bm.gochinatv.com/ad_v1";
+
     /**
      * 广告体---布局的宽高
      */
-    public static final String URL_GET_AD_DEVICE = "http://210.14.151.100:8090/api/ad_v1/getDeviceInfo";
+    public static final String URL_GET_AD_DEVICE = BASE_HTTP_URL +"/getDeviceInfo";
     public static void doHttpGetDeviceInfo(Context context, OkHttpCallBack<ADDeviceDataResponse> listener){
         Map<String, String> params = new HashMap<>();
         params.put("mac", MacUtils.getMacAddress(context));
@@ -32,7 +34,7 @@ public class ADHttpService {
     /**
      * 广告二--web广告
      */
-    public static final String URL_GET_AD_TWO = "http://210.14.151.100:8090/api/ad_v1/getWebAdInfo";
+    public static final String URL_GET_AD_TWO = BASE_HTTP_URL + "/getWebAdInfo";
     public static void doHttpGetWebADInfo(Context context, OkHttpCallBack<ADTwoResponse> listener){
         Map<String, String> params = new HashMap<>();
         params.put("mac", MacUtils.getMacAddress(context));
@@ -44,7 +46,7 @@ public class ADHttpService {
     /**
      * 广告三--图片广告
      */
-    public static final String URL_GET_AD_THREE = "http://210.14.151.100:8090/api/ad_v1/getImageAdList";
+    public static final String URL_GET_AD_THREE = BASE_HTTP_URL + "/getImageAdList";
     //public static final String URL_GET_AD_THREE = "http://mock.vego.tv:8888/zfy/getAdList";
     public static void doHttpGetImageADInfo(Context context, OkHttpCallBack<AdThreeDataResponse> listener){
         Map<String, String> params = new HashMap<>();
@@ -56,7 +58,7 @@ public class ADHttpService {
     /**
      * 广告四--文字广告
      */
-    public static final String URL_GET_AD_FOUR = "http://210.14.151.100:8090/api/ad_v1/getTextAdList";
+    public static final String URL_GET_AD_FOUR = BASE_HTTP_URL + "/getTextAdList";
     public static void doHttpGetTextADInfo(Context context, OkHttpCallBack<ADFourResponse> listener){
         Map<String, String> params = new HashMap<>();
         params.put("mac", MacUtils.getMacAddress(context));

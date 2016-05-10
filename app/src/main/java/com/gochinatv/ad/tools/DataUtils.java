@@ -23,12 +23,19 @@ import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.View;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.lang.reflect.Method;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URLEncoder;
@@ -107,6 +114,29 @@ public class DataUtils {
 		}
 		return packInfo == null ? "" : packInfo.versionName;
 	}
+
+
+	/**
+	 * 获取当前应用版本号
+	 *
+	 * @return
+	 * @throws NameNotFoundException
+	 */
+	public static Integer getAppVersionCode(Context context) {
+		PackageManager packageManager = context.getPackageManager();
+
+		// getPackageName()是你当前类的包名，0代表是获取版本信息
+		PackageInfo packInfo = null;
+		try {
+			packInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
+		return packInfo == null ? 0 : packInfo.versionCode;
+	}
+
+
+
 
 	/**
 	 * 获取运营商代号:IMSI号前面3位460是国家，紧接着后面2位00 02是中国移动，01是中国联通，03是中国电信。
@@ -375,6 +405,29 @@ public class DataUtils {
 	}
 
 
+
+	public static String getFormatTime(long time){
+		if(time <= 0){
+			return "";
+		}
+		String timeFormat = getFormatTime(time, "yyyy-MM-dd hh:mm:ss");
+		return timeFormat;
+	}
+
+	public static String getFormatTime(long time, String format){
+		if(time <= 0){
+			return "";
+		}
+		String timeFormat = "";
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat(format);
+			timeFormat = sdf.format(new Date(time));
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		return timeFormat;
+	}
+
 	/**
 	 * 获取有线mac
 	 *
@@ -444,6 +497,48 @@ public class DataUtils {
 			}
 		}
 		return macAddr;
+	}
+
+	/**
+	 * Detects and toggles immersive mode (also known as "hidey bar" mode).
+	 */
+	public static void hideNavigationBar(Activity activity) {
+
+		// The UI options currently enabled are represented by a bitfield.
+		// getSystemUiVisibility() gives us that bitfield.
+		int uiOptions = activity.getWindow().getDecorView().getSystemUiVisibility();
+		int newUiOptions = uiOptions;
+		boolean isImmersiveModeEnabled =
+				((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
+		if (isImmersiveModeEnabled) {
+			LogCat.e("video", "Turning immersive mode mode off. ");
+		} else {
+			LogCat.e("video", "Turning immersive mode mode on.");
+		}
+
+		// Navigation bar hiding:  Backwards compatible to ICS.
+		if (Build.VERSION.SDK_INT >= 14) {
+			newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+		}
+
+		// Status bar hiding: Backwards compatible to Jellybean
+		if (Build.VERSION.SDK_INT >= 16) {
+			newUiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
+		}
+
+		// Immersive mode: Backward compatible to KitKat.
+		// Note that this flag doesn't do anything by itself, it only augments the behavior
+		// of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
+		// all three flags are being toggled together.
+		// Note that there are two immersive mode UI flags, one of which is referred to as "sticky".
+		// Sticky immersive mode differs in that it makes the navigation and status bars
+		// semi-transparent, and the UI flag does not get cleared when the user interacts with
+		// the screen.
+		if (Build.VERSION.SDK_INT >= 18) {
+			newUiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+		}
+
+		activity.getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
 	}
 
 
@@ -569,6 +664,11 @@ public class DataUtils {
 		return rootPath;
 	}
 
+	public static String getLogDirectory(){
+		String rootPath = getSdCardFileDirectory() + Constants.FILE_DIRECTORY_LOG;
+		return rootPath;
+	}
+
 
 	/**
 	 * 从指定文件中读取内容
@@ -618,12 +718,12 @@ public class DataUtils {
 	public static int getDisplayMetricsHeight(Activity context){
 		DisplayMetrics metrics = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		if(Constants.isPhone){
+		if(checkDeviceHasNavigationBar(context)){
 			//适配手机
-			return metrics.heightPixels;
+			return metrics.heightPixels + getNavigationBarHeight(context);
 		}else{
 			//适配电视棒
-			return metrics.heightPixels + getNavigationBarHeight(context);
+			return metrics.heightPixels;
 		}
 
 	}
@@ -637,7 +737,42 @@ public class DataUtils {
 		return metrics.heightPixels;
 	}
 
+	//获取是否存在NavigationBar
+	public static boolean checkDeviceHasNavigationBar(Context context) {
+		boolean hasNavigationBar = false;
+		Resources rs = context.getResources();
+		int id = rs.getIdentifier("config_showNavigationBar", "bool", "android");
+		if (id > 0) {
+			hasNavigationBar = rs.getBoolean(id);
+		}
+		try {
+			Class systemPropertiesClass = Class.forName("android.os.SystemProperties");
+			Method m = systemPropertiesClass.getMethod("get", String.class);
+			String navBarOverride = (String) m.invoke(systemPropertiesClass, "qemu.hw.mainkeys");
+			if ("1".equals(navBarOverride)) {
+				hasNavigationBar = false;
+			} else if ("0".equals(navBarOverride)) {
+				hasNavigationBar = true;
+			}
+		} catch (Exception e) {
 
+		}
+		return hasNavigationBar;
+	}
+
+//	public static boolean checkDeviceHasNavigationBar(Context activity) {
+//		//通过判断设备是否有返回键、菜单键(不是虚拟键,是手机屏幕外的按键)来确定是否有navigation bar
+////		boolean hasMenuKey = ViewConfiguration.get(activity)
+////				.hasPermanentMenuKey();
+//		boolean hasBackKey = KeyCharacterMap
+//				.deviceHasKey(KeyEvent.KEYCODE_BACK);
+//
+//		if (!hasBackKey) {
+//			// 做任何你需要做的,这个设备有一个导航栏
+//			return true;
+//		}
+//		return false;
+//	}
 
 	/**
 	 * NavigationBar的高度
@@ -650,6 +785,7 @@ public class DataUtils {
 				"dimen", "android");
 		//获取NavigationBar的高度
 		int height = resources.getDimensionPixelSize(resourceId);
+
 		return height;
 	}
 
@@ -714,5 +850,55 @@ public class DataUtils {
 		}
 		return result;
 	}
+
+
+	public static  void writeFileToSdcard(String filePath, String fileName, String msg){
+		BufferedWriter bw = null;
+		try {
+			File file = new File(filePath);
+			if(!file.exists()){
+				file.mkdirs();
+			}
+
+			File cacheFile = new File(filePath, fileName);
+			if(!cacheFile.exists()){
+				cacheFile.createNewFile();
+			}
+			//第二个参数意义是说是否以append方式添加内容
+			bw = new BufferedWriter(new FileWriter(cacheFile, false));
+			bw.write(msg);
+			bw.flush();
+			LogCat.e("缓存文件成功......");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			try {
+				if (bw != null) {
+					bw.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+
+	public static String getThrowableMsg(Throwable ex){
+		StringBuffer sb = new StringBuffer();
+		Writer writer = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(writer);
+		ex.printStackTrace(printWriter);
+		Throwable cause = ex.getCause();
+		while (cause != null) {
+			cause.printStackTrace(printWriter);
+			cause = cause.getCause();
+		}
+		printWriter.close();
+		String result = writer.toString();
+		sb.append(result); //将写入的结果
+		return sb.toString();
+	}
+
 
 }

@@ -14,12 +14,14 @@ import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.view.RecycleAnimationLayout;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.AdImgResponse;
 import com.okhtttp.response.AdThreeDataResponse;
 import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.service.ADHttpService;
+import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -276,8 +278,15 @@ public class ADThreeOtherFragment extends BaseFragment {
                 if (!isAdded()) {
                     return;
                 }
-                LogCat.e("RecycleAnimationLayout"," 广告三的接口 ！！！！onError ");
-                initData();
+                if(linearLayout != null){
+                    linearLayout.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogCat.e("RecycleAnimationLayout"," 广告三的接口 ！！！！onError ");
+                            initData();
+                        }
+                    },2000);
+                }
 
 //                if (adThreeBg != null && adThreeBg.getVisibility() == View.GONE) {
 //                    //没有数据显示背景图
@@ -286,8 +295,6 @@ public class ADThreeOtherFragment extends BaseFragment {
 //                    //停在滚动
 //                    linearLayout.stopRecycleAnimation();
 //                }
-
-
             }
         });
 
@@ -393,5 +400,26 @@ public class ADThreeOtherFragment extends BaseFragment {
 //        }
 //    }
 
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            MobclickAgent.onPageStart("ADThreeOtherFragment");
+        }
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            MobclickAgent.onPageEnd("ADThreeOtherFragment");
+        }
+    }
 
 }

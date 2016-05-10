@@ -13,6 +13,8 @@ public class Constants {
      */
     public static final String SHARE_KEY_DURATION = "SHARE_KEY_DURATION";
     public static final String SHARE_KEY_SERVER_TIME = "SHARE_KEY_SERVER_TIME";
+    public static final String SHARE_KEY_UMENG = "SHARE_KEY_UMENG";
+    public static final String SHARE_KEY_MAC = "SHARE_KEY_MAC";
 
     /**
      * --------------------------File-------------------------------
@@ -41,6 +43,8 @@ public class Constants {
 
     public static final String FILE_DOWNLOAD_EXTENSION = ".mp4";
     public static final String FILE_APK_NAME = "VegoPlus.apk";
+    public static final String FILE_LOG_NAME = "catch_log";
+    public static final String FILE_DIRECTORY_LOG = "logCat";
 
     /**
      * --------------------------Intent-------------------------------
@@ -73,13 +77,14 @@ public class Constants {
     /**
      * --------------------------是否是3号位测试-------------------------------
      */
-    public static boolean isImageTest = true;
+    public static boolean isImageTest = false;
 
 
     /**
      * --------------------------是否是适配手机-------------------------------
      */
     public static boolean isPhone = false;
+
 
 
 

@@ -1,7 +1,6 @@
 package com.download;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.download.dllistener.InDLUtils;
@@ -82,7 +81,6 @@ public class DLUtils implements InDLUtils {
     }
 
 
-    @NonNull
     private File createFile(String path, String fileName) {
         File file = new File(path);
         // 如果SD卡目录不存在创建

@@ -1,32 +1,42 @@
 package com.gochinatv.ad;
 
+import android.Manifest.permission;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.tools.UmengUtils;
+import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeOtherFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
+import com.gochinatv.statistics.request.RetryErrorRequest;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ADDeviceDataResponse;
@@ -34,11 +44,13 @@ import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.ADHttpService;
 import com.tools.HttpUrls;
+import com.umeng.analytics.AnalyticsConfig;
 import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,6 +92,20 @@ public class MainActivity extends Activity {
     private int runnableTimes;//post-Runnable的次数
     //private Runnable runnable;
 
+
+    /**
+     * 升级接口日志
+     */
+    private ArrayList<RetryErrorRequest> upgradeLogList;
+
+    /**
+     * 布局接口日志
+     */
+    private ArrayList<RetryErrorRequest> layoutLogList;
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,100 +128,141 @@ public class MainActivity extends Activity {
 
 
     private void init() {
+        // 删除升级安装包
+        deleteUpdateApk();
+
+        handler = new Handler(Looper.getMainLooper());
+
+        initUmeng();
+
         /**
          * 隐藏NavigationBar
          */
-        hideNavigationBar();
+        DataUtils.hideNavigationBar(this);
 
-        if(DataUtils.isNetworkConnected(this)){
-            LogCat.e("网络已连接，请求接口");
-            doHttpUpdate(MainActivity.this);
-            doGetDeviceInfo();
-        }else{
-            LogCat.e("网络未连接，继续判断网络是否连接");
-            handler = new Handler();
-            handler.postDelayed(runnable,3000);
+        // 请求网络
+        doHttp();
 
-        }
-
-        // 删除升级安装包
-        deleteUpdateApk();
         /**
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
-        if(!Constants.isTest){
+        if (!Constants.isTest) {
             DataUtils.startAppServer(this);
         }
 
+
+
     }
+
+    private void doHttp() {
+        if (DataUtils.isNetworkConnected(this)) {
+            LogCat.e("网络已连接，请求接口");
+            doHttpUpdate(MainActivity.this);
+            doGetDeviceInfo();
+            SendStatisticsLog.sendInitializeLog(this);//提交激活日志
+        } else {
+            LogCat.e("网络未连接，继续判断网络是否连接");
+            handler.postDelayed(runnable, 10000);
+        }
+    }
+
 
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
             runnableTimes++;
-            if(DataUtils.isNetworkConnected(MainActivity.this)){
+            if (DataUtils.isNetworkConnected(MainActivity.this)) {
                 LogCat.e("网络已连接，请求接口，并且移除runnable");
                 handler.removeCallbacks(runnable);
                 doHttpUpdate(MainActivity.this);
                 doGetDeviceInfo();
-            }else{
-                if(runnableTimes >4){
+                SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
+            } else {
+                if (runnableTimes > 4) {
                     LogCat.e("请求5次后不再请求，进入广告一");
                     isUpgradeSucceed = true;
                     isGetDerviceSucceed = true;
                     loadFragmentTwo(isHasUpgrade);
-                }else{
+                } else {
                     LogCat.e("网络未连接，继续判断网络是否连接");
-                    handler.postDelayed(runnable,3000);
+                    handler.postDelayed(runnable, 10000);
                 }
             }
         }
     };
 
+    private void initUmeng() {
+        if(isFinishing()){
+            return;
+        }
+        String mac = DataUtils.getMacAddress(MainActivity.this);
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
+        if (!TextUtils.isEmpty(mac)) {
+            final String macAddress = mac.replaceAll(":", "");
+            LogCat.e("mac: " + macAddress);
+            AnalyticsConfig.setChannel(mac);
+            MobclickAgent.openActivityDurationTrack(false);
+            MobclickAgent.setCatchUncaughtExceptions(true);
+            MobclickAgent.setDebugMode(false);
+            if(sharedPreference != null){
+                sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
+            }
+        }else {
+            if(sharedPreference != null){
+                sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, false);
+            }
+        }
+    }
+
+
+
+
+
 
     private void deleteUpdateApk() {
-        File file = new File(DataUtils.getSdCardFileDirectory() + Constants.FILE_DIRECTORY_APK);
+        File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
         if (file.exists()) {
             file.delete();
         }
     }
 
     private void testInstall() {
-        //
-//        File file = Environment.getExternalStorageDirectory();
-////
-//        File fileApk = new File(file.getAbsolutePath() + "/Music/test.apk");
+        File file = Environment.getExternalStorageDirectory();
 //
-//        LogCat.e("fileApk: " + fileApk.getAbsolutePath());
-////
-//        PackageInfo pInfo = null;
-//        try {
-//            pInfo = getPackageManager().getPackageInfo("com.gochinatv.ad", 0);
-//        } catch (PackageManager.NameNotFoundException e) {
-//            e.printStackTrace();
-//        }
-//        if(InstallUtils.hasRootPermission()){
-//            //  have  root
-//            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), true);
-//            Toast.makeText(this, "提醒：获取到root权限，可以静默升级！", Toast.LENGTH_LONG).show();
-//            // rootClientInstall(apkFile.getAbsolutePath());
-//        }else if (InstallUtils.isSystemApp(pInfo) || InstallUtils.isSystemUpdateApp(pInfo)){
-////                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
-//            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), false);
-//            Toast.makeText(this,"提醒：获取到系统权限，可以静默升级！",Toast.LENGTH_LONG).show();
-//        }else {
-//            Toast.makeText(this,"提醒：没有获取到系统权限和root权限，请选择普通安装！",Toast.LENGTH_LONG).show();
-//        }
+        File fileApk = new File(file.getAbsolutePath() + "/Music/test.apk");
+
+        LogCat.e("fileApk: " + fileApk.getAbsolutePath());
+//
+        PackageInfo pInfo = null;
+        try {
+            pInfo = getPackageManager().getPackageInfo("com.gochinatv.ad", 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        if(InstallUtils.hasRootPermission()){
+            //  have  root
+            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), true);
+            Toast.makeText(this, "提醒：获取到root权限，可以静默升级！", Toast.LENGTH_LONG).show();
+            // rootClientInstall(apkFile.getAbsolutePath());
+        }else if (InstallUtils.isSystemApp(pInfo) || InstallUtils.isSystemUpdateApp(pInfo)){
+//                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
+            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), false);
+            Toast.makeText(this,"提醒：获取到系统权限，可以静默升级！",Toast.LENGTH_LONG).show();
+        }else {
+            Toast.makeText(this,"提醒：没有获取到系统权限和root权限，请选择普通安装！",Toast.LENGTH_LONG).show();
+        }
     }
 
 
     @Override
     protected void onStop() {
-        super.onStop();
+
         DLUtils.cancel();
-        if(handler != null && runnable != null){
+        if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
         }
+
+        super.onStop();
     }
 
     /**
@@ -288,6 +355,12 @@ public class MainActivity extends Activity {
                                     LogCat.e("需要升级。。。。。");
                                     // 去下载当前的apk
                                     isHasUpgrade = true;
+
+
+//                                    testInstall();
+
+
+
                                     downloadAPK();
                                     // 加载布局.但是不让AdOneFragment，下载视频
                                     //loadFragment(true);
@@ -336,6 +409,12 @@ public class MainActivity extends Activity {
                     public void onError(String url, String errorMsg) {
                         LogCat.e("请求接口出错，无法升级。。。。。" + url);
                         doError();
+                        //存储错误日志
+                        upgradeLogList = new ArrayList<RetryErrorRequest>();
+                        RetryErrorRequest request = new RetryErrorRequest();
+                        request.retry = String.valueOf(reTryTimes);
+                        request.errorMsg = errorMsg;
+                        upgradeLogList.add(request);
                     }
                 });
 
@@ -400,7 +479,7 @@ public class MainActivity extends Activity {
      * 下载apk
      */
     private void downloadAPK() {
-        DownloadUtils.download(true, getApplication(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+        DownloadUtils.download(true, getApplication(), DataUtils.getApkDirectory(), Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
                 //新包下载完成得安装
@@ -428,7 +507,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onDownloadProgress(long progress, long fileSize) {
-
+                
             }
         });
 
@@ -469,6 +548,8 @@ public class MainActivity extends Activity {
                 //加载布局
                 loadFragmentTwo(isHasUpgrade);
 
+                UmengUtils.onEvent(MainActivity.this, UmengUtils.UMENG_APP_START_TIME, DataUtils.getFormatTime(adDeviceDataResponse.currentTime));
+
             }
 
 
@@ -496,8 +577,12 @@ public class MainActivity extends Activity {
 
                 LogCat.e("请求广告体接口失败。。。。。" + url);
                 doError();
-
-
+                //存储布局接口失败信息
+                layoutLogList = new ArrayList<RetryErrorRequest>();
+                RetryErrorRequest request = new RetryErrorRequest();
+                request.retry = String.valueOf(reTryTimesTwo);
+                request.errorMsg = errorMsg;
+                layoutLogList.add(request);
             }
         });
 
@@ -516,7 +601,7 @@ public class MainActivity extends Activity {
     private LayoutResponse fourLayout;//广告四布局
 
     private void loadFragmentTwo(boolean isDownload) {
-        LogCat.e(" isUpgradeSucceed "+ isUpgradeSucceed +"  isGetDerviceSucceed    " + isGetDerviceSucceed);
+        LogCat.e(" isUpgradeSucceed " + isUpgradeSucceed + "  isGetDerviceSucceed    " + isGetDerviceSucceed);
         //当升级和广告体接口都完成后，才加载布局
         if (isUpgradeSucceed && isGetDerviceSucceed) {
             rootLayout.setBackground(null);
@@ -629,8 +714,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        MobclickAgent.onPageStart("MainActivity");
-        MobclickAgent.onResume(this);
+
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            LogCat.e("mac", "umeng可以使用。。。。。");
+            MobclickAgent.onResume(this);
+        }
+
+
+
+//        LogCat.e("debug", "info: " + getDeviceInfo(this));
 
     }
 
@@ -638,9 +732,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        MobclickAgent.onPageEnd("MainActivity");
-        MobclickAgent.onPause(this);
-
+        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
+        boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
+        if(isHasMac){
+            LogCat.e("mac", "umeng可以使用。。。。。");
+            MobclickAgent.onPause(this);
+        }
     }
 
     /**
@@ -651,46 +748,73 @@ public class MainActivity extends Activity {
 //    }
 
 
-    /**
-     * Detects and toggles immersive mode (also known as "hidey bar" mode).
-     */
-    public void hideNavigationBar() {
 
-        // The UI options currently enabled are represented by a bitfield.
-        // getSystemUiVisibility() gives us that bitfield.
-        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
-        int newUiOptions = uiOptions;
-        boolean isImmersiveModeEnabled =
-                ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
-        if (isImmersiveModeEnabled) {
-            LogCat.e("video", "Turning immersive mode mode off. ");
+
+
+    @SuppressLint("NewApi")
+
+    public static boolean checkPermission(Context context, String permission) {
+        boolean result = false;
+
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+                result = true;
+            }
         } else {
-            LogCat.e("video", "Turning immersive mode mode on.");
+            PackageManager pm = context.getPackageManager();
+
+            if (pm.checkPermission(permission, context.getPackageName()) == PackageManager.PERMISSION_GRANTED) {
+                result = true;
+            }
         }
 
-        // Navigation bar hiding:  Backwards compatible to ICS.
-        if (Build.VERSION.SDK_INT >= 14) {
-            newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        }
-
-        // Status bar hiding: Backwards compatible to Jellybean
-        if (Build.VERSION.SDK_INT >= 16) {
-            newUiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        }
-
-        // Immersive mode: Backward compatible to KitKat.
-        // Note that this flag doesn't do anything by itself, it only augments the behavior
-        // of HIDE_NAVIGATION and FLAG_FULLSCREEN.  For the purposes of this sample
-        // all three flags are being toggled together.
-        // Note that there are two immersive mode UI flags, one of which is referred to as "sticky".
-        // Sticky immersive mode differs in that it makes the navigation and status bars
-        // semi-transparent, and the UI flag does not get cleared when the user interacts with
-        // the screen.
-        if (Build.VERSION.SDK_INT >= 18) {
-            newUiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        }
-
-        getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
+        return result;
     }
+
+
+    public static String getDeviceInfo(Context context) {
+        try {
+            org.json.JSONObject json = new org.json.JSONObject();
+            android.telephony.TelephonyManager tm = (android.telephony.TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+
+            String device_id = null;
+
+            if (checkPermission(context, permission.READ_PHONE_STATE)) {
+                device_id = tm.getDeviceId();
+            }
+
+            android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+            String mac = wifi.getConnectionInfo().getMacAddress();
+
+            json.put("mac", mac);
+
+            if (TextUtils.isEmpty(device_id)) {
+                device_id = mac;
+            }
+
+
+            if (TextUtils.isEmpty(device_id)) {
+                device_id = android.provider.Settings.Secure.getString(context.getContentResolver(),
+                        android.provider.Settings.Secure.ANDROID_ID);
+            }
+
+            json.put("device_id", device_id);
+
+            return json.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    /**
+     * 上报
+     */
+
+
+
 
 }
