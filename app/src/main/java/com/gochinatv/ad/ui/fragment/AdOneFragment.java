@@ -97,7 +97,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 进行重试的时间间隔
      */
-    private final int TIME_RETRY_DURATION = 1000 * 10;
+    private final int TIME_RETRY_DURATION = 1000 * 60;
     /**
      * 测试的时间间隔
      */
