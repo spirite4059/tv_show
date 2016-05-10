@@ -16,6 +16,7 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.screenshot.MediaMetadataPolicy;
 import com.gochinatv.ad.screenshot.ScreenShotUtils;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
@@ -611,7 +612,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 long currentPosition = videoView.getCurrentPosition();
 
                 ScreenShotUtils screenShotUtils = new ScreenShotUtils();
-//                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
+                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
 //                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
 //                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
 
