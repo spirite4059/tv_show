@@ -24,18 +24,19 @@ import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.tools.UmengUtils;
-import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
+import com.gochinatv.ad.tools.DownLoadAPKUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
+import com.gochinatv.ad.tools.UmengUtils;
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeOtherFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
+import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.statistics.request.RetryErrorRequest;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
@@ -147,7 +148,7 @@ public class MainActivity extends Activity {
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
-            DataUtils.startAppServer(this);
+            //DataUtils.startAppServer(this);
         }
 
 
@@ -262,6 +263,14 @@ public class MainActivity extends Activity {
             handler.removeCallbacks(runnable);
         }
 
+        if(downLoadAPKUtils != null ){
+            downLoadAPKUtils.stopDownLoad();
+        }
+
+//        if (handler != null && progressRunnable != null) {
+//            handler.removeCallbacks(progressRunnable);
+//        }
+
         super.onStop();
     }
 
@@ -359,9 +368,9 @@ public class MainActivity extends Activity {
 
 //                                    testInstall();
 
+                                    downloadAPKNew();
 
-
-                                    downloadAPK();
+                                    //downloadAPKOld();
                                     // 加载布局.但是不让AdOneFragment，下载视频
                                     //loadFragment(true);
                                     loadFragmentTwo(isHasUpgrade);
@@ -474,11 +483,68 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * 新下载apk方法
+     */
+    private DownLoadAPKUtils downLoadAPKUtils;
+    //private int progressTest;
+    private void downloadAPKNew() {
+        if(downLoadAPKUtils == null) {
+            downLoadAPKUtils = new DownLoadAPKUtils();
+        }
+        downLoadAPKUtils.downLoad(this,updateInfo.fileUrl);
+
+        //下载失败监听
+        downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
+            @Override
+            public void onDownLoadFinish(Exception e) {
+                //通知AdOneFragment去下载视频
+                LogCat.e("APKdownload","下载apk出现错误: "+e.getMessage());
+                if (reTryTimes < 3) {
+                    LogCat.e("APKdownload","下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
+                    reTryTimes += 1;
+                    //延迟2秒再去下载
+                    rootLayout.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            downloadAPKNew();
+                        }
+                    },2000);
+
+                } else {
+                    LogCat.e("APKdownload","下载apk出现错误,重试3次不再重试 ");
+                    if (adOneFragment != null) {
+                        adOneFragment.startDownloadVideo();
+                    }
+                }
+            }
+        });
+
+        //下载进度监听
+        downLoadAPKUtils.setOnDownLoadProgressListener(new DownLoadAPKUtils.OnDownLoadProgressListener() {
+            @Override
+            public void onDownLoadProgress(int progress, String fileName) {
+                LogCat.e("APKdownload","APK已经下载了 progress: " + progress +"%");
+            }
+        });
+
+        // 下载成功监听
+        downLoadAPKUtils.setOnDownLoadFinishListener(new DownLoadAPKUtils.OnDownLoadFinishListener() {
+            @Override
+            public void onDownLoadFinish(String fileName) {
+                //新包下载完成得安装
+                LogCat.e("APKdownload","下载升级成功，开始正式升级.......");
+                File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
+                InstallUtils.installAuto(MainActivity.this, file, true);
+            }
+        });
+
+    }
 
     /**
-     * 下载apk
+     * 之前的下载apk方法
      */
-    private void downloadAPK() {
+    private void downloadAPKOld() {
         DownloadUtils.download(true, getApplication(), DataUtils.getApkDirectory(), Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
             @Override
             public void onDownloadFileSuccess(String filePath) {
@@ -495,7 +561,7 @@ public class MainActivity extends Activity {
                 if (reTryTimes < 3) {
                     LogCat.e("下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
                     reTryTimes += 1;
-                    downloadAPK();
+                    downloadAPKOld();
                 } else {
                     LogCat.e("下载apk出现错误");
                     if (adOneFragment != null) {
@@ -507,10 +573,9 @@ public class MainActivity extends Activity {
 
             @Override
             public void onDownloadProgress(long progress, long fileSize) {
-                
+
             }
         });
-
     }
 
 
