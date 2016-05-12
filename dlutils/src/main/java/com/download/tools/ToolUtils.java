@@ -112,4 +112,20 @@ public class ToolUtils {
         }
         return apkFile;
     }
+
+
+
+
+    public static String getFileName(String sourceName){
+        String fileName = null;
+        try {
+            if(!TextUtils.isEmpty(sourceName) && sourceName.contains(Constants.FILE_DOWNLOAD_EXTENSION)){
+                int index = sourceName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
+                fileName = sourceName.substring(0, index);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return fileName;
+    }
 }

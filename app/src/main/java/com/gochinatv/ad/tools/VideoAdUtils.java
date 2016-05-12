@@ -4,11 +4,10 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.download.DLUtils;
-import com.gochinatv.ad.thread.CacheVideoListThread;
+import com.download.db.DLDao;
+import com.download.db.DownloadInfo;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.db.AdDao;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
@@ -19,59 +18,25 @@ import java.util.ArrayList;
  */
 public class VideoAdUtils {
 
-    /**
-     * 缓存视频
-     *
-     * @param fileName
-     * @param cachePlayVideoLists
-     */
-    public static synchronized void cacheVideoList(String fileName, ArrayList<AdDetailResponse> cachePlayVideoLists) {
-        LogCat.e("video", "开始文件缓存........." + fileName);
-        new CacheVideoListThread(cachePlayVideoLists, DataUtils.getCacheDirectory(), fileName).start();
-
-    }
-
-    /**
-     * 缓存视频
-     *
-     * @param cachePlayVideoLists
-     */
-    public static synchronized void cacheTDVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
-        LogCat.e("video", "将今日列表存入数据库........." + cachePlayVideoLists.size());
-        AdDao.insertAll(context, true, cachePlayVideoLists);
-        LogCat.e("video", "查询下插入后的个数： " + AdDao.queryAll(context, true).size());
-    }
-
-    /**
-     * 清空数据表的所有数据
-     */
-    public static synchronized void cleanSqlVideoList(Context context) {
-        LogCat.e("video", "清空数据库.........");
-        AdDao.deleteAll(context, true);
-        AdDao.deleteAll(context, false);
-    }
-
 
     /**
      * 更新数据表的所有数据
      */
-<<<<<<< HEAD
     public static synchronized void updateSqlVideoList(Context context, boolean isToday, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
-        LogCat.e("video", "更新数据库........." );
-=======
-    public static synchronized void updateSqlVideoList(Context context, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> tDownloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
         LogCat.e("video", "更新数据库.........");
->>>>>>> master
+        String sql = getQuerySql(isToday);
         // 删除所有删除列表的video
-        AdDao.deleteAll(context, isToday, deleteVideos);
+        String tableName = getTableName(isToday);
+        String insertSql = getinsertSql(isToday);
+        AdDao.deleteAll(context, tableName, deleteVideos);
         // 对于已经存在的数据，不做修改
         // 对于要下载的数据，加入数据表
-        AdDao.insertAll(context, isToday, downloadVideos);
+        AdDao.insertAll(context, tableName, insertSql, downloadVideos);
 
-        ArrayList<AdDetailResponse> sqlList = AdDao.queryAll(context, isToday);
-        if(sqlList != null){
+        ArrayList<AdDetailResponse> sqlList = AdDao.queryAll(context, tableName);
+        if (sqlList != null) {
             LogCat.e("video", "查询下插入后的个数： " + sqlList.size());
-            for(AdDetailResponse adDetailResponse : sqlList){
+            for (AdDetailResponse adDetailResponse : sqlList) {
                 LogCat.e("video", "数据表video： " + adDetailResponse.adVideoName + ", length: " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
             }
 
@@ -79,15 +44,31 @@ public class VideoAdUtils {
 
     }
 
-    /**
-     * 缓存视频
-     *
-     * @param cachePlayVideoLists
-     */
-    public static synchronized void cacheTMVideoList(Context context, ArrayList<AdDetailResponse> cachePlayVideoLists) {
-        LogCat.e("video", "将今日列表存入数据库........." + cachePlayVideoLists.size());
-        AdDao.insertAll(context, false, cachePlayVideoLists);
-        LogCat.e("video", "查询下插入后的个数： " + AdDao.queryAll(context, false).size());
+    public static String getQuerySql(boolean isToday) {
+        String sql = null;
+        if (isToday)
+            sql = AdDao.SQL_QUERY;
+        else
+            sql = AdDao.SQL_QUERY_TM;
+        return sql;
+    }
+
+    public static String getinsertSql(boolean isToday) {
+        String sql = null;
+        if (isToday)
+            sql = AdDao.SQL_QUERY_ID;
+        else
+            sql = AdDao.SQL_QUERY_ID_TM;
+        return sql;
+    }
+
+    public static String getTableName(boolean isToday) {
+        String table = null;
+        if (isToday)
+            table = AdDao.DBBASE_TD_VIDEOS_TABLE_NAME;
+        else
+            table = AdDao.DBBASE_TM_VIDEOS_TABLE_NAME;
+        return table;
     }
 
 
@@ -122,10 +103,10 @@ public class VideoAdUtils {
                     LogCat.e("video", "当前文件正在下载。。。。。");
                     continue;
                 }
+
                 // 文件下载失败
                 final int HEADER_FILE_LENGTH = 1024 * 1024 * 1;
                 if (file.length() < HEADER_FILE_LENGTH) {
-
                     DeleteFileUtils.getInstance().deleteFile(file.getAbsolutePath());
                     continue;
                 }
@@ -133,6 +114,15 @@ public class VideoAdUtils {
                 int index = name.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
                 name = name.substring(0, index);
                 videoAdBean.adVideoName = name;
+
+                ArrayList<DownloadInfo> downloadInfos = DLDao.queryByName(context, name);
+                // 线程数变了
+                if (downloadInfos != null && downloadInfos.size() > 0) {
+                    LogCat.e("video", "当前文件正在下载, 不算在本地缓存文件内容中。。。。。");
+                    continue;
+                }
+
+
                 videoAdBean.videoPath = file.getAbsolutePath();
                 videoAdBean.adVideoLength = file.length();
                 adDetailResponses.add(videoAdBean);
@@ -146,40 +136,16 @@ public class VideoAdUtils {
 
 
     public static void updateVideoPath(boolean isToday, Context context, int vid, String path) {
-        AdDao.update(context, isToday, vid, AdDao.videoPath, path);
-        if (AdDao.query(context, isToday, vid)) {
-            LogCat.e("video", "查询修改后的大小： " + AdDao.queryDetail(context, isToday, vid).videoPath);
+        String tableName = getTableName(isToday);
+
+
+        AdDao.update(context, tableName, vid, AdDao.videoPath, path);
+        AdDetailResponse adDetailResponse = AdDao.queryDetail(context, tableName, AdDao.adVideoId, String.valueOf(vid));
+        if (adDetailResponse != null) {
+            LogCat.e("video", "查询修改后的大小： " + adDetailResponse.videoPath);
         }
-
-
     }
 
-
-    /**
-     * 得到明日的播放列表
-     *
-     * @return
-     */
-    public static synchronized ArrayList<AdDetailResponse> getCacheList(String fileName) {
-        ArrayList<AdDetailResponse> cacheTomorrowList = new ArrayList<>();
-        File cacheFile = new File(DataUtils.getCacheDirectory() + fileName);
-        if (cacheFile.exists() && cacheFile.isFile()) {
-            String json = DataUtils.readFileFromSdCard(cacheFile);
-            if (!TextUtils.isEmpty(json)) {
-                Gson gson = new Gson();
-                LogCat.e("video", "缓存列表已经找到........");
-                cacheTomorrowList = gson.fromJson(json, new TypeToken<ArrayList<AdDetailResponse>>() {
-                }.getType());
-                // TODO 以后删除
-                LogCat.e("video", "缓存播放列表内容........");
-                for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
-                    LogCat.e("video", "视频名称：" + adDetailResponse.adVideoName + ", 文件大小：" + adDetailResponse.adVideoLength);
-                }
-
-            }
-        }
-        return cacheTomorrowList;
-    }
 
     /**
      * 得到今日或明日的播放列表
@@ -187,7 +153,7 @@ public class VideoAdUtils {
      * @return
      */
     public static synchronized ArrayList<AdDetailResponse> getCacheList(Context context, boolean isToday) {
-        ArrayList<AdDetailResponse> cacheTomorrowList = AdDao.queryAll(context, isToday);
+        ArrayList<AdDetailResponse> cacheTomorrowList = AdDao.queryAll(context, getTableName(isToday));
         return cacheTomorrowList;
     }
 
@@ -352,7 +318,7 @@ public class VideoAdUtils {
      *
      * @param cacheTodayList
      */
-    public static void checkFileLength(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
+    public static void checkFileLength(Context context, ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
         if (cacheTodayList != null && cacheTodayList.size() != 0) {
             LogCat.e("video", "检测到播放列表, 开始检测文件完整性......");
             for (int i = 0; i < localVideoList.size(); i++) {
@@ -360,10 +326,16 @@ public class VideoAdUtils {
                 for (AdDetailResponse cacheVideo : cacheTodayList) {
                     if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
                         if (cacheVideo.adVideoLength != 0 && cacheVideo.adVideoLength != localVideo.adVideoLength) {
-                            --i;
-                            localVideoList.remove(localVideo);
-                            DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-                            LogCat.e("video", "由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
+                            // 如果文件正在下载，则忽略
+                            ArrayList<DownloadInfo> downloadInfos = DLDao.queryByName(context, localVideo.adVideoName);
+                            if (downloadInfos != null && downloadInfos.size() > 0) {
+                                LogCat.e("video", "当前文件正在下载中，不做额外处理.......");
+                            } else {
+                                --i;
+                                localVideoList.remove(localVideo);
+                                DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
+                                LogCat.e("video", "由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
+                            }
                         }
                     }
                 }
@@ -392,17 +364,17 @@ public class VideoAdUtils {
         try {
             long hour = time / (60 * 60 * 1000);
             String hourStr = String.valueOf(hour);
-            if(hour < 10){
+            if (hour < 10) {
                 hourStr = "0" + hourStr;
             }
             long min = ((time / (60 * 1000)) - hour * 60);
             String minStr = String.valueOf(min);
-            if(hour < 10){
+            if (hour < 10) {
                 minStr = "0" + minStr;
             }
             long second = (time / 1000 - hour * 60 * 60 - min * 60);
             String secondStr = String.valueOf(second);
-            if(hour < 10){
+            if (hour < 10) {
                 secondStr = "0" + secondStr;
             }
             str = hour + ":" + min + ":" + secondStr;

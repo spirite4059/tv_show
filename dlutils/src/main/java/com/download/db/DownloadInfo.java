@@ -1,4 +1,4 @@
-package com.gochinatv.db;
+package com.download.db;
 
 /**
  * Created by fq_mbp on 16/4/26.

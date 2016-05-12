@@ -7,14 +7,14 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.text.TextUtils;
 
+import com.download.db.DLDao;
+import com.download.db.DownloadInfo;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.download.tools.CacheVideoListThread;
 import com.download.tools.Constants;
 import com.download.tools.LogCat;
 import com.download.tools.ToolUtils;
 import com.gochinatv.db.AdDao;
-import com.gochinatv.db.DLDao;
-import com.gochinatv.db.DownloadInfo;
 import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
@@ -173,19 +173,7 @@ public class DownloadPrepareThread extends Thread {
         }
 
         LogCat.e("video", "将文件大小写入数据库.......");
-        try {
-            String fileName = file.getName();
-            if(!TextUtils.isEmpty(fileName) && fileName.contains(Constants.FILE_DOWNLOAD_EXTENSION)){
-                int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
-                fileName = fileName.substring(0, index);
-                AdDao.update(context, isToday, fileName, AdDao.adVideoLength, String.valueOf(fileSize));
-                LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, isToday, AdDao.adVideoName, fileName).adVideoLength);
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
+        updateFileLength(fileSize);
 
 
         // 可用空间检查
@@ -251,19 +239,31 @@ public class DownloadPrepareThread extends Thread {
 
 
 
-
         // 检查sql
         int size = threads.length;
         ArrayList<DownloadInfo> downloadInfos = DLDao.query(context, downloadUrl);
         // 线程数变了
         if(downloadInfos != null && downloadInfos.size() > 0){
+            LogCat.e("video", "有当前记录的存储信息......");
             if(downloadInfos.size() != size){
+                LogCat.e("video", "线程数发生变化，删除记录，重新下载......");
                 DLDao.delete(context, downloadUrl);
                 startThreadWithOutSql(url, fileSize, blockSize, size);
             }else {
-                startThreadWithSql(url, blockSize, size, downloadInfos);
+                if(file!= null && file.exists()){
+                    LogCat.e("video", "从数据库中回复下载......");
+                    startThreadWithSql(url, blockSize, size, downloadInfos);
+
+                }else {
+                    LogCat.e("video", "有记录信息，但是文件遭到破坏，从开开始下载......");
+                    DLDao.delete(context, downloadUrl);
+                    startThreadWithOutSql(url, fileSize, blockSize, size);
+                }
+
+
             }
         }else {
+            LogCat.e("video", "没有当前下载信息，从头开始下载......");
             startThreadWithOutSql(url, fileSize, blockSize, size);
         }
 
@@ -283,6 +283,7 @@ public class DownloadPrepareThread extends Thread {
 
         int downloadSize = 0;
         try {
+
             while (!isFinished) {
                 isFinished = true;
                 int downloadedAllSize = threadNum;
@@ -343,24 +344,26 @@ public class DownloadPrepareThread extends Thread {
         // 主动取消下载
         if (isCancel) {
             setCancel();
-            deleteFailFile(fileSize, downloadSize);
+//            deleteFailFile(fileSize, downloadSize);
             return;
         }
         // 当下载过程出错
         if (errorCode != 0) {
             LogCat.e("video", "下载过程出错，主动停止下载........");
             setErrorMsg(errorCode);
-            deleteFailFile(fileSize, downloadSize);
+//            deleteFailFile(fileSize, downloadSize);
             return;
         }
-
-
+        // 此时是正常结束，无论是否正常下载成功，都要删除数据库记录
+        DLDao.delete(context, downloadUrl);
         // 完成所有的下载了
         if (isFinished) {
             LogCat.e("video", "文件下载完成......fileSize: " + fileSize);
             if (deleteFailFile(fileSize, downloadSize)) {
                 LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
+                // 删除当前记录
+
             }
         } else {
             LogCat.e("video", "文件下载尚未完成......");
@@ -370,17 +373,39 @@ public class DownloadPrepareThread extends Thread {
 
     }
 
+    private void updateFileLength(int fileSize) {
+        try {
+            String fileName = ToolUtils.getFileName(file.getName());
+            if(!TextUtils.isEmpty(fileName)){
+                AdDao.update(context, getTableName(isToday), fileName, AdDao.adVideoLength, String.valueOf(fileSize));
+                LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, getTableName(isToday), AdDao.adVideoName, fileName).adVideoLength);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     private void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos) {
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
             int threadId = i + 1;
-            DownloadInfo downloadInfo = null;
-            if(threadId < downloadInfos.size()){
-                downloadInfo = downloadInfos.get(threadId);
-            }
+            DownloadInfo downloadInfo = downloadInfos.get(i);
+
+            LogCat.e("video", "记录位置的startPos: " + downloadInfo.startPos);
+            LogCat.e("video", "记录位置的endPos: " + downloadInfo.endPos);
             threads[i] = new DownloadThread(context, url, file, blockSize, threadId, downloadInfo);
             threads[i].start();
         }
+
+    }
+
+    private String getTableName(boolean isToday){
+        String table = null;
+        if(isToday)
+            table = AdDao.DBBASE_TD_VIDEOS_TABLE_NAME;
+        else
+            table = AdDao.DBBASE_TM_VIDEOS_TABLE_NAME;
+        return table;
     }
 
     private void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
@@ -404,7 +429,11 @@ public class DownloadPrepareThread extends Thread {
             downloadInfo.tlength = fileSize;
 
             long startPos = blockSize * (threadId - 1);//开始位置
+            long endPos = blockSize * threadId - 1;//结束位置
             downloadInfo.startPos = startPos;
+            downloadInfo.endPos = endPos;
+
+            LogCat.e("将当前的下载加入数据表......");
             DLDao.insert(context, downloadInfo);
 
 

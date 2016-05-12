@@ -1,11 +1,11 @@
-package com.gochinatv.db;
+package com.download.db;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.tools.LogCat;
+import com.download.tools.LogCat;
 
 import java.util.ArrayList;
 
@@ -39,12 +39,12 @@ public class DLDao implements IDBConstants {
         boolean temp = false;
         SQLiteDatabase database = getConnection(context);
         // 先查看是否存在当前的视频记录
-        LogCat.e("sql", "查询当前url是否已经存储......" + downloadInfo.turl);
-        boolean flag = query(downloadInfo.turl, database);
+        LogCat.e("查询当前url是否已经存储......" + downloadInfo.turl);
+        boolean flag = query(downloadInfo.tid, database);
 
         // 如果存在，直接返回插入成功
         if (!flag && database != null) {
-            LogCat.e("sql", "sql没有当前url，写入sql......");
+            LogCat.e("sql没有当前url，写入sql......");
             try {
                 database.beginTransaction();
                 ContentValues contentValues = new ContentValues();
@@ -58,10 +58,10 @@ public class DLDao implements IDBConstants {
                 database.insert(DBBASE_DOWNLOAD_TABLE_NAME, null, contentValues);
                 database.setTransactionSuccessful();
                 temp = true;
-                LogCat.e("sql", "sql写入成功......");
+                LogCat.e("sql写入成功......");
             } catch (Exception e) {
                 e.printStackTrace();
-                LogCat.e("sql", "sql写入失败......");
+                LogCat.e("sql写入失败......");
                 temp = false;
             } finally {
                 if (database != null) {
@@ -99,6 +99,29 @@ public class DLDao implements IDBConstants {
         return flag;
     }
 
+    private static boolean query(int tid, SQLiteDatabase database) {
+        Cursor cursor = null;
+        boolean flag = false;
+        try {
+            database.beginTransaction();
+            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_ID, new String[]{String.valueOf(tid)});
+            if (cursor != null && cursor.moveToNext()) {
+                flag = true;
+            }
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (database != null) {
+                database.endTransaction();
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return flag;
+    }
+
     public static ArrayList<DownloadInfo> query(Context context, String url) {
         Cursor cursor = null;
         boolean flag = false;
@@ -110,7 +133,7 @@ public class DLDao implements IDBConstants {
             if (cursor != null) {
                 arrayList = new ArrayList<>(cursor.getCount());
 
-                while (cursor.moveToNext()){
+                while (cursor.moveToNext()) {
                     DownloadInfo downloadInfo = new DownloadInfo();
                     downloadInfo.tid = cursor.getInt(1);
                     downloadInfo.tname = cursor.getString(2);
@@ -127,6 +150,43 @@ public class DLDao implements IDBConstants {
         } finally {
             if (database != null) {
                 database.endTransaction();
+                database.close();
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return arrayList;
+    }
+
+    public static ArrayList<DownloadInfo> queryByName(Context context, String fileName) {
+        Cursor cursor = null;
+        boolean flag = false;
+        ArrayList<DownloadInfo> arrayList = null;
+        SQLiteDatabase database = getConnection(context);
+        try {
+            database.beginTransaction();
+            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_NAME, new String[]{fileName});
+            if (cursor != null) {
+                arrayList = new ArrayList<>(cursor.getCount());
+                while (cursor.moveToNext()) {
+                    DownloadInfo downloadInfo = new DownloadInfo();
+                    downloadInfo.tid = cursor.getInt(1);
+                    downloadInfo.tname = cursor.getString(2);
+                    downloadInfo.turl = cursor.getString(3);
+                    downloadInfo.tlength = cursor.getLong(4);
+                    downloadInfo.startPos = cursor.getLong(5);
+                    downloadInfo.endPos = cursor.getLong(6);
+                    arrayList.add(downloadInfo);
+                }
+            }
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (database != null) {
+                database.endTransaction();
+                database.close();
             }
             if (cursor != null) {
                 cursor.close();
@@ -208,30 +268,26 @@ public class DLDao implements IDBConstants {
             if (database != null) {
                 database.endTransaction();
             }
+
         }
         return flag;
     }
 
 
-    public static synchronized boolean updateOut(SQLiteDatabase database, String url, long endPos) {
+    public static synchronized boolean updateOut(SQLiteDatabase database, int tid, long endPos) {
         if (database == null) {
             return false;
         }
         boolean flag = false;
-        flag = query(url, database);
-
-        // 如果存在，直接返回插入成功
-        if (flag) {
-            database.beginTransaction();
-            ContentValues updatedValues = new ContentValues();
-            updatedValues.put(DLDao.endPos, endPos);
-            int temp = database.update(DBBASE_DOWNLOAD_TABLE_NAME, updatedValues, turl + " = ?", new String[]{url});
-            if (temp == 0) {
-                flag = true;
-            }
-            database.setTransactionSuccessful();
-            database.endTransaction();
+        database.beginTransaction();
+        ContentValues updatedValues = new ContentValues();
+        updatedValues.put(DLDao.startPos, endPos);
+        int temp = database.update(DBBASE_DOWNLOAD_TABLE_NAME, updatedValues, DLDao.tid + " = ?", new String[]{String.valueOf(tid)});
+        if (temp == 0) {
+            flag = true;
         }
+        database.setTransactionSuccessful();
+        database.endTransaction();
         return flag;
     }
 
