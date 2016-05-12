@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Camera;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
@@ -16,6 +17,7 @@ import android.widget.ViewSwitcher;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.tools.Constants;
+import com.gochinatv.ad.tools.LogCat;
 
 /**
  * Created by zfy on 2016/3/17.
@@ -34,6 +36,13 @@ public class AutoTextView extends TextSwitcher implements
     //mInDown,mOutDown分别构成向下翻页的进出动画
     private Rotate3dAnimation mInDown;
     private Rotate3dAnimation mOutDown;
+
+    //控件的width
+    private int viewWidth;
+    //显示文字的长度
+    private int textWidth;
+    //Paint
+    private Paint mPaint;
 
     public AutoTextView(Context context) {
         this(context, null);
@@ -63,6 +72,8 @@ public class AutoTextView extends TextSwitcher implements
         //setOutAnimation()后，B将执行OutAnimation
         setInAnimation(mInUp);
         setOutAnimation(mOutUp);
+
+        viewWidth = getWidth()-this.getPaddingLeft() - this.getPaddingRight();
     }
 
     private Rotate3dAnimation createAnim(float start, float end, boolean turnIn, boolean turnUp){
@@ -88,6 +99,9 @@ public class AutoTextView extends TextSwitcher implements
             t.setTextSize(mHeight);//mHeight
         }
         t.setMaxLines(1);
+        if(mPaint == null){
+            mPaint = t.getPaint();
+        }
         return t;
     }
     //定义动作，向下滚动翻页
@@ -106,6 +120,17 @@ public class AutoTextView extends TextSwitcher implements
         }
         if(getOutAnimation() != mOutUp){
             setOutAnimation(mOutUp);
+        }
+    }
+
+
+    @Override
+    public void setText(CharSequence text) {
+        super.setText(text);
+        //获取文字宽度
+        if(mPaint != null){
+            textWidth = (int) mPaint.measureText((String)text);
+            LogCat.e("ADFourFragment"," viewWidth:" + viewWidth +"   textWidth:"+ textWidth);
         }
     }
 
@@ -132,6 +157,7 @@ public class AutoTextView extends TextSwitcher implements
             mCamera = new Camera();
             mCenterY = getHeight() / 2;
             mCenterX = getWidth() / 2;
+
         }
 
         @Override

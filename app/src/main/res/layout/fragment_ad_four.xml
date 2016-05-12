@@ -15,7 +15,7 @@
         auto3d:textSize="@dimen/d_24sp"
         android:background="@android:color/black"
         android:padding="@dimen/d_10dp"
-
+        android:layout_gravity="center_vertical"
 
         >
     </com.gochinatv.ad.ui.view.AutoTextView>

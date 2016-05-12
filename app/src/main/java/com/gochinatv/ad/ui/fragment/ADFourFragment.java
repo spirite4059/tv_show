@@ -92,7 +92,7 @@ public class ADFourFragment extends BaseFragment {
 
                 params.leftMargin = (int) Math.floor(left);
                 linearLayout.setLayoutParams(params);
-                LogCat.e(" 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
+                LogCat.e("ADFourFragment"," 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
 
             }
         }
@@ -144,7 +144,7 @@ public class ADFourFragment extends BaseFragment {
 
     @Override
     public void onDestroy() {
-        LogCat.e(" 取消广告四的滚动 ");
+        LogCat.e("ADFourFragment"," 取消广告四的滚动 ");
         if(cycleTextTimer != null){
             cycleTextTimer.cancel();
             cycleTextTimer = null;
@@ -197,13 +197,13 @@ public class ADFourFragment extends BaseFragment {
                 }
                 LogCat.e(" 广告四 url " + url);
                 if (response == null || !(response instanceof ADFourResponse)) {
-                    LogCat.e("请求文字接口失败");
+                    LogCat.e("ADFourFragment","请求文字接口失败");
                     doError();
                     return;
                 }
 
                 if(response.data == null || !(response.data instanceof ArrayList)){
-                    LogCat.e("请求文字接口失败");
+                    LogCat.e("ADFourFragment","请求文字接口失败");
                     doError();
                     return;
                 }
@@ -239,9 +239,9 @@ public class ADFourFragment extends BaseFragment {
                     reTryTimesTwo++;
                     if (reTryTimesTwo > 4) {
                         reTryTimesTwo = 0;
-                        LogCat.e("文字广告接口已连续请求3次，不在请求");
+                        LogCat.e("ADFourFragment","文字广告接口已连续请求3次，不在请求");
                     } else {
-                        LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
+                        LogCat.e("ADFourFragment","进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
                         doGetTextAD();
                     }
                 }
