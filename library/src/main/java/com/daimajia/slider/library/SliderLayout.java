@@ -37,6 +37,7 @@ import com.daimajia.slider.library.Tricks.InfiniteViewPager;
 import com.daimajia.slider.library.Tricks.ViewPagerEx;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -277,7 +278,7 @@ public class SliderLayout extends RelativeLayout{
     /**
      * pause auto cycle.
      */
-    private void pauseAutoCycle(){
+    public void pauseAutoCycle(){
         if(mCycling){
             mCycleTimer.cancel();
             mCycleTask.cancel();
@@ -699,4 +700,17 @@ public class SliderLayout extends RelativeLayout{
     public void moveNextPosition() {
         moveNextPosition(true);
     }
+
+
+    /**
+     * 刷新适配器--zfy-2016-05-16
+     */
+    public void refreshSilderAdaper(ArrayList<BaseSliderView> data){
+        //Log.i("SliderLayout","刷新数据11111111111111111   " + data.size());
+        if(getRealAdapter() != null){
+            getRealAdapter().refreshSliderData(data);
+        }
+
+    }
+
 }

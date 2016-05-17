@@ -6,9 +6,8 @@ package com.okhtttp.response;
 public class ADTwoResponse {
 
     public String status;
-
     public String message;
-
     public String currentTime;
     public String adWebUrl;
+
 }

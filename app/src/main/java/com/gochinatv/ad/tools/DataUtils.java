@@ -900,5 +900,14 @@ public class DataUtils {
 		return sb.toString();
 	}
 
+//	private float dpFromPx(float px)
+//	{
+//		return px / this.getContext().getResources().getDisplayMetrics().density;
+//	}
+//
+//	private float pxFromDp(float dp)
+//	{
+//		return dp * this.getContext().getResources().getDisplayMetrics().density;
+//	}
 
 }

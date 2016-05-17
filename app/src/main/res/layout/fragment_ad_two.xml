@@ -10,14 +10,15 @@
     android:paddingLeft="@dimen/d_4dp"
     >
 
-    <!--<com.daimajia.slider.library.SliderLayout-->
-        <!--android:id="@+id/slider"-->
-        <!--android:layout_width="match_parent"-->
-        <!--custom:pager_animation="Accordion"-->
-        <!--custom:auto_cycle="true"-->
-        <!--custom:indicator_visibility="visible"-->
-        <!--custom:pager_animation_span="1100"-->
-        <!--android:layout_height="match_parent"/>-->
+    <com.daimajia.slider.library.SliderLayout
+        android:id="@+id/slider"
+        android:layout_width="match_parent"
+        custom:pager_animation="Accordion"
+        custom:auto_cycle="true"
+        custom:indicator_visibility="visible"
+        custom:pager_animation_span="1100"
+        android:layout_height="match_parent"/>
+
     <ImageView
         android:id="@+id/ad_two_img"
         android:layout_width="match_parent"

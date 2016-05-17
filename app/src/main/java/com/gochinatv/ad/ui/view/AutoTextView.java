@@ -6,11 +6,15 @@ import android.graphics.Camera;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import android.widget.FrameLayout;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -23,8 +27,7 @@ import com.gochinatv.ad.tools.LogCat;
  * Created by zfy on 2016/3/17.
  */
 public class AutoTextView extends TextSwitcher implements
-        ViewSwitcher.ViewFactory{
-
+        ViewSwitcher.ViewFactory,Runnable{
 
 
     private float mHeight;
@@ -37,12 +40,21 @@ public class AutoTextView extends TextSwitcher implements
     private Rotate3dAnimation mInDown;
     private Rotate3dAnimation mOutDown;
 
+
+
     //控件的width
     private int viewWidth;
     //显示文字的长度
     private int textWidth;
     //Paint
     private Paint mPaint;
+
+
+    //是否停止滑动
+    private boolean isStopping = true;
+
+    //滑动的距离
+    private int scrollX;
 
     public AutoTextView(Context context) {
         this(context, null);
@@ -72,8 +84,6 @@ public class AutoTextView extends TextSwitcher implements
         //setOutAnimation()后，B将执行OutAnimation
         setInAnimation(mInUp);
         setOutAnimation(mOutUp);
-
-        viewWidth = getWidth()-this.getPaddingLeft() - this.getPaddingRight();
     }
 
     private Rotate3dAnimation createAnim(float start, float end, boolean turnIn, boolean turnUp){
@@ -88,21 +98,30 @@ public class AutoTextView extends TextSwitcher implements
     @Override
     public View makeView() {
         // TODO Auto-generated method stub
-        TextView t = new TextView(mContext);
-        t.setTextColor(Color.WHITE);
+        TextView textView = new TextView(mContext);
+
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.CENTER;
+        textView.setLayoutParams(lp);
+        textView.setTextColor(Color.WHITE);
 
         if(Constants.isPhone){
             //适配手机
-            t.setTextSize(12);//mHeight
+            textView.setTextSize(12);//mHeight
         }else{
             ///适配电视棒
-            t.setTextSize(mHeight);//mHeight
+            textView.setTextSize(mHeight);//mHeight
         }
-        t.setMaxLines(1);
+        textView.setSingleLine();
+        textView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+
+
         if(mPaint == null){
-            mPaint = t.getPaint();
+            mPaint = textView.getPaint();
+
         }
-        return t;
+
+        return textView;
     }
     //定义动作，向下滚动翻页
     public void previous(){
@@ -115,6 +134,7 @@ public class AutoTextView extends TextSwitcher implements
     }
     //定义动作，向上滚动翻页
     public void next(){
+        stopScroll();//停止滑动并且复位
         if(getInAnimation() != mInUp){
             setInAnimation(mInUp);
         }
@@ -132,7 +152,17 @@ public class AutoTextView extends TextSwitcher implements
             textWidth = (int) mPaint.measureText((String)text);
             LogCat.e("ADFourFragment"," viewWidth:" + viewWidth +"   textWidth:"+ textWidth);
         }
+        if(textWidth > viewWidth){
+            LogCat.e("ADFourFragment"," 开启左右滑动############");
+            isStopping = false;
+            new Thread(this).start();
+        }else {
+            removeCallbacks(this);
+        }
+
     }
+
+
 
 
     class Rotate3dAnimation extends Animation {
@@ -186,4 +216,71 @@ public class AutoTextView extends TextSwitcher implements
             matrix.postTranslate(centerX, centerY);
         }
     }
+
+
+
+
+
+
+    /**
+     * 设置view的宽度
+     * @param viewWidth
+     */
+    public void setViewWidth(int viewWidth) {
+        this.viewWidth = viewWidth-this.getPaddingLeft() - this.getPaddingRight();
+    }
+
+    public int getViewWidth() {
+        return viewWidth;
+    }
+
+
+    @Override
+    public void run() {
+        //LogCat.e("ADFourFragment"," run():  run()  run()  run()");
+        if (!isStopping) {
+            scrollX += 2;// 滚动速度
+            scrollTo(scrollX, 0);
+            if (scrollX > textWidth) {
+                scrollTo(0, 0);
+                scrollX = 0;
+            }
+            postDelayed(this, 50);
+        }
+
+//        if (isStopping == true) {
+//            removeCallbacks(this);
+//            scrollX = 0;
+//            isStopping = false;
+//            return;
+//        }
+//        scrollX += 2;
+//        scrollToX(scrollX);
+////        getTextWidth();
+//        if (getScrollX() >= textWidth) {
+//            int scrollReStartX = -(getWidth());
+//            scrollToX(scrollReStartX);
+//            scrollX = scrollReStartX;
+//        }
+//        postDelayed(this, 50);
+
+
+
+    }
+
+
+    public void stopScroll() {
+        isStopping = true;
+        // 恢复初始状态
+        scrollX = 0;
+        scrollToX(0);
+        removeCallbacks(this);
+    }
+
+
+    private void scrollToX(int x) {
+        scrollTo(x, 0);
+    }
+
+
 }

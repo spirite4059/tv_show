@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.daimajia.slider.library.R;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
 
@@ -204,62 +207,62 @@ public abstract class BaseSliderView {
         if (mLoadListener != null) {
             mLoadListener.onStart(me);
         }
-        targetImageView.setImageResource(mRes);
+        //targetImageView.setImageResource(mRes);
 
-//        Picasso p = (mPicasso != null) ? mPicasso : Picasso.with(mContext);
-//        RequestCreator rq = null;
-//        if(mUrl!=null){
-//            rq = p.load(mUrl).placeholder(R.drawable.adtwo);
-//        }else if(mFile != null){
-//            rq = p.load(mFile).placeholder(R.drawable.adtwo);
-//        }else if(mRes != 0){
-//              rq = p.load(mRes).placeholder(R.drawable.adtwo);
-//        }else{
-//            return;
-//        }
-//
-//        if(rq == null){
-//            return;
-//        }
-//
-//        if(getEmpty() != 0){
-//            rq.placeholder(getEmpty());
-//        }
-//
-//        if(getError() != 0){
-//            rq.error(getError());
-//        }
-//
-//        switch (mScaleType){
-//            case Fit:
-//                rq.fit();
-//                break;
-//            case CenterCrop:
-//                rq.fit().centerCrop();
-//                break;
-//            case CenterInside:
-//                rq.fit().centerInside();
-//                break;
-//        }
-//
-//        rq.into(targetImageView,new Callback() {
-//            @Override
-//            public void onSuccess() {
-////                if(v.findViewById(R.id.loading_bar) != null){
-////                    v.findViewById(R.id.loading_bar).setVisibility(View.INVISIBLE);
-////                }
-//            }
-//
-//            @Override
-//            public void onError() {
-//                if(mLoadListener != null){
-//                    mLoadListener.onEnd(false,me);
+        Picasso p = (mPicasso != null) ? mPicasso : Picasso.with(mContext);
+        RequestCreator rq = null;
+        if(mUrl!=null){
+            rq = p.load(mUrl).placeholder(R.drawable.ad_two_one);
+        }else if(mFile != null){
+            rq = p.load(mFile).placeholder(R.drawable.ad_two_one);
+        }else if(mRes != 0){
+              rq = p.load(mRes).placeholder(R.drawable.ad_two_one);
+        }else{
+            return;
+        }
+
+        if(rq == null){
+            return;
+        }
+
+        if(getEmpty() != 0){
+            rq.placeholder(getEmpty());
+        }
+
+        if(getError() != 0){
+            rq.error(getError());
+        }
+
+        switch (mScaleType){
+            case Fit:
+                rq.fit();
+                break;
+            case CenterCrop:
+                rq.fit().centerCrop();
+                break;
+            case CenterInside:
+                rq.fit().centerInside();
+                break;
+        }
+
+        rq.into(targetImageView,new Callback() {
+            @Override
+            public void onSuccess() {
+//                if(v.findViewById(R.id.loading_bar) != null){
+//                    v.findViewById(R.id.loading_bar).setVisibility(View.INVISIBLE);
 //                }
-////                if(v.findViewById(R.id.loading_bar) != null){
-////                    v.findViewById(R.id.loading_bar).setVisibility(View.INVISIBLE);
-////                }
-//            }
-//        });
+            }
+
+            @Override
+            public void onError() {
+                if(mLoadListener != null){
+                    mLoadListener.onEnd(false,me);
+                }
+//                if(v.findViewById(R.id.loading_bar) != null){
+//                    v.findViewById(R.id.loading_bar).setVisibility(View.INVISIBLE);
+//                }
+            }
+        });
    }
 
 

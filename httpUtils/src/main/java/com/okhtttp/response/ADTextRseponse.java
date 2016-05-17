@@ -6,7 +6,7 @@ package com.okhtttp.response;
 public class ADTextRseponse {
 
     public String adTextId;
-
+    public int adTextInterval;
     public String adTextIndex;
     public String adTextStr;
 }
