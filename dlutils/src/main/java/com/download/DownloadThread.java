@@ -37,7 +37,6 @@ public class DownloadThread extends Thread {
     private BufferedInputStream bis;
     /** 随机流 */
     private  RandomAccessFile raf;
-    private static final int MAX_RETRY_DOWNLOAD_TIMES = 3;
     private static final int CONNECT_TIME_OUT = 60000;
     private static final int READ_TIME_OUT = 60000;
     private static final int BUFFER_IN_SIZE = 2048;
@@ -73,17 +72,28 @@ public class DownloadThread extends Thread {
             downloadLength = 0;
         }
         endPos = blockSize * threadId - 1;//结束位置
+        LogCat.e("current thread " + threadId  + "startPos......." + startPos);
+        LogCat.e("current thread " + threadId  + "endPos........" +  endPos);
+        // 如果线程已经下载完成就不去在做操作
+        if(downloadLength != 0 && downloadLength == endPos){
+            LogCat.e("current thread " + threadId  + "已经下载完全部的文件");
+            return;
+        }
 
-        LogCat.e("threadId: " + threadId + " startPos......" + startPos);
-        LogCat.e("threadId: " + threadId + " endPos......" + endPos);
-
+        // 获取下载地址的connect
         HttpURLConnection connection = getConnection();
         if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
             // 彻底放弃当前下载
             return;
         }
+
+        // 开始下载文件
         downloadFile(connection);
     }
+
+
+
+
     private HttpURLConnection getConnection() {
         HttpURLConnection connection = null;
         try {
@@ -109,6 +119,11 @@ public class DownloadThread extends Thread {
         }
         return connection;
     }
+
+
+
+
+
     private void downloadFile(HttpURLConnection connection){
         try {
             bis = new BufferedInputStream(connection.getInputStream());
@@ -138,25 +153,25 @@ public class DownloadThread extends Thread {
         if(errorCode == ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK){   // 整个下载中断的code
             return;
         }
-        int len = -1;
+        int len = 0;
         try {
             len = bis.read(buffer, 0, BUFFER_IN_SIZE);
+            LogCat.e("每次读取玩后返回的len.........."+ len);
         } catch (IOException e) {
             e.printStackTrace();
 
             errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
         }
-        if(len < 0 || errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
+        if(len <= 0 || errorCode == ErrorCodes.ERROR_DOWNLOADING_READ){
             // 此时多次读取数据出错，应该停止下载了
             return;
         }
 
-        int downloadSize = len;
+        int downloadSize = 0;
 
-        downloadLength += len;
-
-        // TODO 打开数据库
         SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
+        // TODO 打开数据库
+
         while (len != -1 && !isCancel) {
             try {
                 raf.write(buffer, 0, len);
@@ -174,9 +189,8 @@ public class DownloadThread extends Thread {
 
             downloadLength += len;
             downloadSize += len;
-            // TODO 修改文件的下载值
             try {
-                long startPosition = startPos + downloadSize;
+                long startPosition = startPos + downloadSize - 1;
                 DLDao.updateOut(sqLiteDatabase, threadId, startPosition);
             }catch (Exception e){
                 e.printStackTrace();
@@ -187,7 +201,7 @@ public class DownloadThread extends Thread {
                 break;
             }
 
-//            if(downloadLength > 1028 * 1024){
+//            if(downloadLength > startPos + 1028 * 1024 * 4){
 //                errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
 //                break;
 //            }
@@ -205,9 +219,8 @@ public class DownloadThread extends Thread {
             }
 
         }
-
-
-
+        // 关闭数据库
+        DLDao.closeDB(sqLiteDatabase);
 
         if (bis != null) {
             try {
@@ -225,16 +238,20 @@ public class DownloadThread extends Thread {
         }
         if(errorCode == 0){
             isCompleted = true;
-            LogCat.e("video", "current thread "  + " has finished,all size:"
+            LogCat.e("video", "current thread " + threadId  + " has finished,all size:"
                     + downloadLength);
-
-            // 删除当前tid的数据表
-            DLDao.delete(sqLiteDatabase, threadId);
         }
 
-
+        if(downloadLength - 1 == endPos){
+            LogCat.e("current thread " + threadId  + "已经下载完全部的文件");
+        }else {
+            LogCat.e("current thread " + threadId  + "尚未完成下载任务。。。。。。");
+        }
+        long startPosition = startPos + downloadSize - 1;
+        LogCat.e("current thread " + threadId  + "startPos......." + startPosition);
+        LogCat.e("current thread " + threadId  + "endPos........" +  endPos);
         // TODO 关闭数据库
-        DLDao.closeDB(sqLiteDatabase);
+
     }
     /**
      * 线程文件是否下载完毕
@@ -247,7 +264,8 @@ public class DownloadThread extends Thread {
      * 线程下载文件长度
      */
     public long getDownloadLength() {
-        return downloadLength;
+        // 减1是因为叠加文件大小是从1开始的，而应该计算的大小是从0开始的
+        return (downloadLength == 0 ? 0 : (downloadLength - 1));
     }
     /**
      * 获取错误code

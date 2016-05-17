@@ -94,7 +94,7 @@ public class AdDao implements IDBConstants {
     }
 
 
-    public static synchronized boolean insert(Context context, String tableName, String sql, AdDetailResponse adDetailResponse) {
+    public static synchronized boolean insert(Context context, String tableName, AdDetailResponse adDetailResponse) {
         if (adDetailResponse == null) {
             return false;
         }
@@ -102,7 +102,7 @@ public class AdDao implements IDBConstants {
         SQLiteDatabase database = getConnection(context);
 
         // 先查看是否存在当前的视频记录
-        boolean flag = queryById(context, database, tableName, adDetailResponse.adVideoId);
+        boolean flag = queryByName(context, database, tableName, adDetailResponse.adVideoName);
 
         // 如果存在，直接返回插入成功
         if (!flag && database != null) {
@@ -134,7 +134,7 @@ public class AdDao implements IDBConstants {
         return temp;
     }
 
-    public static void insertAll(Context context, String tableName, String sql, ArrayList<AdDetailResponse> adDetailResponses) {
+    public static void insertAll(Context context, String tableName, ArrayList<AdDetailResponse> adDetailResponses) {
         if (adDetailResponses == null || adDetailResponses.size() == 0) {
             return;
         }
@@ -146,7 +146,7 @@ public class AdDao implements IDBConstants {
             // 先查看是否存在当前的视频记录
             for (AdDetailResponse adDetailResponse : adDetailResponses) {
 
-                boolean flag = queryById(context, database, tableName, adDetailResponse.adVideoId);
+                boolean flag = queryByName(context, database, tableName, adDetailResponse.adVideoName);
                 if(flag){
                     continue;
                 }
@@ -180,7 +180,7 @@ public class AdDao implements IDBConstants {
         }
     }
 
-    public static synchronized boolean delete(Context context, String tableName, int id) {
+    public static synchronized boolean deleteById(Context context, String tableName, int id) {
         SQLiteDatabase database = null;
         boolean flag = false;
         try {
@@ -295,16 +295,7 @@ public class AdDao implements IDBConstants {
         return adDetailResponse;
     }
 
-    // 创建数据表
-//    String SQL_CREATE_TODAY_VIDEO_LIST = "CREATE TABLE IF NOT EXISTS " + DBBASE_VIDEOS_TABLE_NAME + " ("
-//            + "_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-//            + adVideoId + " int, "
-//            + adVideoName + " VARCHAR, "
-//            + adVideoUrl + " VARCHAR, "
-//            + videoPath + " VARCHAR, "
-//            + adVideoIndex + " int, "
-//            + adVideoLength + " long"
-//            + ")";
+
     public static ArrayList<AdDetailResponse> queryAll(Context context, String tableName) {
         ArrayList<AdDetailResponse> adDetailResponses = null;
         SQLiteDatabase database = null;

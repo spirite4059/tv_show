@@ -14,7 +14,7 @@ import java.util.ArrayList;
  */
 public class DLDao implements IDBConstants {
 
-    public static SQLiteDatabase getConnection(Context context) {
+    public synchronized static SQLiteDatabase getConnection(Context context) {
         SQLiteDatabase sqLiteDatabase = null;
         try {
             sqLiteDatabase = new IDBHelper(context).getWritableDatabase();
@@ -36,17 +36,14 @@ public class DLDao implements IDBConstants {
         if (downloadInfo == null) {
             return false;
         }
+
         boolean temp = false;
         SQLiteDatabase database = getConnection(context);
         // 先查看是否存在当前的视频记录
-        LogCat.e("查询当前url是否已经存储......" + downloadInfo.turl);
-        boolean flag = query(downloadInfo.tid, database);
-
-        // 如果存在，直接返回插入成功
-        if (!flag && database != null) {
-            LogCat.e("sql没有当前url，写入sql......");
+        if (database != null) {
             try {
                 database.beginTransaction();
+
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(tid, downloadInfo.tid);
                 contentValues.put(tname, downloadInfo.tname);
@@ -76,12 +73,12 @@ public class DLDao implements IDBConstants {
         return temp;
     }
 
-    private static boolean query(String url, SQLiteDatabase database) {
+    private synchronized static boolean query(String url, SQLiteDatabase database) {
         Cursor cursor = null;
         boolean flag = false;
         try {
             database.beginTransaction();
-            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_URL, new String[]{String.valueOf(url)});
+            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_URL, new String[]{url});
             if (cursor != null && cursor.moveToNext()) {
                 flag = true;
             }
@@ -99,7 +96,7 @@ public class DLDao implements IDBConstants {
         return flag;
     }
 
-    private static boolean query(int tid, SQLiteDatabase database) {
+    private  synchronized static boolean query(int tid, SQLiteDatabase database) {
         Cursor cursor = null;
         boolean flag = false;
         try {
@@ -122,14 +119,13 @@ public class DLDao implements IDBConstants {
         return flag;
     }
 
-    public static ArrayList<DownloadInfo> query(Context context, String url) {
+    public synchronized static ArrayList<DownloadInfo> queryAll(Context context, String fileName) {
         Cursor cursor = null;
-        boolean flag = false;
         ArrayList<DownloadInfo> arrayList = null;
         SQLiteDatabase database = getConnection(context);
         try {
             database.beginTransaction();
-            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_URL, new String[]{String.valueOf(url)});
+            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_NAME, new String[]{fileName});
             if (cursor != null) {
                 arrayList = new ArrayList<>(cursor.getCount());
 
@@ -159,16 +155,16 @@ public class DLDao implements IDBConstants {
         return arrayList;
     }
 
-    public static ArrayList<DownloadInfo> queryByName(Context context, String fileName) {
+    public synchronized static ArrayList<DownloadInfo> queryAll(Context context) {
         Cursor cursor = null;
-        boolean flag = false;
         ArrayList<DownloadInfo> arrayList = null;
         SQLiteDatabase database = getConnection(context);
         try {
             database.beginTransaction();
-            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_NAME, new String[]{fileName});
+            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD, null);
             if (cursor != null) {
                 arrayList = new ArrayList<>(cursor.getCount());
+
                 while (cursor.moveToNext()) {
                     DownloadInfo downloadInfo = new DownloadInfo();
                     downloadInfo.tid = cursor.getInt(1);
@@ -193,6 +189,68 @@ public class DLDao implements IDBConstants {
             }
         }
         return arrayList;
+    }
+
+//    public static ArrayList<DownloadInfo> queryByName(Context context, String fileName) {
+//        Cursor cursor = null;
+//        ArrayList<DownloadInfo> arrayList = null;
+//        SQLiteDatabase database = getConnection(context);
+//        try {
+//            database.beginTransaction();
+//            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_NAME, new String[]{fileName});
+//            LogCat.e(DLDao.class, "DLDao -> queryByName........cursor.getCount()........." + cursor.getCount());
+//            if (cursor != null) {
+//                arrayList = new ArrayList<>(cursor.getCount());
+//                while (cursor.moveToNext()) {
+//                    DownloadInfo downloadInfo = new DownloadInfo();
+//                    downloadInfo.tid = cursor.getInt(1);
+//                    downloadInfo.tname = cursor.getString(2);
+//                    downloadInfo.turl = cursor.getString(3);
+//                    downloadInfo.tlength = cursor.getLong(4);
+//                    downloadInfo.startPos = cursor.getLong(5);
+//                    downloadInfo.endPos = cursor.getLong(6);
+//                    arrayList.add(downloadInfo);
+//                }
+//            }
+//            database.setTransactionSuccessful();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (database != null) {
+//                database.endTransaction();
+//                database.close();
+//            }
+//            if (cursor != null) {
+//                cursor.close();
+//            }
+//        }
+//        return arrayList;
+//    }
+
+
+    public synchronized static boolean queryByName(Context context, String fileName) {
+        Cursor cursor = null;
+        SQLiteDatabase database = getConnection(context);
+        try {
+            database.beginTransaction();
+            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_NAME, new String[]{fileName});
+            LogCat.e(DLDao.class, "DLDao -> queryByName........cursor.getCount()........." + cursor.getCount());
+            if (cursor != null) {
+                return cursor.moveToNext();
+            }
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (database != null) {
+                database.endTransaction();
+                database.close();
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+        return false;
     }
 
 
@@ -229,13 +287,29 @@ public class DLDao implements IDBConstants {
     }
 
 
-    public static synchronized boolean delete(Context context, String url) {
+    private static synchronized void delete(SQLiteDatabase database) {
+        try {
+            database.beginTransaction();
+            database.delete(DBBASE_DOWNLOAD_TABLE_NAME, null, null);
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (database != null) {
+                database.endTransaction();
+            }
+        }
+    }
+
+
+    public static synchronized boolean delete(Context context) {
+        LogCat.e("video", "DLDao------delete........");
         SQLiteDatabase database = null;
         boolean flag = false;
         try {
             database = getConnection(context);
             database.beginTransaction();
-            int temp = database.delete(DBBASE_DOWNLOAD_TABLE_NAME, turl + " = ?", new String[]{url});
+            int temp = database.delete(DBBASE_DOWNLOAD_TABLE_NAME, null, null);
             if (temp == 0) {
                 flag = true;
             }

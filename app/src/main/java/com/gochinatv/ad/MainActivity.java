@@ -45,7 +45,6 @@ import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.ADHttpService;
 import com.tools.HttpUrls;
-import com.umeng.analytics.AnalyticsConfig;
 import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
@@ -148,7 +147,7 @@ public class MainActivity extends Activity {
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
-            //DataUtils.startAppServer(this);
+            DataUtils.startAppServer(this);
         }
 
 
@@ -196,12 +195,15 @@ public class MainActivity extends Activity {
         if(isFinishing()){
             return;
         }
+
         String mac = DataUtils.getMacAddress(MainActivity.this);
         SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
         if (!TextUtils.isEmpty(mac)) {
             final String macAddress = mac.replaceAll(":", "");
             LogCat.e("mac: " + macAddress);
-            AnalyticsConfig.setChannel(mac);
+            MobclickAgent. startWithConfigure(new MobclickAgent.UMAnalyticsConfig(this, "572c1246e0f55aa6c5001533", mac, MobclickAgent.EScenarioType.E_UM_NORMAL));
+
+//            AnalyticsConfig.setChannel(mac);
             MobclickAgent.openActivityDurationTrack(false);
             MobclickAgent.setCatchUncaughtExceptions(true);
             MobclickAgent.setDebugMode(false);

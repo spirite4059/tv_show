@@ -3,9 +3,7 @@ package com.gochinatv.ad.tools;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.download.DLUtils;
 import com.download.db.DLDao;
-import com.download.db.DownloadInfo;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.db.AdDao;
 import com.okhtttp.response.AdDetailResponse;
@@ -24,14 +22,12 @@ public class VideoAdUtils {
      */
     public static synchronized void updateSqlVideoList(Context context, boolean isToday, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
         LogCat.e("video", "更新数据库.........");
-        String sql = getQuerySql(isToday);
         // 删除所有删除列表的video
         String tableName = getTableName(isToday);
-        String insertSql = getinsertSql(isToday);
         AdDao.deleteAll(context, tableName, deleteVideos);
         // 对于已经存在的数据，不做修改
         // 对于要下载的数据，加入数据表
-        AdDao.insertAll(context, tableName, insertSql, downloadVideos);
+        AdDao.insertAll(context, tableName, downloadVideos);
 
         ArrayList<AdDetailResponse> sqlList = AdDao.queryAll(context, tableName);
         if (sqlList != null) {
@@ -39,28 +35,10 @@ public class VideoAdUtils {
             for (AdDetailResponse adDetailResponse : sqlList) {
                 LogCat.e("video", "数据表video： " + adDetailResponse.adVideoName + ", length: " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
             }
-
         }
 
     }
 
-    public static String getQuerySql(boolean isToday) {
-        String sql = null;
-        if (isToday)
-            sql = AdDao.SQL_QUERY;
-        else
-            sql = AdDao.SQL_QUERY_TM;
-        return sql;
-    }
-
-    public static String getinsertSql(boolean isToday) {
-        String sql = null;
-        if (isToday)
-            sql = AdDao.SQL_QUERY_ID;
-        else
-            sql = AdDao.SQL_QUERY_ID_TM;
-        return sql;
-    }
 
     public static String getTableName(boolean isToday) {
         String table = null;
@@ -99,8 +77,12 @@ public class VideoAdUtils {
             if (file.isFile()) {
                 String name = file.getName();
                 // 正在下载的文件不能算到本地缓存列表中
-                if (DLUtils.init(context).downloading(file.getAbsolutePath())) {
-                    LogCat.e("video", "当前文件正在下载。。。。。");
+                int index = name.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
+                name = name.substring(0, index);
+                boolean isDownload = DLDao.queryByName(context, name);
+                // 线程数变了
+                if (isDownload) {
+                    LogCat.e("video", "当前文件正在下载, 不算在本地缓存文件内容中。。。。。");
                     continue;
                 }
 
@@ -111,18 +93,8 @@ public class VideoAdUtils {
                     continue;
                 }
                 AdDetailResponse videoAdBean = new AdDetailResponse();
-                int index = name.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
-                name = name.substring(0, index);
+
                 videoAdBean.adVideoName = name;
-
-                ArrayList<DownloadInfo> downloadInfos = DLDao.queryByName(context, name);
-                // 线程数变了
-                if (downloadInfos != null && downloadInfos.size() > 0) {
-                    LogCat.e("video", "当前文件正在下载, 不算在本地缓存文件内容中。。。。。");
-                    continue;
-                }
-
-
                 videoAdBean.videoPath = file.getAbsolutePath();
                 videoAdBean.adVideoLength = file.length();
                 adDetailResponses.add(videoAdBean);
@@ -135,12 +107,12 @@ public class VideoAdUtils {
     }
 
 
-    public static void updateVideoPath(boolean isToday, Context context, int vid, String path) {
+    public static void updateVideoPath(boolean isToday, Context context, String fileName, String path) {
         String tableName = getTableName(isToday);
 
 
-        AdDao.update(context, tableName, vid, AdDao.videoPath, path);
-        AdDetailResponse adDetailResponse = AdDao.queryDetail(context, tableName, AdDao.adVideoId, String.valueOf(vid));
+        AdDao.update(context, tableName, fileName, AdDao.videoPath, path);
+        AdDetailResponse adDetailResponse = AdDao.queryDetail(context, tableName, AdDao.adVideoName, fileName);
         if (adDetailResponse != null) {
             LogCat.e("video", "查询修改后的大小： " + adDetailResponse.videoPath);
         }
@@ -228,7 +200,16 @@ public class VideoAdUtils {
     public static void deleteOldDir() {
         String oldPath = DataUtils.getSdCardOldFileDirectory();
         LogCat.e("video", "清空旧文件目录(gochinatv)....." + oldPath);
-        DeleteFileUtils.getInstance().deleteDir(new File(DataUtils.getSdCardOldFileDirectory()));
+        DeleteFileUtils.getInstance().deleteDir(new File(oldPath));
+    }
+
+    /**
+     * 删除旧文件目录
+     */
+    public static void deleteScreenShotDir() {
+        String oldPath = DataUtils.getScreenShotDirectory();
+        LogCat.e("video", "清空旧文件目录(gochinatv)....." + oldPath);
+        DeleteFileUtils.getInstance().deleteDir(new File(oldPath));
     }
 
 
@@ -327,8 +308,8 @@ public class VideoAdUtils {
                     if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
                         if (cacheVideo.adVideoLength != 0 && cacheVideo.adVideoLength != localVideo.adVideoLength) {
                             // 如果文件正在下载，则忽略
-                            ArrayList<DownloadInfo> downloadInfos = DLDao.queryByName(context, localVideo.adVideoName);
-                            if (downloadInfos != null && downloadInfos.size() > 0) {
+                            boolean isDownloading = DLDao.queryByName(context, localVideo.adVideoName);
+                            if (isDownloading) {
                                 LogCat.e("video", "当前文件正在下载中，不做额外处理.......");
                             } else {
                                 --i;

@@ -73,4 +73,5 @@ dependencies {
     compile 'org.jcodec:jcodec-android:0.1.9'
     compile project(':statistics')
     compile 'com.android.support:appcompat-v7:23.2.1'
+    compile 'com.jakewharton:butterknife:8.0.1'
 }

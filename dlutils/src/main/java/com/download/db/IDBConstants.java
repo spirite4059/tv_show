@@ -37,5 +37,6 @@ public interface IDBConstants {
     String SQL_QUERY_DOWNLOAD_BY_URL = "select * from " + DBBASE_DOWNLOAD_TABLE_NAME + " where " + turl + " = ?";
     String SQL_QUERY_DOWNLOAD_BY_NAME = "select * from " + DBBASE_DOWNLOAD_TABLE_NAME + " where " + tname + " = ?";
     String SQL_QUERY_DOWNLOAD_BY_ID = "select * from " + DBBASE_DOWNLOAD_TABLE_NAME + " where " + tid + " = ?";
+    String SQL_QUERY_DOWNLOAD = "select * from " + DBBASE_DOWNLOAD_TABLE_NAME;
 
 }

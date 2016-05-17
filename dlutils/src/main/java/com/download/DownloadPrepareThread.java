@@ -241,13 +241,13 @@ public class DownloadPrepareThread extends Thread {
 
         // 检查sql
         int size = threads.length;
-        ArrayList<DownloadInfo> downloadInfos = DLDao.query(context, downloadUrl);
+        ArrayList<DownloadInfo> downloadInfos = DLDao.queryAll(context, ToolUtils.getFileName(file.getName()));
         // 线程数变了
         if(downloadInfos != null && downloadInfos.size() > 0){
             LogCat.e("video", "有当前记录的存储信息......");
             if(downloadInfos.size() != size){
                 LogCat.e("video", "线程数发生变化，删除记录，重新下载......");
-                DLDao.delete(context, downloadUrl);
+                DLDao.delete(context);
                 startThreadWithOutSql(url, fileSize, blockSize, size);
             }else {
                 if(file!= null && file.exists()){
@@ -256,11 +256,9 @@ public class DownloadPrepareThread extends Thread {
 
                 }else {
                     LogCat.e("video", "有记录信息，但是文件遭到破坏，从开开始下载......");
-                    DLDao.delete(context, downloadUrl);
+                    DLDao.delete(context);
                     startThreadWithOutSql(url, fileSize, blockSize, size);
                 }
-
-
             }
         }else {
             LogCat.e("video", "没有当前下载信息，从头开始下载......");
@@ -281,7 +279,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        int downloadSize = 0;
+        int downloadSize = -2;
         try {
 
             while (!isFinished) {
@@ -343,6 +341,7 @@ public class DownloadPrepareThread extends Thread {
         DLUtils.clearDownloadStatus();
         // 主动取消下载
         if (isCancel) {
+            LogCat.e("video", "主动停止下载........");
             setCancel();
 //            deleteFailFile(fileSize, downloadSize);
             return;
@@ -355,10 +354,11 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
         // 此时是正常结束，无论是否正常下载成功，都要删除数据库记录
-        DLDao.delete(context, downloadUrl);
+        DLDao.delete(context);
         // 完成所有的下载了
         if (isFinished) {
             LogCat.e("video", "文件下载完成......fileSize: " + fileSize);
+            LogCat.e("video", "文件下载完成......downloadSize: " + downloadSize);
             if (deleteFailFile(fileSize, downloadSize)) {
                 LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
@@ -409,6 +409,10 @@ public class DownloadPrepareThread extends Thread {
     }
 
     private void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
+        // 插入数据前，将所有的表清空
+        DLDao.delete(context);
+
+
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
             int threadId = i + 1;
@@ -441,6 +445,14 @@ public class DownloadPrepareThread extends Thread {
             threads[i].start();
 
         }
+        ArrayList<DownloadInfo> downloadInfos1 = DLDao.queryAll(context);
+        for(DownloadInfo downloadInfo : downloadInfos1){
+            LogCat.e("downloadInfo.tname......" + downloadInfo.tname);
+            LogCat.e("downloadInfo.turl......" + downloadInfo.turl);
+            LogCat.e("downloadInfo.startPos......" + downloadInfo.startPos);
+            LogCat.e("--------------------------");
+        }
+        LogCat.e("插入后的数据大小......" + DLDao.queryAll(context).size());
     }
 
     private boolean deleteFailFile(int fileSize, int downloadSize) {

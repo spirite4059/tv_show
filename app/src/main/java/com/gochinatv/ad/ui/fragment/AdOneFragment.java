@@ -16,8 +16,8 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.screenshot.MediaMetadataPolicy;
 import com.gochinatv.ad.screenshot.ScreenShotUtils;
+import com.gochinatv.ad.screenshot.SystemScreenShotPolicy;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
@@ -97,7 +97,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 进行重试的时间间隔
      */
-    private final int TIME_RETRY_DURATION = 1000 * 60;
+    private final int TIME_RETRY_DURATION = 1000 * 20;
     /**
      * 测试的时间间隔
      */
@@ -187,11 +187,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         // 4.播放缓存列表
         LogCat.e("video", "查找可以播放的视频.....");
-        startPlayVideo();
+//        startPlayVideo();
 
         // 删除旧的文件目录
         VideoAdUtils.deleteOldDir();
-
+//        VideoAdUtils.deleteScreenShotDir();
         LogCat.e("video", "请求接口.....");
         // 6.请求视频列表
         if (!isDownloadAPK) { // 当有下载任务的时候，就不会再去请求视频列表，全部资源给下载apk
@@ -201,7 +201,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 //        LogCat.e("video", "开始上传截屏文件.....");
         // 7.开启上传截图
-        startScreenShot();
+//        startScreenShot();
 
 
         //  开启轮询接口
@@ -313,6 +313,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         ArrayList<AdDetailResponse> currentVideoList = getDistinctVideoList(response.current);
         LogCat.e("video", "去除明日播放列表重复的视频.......");
         ArrayList<AdDetailResponse> nextVideoList = getDistinctVideoList(response.next);
+
 
         // 2.匹配今天要下载的视频
         LogCat.e("video", "根据今日播放列表，获取下载列表......");
@@ -538,7 +539,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 if (isDetached()) {
                     return;
                 }
-                if (retryTimes < MAX_RETRY_TIMES) {
+                if (retryTimes < 20) {
                     LogCat.e("video", "继续重试3次下载，此时是第" + (retryTimes + 1) + "次尝试。。。。");
                     download(videoUrl);
                     retryTimes++;
@@ -571,8 +572,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private int mId = 0;
 
     private void startScreenShot() {
-        LogCat.e("screenShot", "66开始截图.......");
-        LogCat.e("screenShot", "当前视频截图位置......." + videoView.getCurrentPosition());
         screenShotService = Executors.newScheduledThreadPool(2);
         if (screenShotResponse != null) {
             delay = screenShotResponse.screenShotInterval;
@@ -580,7 +579,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             delay = 1000 * 60 * 15; // 15分钟
         }
         if (Constants.isTest) {
-            delay = 1000 * 30;
+            delay = 1000 * 60;
         }
 
         screenShotService.scheduleAtFixedRate(new Runnable() {
@@ -595,11 +594,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 long currentPosition = videoView.getCurrentPosition();
 
                 ScreenShotUtils screenShotUtils = new ScreenShotUtils();
-                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
+//                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
 //                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
 //                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
-
-
+                screenShotUtils.setScreenShotPolicy(new SystemScreenShotPolicy());
                 screenShotUtils.screenShot(getActivity(), videoAdBean.videoPath, currentPosition, screenShotResponse);
 
                 // 下载设备网速
@@ -852,7 +850,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             downloadingVideoResponse.videoPath = path + downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
             LogCat.e("video", "修改数据库视频地址信息........" + downloadingVideoResponse.adVideoId);
             // 保存下载文件的本地地址
-            VideoAdUtils.updateVideoPath(!isDownloadPrepare, getActivity(), downloadingVideoResponse.adVideoId, downloadingVideoResponse.videoPath);
+            VideoAdUtils.updateVideoPath(!isDownloadPrepare, getActivity(), downloadingVideoResponse.adVideoName, downloadingVideoResponse.videoPath);
             // 开始获取文件地址
             if (TextUtils.isEmpty(downloadingVideoResponse.adVideoUrl)) {
                 LogCat.e("video", "视频的playInfo数据出错，放弃当前视频，进行下一个.......");
