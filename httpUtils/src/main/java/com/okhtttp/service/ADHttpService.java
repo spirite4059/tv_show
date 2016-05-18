@@ -6,7 +6,7 @@ import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.ADFourResponse;
-import com.okhtttp.response.ADTwoResponse;
+import com.okhtttp.response.ADTwoOtherResponse;
 import com.okhtttp.response.AdThreeDataResponse;
 import com.tools.MacUtils;
 
@@ -32,14 +32,23 @@ public class ADHttpService {
 
 
     /**
-     * 广告二--web广告
+     * 广告二--web广告;
      */
-    public static final String URL_GET_AD_TWO = BASE_HTTP_URL + "/getWebAdInfo";
-    public static void doHttpGetWebADInfo(Context context, OkHttpCallBack<ADTwoResponse> listener){
+//    public static final String URL_GET_AD_TWO = BASE_HTTP_URL + "/getWebAdInfo";
+//    public static void doHttpGetWebADInfo(Context context, OkHttpCallBack<ADTwoResponse> listener){
+//        Map<String, String> params = new HashMap<>();
+//        params.put("mac", MacUtils.getMacAddress(context));
+//        OkHttpUtils.getInstance().doHttpGet(URL_GET_AD_TWO, params, listener);
+//    }
+
+    public static final String URL_GET_AD_TWO = "http://mock.vego.tv:8888/zfy/getAdList";
+    public static void doHttpGetWebADInfo(Context context, OkHttpCallBack<ADTwoOtherResponse> listener){
         Map<String, String> params = new HashMap<>();
         params.put("mac", MacUtils.getMacAddress(context));
         OkHttpUtils.getInstance().doHttpGet(URL_GET_AD_TWO, params, listener);
     }
+
+
 
 
 
@@ -58,11 +67,12 @@ public class ADHttpService {
     /**
      * 广告四--文字广告
      */
-    public static final String URL_GET_AD_FOUR = BASE_HTTP_URL + "/getTextAdList";
+    //public static final String URL_GET_AD_FOUR = BASE_HTTP_URL + "/getTextAdList";
+    public static final String url = "http://mock.vego.tv:8888/zfy/getTextList";
     public static void doHttpGetTextADInfo(Context context, OkHttpCallBack<ADFourResponse> listener){
         Map<String, String> params = new HashMap<>();
         params.put("mac", MacUtils.getMacAddress(context));
-        OkHttpUtils.getInstance().doHttpGet(URL_GET_AD_FOUR, params, listener);
+        OkHttpUtils.getInstance().doHttpGet(url, params, listener);
     }
 
 

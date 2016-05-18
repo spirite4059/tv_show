@@ -202,8 +202,6 @@ public class MainActivity extends Activity {
             final String macAddress = mac.replaceAll(":", "");
             LogCat.e("mac: " + macAddress);
             MobclickAgent. startWithConfigure(new MobclickAgent.UMAnalyticsConfig(this, "572c1246e0f55aa6c5001533", mac, MobclickAgent.EScenarioType.E_UM_NORMAL));
-
-//            AnalyticsConfig.setChannel(mac);
             MobclickAgent.openActivityDurationTrack(false);
             MobclickAgent.setCatchUncaughtExceptions(true);
             MobclickAgent.setDebugMode(false);
@@ -501,8 +499,8 @@ public class MainActivity extends Activity {
             @Override
             public void onDownLoadFinish(Exception e) {
                 //通知AdOneFragment去下载视频
-                LogCat.e("APKdownload","下载apk出现错误: "+e.getMessage());
-                if (reTryTimes < 3) {
+                LogCat.e("APKdownload","下载apk出现错误: "+e.toString());
+                if (reTryTimes < 5) {
                     LogCat.e("APKdownload","下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
                     reTryTimes += 1;
                     //延迟2秒再去下载
@@ -514,7 +512,7 @@ public class MainActivity extends Activity {
                     },2000);
 
                 } else {
-                    LogCat.e("APKdownload","下载apk出现错误,重试3次不再重试 ");
+                    LogCat.e("APKdownload","下载apk出现错误,重试5次不再重试 ");
                     if (adOneFragment != null) {
                         adOneFragment.startDownloadVideo();
                     }
@@ -737,6 +735,9 @@ public class MainActivity extends Activity {
                                 LogCat.e("成功加载了广告二");
                                 ADTwoFragment adTwoFragment = new ADTwoFragment();
                                 adTwoFragment.setLayoutResponse(twoLayout);
+                                if (adDeviceDataResponse.pollInterval > 0) {
+                                    adTwoFragment.setGetWebADTime((int)adDeviceDataResponse.pollInterval);
+                                }
                                 ft.add(R.id.root_main, adTwoFragment);
                             }
                         }
@@ -759,6 +760,9 @@ public class MainActivity extends Activity {
                                 LogCat.e("成功加载了广告四");
                                 ADFourFragment adFourFragment = new ADFourFragment();
                                 adFourFragment.setLayoutResponse(fourLayout);
+                                if (adDeviceDataResponse.pollInterval > 0) {
+                                    adFourFragment.setGetTextADTime((int) adDeviceDataResponse.pollInterval);
+                                }
                                 ft.add(R.id.root_main, adFourFragment);
                             }
                         }

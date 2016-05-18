@@ -1,7 +1,6 @@
 package com.gochinatv.ad.ui.fragment;
 
 import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,35 +34,41 @@ public class ADFourFragment extends BaseFragment {
     //滚动控件
     private AutoTextView autoTextView;
 
-    //private boolean isCycleText;
+
     //循环滚动定时器
-    private int cycleTextTime = 10;//每隔多长去滚动，默认：10 （秒）
-    private Timer cycleTextTimer;
+    private boolean isCycleState = false;//滚动的状态
+    private int cycleTextTime = 1;//每隔多长去滚动，默认：10 （秒）
+    private Handler cycleHandler;//定时器
+
+
+
     //文字广告集合
     private ArrayList<ADTextRseponse> textData;
     //文字集合总数
     private int taotalSize;
 
+
     //请求文字广告接口的定时器
     private int getTextADTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
     private Timer getTextADTimer;
 
-    public LayoutResponse getLayoutResponse() {
-        return layoutResponse;
-    }
 
-    public void setLayoutResponse(LayoutResponse layoutResponse) {
-        this.layoutResponse = layoutResponse;
-    }
-
+    //布局参数
     private LayoutResponse layoutResponse;
 
     //是否是第一次网络请求
     private boolean isFirstDoHttp = true;
 
 
+
+    //内置的文字广告
+    private String textADString = "For more information about GoChina Media, please contact clientservice@gochinatv.com.";
+
     //本地数据
-    private ArrayList<String> textList;
+    //private ArrayList<String> textList;
+
+    //view的宽度
+    private int viewWidth;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -85,7 +90,7 @@ public class ADFourFragment extends BaseFragment {
                 double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
                 double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
                 double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
-
+                viewWidth = (int) Math.floor(width);
                 params.width = (int) Math.floor(width);
                 params.height = (int) Math.floor(height);
                 params.topMargin = (int) Math.floor(top);
@@ -107,28 +112,22 @@ public class ADFourFragment extends BaseFragment {
 
     @Override
     protected void init() {
-        autoTextView.setText("For more information about GoChina Media, please contact clientservice@gochinatv.com.");
-        textList = new ArrayList<>();
-        textList.add("Please call our service team at 1-877-227-5717");
-        textList.add("Interested in installation of our TV in your restaurant?");
-        textList.add("Please visit http://h5.eqxiu.com/s/LW4ukoLZ");
-        textList.add("Join our partner recruitment plan.");
-        textList.add("Win a $10 dollar referral fee for each successfully recommendation.");
-        textList.add("Please contact us via clientservice@gochinatv.com or wechat: 13034624085.");
-        textList.add("Advertising client please contact globalsales@gochinatv.com");
-        textList.add("For more information about GoChina Media, please contact clientservice@gochinatv.com.");
-        if(textList.size()>1){
-            LogCat.e("ADFourFragment 第一次开启滚动 ");
-            i = 0;
-            cycleTextTimer = new Timer();
-            cycleTextTimer.schedule(new CycleText(), cycleTextTime * 1000, cycleTextTime * 1000);
-        }
+        autoTextView.setViewWidth(viewWidth);
+        //autoTextView.setText(textADString);
+//        textList = new ArrayList<>();
+//        textList.add("Please call our service team at 1-877-227-5717");
+//        textList.add("Interested in installation of our TV in your restaurant?");
+//        textList.add("Please visit http://h5.eqxiu.com/s/LW4ukoLZ");
+//        textList.add("Join our partner recruitment plan.");
+//        textList.add("Win a $10 dollar referral fee for each successfully recommendation.");
+//        textList.add("Please contact us via clientservice@gochinatv.com or wechat: 13034624085.");
+//        textList.add("Advertising client please contact globalsales@gochinatv.com");
+//        textList.add("For more information about GoChina Media, please contact clientservice@gochinatv.com.");
 
+        cycleHandler = new Handler();
 
-//        //得到轮询请求接口间隔
-//        getTextADTime = (int) SharedPreference.getSharedPreferenceUtils(getActivity()).getDate("pollInterval",Long.valueOf(14400000));
-//        LogCat.e(" getTextADTime : "+ getTextADTime);
-//        doGetTextAD();//请求接口
+        //得到轮询请求接口间隔
+        doGetTextAD();//请求接口
     }
 
     @Override
@@ -145,43 +144,56 @@ public class ADFourFragment extends BaseFragment {
     @Override
     public void onDestroy() {
         LogCat.e("ADFourFragment"," 取消广告四的滚动 ");
-        if(cycleTextTimer != null){
-            cycleTextTimer.cancel();
-            cycleTextTimer = null;
+
+        if(cycleHandler != null && runnable != null){
+            cycleHandler.removeCallbacks(runnable);
+            isCycleState = false;
         }
+
 
         if(getTextADTimer != null){
             getTextADTimer.cancel();
             getTextADTimer = null;
         }
+
+        if(autoTextView != null){
+            autoTextView.stopScroll();
+        }
+
         super.onDestroy();
     }
 
+
     int i = 0;
-    private class CycleText extends TimerTask{
+    int index;
+    Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            // 定义一个消息传过去
-            Message msg = new Message();
-            msg.what = i++;
-            handler.sendMessage(msg);
-        }
-    }
 
-    Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            int index = msg.what;
-            if(index > textList.size()-1){
+            isCycleState = true;
+            index = i++;
+            if(index > textData.size()-1){
                 index = 0;
                 i = 1;
             }
-            //LogCat.e("i :"+ i +" adVideoIndex :"+index + textList.get(index));
-            autoTextView.next();
-            autoTextView.setText(textList.get(index));
-            super.handleMessage(msg);
+            LogCat.e("ADFourFragment","index :"+index  + "     "+textData.get(index).adTextStr);
+            if(!TextUtils.isEmpty(textData.get(index).adTextStr)){
+                autoTextView.next();
+                autoTextView.setText(textData.get(index).adTextStr);
+            }
+
+            //下一次的滚动
+            if(textData.get(index).adTextInterval >1000){
+                cycleTextTime = textData.get(index).adTextInterval;
+            }else {
+                cycleTextTime = 5000;
+            }
+            cycleHandler.postDelayed(runnable,cycleTextTime);
+
         }
     };
+
+
 
 
     /**
@@ -189,6 +201,9 @@ public class ADFourFragment extends BaseFragment {
      */
     private int reTryTimesTwo;
     private void doGetTextAD(){
+        if(!DataUtils.isNetworkConnected(getActivity())){
+            return;
+        }
         ADHttpService.doHttpGetTextADInfo(getActivity(), new OkHttpCallBack<ADFourResponse>() {
             @Override
             public void onSuccess(String url, ADFourResponse response) {
@@ -208,14 +223,50 @@ public class ADFourFragment extends BaseFragment {
                     return;
                 }
                 if(textData != null &&textData.size()>0){
-                    LogCat.e("ADFourFragment 清空之前的文字广告 ");
+                    LogCat.e("ADFourFragment","ADFourFragment 清空之前的文字广告 ");
                     textData.clear();//先清除之前的
                 }
                 textData = response.data;
                 taotalSize = textData.size();
                 cycleTextTime = response.adTextInterval;//设置滚动间隔
-                if(taotalSize >0){
-                    cycleTextAD();
+
+                if(taotalSize == 0){
+                    //此时没有文字广告，要停止之前的滚动
+                    // 显示内置文字广告
+                    autoTextView.next();
+                    autoTextView.setText(textADString);
+
+                    LogCat.e("ADFourFragment"," 停止之前的滚动 ");
+                    if(cycleHandler != null && runnable != null){
+                        cycleHandler.removeCallbacks(runnable);
+                        isCycleState = false;
+                    }
+
+                }
+
+                if(taotalSize == 1){
+                    //此时有1条文字广告，要停止之前的滚动
+                    if(!TextUtils.isEmpty(textData.get(0).adTextStr)){
+                        autoTextView.next();
+                        autoTextView.setText(textData.get(0).adTextStr);
+                    }
+                    LogCat.e("ADFourFragment","停止之前的滚动 ");
+                    if(cycleHandler != null && runnable != null){
+                        cycleHandler.removeCallbacks(runnable);
+                        isCycleState = false;
+                    }
+
+                }
+
+                if(taotalSize >1){
+                    //有多条文字广告，开启滚动
+                    if(!isCycleState){
+                        LogCat.e("ADFourFragment","开启滚动 ");
+                        if(cycleHandler != null && runnable != null){
+                            cycleHandler.postDelayed(runnable,textData.get(0).adTextInterval);
+                        }
+                    }
+
                 }
 
                 if(isFirstDoHttp){
@@ -239,6 +290,9 @@ public class ADFourFragment extends BaseFragment {
                     reTryTimesTwo++;
                     if (reTryTimesTwo > 4) {
                         reTryTimesTwo = 0;
+                        // 显示内置文字广告
+                        autoTextView.next();
+                        autoTextView.setText(textADString);
                         LogCat.e("ADFourFragment","文字广告接口已连续请求3次，不在请求");
                     } else {
                         LogCat.e("ADFourFragment","进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
@@ -246,7 +300,6 @@ public class ADFourFragment extends BaseFragment {
                     }
                 }
             }
-
 
 
             @Override
@@ -258,42 +311,6 @@ public class ADFourFragment extends BaseFragment {
 
     }
 
-
-    /**
-     * 开启文字滚动
-     */
-    private void cycleTextAD(){
-
-
-        if(taotalSize == 1){
-            //当只有一个广告,不开启滚动
-            //如果之前的文字广告是滚动的就停止
-            if(cycleTextTimer != null){
-                LogCat.e("ADFourFragment 取消滚动 ");
-                cycleTextTimer.cancel();
-            }
-
-            autoTextView.next();
-            autoTextView.setText(textData.get(0).adTextStr);
-
-        }else if(taotalSize >1){
-            //当有多个广告,开启滚动
-            //如果之前的文字广告是滚动的就继续，不是就开启滚动
-            if(cycleTextTimer != null){
-                LogCat.e("ADFourFragment 再次开启滚动 ");
-                i = 0;
-                cycleTextTimer.schedule(new CycleText(),cycleTextTime*1000,cycleTextTime*1000);
-            }else{
-                LogCat.e("ADFourFragment 第一次开启滚动 ");
-                i = 0;
-                cycleTextTimer = new Timer();
-                cycleTextTimer.schedule(new CycleText(),cycleTextTime*1000,cycleTextTime*1000);
-            }
-
-
-        }
-
-    }
 
 
 
@@ -316,5 +333,27 @@ public class ADFourFragment extends BaseFragment {
         if(isHasMac){
             MobclickAgent.onPageEnd("ADFourFragment");
         }
+    }
+
+
+
+    public LayoutResponse getLayoutResponse() {
+        return layoutResponse;
+    }
+
+    /**
+     * 设置布局参数
+     * @param layoutResponse
+     */
+    public void setLayoutResponse(LayoutResponse layoutResponse) {
+        this.layoutResponse = layoutResponse;
+    }
+
+    /**
+     * 设置请求接口的间隔
+     * @param getTextADTime
+     */
+    public void setGetTextADTime(int getTextADTime) {
+        this.getTextADTime = getTextADTime;
     }
 }

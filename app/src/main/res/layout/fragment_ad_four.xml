@@ -14,11 +14,27 @@
         android:layout_height="wrap_content"
         auto3d:textSize="@dimen/d_24sp"
         android:background="@android:color/black"
-        android:padding="@dimen/d_10dp"
         android:layout_gravity="center_vertical"
-
+        android:padding="@dimen/d_10dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         >
     </com.gochinatv.ad.ui.view.AutoTextView>
+
+    <!--<com.gochinatv.ad.ui.view.Auto3DTextView-->
+        <!--android:id="@+id/auto_textview"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="@dimen/d_24sp"-->
+        <!--android:textColor="#FFFFFF"-->
+        <!--android:background="@android:color/black"-->
+        <!--android:layout_gravity="center_vertical"-->
+        <!--android:ellipsize="marquee"-->
+        <!--android:singleLine="true"-->
+        <!--android:padding="@dimen/d_10dp"-->
+        <!--&gt;-->
+    <!--</com.gochinatv.ad.ui.view.Auto3DTextView>-->
+
 
 
 </LinearLayout>

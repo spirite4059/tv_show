@@ -296,11 +296,13 @@ public class PagerIndicator extends LinearLayout implements ViewPagerEx.OnPageCh
      * @param visibility
      */
     public void setIndicatorVisibility(IndicatorVisibility visibility){
-        if(visibility == IndicatorVisibility.Visible){
-            setVisibility(View.VISIBLE);
-        }else{
-            setVisibility(View.INVISIBLE);
-        }
+//        if(visibility == IndicatorVisibility.Visible){
+//            setVisibility(View.VISIBLE);
+//        }else{
+//            setVisibility(View.INVISIBLE);
+//        }
+        setVisibility(View.INVISIBLE);
+
         resetDrawable();
     }
 

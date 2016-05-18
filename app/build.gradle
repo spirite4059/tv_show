@@ -74,4 +74,5 @@ dependencies {
     compile project(':statistics')
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.jakewharton:butterknife:8.0.1'
+    compile project(path: ':library')
 }

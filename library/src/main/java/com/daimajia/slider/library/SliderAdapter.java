@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import com.daimajia.slider.library.SliderTypes.BaseSliderView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A slider adapter
@@ -15,11 +16,11 @@ import java.util.ArrayList;
 public class SliderAdapter extends PagerAdapter implements BaseSliderView.ImageLoadListener{
 
     private Context mContext;
-    private ArrayList<BaseSliderView> mImageContents;
+    private List<BaseSliderView> mImageContents = new ArrayList<>();
 
     public SliderAdapter(Context context){
         mContext = context;
-        mImageContents = new ArrayList<BaseSliderView>();
+        //mImageContents = new ArrayList<BaseSliderView>();
     }
 
     public <T extends BaseSliderView> void addSlider(T slider){
@@ -105,5 +106,33 @@ public class SliderAdapter extends PagerAdapter implements BaseSliderView.ImageL
             }
         }
     }
+
+
+
+
+
+
+
+    /**
+     *  刷新数据 --zfy-2016-05-16
+     * @param
+     */
+    public void refreshSliderData(ArrayList<BaseSliderView> data){
+//        if(mImageContents != null){
+//            if(mImageContents.size()>0){
+//                mImageContents.clear();
+//            }
+//        }else{
+//            mImageContents = new ArrayList<BaseSliderView>();
+//        }
+        mImageContents = data;
+        //Log.i("SliderLayout","刷新数据22222222222222222   " + data.size());
+        notifyDataSetChanged();
+        //Log.i("SliderLayout","刷新数据33333333333333333   " + data.size());
+    }
+
+
+
+
 
 }
