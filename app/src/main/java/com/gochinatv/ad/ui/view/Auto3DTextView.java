@@ -83,7 +83,7 @@ public class Auto3DTextView extends TextView implements Runnable{
         //setInAnimation()后，A将执行inAnimation，
         //setOutAnimation()后，B将执行OutAnimation
         this.startAnimation(mInUp);
-        this.startAnimation(mOutUp);
+        //this.startAnimation(mOutUp);
     }
 
 

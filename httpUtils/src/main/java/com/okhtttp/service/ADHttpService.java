@@ -41,7 +41,8 @@ public class ADHttpService {
 //        OkHttpUtils.getInstance().doHttpGet(URL_GET_AD_TWO, params, listener);
 //    }
 
-    public static final String URL_GET_AD_TWO = "http://mock.vego.tv:8888/zfy/getAdList";
+    //public static final String URL_GET_AD_TWO = "http://mock.vego.tv:8888/zfy/getAdList";
+    public static final String URL_GET_AD_TWO = "http://192.168.3.191:8080/api/ad_v1/getWebAdInfo";
     public static void doHttpGetWebADInfo(Context context, OkHttpCallBack<ADTwoOtherResponse> listener){
         Map<String, String> params = new HashMap<>();
         params.put("mac", MacUtils.getMacAddress(context));
@@ -68,7 +69,8 @@ public class ADHttpService {
      * 广告四--文字广告
      */
     //public static final String URL_GET_AD_FOUR = BASE_HTTP_URL + "/getTextAdList";
-    public static final String url = "http://mock.vego.tv:8888/zfy/getTextList";
+    //public static final String url = "http://mock.vego.tv:8888/zfy/getTextList";
+    public static final String url = "http://192.168.3.191:8080/api/ad_v1/getTextAdList";
     public static void doHttpGetTextADInfo(Context context, OkHttpCallBack<ADFourResponse> listener){
         Map<String, String> params = new HashMap<>();
         params.put("mac", MacUtils.getMacAddress(context));
