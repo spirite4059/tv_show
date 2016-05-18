@@ -41,8 +41,6 @@ public class Auto3DTextView extends TextView implements Runnable{
     private boolean isMeasureText;
 
 
-
-
     public Auto3DTextView(Context context) {
         super(context);
         mContext = context;
