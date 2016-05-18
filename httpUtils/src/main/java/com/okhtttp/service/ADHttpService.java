@@ -50,9 +50,6 @@ public class ADHttpService {
     }
 
 
-
-
-
     /**
      * 广告三--图片广告
      */

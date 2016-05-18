@@ -8,7 +8,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
@@ -16,7 +15,6 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.FrameLayout;
 import android.widget.TextSwitcher;
-import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import com.gochinatv.ad.R;
@@ -27,7 +25,7 @@ import com.gochinatv.ad.tools.LogCat;
  * Created by zfy on 2016/3/17.
  */
 public class AutoTextView extends TextSwitcher implements
-        ViewSwitcher.ViewFactory,Runnable{
+        ViewSwitcher.ViewFactory{
 
 
     private float mHeight;
@@ -51,10 +49,12 @@ public class AutoTextView extends TextSwitcher implements
 
 
     //是否停止滑动
-    private boolean isStopping = true;
+    //private boolean isStopping = true;
 
     //滑动的距离
-    private int scrollX;
+    //private int scrollX;
+
+    MarqueeTextView textView;
 
     public AutoTextView(Context context) {
         this(context, null);
@@ -97,14 +97,13 @@ public class AutoTextView extends TextSwitcher implements
     //这里返回的TextView，就是我们看到的View
     @Override
     public View makeView() {
-        // TODO Auto-generated method stub
-        TextView textView = new TextView(mContext);
 
+         textView = new MarqueeTextView(mContext);
+        // TODO Auto-generated method stub
+        //TextView textView = new TextView(mContext);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.gravity = Gravity.CENTER;
         textView.setLayoutParams(lp);
         textView.setTextColor(Color.WHITE);
-
         if(Constants.isPhone){
             //适配手机
             textView.setTextSize(12);//mHeight
@@ -114,13 +113,11 @@ public class AutoTextView extends TextSwitcher implements
         }
         textView.setSingleLine();
         textView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-
-
         if(mPaint == null){
             mPaint = textView.getPaint();
 
         }
-
+        textView.setViewWidth(viewWidth);
         return textView;
     }
     //定义动作，向下滚动翻页
@@ -134,7 +131,7 @@ public class AutoTextView extends TextSwitcher implements
     }
     //定义动作，向上滚动翻页
     public void next(){
-        stopScroll();//停止滑动并且复位
+        //stopScroll();//停止滑动并且复位
         if(getInAnimation() != mInUp){
             setInAnimation(mInUp);
         }
@@ -154,10 +151,9 @@ public class AutoTextView extends TextSwitcher implements
         }
         if(textWidth > viewWidth){
             LogCat.e("ADFourFragment"," 开启左右滑动############");
-            isStopping = false;
-            new Thread(this).start();
+            startScroll();
         }else {
-            removeCallbacks(this);
+            stopScroll();
         }
 
     }
@@ -218,10 +214,6 @@ public class AutoTextView extends TextSwitcher implements
     }
 
 
-
-
-
-
     /**
      * 设置view的宽度
      * @param viewWidth
@@ -235,52 +227,48 @@ public class AutoTextView extends TextSwitcher implements
     }
 
 
-    @Override
-    public void run() {
-        //LogCat.e("ADFourFragment"," run():  run()  run()  run()");
-        if (!isStopping) {
-            scrollX += 2;// 滚动速度
-            scrollTo(scrollX, 0);
-            if (scrollX > textWidth) {
-                scrollTo(0, 0);
-                scrollX = 0;
-            }
-            postDelayed(this, 50);
+    public void stopScroll(){
+        if(textView != null){
+            textView.stopScroll();
         }
+    }
 
-//        if (isStopping == true) {
-//            removeCallbacks(this);
+    public void startScroll(){
+        if(textView != null){
+            textView.startScroll();
+        }
+    }
+
+
+//    public void stopScroll() {
+//        isStopping = true;
+//        // 恢复初始状态
+//        scrollX = 0;
+//        scrollToX(0);
+//        removeCallbacks(this);
+//    }
+//
+//
+//    private void scrollToX(int x) {
+//        scrollTo(x, 0);
+
+//    if (!isStopping) {
+//        scrollX += 2;// 滚动速度
+//        scrollTo(scrollX, 0);
+//        if (scrollX > textWidth) {
+//            scrollTo(0, 0);
 //            scrollX = 0;
-//            isStopping = false;
-//            return;
-//        }
-//        scrollX += 2;
-//        scrollToX(scrollX);
-////        getTextWidth();
-//        if (getScrollX() >= textWidth) {
-//            int scrollReStartX = -(getWidth());
-//            scrollToX(scrollReStartX);
-//            scrollX = scrollReStartX;
 //        }
 //        postDelayed(this, 50);
+//    }
 
 
 
-    }
+
+//    }
 
 
-    public void stopScroll() {
-        isStopping = true;
-        // 恢复初始状态
-        scrollX = 0;
-        scrollToX(0);
-        removeCallbacks(this);
-    }
 
-
-    private void scrollToX(int x) {
-        scrollTo(x, 0);
-    }
 
 
 }

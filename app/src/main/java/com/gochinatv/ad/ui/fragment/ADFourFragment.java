@@ -263,10 +263,13 @@ public class ADFourFragment extends BaseFragment {
                     if(!isCycleState){
                         LogCat.e("ADFourFragment","开启滚动 ");
                         if(cycleHandler != null && runnable != null){
-                            cycleHandler.postDelayed(runnable,textData.get(0).adTextInterval);
+                            if(textData.get(0).adTextInterval<1000){
+                                cycleHandler.postDelayed(runnable,5000);
+                            }else{
+                                cycleHandler.postDelayed(runnable,textData.get(0).adTextInterval);
+                            }
                         }
                     }
-
                 }
 
                 if(isFirstDoHttp){
@@ -277,7 +280,7 @@ public class ADFourFragment extends BaseFragment {
                             public void run() {
                                 doGetTextAD();
                             }
-                        },getTextADTime,getTextADTime);
+                        },30000,30000);
                     }
                 }
                 isFirstDoHttp = false;
