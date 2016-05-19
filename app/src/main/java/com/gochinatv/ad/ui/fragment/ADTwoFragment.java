@@ -163,7 +163,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
                 if (!isAdded()) {
                     return;
                 }
-                LogCat.e(" 广告四 url " + url);
+                LogCat.e(" 广告二 url " + url);
                 if (response == null || !(response instanceof ADTwoOtherResponse)) {
                     LogCat.e("ADTwoFragment", "请求文字接口失败");
                     doError();
@@ -182,8 +182,6 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
                 }
                 dataResponses = response.data;
                 taotalSize = dataResponses.size();
-                //cycleTextTime = response.adTextInterval;//设置滚动间隔
-                cycleTextTime = 1000;
                 if (taotalSize == 0) {
                     //没有广告，停止滚动，显示内置图片
                     showImageViewAnimation();

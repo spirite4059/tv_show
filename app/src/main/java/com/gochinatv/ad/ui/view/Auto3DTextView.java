@@ -89,7 +89,7 @@ public class Auto3DTextView extends TextView implements Runnable{
 
     private Rotate3dAnimation createAnim(float start, float end, boolean turnIn, boolean turnUp){
         final Rotate3dAnimation rotation = new Rotate3dAnimation(start, end, turnIn, turnUp);
-        rotation.setDuration(800);
+        rotation.setDuration(500);
         rotation.setFillAfter(false);
         rotation.setInterpolator(new AccelerateInterpolator());
         return rotation;
