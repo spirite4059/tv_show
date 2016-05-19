@@ -11,4 +11,9 @@ public interface VideoGrab {
 
     Bitmap getVideoGrab(File fileVideo, long duration, int width, int height);
 
+
+    String getFileName();
+
+    boolean isNeedCacheImageLocal();
+
 }

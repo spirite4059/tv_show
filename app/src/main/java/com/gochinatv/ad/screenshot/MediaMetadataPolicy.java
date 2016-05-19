@@ -63,4 +63,14 @@ public class MediaMetadataPolicy implements VideoGrab {
         }
         return null;
     }
+
+    @Override
+    public String getFileName() {
+        return null;
+    }
+
+    @Override
+    public boolean isNeedCacheImageLocal() {
+        return false;
+    }
 }

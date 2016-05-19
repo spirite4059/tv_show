@@ -8,7 +8,6 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.view.View;
 
-import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.okhtttp.OkHttpUtils;
@@ -43,17 +42,24 @@ public class ScreenShotUtils {
         // 根据不同的策略获取不同的图片
         Bitmap bitmap = videoGrab.getVideoGrab(videoFile, duration, screenShotResponse.screenShotImgW, screenShotResponse.screenShotImgH);
         // 初始化截图本地文件
-        File file = initScreenShotFile();
+        File file = initScreenShotFile(videoGrab.getFileName());
         if(!file.exists()){
             LogCat.e("screenShot", "本地截图缓存创建失败.......");
             return;
         }
-        // 将截图文件写入本地
-        boolean isScreenShot = createScreenShotFile(bitmap, file);
-        if(isScreenShot){
-            LogCat.e("screenShot", "截图成功..........");
-//            uploadFile(context, file, isScreenShot, duration, file.getName());
+
+        if(videoGrab.isNeedCacheImageLocal()){
+            boolean isScreenShot = createScreenShotFile(bitmap, file);
+            if(isScreenShot){
+                LogCat.e("screenShot", "截图成功..........");
+                uploadFile(context, file, isScreenShot, duration, file.getName());
+            }
+        }else {
+            uploadFile(context, file, true, duration, file.getName());
         }
+
+        // 将截图文件写入本地
+
 
 
 //        uploadFile(context, null, true, duration, videoFile.getName());
@@ -118,13 +124,13 @@ public class ScreenShotUtils {
         return isScreenShot;
     }
 
-    private File initScreenShotFile() {
+    private File initScreenShotFile(String fileName) {
         String rootPath = DataUtils.getScreenShotDirectory();
         File fileRoot = new File(rootPath);
         if (!fileRoot.exists()) {
             fileRoot.mkdirs();
         }
-        File file = new File(rootPath, Constants.FILE_SCREEN_SHOT_NAME);
+        File file = new File(rootPath, fileName);
         if (!file.exists()) {
             try {
                 file.createNewFile();

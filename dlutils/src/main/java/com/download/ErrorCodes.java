@@ -103,6 +103,11 @@ public final class ErrorCodes {
      */
     public static final int ERROR_DOWNLOAD_INIT_INFO = 1019;
 
+    /**
+     *  线程池出错
+     */
+    public static final int ERROR_DB_UPDATE = 1020;
+
     static final int HTTP_OK = 200;
     static final int HTTP_CREATED = 201;
     static final int HTTP_ACCEPTED = 202;

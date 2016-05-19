@@ -28,4 +28,14 @@ public class JcodecPolicy implements VideoGrab {
         }
         return bitmap;
     }
+
+    @Override
+    public String getFileName() {
+        return null;
+    }
+
+    @Override
+    public boolean isNeedCacheImageLocal() {
+        return false;
+    }
 }

@@ -6,8 +6,8 @@ import android.util.Log;
 public class LogCat {
 
 	public static boolean isDebug = true; // 是否开启了debug模式,在menifast.xml中定义.
-	public static final String DIVIDER = " ---> "; // 日志追踪默认的位置
-	public static final String TAG = "CHINA_RESTAURANT";
+	public static final String DIVIDER = " --> "; // 日志追踪默认的位置
+	public static final String TAG = "video";
 	
 	public static String getDefMsg(String msg) {
 		return LogCat.DIVIDER + msg;
@@ -129,7 +129,7 @@ public class LogCat {
 	}
 
 	public static void e(Class c, String msg) {
-		e(c, null, msg);
+		e(c, TAG, msg);
 	}
 	
 	public static void e(String msg) {

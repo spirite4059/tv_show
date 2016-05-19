@@ -126,7 +126,6 @@ public class DLUtils implements InDLUtils {
         }
         downloadThread = null;
         downloadingPath = null;
-        context = null;
         instance = null;
         LogCat.e("video", "DLUtils -> cancel.......");
     }

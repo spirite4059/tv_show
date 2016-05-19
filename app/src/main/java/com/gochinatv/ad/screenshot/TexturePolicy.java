@@ -20,4 +20,14 @@ public class TexturePolicy implements VideoGrab {
     public Bitmap getVideoGrab(File fileVideo, long duration, int width, int height) {
         return textureView.getBitmap(width, height);
     }
+
+    @Override
+    public String getFileName() {
+        return null;
+    }
+
+    @Override
+    public boolean isNeedCacheImageLocal() {
+        return false;
+    }
 }
