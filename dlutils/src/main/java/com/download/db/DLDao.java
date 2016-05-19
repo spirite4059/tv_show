@@ -234,7 +234,6 @@ public class DLDao implements IDBConstants {
         try {
             database.beginTransaction();
             cursor = database.rawQuery(SQL_QUERY_DOWNLOAD_BY_NAME, new String[]{fileName});
-            LogCat.e(DLDao.class, "DLDao -> queryByName........cursor.getCount()........." + cursor.getCount());
             if (cursor != null) {
                 return cursor.moveToNext();
             }

@@ -116,6 +116,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     // 接口重复刷新时间
     private long pollInterval;
 
+    private int playOrderPos;
+    private ArrayList<AdDetailResponse> orderVideoList;
+
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -187,7 +190,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         // 4.播放缓存列表
         LogCat.e("video", "查找可以播放的视频.....");
-//        startPlayVideo();
+        startPlayVideo();
 
         // 删除旧的文件目录
         VideoAdUtils.deleteOldDir();
@@ -307,6 +310,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         // 更新本地缓存视频列表，将新下载的视频添加入本地列表
         LogCat.e("video", "获取本地缓存视频列表.......");
         localVideoList = VideoAdUtils.getLocalVideoList(getActivity());
+
+        // 创建排播列表，并添加数据
+        orderVideoList = new ArrayList<>();
+        orderVideoList.addAll(response.current);
 
         // 去除重复
         LogCat.e("video", "去除今日播放列表重复的视频.......");
@@ -539,7 +546,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 if (isDetached()) {
                     return;
                 }
-                if (retryTimes < 20) {
+                if (retryTimes < MAX_RETRY_TIMES) {
                     LogCat.e("video", "继续重试3次下载，此时是第" + (retryTimes + 1) + "次尝试。。。。");
                     download(videoUrl);
                     retryTimes++;
@@ -638,17 +645,17 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
     private void startPlayVideo() {
-        String playingVideoName = null;
+        String playingVideoPath = null;
         if (playVideoLists == null || playVideoLists.size() < 2) {
             // 如果播放列表视频数量不足2个，继续检查本地缓存列表
             if (cachePlayVideoLists == null || cachePlayVideoLists.size() < 2) {
                 // 本地缓存列表数量也不足2个，播放预置片
                 LogCat.e("video", "由于播放列表和缓存播放列表可以播放视频都不足2个，播放预置片.......");
-                playingVideoName = getRawVideoUri();
+                playingVideoPath = getRawVideoUri();
             } else {
                 for (AdDetailResponse adDetailResponse : cachePlayVideoLists) {
                     if (!TextUtils.isEmpty(adDetailResponse.videoPath)) {
-                        playingVideoName = adDetailResponse.videoPath;
+                        playingVideoPath = adDetailResponse.videoPath;
                         LogCat.e("video", "播放缓存播放列表......." + adDetailResponse.adVideoName);
                         break;
                     }
@@ -656,15 +663,53 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
             }
         } else {
-            for (AdDetailResponse adDetailResponse : playVideoLists) {
-                if (!TextUtils.isEmpty(adDetailResponse.videoPath)) {
-                    playingVideoName = adDetailResponse.videoPath;
-                    LogCat.e("video", "播放播放列表......." + adDetailResponse.adVideoName);
-                    break;
+            // 进行排播
+            if(orderVideoList == null || orderVideoList.size() == 0){
+                // 此时没有排播列表，按下载视频进行播放
+                for (AdDetailResponse adDetailResponse : playVideoLists) {
+                    if (!TextUtils.isEmpty(adDetailResponse.videoPath)) {
+                        playingVideoPath = adDetailResponse.videoPath;
+                        LogCat.e("video", "播放播放列表......." + adDetailResponse.adVideoName);
+                        break;
+                    }
                 }
+            }else {
+                int size = orderVideoList.size();
+                // 处理播放位置
+                if(playOrderPos >= size){
+                    LogCat.e("order", "重置playOrderPos.......");
+                    playOrderPos = 0;
+                }
+
+                LogCat.e("order", "开始排播.......");
+                for(; playOrderPos < size; ){
+                    boolean isPlayVideo = false;
+
+                    AdDetailResponse adDetailResponse = orderVideoList.get(playOrderPos);
+                    LogCat.e("order", "当前排播应该播放的视频......." + adDetailResponse.adVideoName);
+                    for (AdDetailResponse playVideo : playVideoLists) {
+                        // 如果找到可以播放的视频，获取器播放地址
+                        if(adDetailResponse.adVideoId == playVideo.adVideoId){
+                            isPlayVideo = true;
+                            playingVideoPath = playVideo.videoPath;
+                            LogCat.e("order", "当前视频可以按照排播列表播放......." + adDetailResponse.adVideoName);
+                            break;
+                        }
+                    }
+                    playOrderPos += 1;
+                    // 已经找到壳播视频，就退出循环
+                    if(isPlayVideo){
+                        break;
+                    }
+
+                    LogCat.e("order", "找不到当前排播视频，继续便利下一个视频.......");
+
+                }
+
+                LogCat.e("order", "最终播放对视频的地址......." + playingVideoPath);
             }
         }
-        playVideo(playingVideoName);
+        playVideo(playingVideoPath);
     }
 
 
@@ -975,7 +1020,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 LogCat.e("video", "由于当前视频播放出错，导致播放下一个.......");
                 if (playVideoLists != null && playVideoLists.size() > 0) {
                     LogCat.e("video", "播放列表还有视频可以播放.......");
-                    playNextVideo(playVideoLists);
+                    playNextVideo(true, playVideoLists);
 
                 } else {
                     LogCat.e("video", "播放列表无数据了，播放预置片.......");
@@ -990,7 +1035,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 } else {
                     LogCat.e("video", "缓存播放列表还有视频可以播放.......");
                     // 播放缓存列表文件
-                    playNextVideo(cachePlayVideoLists);
+                    playNextVideo(false, cachePlayVideoLists);
                 }
             }
         } else {
@@ -1017,43 +1062,75 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //            AdDetailResponse videoAdBean = playVideoLists.get(playVideoIndex);
 //            LogCat.e("video", "添加一次视频播放" + videoAdBean.adVideoName);
             // 播放缓存列表文件
-            playNextVideo(playVideoLists);
+            playNextVideo(true, playVideoLists);
 
         }
     }
 
 
-    private void playNextVideo(ArrayList<AdDetailResponse> playVideoLists) {
+    private void playNextVideo(boolean isOrderPlay, ArrayList<AdDetailResponse> playVideoLists) {
         int length = playVideoLists.size();
-        if (length > playVideoIndex) {
-            LogCat.e("video", "-----------------------------");
-            for (int i = 0; i < length; i++) {
-                AdDetailResponse adDetailResponse = playVideoLists.get(i);
-                LogCat.e("video", "播放列表：" + adDetailResponse.adVideoName);
-                LogCat.e("video", "播放地址：" + adDetailResponse.videoPath);
+        if(isOrderPlay){
+            LogCat.e("order", "开始排播.......");
+        // 处理播放位置
+
+            if(playOrderPos >= orderVideoList.size()){
+                LogCat.e("order", "重置playOrderPos.......");
+                playOrderPos = 0;
             }
-            LogCat.e("video", "-----------------------------");
+            String videoPath = null;
+            for(; playOrderPos < length; ){
+                boolean isPlayVideo = false;
+                LogCat.e("order", "playOrderPos......."+ playOrderPos);
+                AdDetailResponse adDetailResponse = orderVideoList.get(playOrderPos);
+                LogCat.e("order", "当前排播应该播放的视频......." + adDetailResponse.adVideoName);
+                for (AdDetailResponse playVideo : playVideoLists) {
+                    // 如果找到可以播放的视频，获取器播放地址
+                    if(adDetailResponse.adVideoId == playVideo.adVideoId){
+                        isPlayVideo = true;
+                        videoPath = playVideo.videoPath;
+                        LogCat.e("order", "当前视频可以按照排播列表播放......." + adDetailResponse.adVideoName);
+                        break;
+                    }
+                }
+                playOrderPos += 1;
+                // 已经找到壳播视频，就退出循环
+                if(isPlayVideo){
+                    break;
+                }
+                LogCat.e("order", "找不到当前排播视频，继续便利下一个视频.......");
+            }
+            LogCat.e("order", "playOrderPos......."+ playOrderPos);
+            playVideo(videoPath);
 
-            AdDetailResponse adDetailResponse = searchPlayVideo(playVideoIndex, playVideoLists);
-            LogCat.e("video", "当前正在播放结束的是：" + adDetailResponse.adVideoName);
-            // 添加友盟统计
-//            SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
-//            boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
-//            if(isHasMac){
-//                LogCat.e("mac", "umeng可以使用。。。。。添加播放次数" + adDetailResponse.adVideoName);
-//                MobclickAgent.onEvent(getActivity(), "video_play_times", adDetailResponse.adVideoName);
-//            }
-            UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_VIDEO_PLAY_TIMES, adDetailResponse.adVideoName);
+        }else {
+            if (length > playVideoIndex) {
+                LogCat.e("video", "-----------------------------");
+                for (int i = 0; i < length; i++) {
+                    AdDetailResponse adDetailResponse = playVideoLists.get(i);
+                    LogCat.e("video", "播放列表：" + adDetailResponse.adVideoName);
+                    LogCat.e("video", "播放地址：" + adDetailResponse.videoPath);
+                }
+                LogCat.e("video", "-----------------------------");
+
+                AdDetailResponse adDetailResponse = searchPlayVideo(playVideoIndex, playVideoLists);
+                LogCat.e("video", "当前正在播放结束的是：" + adDetailResponse.adVideoName);
+                // 添加友盟统计
+                UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_VIDEO_PLAY_TIMES, adDetailResponse.adVideoName);
+            }
+
+            LogCat.e("video", "当前播放列表数量：" + length);
+            playVideoIndex++;
+            if (playVideoIndex >= length) {
+                playVideoIndex = 0;
+            }
+            AdDetailResponse adDetailResponse = playVideoLists.get(playVideoIndex);
+            playVideo(adDetailResponse.videoPath);
+            LogCat.e("video", "即将播放视频。。。" + adDetailResponse.adVideoName + "  " + playVideoIndex);
+
         }
 
-        LogCat.e("video", "当前播放列表数量：" + length);
-        playVideoIndex++;
-        if (playVideoIndex >= length) {
-            playVideoIndex = 0;
-        }
-        AdDetailResponse adDetailResponse = playVideoLists.get(playVideoIndex);
-        playVideo(adDetailResponse.videoPath);
-        LogCat.e("video", "即将播放视频。。。" + adDetailResponse.adVideoName + "  " + playVideoIndex);
+
     }
 
     /**

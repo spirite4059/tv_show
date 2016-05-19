@@ -238,29 +238,31 @@ public class DownloadPrepareThread extends Thread {
         }
 
 
-
         // 检查sql
         int size = threads.length;
         ArrayList<DownloadInfo> downloadInfos = DLDao.queryAll(context, ToolUtils.getFileName(file.getName()));
         // 线程数变了
-        if(downloadInfos != null && downloadInfos.size() > 0){
+        if (downloadInfos != null && downloadInfos.size() > 0) {
             LogCat.e("video", "有当前记录的存储信息......");
-            if(downloadInfos.size() != size){
+            if (downloadInfos.size() != size) {
                 LogCat.e("video", "线程数发生变化，删除记录，重新下载......");
                 DLDao.delete(context);
                 startThreadWithOutSql(url, fileSize, blockSize, size);
-            }else {
-                if(file!= null && file.exists()){
+            } else if (file.length() == 0){
+                LogCat.e("video", "可能数据表还在，但是文件已经删除了......");
+                DLDao.delete(context);
+                startThreadWithOutSql(url, fileSize, blockSize, size);
+            } else {
+                if (file != null && file.exists()) {
                     LogCat.e("video", "从数据库中回复下载......");
                     startThreadWithSql(url, blockSize, size, downloadInfos);
-
-                }else {
+                } else {
                     LogCat.e("video", "有记录信息，但是文件遭到破坏，从开开始下载......");
                     DLDao.delete(context);
                     startThreadWithOutSql(url, fileSize, blockSize, size);
                 }
             }
-        }else {
+        } else {
             LogCat.e("video", "没有当前下载信息，从头开始下载......");
             startThreadWithOutSql(url, fileSize, blockSize, size);
         }
@@ -376,11 +378,11 @@ public class DownloadPrepareThread extends Thread {
     private void updateFileLength(int fileSize) {
         try {
             String fileName = ToolUtils.getFileName(file.getName());
-            if(!TextUtils.isEmpty(fileName)){
+            if (!TextUtils.isEmpty(fileName)) {
                 AdDao.update(context, getTableName(isToday), fileName, AdDao.adVideoLength, String.valueOf(fileSize));
                 LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, getTableName(isToday), AdDao.adVideoName, fileName).adVideoLength);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -399,9 +401,9 @@ public class DownloadPrepareThread extends Thread {
 
     }
 
-    private String getTableName(boolean isToday){
+    private String getTableName(boolean isToday) {
         String table = null;
-        if(isToday)
+        if (isToday)
             table = AdDao.DBBASE_TD_VIDEOS_TABLE_NAME;
         else
             table = AdDao.DBBASE_TM_VIDEOS_TABLE_NAME;
@@ -426,7 +428,7 @@ public class DownloadPrepareThread extends Thread {
                 int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
                 fileName = fileName.substring(0, index);
                 downloadInfo.tname = fileName;
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -446,7 +448,7 @@ public class DownloadPrepareThread extends Thread {
 
         }
         ArrayList<DownloadInfo> downloadInfos1 = DLDao.queryAll(context);
-        for(DownloadInfo downloadInfo : downloadInfos1){
+        for (DownloadInfo downloadInfo : downloadInfos1) {
             LogCat.e("downloadInfo.tname......" + downloadInfo.tname);
             LogCat.e("downloadInfo.turl......" + downloadInfo.turl);
             LogCat.e("downloadInfo.startPos......" + downloadInfo.startPos);

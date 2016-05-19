@@ -82,7 +82,7 @@ public class VideoAdUtils {
                 boolean isDownload = DLDao.queryByName(context, name);
                 // 线程数变了
                 if (isDownload) {
-                    LogCat.e("video", "当前文件正在下载, 不算在本地缓存文件内容中。。。。。");
+                    LogCat.e("video", "当前文件正在下载, 不算在本地缓存文件内容中。。。。。" + name);
                     continue;
                 }
 
@@ -304,8 +304,10 @@ public class VideoAdUtils {
             LogCat.e("video", "检测到播放列表, 开始检测文件完整性......");
             for (int i = 0; i < localVideoList.size(); i++) {
                 AdDetailResponse localVideo = localVideoList.get(i);
+                boolean isHasCache = false;
                 for (AdDetailResponse cacheVideo : cacheTodayList) {
                     if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
+                        isHasCache = true;
                         if (cacheVideo.adVideoLength != 0 && cacheVideo.adVideoLength != localVideo.adVideoLength) {
                             // 如果文件正在下载，则忽略
                             boolean isDownloading = DLDao.queryByName(context, localVideo.adVideoName);
@@ -317,19 +319,34 @@ public class VideoAdUtils {
                                 DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
                                 LogCat.e("video", "由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
                             }
+                            break;
                         }
                     }
                 }
-            }
-        } else {
-            for (int i = 0; i < localVideoList.size(); i++) {
-                AdDetailResponse localVideo = localVideoList.get(i);
-                if (localVideo.adVideoLength == 0) {
+
+                if(!isHasCache){
                     --i;
                     localVideoList.remove(localVideo);
                     DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-                    LogCat.e("video", "由于文件大小==0，需要删除的文件是......." + localVideo.adVideoName);
+                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以删除文件..........");
                 }
+
+
+            }
+        } else {
+            LogCat.e("video", "缓存表为空，清空所有缓存视频..........");
+            for (int i = 0; i < localVideoList.size(); i++) {
+                AdDetailResponse localVideo = localVideoList.get(i);
+//                if (localVideo.adVideoLength == 0) {
+//                    --i;
+//                    localVideoList.remove(localVideo);
+//                    DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
+//                    LogCat.e("video", "由于文件大小==0，需要删除的文件是......." + localVideo.adVideoName);
+//                }
+
+                --i;
+                localVideoList.remove(localVideo);
+                DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
             }
         }
     }
