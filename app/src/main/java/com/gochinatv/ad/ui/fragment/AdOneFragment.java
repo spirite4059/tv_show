@@ -1072,14 +1072,14 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         int length = playVideoLists.size();
         if(isOrderPlay){
             LogCat.e("order", "开始排播.......");
-        // 处理播放位置
-
-            if(playOrderPos >= orderVideoList.size()){
+            // 处理播放位置
+            int orderSize = orderVideoList.size();
+            if(playOrderPos >= orderSize){
                 LogCat.e("order", "重置playOrderPos.......");
                 playOrderPos = 0;
             }
             String videoPath = null;
-            for(; playOrderPos < length; ){
+            for(; playOrderPos < orderSize; ){
                 boolean isPlayVideo = false;
                 LogCat.e("order", "playOrderPos......."+ playOrderPos);
                 AdDetailResponse adDetailResponse = orderVideoList.get(playOrderPos);
