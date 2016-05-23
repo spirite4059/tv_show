@@ -156,16 +156,25 @@ public class DownLoadAPKUtils {
                         ApkFile.createNewFile();
                     }
                     fos = new FileOutputStream(ApkFile);
-                    byte buf[] = new byte[1024 * 3];
+                    byte buf[] = new byte[2048];
+
+                    long startTime = System.currentTimeMillis();
+
                     do {
                         int numRead = is.read(buf);
                         count += numRead;
                         // 更新进度条
-                        progress = (int) (((float) count / contentLength) * 100);
-                        Message msg = new Message();
-                        msg.what = 1;
-                        msg.arg1 = progress;
-                        handler.sendMessage(msg);
+                        progress = count;
+
+                        long currentTime = System.currentTimeMillis();
+                        if(currentTime - startTime >= 1000){
+                            Message msg = handler.obtainMessage();
+                            msg.what = 1;
+                            msg.arg1 = progress;
+                            handler.sendMessage(msg);
+                            startTime = System.currentTimeMillis();
+                        }
+
 
                         if (numRead <= 0) {
                             LogCat.e("APKdownload","apk下载完成");
@@ -176,7 +185,6 @@ public class DownLoadAPKUtils {
                             Message msg1 = new Message();
                             msg1.what = 0;
                             handler.sendMessage(msg1);
-
                             break;
                         }
                         fos.write(buf, 0, numRead);
