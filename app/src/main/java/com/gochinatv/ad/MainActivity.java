@@ -195,7 +195,6 @@ public class MainActivity extends Activity {
         if(isFinishing()){
             return;
         }
-
         String mac = DataUtils.getMacAddress(MainActivity.this);
         SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
         if (!TextUtils.isEmpty(mac)) {

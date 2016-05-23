@@ -13,7 +13,7 @@ android {
         applicationId "com.gochinatv.ad"
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 12
+        versionCode 13
         versionName "2.1.1"
         // dex突破65535的限制
         multiDexEnabled true
@@ -70,7 +70,6 @@ dependencies {
     compile project(':dlutils')
     compile project(':db')
     compile 'com.umeng.analytics:analytics:latest.integration'
-    compile 'org.jcodec:jcodec-android:0.1.9'
     compile project(':statistics')
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.jakewharton:butterknife:8.0.1'

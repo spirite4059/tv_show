@@ -469,14 +469,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             // 把当前下载的任务从播放列删除
             downloadLists.remove(downloadingVideoResponse);
 
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showLogMsg(0, 0);
-                    }
-                });
-            }
+
+            showLogMsg(0, 0);
 
             // 统计下载完成的视频
             UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_DOWNLOAD_FILE, downloadingVideoResponse.adVideoName);
@@ -506,15 +500,20 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     @Override
     public void onDownloadProgress(final long progress, final long fileLength) {
+        showLogMsg(progress, fileLength);
+        showNetSpeed(progress);
+    }
+
+    public void showNetSpeed(final long progress) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    showLogMsg(progress, fileLength);
+
 
                     long current = progress - oldProgress;
                     String speed;
-                    if (current < 1024) {
+                    if (current >= 0 && current < 1024) {
                         speed = current + "B/s";
                     } else if (current >= 1024 && current < K_SIZE) {
                         speed = current / 1024 + "KB/s";
@@ -522,16 +521,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                         speed = current / K_SIZE + "MB/s";
                     }
                     LogCat.e("video", "speed: " + speed);
-                    tvSpeed.setText("speed: " + speed);
-                    // 下载设备网速
-                    UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_NET_SPEED, speed);
-
+                    if(current > 0){
+                        tvSpeed.setText("speed: " + speed);
+                        // 下载设备网速
+                        UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_NET_SPEED, speed);
+                    }
                     oldProgress = progress;
-
                 }
             });
         }
-
     }
 
     private void downVideoError() {
@@ -930,42 +928,49 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
     private void showLogMsg(final long progress, final long fileLength) {
-
-        if (Constants.isTest && !isDetached()) {
-            // 当前下载视频
-            // 当前已下载视频的个数
-            StringBuilder logBuilder = new StringBuilder();
-            logBuilder.append("正在播放：" + getPlayingVideoInfo().adVideoName);
-            logBuilder.append('\n');
-            logBuilder.append("当前正在下载：");
-            if (downloadingVideoResponse != null) {
-                logBuilder.append(downloadingVideoResponse.adVideoName);
-            }
-            logBuilder.append('\n');
-            logBuilder.append("当前下载进度：");
-            logBuilder.append(logProgress(progress, fileLength));
-            logBuilder.append('\n');
-
-            logBuilder.append("已下载视频列表：" + '\n');
-            if (playVideoLists != null) {
-                int size = playVideoLists.size();
-                for (int i = 0; i < size; i++) {
-                    AdDetailResponse adDetailResponse = playVideoLists.get(i);
-                    logBuilder.append("        ");
-                    logBuilder.append(adDetailResponse.adVideoName);
-                    if (i < size - 1) {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (Constants.isTest && !isDetached()) {
+                        // 当前下载视频
+                        // 当前已下载视频的个数
+                        StringBuilder logBuilder = new StringBuilder();
+                        logBuilder.append("正在播放：" + getPlayingVideoInfo().adVideoName);
                         logBuilder.append('\n');
+                        logBuilder.append("当前正在下载：");
+                        if (downloadingVideoResponse != null) {
+                            logBuilder.append(downloadingVideoResponse.adVideoName);
+                        }
+                        logBuilder.append('\n');
+                        logBuilder.append("当前下载进度：");
+                        logBuilder.append(logProgress(progress, fileLength));
+                        logBuilder.append('\n');
+
+                        logBuilder.append("已下载视频列表：" + '\n');
+                        if (playVideoLists != null) {
+                            int size = playVideoLists.size();
+                            for (int i = 0; i < size; i++) {
+                                AdDetailResponse adDetailResponse = playVideoLists.get(i);
+                                logBuilder.append("        ");
+                                logBuilder.append(adDetailResponse.adVideoName);
+                                if (i < size - 1) {
+                                    logBuilder.append('\n');
+                                }
+                            }
+                            if (tvProgress.getVisibility() != View.VISIBLE) {
+                                tvProgress.setVisibility(View.VISIBLE);
+                                tvProgress.bringToFront();
+
+                            }
+                            tvProgress.setText(logBuilder.toString());
+                        }
+
                     }
                 }
-                if (tvProgress.getVisibility() != View.VISIBLE) {
-                    tvProgress.setVisibility(View.VISIBLE);
-                    tvProgress.bringToFront();
-
-                }
-                tvProgress.setText(logBuilder.toString());
-            }
-
+            });
         }
+
     }
 
     private void download(String url) {
@@ -1072,14 +1077,14 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         int length = playVideoLists.size();
         if(isOrderPlay){
             LogCat.e("order", "开始排播.......");
-        // 处理播放位置
-
-            if(playOrderPos >= orderVideoList.size()){
+            // 处理播放位置
+            int orderSize = orderVideoList.size();
+            if(playOrderPos >= orderSize){
                 LogCat.e("order", "重置playOrderPos.......");
                 playOrderPos = 0;
             }
             String videoPath = null;
-            for(; playOrderPos < length; ){
+            for(; playOrderPos < orderSize; ){
                 boolean isPlayVideo = false;
                 LogCat.e("order", "playOrderPos......."+ playOrderPos);
                 AdDetailResponse adDetailResponse = orderVideoList.get(playOrderPos);
