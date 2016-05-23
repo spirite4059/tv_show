@@ -5,8 +5,6 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
-import com.gochinatv.ad.tools.LogCat;
-
 /**
  * Created by ulplanet on 2016/5/18.
  */
@@ -69,7 +67,6 @@ public class MarqueeTextView extends TextView implements Runnable {
         }
         scrollX += 2;
         scrollToX(scrollX);
-//        getTextWidth();
         if (getScrollX() >= textWidth) {
             int scrollReStartX = -(getWidth());
             scrollToX(scrollReStartX);
@@ -82,18 +79,19 @@ public class MarqueeTextView extends TextView implements Runnable {
     public void startScroll() {
         getTextWidth();
         isStopping = false;
-
-        LogCat.e("ADFourFragment", "viewWidth:  " + viewWidth + " textWidth :  " +  textWidth);
+        //LogCat.e("ADFourFragment", "viewWidth:  " + viewWidth + " textWidth :  " +  textWidth);
         if (viewWidth >= textWidth) {
             return;
         }
         // 开始滚动
         scrollToX(0);
-        removeCallbacks(this);
+        //removeCallbacks(this);
         scrollX = 0;
         if (getWidth() < textWidth) {
             postDelayed(this, 1000);
+            //LogCat.e("ADFourFragment"," 开启左右滑动33333333333333333333333");
         }
+
     }
 
 

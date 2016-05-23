@@ -19,7 +19,6 @@ import android.widget.ViewSwitcher;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.tools.Constants;
-import com.gochinatv.ad.tools.LogCat;
 
 /**
  * Created by zfy on 2016/3/17.
@@ -131,7 +130,7 @@ public class AutoTextView extends TextSwitcher implements
     }
     //定义动作，向上滚动翻页
     public void next(){
-        //stopScroll();//停止滑动并且复位
+        stopScroll();//停止滑动并且复位
         if(getInAnimation() != mInUp){
             setInAnimation(mInUp);
         }
@@ -147,10 +146,10 @@ public class AutoTextView extends TextSwitcher implements
         //获取文字宽度
         if(mPaint != null){
             textWidth = (int) mPaint.measureText((String)text);
-            LogCat.e("ADFourFragment"," viewWidth:" + viewWidth +"   textWidth:"+ textWidth);
+            //LogCat.e("ADFourFragment"," viewWidth:" + viewWidth +"   textWidth:"+ textWidth);
         }
         if(textWidth > viewWidth){
-            LogCat.e("ADFourFragment"," 开启左右滑动############");
+            //LogCat.e("ADFourFragment"," 开启左右滑动1111111111111111111");
             startScroll();
         }else {
             stopScroll();
@@ -235,6 +234,7 @@ public class AutoTextView extends TextSwitcher implements
 
     public void startScroll(){
         if(textView != null){
+            //LogCat.e("ADFourFragment"," 开启左右滑动222222222222222222222");
             textView.startScroll();
         }
     }
@@ -261,8 +261,6 @@ public class AutoTextView extends TextSwitcher implements
 //        }
 //        postDelayed(this, 50);
 //    }
-
-
 
 
 //    }

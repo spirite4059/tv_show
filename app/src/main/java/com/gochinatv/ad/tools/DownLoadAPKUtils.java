@@ -204,7 +204,6 @@ public class DownLoadAPKUtils {
                     msg.what = 2;
                     handler.sendMessage(msg);
                 } finally {
-                    isInterceptDownload = true;
                     try {
                         if (is != null) {
                             is.close();
@@ -219,10 +218,13 @@ public class DownLoadAPKUtils {
                 }
                 // 取消了升级，要删除文件
                 if (isInterceptDownload == true) {
-                    File file = new File(apkFile);
-                    if(file != null && file.exists()){
-                        file.delete();
+                    if(!TextUtils.isEmpty(apkFile)){
+                        File file = new File(apkFile);
+                        if(file != null && file.exists()){
+                            file.delete();
+                        }
                     }
+
                 }
             }
         });

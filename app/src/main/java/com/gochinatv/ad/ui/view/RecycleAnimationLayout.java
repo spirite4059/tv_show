@@ -196,7 +196,9 @@ public class RecycleAnimationLayout extends LinearLayout {
                 this.addView(view);
             }
             isRecycle = true;
-            recycleRunnable = new RecycleRunnable();
+            if(recycleRunnable == null){
+                recycleRunnable = new RecycleRunnable();
+            }
             handler.postDelayed(recycleRunnable,secondTime);
 
 
@@ -212,7 +214,9 @@ public class RecycleAnimationLayout extends LinearLayout {
         public void run() {
             position++;
             scrollUp();
-            handler.postDelayed(recycleRunnable,secondTime);
+            if(handler != null){
+                handler.postDelayed(recycleRunnable,secondTime);
+            }
         }
     }
 
