@@ -501,15 +501,24 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     @Override
     public void onDownloadProgress(final long progress, final long fileLength) {
         showLogMsg(progress, fileLength);
-        showNetSpeed(progress);
+        showNetSpeed(true, false, progress);
     }
 
-    public void showNetSpeed(final long progress) {
+    public void showNetSpeed(final boolean isHasNet, final boolean isDownloadAPK, final long progress) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    if(!isHasNet){
+                        tvSpeed.setText("wifi: off");
+                        return;
+                    }
 
+
+                    if(oldProgress <= 0){
+                        oldProgress = progress;
+                        return;
+                    }
 
                     long current = progress - oldProgress;
                     String speed;
@@ -522,7 +531,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     }
                     LogCat.e("video", "speed: " + speed);
                     if(current > 0){
-                        tvSpeed.setText("speed: " + speed);
+                        String msg = null;
+                        if(isDownloadAPK){
+                            msg = "wifi: " + speed + " downloading";
+                        }else {
+                            msg = "wifi: " + speed + " upgrading";
+                        }
+                        tvSpeed.setText(msg);
                         // 下载设备网速
                         UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_NET_SPEED, speed);
                     }
