@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.download.db.DLDao;
 import com.download.db.DownloadInfo;
 import com.download.tools.LogCat;
+import com.download.tools.ToolUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -44,6 +45,7 @@ public class DownloadThread extends Thread {
     private long startPos;
     private long endPos;
     private DownloadInfo downloadInfo;
+    private String fileName;
     /**
      *
      * @param downloadUrl:文件下载地址
@@ -76,9 +78,16 @@ public class DownloadThread extends Thread {
         LogCat.e("current thread " + threadId  + "endPos........" +  endPos);
         // 如果线程已经下载完成就不去在做操作
         if(downloadLength != 0 && downloadLength == endPos){
-            LogCat.e("current thread " + threadId  + "已经下载完全部的文件");
+            LogCat.e("current thread " + threadId  + ": 已经下载完全部的文件");
             return;
         }
+
+        if(startPos == endPos){
+            LogCat.e("current thread " + threadId  + ": startPos == endPos，终止下载......");
+            downloadLength = endPos;
+            return;
+        }
+
 
         // 获取下载地址的connect
         HttpURLConnection connection = getConnection();
@@ -86,6 +95,8 @@ public class DownloadThread extends Thread {
             // 彻底放弃当前下载
             return;
         }
+
+        fileName = ToolUtils.getFileName(file.getName());
 
         // 开始下载文件
         downloadFile(connection);

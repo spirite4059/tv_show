@@ -200,7 +200,7 @@ public class MainActivity extends Activity {
         if (!TextUtils.isEmpty(mac)) {
             final String macAddress = mac.replaceAll(":", "");
             LogCat.e("mac: " + macAddress);
-            MobclickAgent. startWithConfigure(new MobclickAgent.UMAnalyticsConfig(this, "572c1246e0f55aa6c5001533", mac, MobclickAgent.EScenarioType.E_UM_NORMAL));
+            MobclickAgent.startWithConfigure(new MobclickAgent.UMAnalyticsConfig(this, "572c1246e0f55aa6c5001533", mac));
             MobclickAgent.openActivityDurationTrack(false);
             MobclickAgent.setCatchUncaughtExceptions(true);
             MobclickAgent.setDebugMode(false);

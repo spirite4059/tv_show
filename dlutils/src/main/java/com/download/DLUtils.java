@@ -3,6 +3,7 @@ package com.download;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.download.db.DLDao;
 import com.download.dllistener.InDLUtils;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.download.tools.LogCat;
@@ -130,5 +131,8 @@ public class DLUtils implements InDLUtils {
         LogCat.e("video", "DLUtils -> cancel.......");
     }
 
+    public static void deleteDlMsg(Context context){
+        DLDao.delete(context);
+    }
 
 }

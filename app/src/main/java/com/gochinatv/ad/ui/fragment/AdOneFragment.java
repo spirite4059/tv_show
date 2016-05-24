@@ -580,6 +580,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                         LogCat.e("video", "将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
                         downloadLists.add(size, downloadingVideoResponse);
                         downloadLists.remove(0);
+
+                        // 删除下载的记录
+                        DownloadUtils.deleteErrorDl(getActivity());
+                        // 删除下载的文件
+                        DeleteFileUtils.getInstance().deleteFile(downloadingVideoResponse.videoPath);
+                        // 准备下载下一个
                         prepareDownloading();
                     } else {
                         download(videoUrl);
@@ -708,7 +714,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 LogCat.e("order", "开始排播.......");
                 for(; playOrderPos < size; ){
                     boolean isPlayVideo = false;
-
                     AdDetailResponse adDetailResponse = orderVideoList.get(playOrderPos);
                     LogCat.e("order", "当前排播应该播放的视频......." + adDetailResponse.adVideoName);
                     for (AdDetailResponse playVideo : playVideoLists) {

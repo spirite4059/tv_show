@@ -255,7 +255,7 @@ public class DownloadPrepareThread extends Thread {
             } else {
                 if (file != null && file.exists()) {
                     LogCat.e("video", "从数据库中回复下载......");
-                    startThreadWithSql(url, blockSize, size, downloadInfos);
+                    startThreadWithSql(url, blockSize, size, downloadInfos, fileSize);
                 } else {
                     LogCat.e("video", "有记录信息，但是文件遭到破坏，从开开始下载......");
                     DLDao.delete(context);
@@ -387,16 +387,21 @@ public class DownloadPrepareThread extends Thread {
         }
     }
 
-    private void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos) {
+    private void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos, int fileSize) {
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
             int threadId = i + 1;
             DownloadInfo downloadInfo = downloadInfos.get(i);
-
             LogCat.e("video", "记录位置的startPos: " + downloadInfo.startPos);
             LogCat.e("video", "记录位置的endPos: " + downloadInfo.endPos);
-            threads[i] = new DownloadThread(context, url, file, blockSize, threadId, downloadInfo);
-            threads[i].start();
+            if(downloadInfo.endPos > fileSize - 1){
+                // 此时表示发生异常，数据表的下载数据出现问题，需要纠正，简单处理，删除重新下载
+                startThreadWithOutSql(url, fileSize, blockSize, size);
+                break;
+            } else {
+                threads[i] = new DownloadThread(context, url, file, blockSize, threadId, downloadInfo);
+                threads[i].start();
+            }
         }
 
     }
@@ -424,10 +429,7 @@ public class DownloadPrepareThread extends Thread {
             downloadInfo.tid = threadId;
             downloadInfo.turl = downloadUrl;
             try {
-                String fileName = file.getName();
-                int index = fileName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
-                fileName = fileName.substring(0, index);
-                downloadInfo.tname = fileName;
+                downloadInfo.tname = ToolUtils.getFileName(file.getName());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -437,11 +439,19 @@ public class DownloadPrepareThread extends Thread {
             long startPos = blockSize * (threadId - 1);//开始位置
             long endPos = blockSize * threadId - 1;//结束位置
             downloadInfo.startPos = startPos;
-            downloadInfo.endPos = endPos;
+
+            if(endPos > fileSize - 1){
+                downloadInfo.endPos = fileSize - 1;
+            }else {
+                downloadInfo.endPos = endPos;
+            }
+
+
+            LogCat.e("video", "startThreadWithOutSql......startPos: " + startPos);
+            LogCat.e("video", "startThreadWithOutSql......endPos: " + endPos);
 
             LogCat.e("将当前的下载加入数据表......");
             DLDao.insert(context, downloadInfo);
-
 
             threads[i] = new DownloadThread(context, url, file, blockSize, threadId, null);
             threads[i].start();

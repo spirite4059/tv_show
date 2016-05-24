@@ -235,4 +235,9 @@ public class DownloadUtils {
         return errorMsg;
     }
 
+
+
+    public static void deleteErrorDl(Context context){
+        DLUtils.deleteDlMsg(context);
+    }
 }
