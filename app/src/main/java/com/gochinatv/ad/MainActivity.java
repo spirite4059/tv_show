@@ -524,6 +524,10 @@ public class MainActivity extends Activity {
             @Override
             public void onDownLoadProgress(int progress, String fileName) {
                 LogCat.e("APKdownload","APK已经下载了 progress: " + progress +"%");
+
+                if(adOneFragment != null){
+                    adOneFragment.showNetSpeed(true, true, progress);
+                }
             }
         });
 
@@ -535,6 +539,10 @@ public class MainActivity extends Activity {
                 LogCat.e("APKdownload","下载升级成功，开始正式升级.......");
                 File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                 InstallUtils.installAuto(MainActivity.this, file, true);
+
+                if(adOneFragment != null){
+                    adOneFragment.hideNetSpeed();
+                }
             }
         });
 

@@ -504,13 +504,24 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         showNetSpeed(true, false, progress);
     }
 
-    public void showNetSpeed(final boolean isHasNet, final boolean isDownloadAPK, final long progress) {
+    public void hideNetSpeed(){
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    tvSpeed.setVisibility(View.GONE);
+                }
+            });
+        }
+    }
+
+    public void showNetSpeed(final boolean isHasNet, final boolean isDownloadingAPK, final long progress) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if(!isHasNet){
-                        tvSpeed.setText("wifi: off");
+                        tvSpeed.setText("wifi:off");
                         return;
                     }
 
@@ -529,13 +540,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     } else {
                         speed = current / K_SIZE + "MB/s";
                     }
-                    LogCat.e("video", "speed: " + speed);
+                    LogCat.e("net_speed", "speed: " + speed);
                     if(current > 0){
                         String msg = null;
-                        if(isDownloadAPK){
-                            msg = "wifi: " + speed + " downloading";
+                        if(isDownloadingAPK){
+                            msg = "wifi:on-" + speed + "-upgrading";
                         }else {
-                            msg = "wifi: " + speed + " upgrading";
+                            msg = "wifi:on-" + speed + "-downloading";
                         }
                         tvSpeed.setText(msg);
                         // 下载设备网速
