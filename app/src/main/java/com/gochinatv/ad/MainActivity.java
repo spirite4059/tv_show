@@ -704,17 +704,11 @@ public class MainActivity extends Activity {
                     adOneFragment.setPollInterval(adDeviceDataResponse.pollInterval);
                 }
 
-                //String decviceID = "";
-
-
                 if (!TextUtils.isEmpty(adDeviceDataResponse.adStruct)) {
                     if ("1".equals(adDeviceDataResponse.adStruct)) {
                         //一个广告位
                         showOneAD();
                     } else if ("4".equals(adDeviceDataResponse.adStruct)) {
-
-
-
                         //四个广告位
                         //遍历获取布局参数
                         if (adDeviceDataResponse.layout != null && adDeviceDataResponse.layout.size() > 0) {
