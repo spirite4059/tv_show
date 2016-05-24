@@ -19,6 +19,7 @@ import android.widget.ViewSwitcher;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.tools.Constants;
+import com.gochinatv.ad.tools.LogCat;
 
 /**
  * Created by zfy on 2016/3/17.
@@ -53,7 +54,11 @@ public class AutoTextView extends TextSwitcher implements
     //滑动的距离
     //private int scrollX;
 
-    MarqueeTextView textView;
+    //MarqueeTextView textView,textView2;
+    //private int  position;
+    
+    //ArrayList<MarqueeTextView> marqueeTextViewArrayList = new ArrayList<>();
+    
 
     public AutoTextView(Context context) {
         this(context, null);
@@ -96,11 +101,14 @@ public class AutoTextView extends TextSwitcher implements
     //这里返回的TextView，就是我们看到的View
     @Override
     public View makeView() {
-
-         textView = new MarqueeTextView(mContext);
-        // TODO Auto-generated method stub
-        //TextView textView = new TextView(mContext);
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LogCat.e("ADFourFragment"," &&&&&&&&&&&&&  makeView makeView  makeView   makeView");
+        MarqueeTextView textView = new MarqueeTextView(mContext);
+        FrameLayout.LayoutParams lp = (LayoutParams) textView.getLayoutParams();
+        if(lp == null){
+            lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        lp.width = 1044;
+        lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         textView.setLayoutParams(lp);
         textView.setTextColor(Color.WHITE);
         if(Constants.isPhone){
@@ -116,8 +124,10 @@ public class AutoTextView extends TextSwitcher implements
             mPaint = textView.getPaint();
 
         }
-        textView.setViewWidth(viewWidth);
         return textView;
+        
+
+
     }
     //定义动作，向下滚动翻页
     public void previous(){
@@ -131,12 +141,17 @@ public class AutoTextView extends TextSwitcher implements
     //定义动作，向上滚动翻页
     public void next(){
         stopScroll();//停止滑动并且复位
+
         if(getInAnimation() != mInUp){
             setInAnimation(mInUp);
+
         }
         if(getOutAnimation() != mOutUp){
             setOutAnimation(mOutUp);
         }
+
+
+
     }
 
 
@@ -146,13 +161,14 @@ public class AutoTextView extends TextSwitcher implements
         //获取文字宽度
         if(mPaint != null){
             textWidth = (int) mPaint.measureText((String)text);
-            //LogCat.e("ADFourFragment"," viewWidth:" + viewWidth +"   textWidth:"+ textWidth);
         }
+
         if(textWidth > viewWidth){
-            //LogCat.e("ADFourFragment"," 开启左右滑动1111111111111111111");
             startScroll();
+
         }else {
             stopScroll();
+
         }
 
     }
@@ -219,7 +235,19 @@ public class AutoTextView extends TextSwitcher implements
      */
     public void setViewWidth(int viewWidth) {
         this.viewWidth = viewWidth-this.getPaddingLeft() - this.getPaddingRight();
+        //setMarqueeViewWidth(this.viewWidth);
+
     }
+
+    /**
+     * 设置MarqueeTextView 控件的width
+     * @param
+     */
+//    private void setMarqueeViewWidth(int viewWidth) {
+//        if(textView != null){
+//            textView.setViewWidth(viewWidth);
+//        }
+//    }
 
     public int getViewWidth() {
         return viewWidth;
@@ -227,43 +255,35 @@ public class AutoTextView extends TextSwitcher implements
 
 
     public void stopScroll(){
-        if(textView != null){
-            textView.stopScroll();
-        }
+        ((MarqueeTextView)getCurrentView()).stopScroll();
+        ((MarqueeTextView) getNextView()).stopScroll();
+
     }
+
+
+    public void stopALLScroll(){
+        ((MarqueeTextView)getCurrentView()).stopScroll();
+        ((MarqueeTextView) getNextView()).stopScroll();
+
+    }
+
 
     public void startScroll(){
-        if(textView != null){
-            //LogCat.e("ADFourFragment"," 开启左右滑动222222222222222222222");
-            textView.startScroll();
-        }
+        ((MarqueeTextView)getCurrentView()).startScroll();
+        ((MarqueeTextView) getNextView()).stopScroll();
     }
 
 
-//    public void stopScroll() {
-//        isStopping = true;
-//        // 恢复初始状态
-//        scrollX = 0;
-//        scrollToX(0);
-//        removeCallbacks(this);
+
+//    interface StartRollListener{
+//        void startRoll();
 //    }
 //
-//
-//    private void scrollToX(int x) {
-//        scrollTo(x, 0);
-
-//    if (!isStopping) {
-//        scrollX += 2;// 滚动速度
-//        scrollTo(scrollX, 0);
-//        if (scrollX > textWidth) {
-//            scrollTo(0, 0);
-//            scrollX = 0;
-//        }
-//        postDelayed(this, 50);
+//    interface StopRollListener{
+//        void stopRoll();
 //    }
 
 
-//    }
 
 
 

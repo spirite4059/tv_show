@@ -358,7 +358,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
     @Override
     public void onPageSelected(int position) {
-        LogCat.e("ADTwoFragment", "onPageSelected  position:  " + position);
+        //LogCat.e("ADTwoFragment", "onPageSelected  position:  " + position);
         if(position > dataResponses.size()-1){
             position = 0;
         }
