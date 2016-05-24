@@ -411,7 +411,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
 
             }
-        }, (Constants.isTest ? TEST_TIME_DURATION : pollInterval));
+        }, pollInterval);
     }
 
 

@@ -28,7 +28,7 @@ import static com.download.ErrorCodes.ERROR_THREAD_NUMBERS;
  */
 public class DownloadUtils {
 
-    private static final int THREAD_NUMBER = 2;
+    private static final int THREAD_NUMBER = 1;
 
     public static void download(boolean isToday, Context context, String dir, String fileName, String fileUrl, final OnUpgradeStatusListener listener) {
         if(context == null){

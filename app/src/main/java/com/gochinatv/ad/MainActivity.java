@@ -661,8 +661,6 @@ public class MainActivity extends Activity {
                 layoutLogList.add(request);
             }
         });
-
-
     }
 
 
@@ -679,7 +677,7 @@ public class MainActivity extends Activity {
     private void loadFragmentTwo(boolean isDownload) {
         LogCat.e(" isUpgradeSucceed " + isUpgradeSucceed + "  isGetDerviceSucceed    " + isGetDerviceSucceed);
         //当升级和广告体接口都完成后，才加载布局
-        if (isUpgradeSucceed && isGetDerviceSucceed) {
+        if (isUpgradeSucceed && isGetDerviceSucceed && rootLayout != null) {
             rootLayout.setBackground(null);
             rootLayout.setBackgroundColor(Color.BLACK);
             loadingView.setVisibility(View.GONE);

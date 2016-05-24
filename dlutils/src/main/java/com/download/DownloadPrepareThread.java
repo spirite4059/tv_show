@@ -54,7 +54,7 @@ public class DownloadPrepareThread extends Thread {
         errorCode = 0;
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+
     @Override
     public void run() {
         if (isCancel) {
@@ -178,27 +178,8 @@ public class DownloadPrepareThread extends Thread {
 
         // 可用空间检查
         //获得SD卡空间的信息
-        File path = Environment.getExternalStorageDirectory();
-        StatFs statFs = new StatFs(path.getPath());
-        long blockSizeLong = 0;
-        long availableBlocksLong = 0;
-        if (Build.VERSION.SDK_INT >= 18) {
-            blockSizeLong = statFs.getBlockSizeLong();
-            availableBlocksLong = statFs.getAvailableBlocksLong();
-        } else {
-            blockSizeLong = statFs.getBlockSizeLong();
-            availableBlocksLong = statFs.getAvailableBlocksLong();
-        }
-
-        //计算SD卡的空间大小
-        long availableSize = availableBlocksLong * blockSizeLong;
-        long preSpace = 10 * 1024 * 1024; // 10M的预留空间
-        if (availableSize < (fileSize + preSpace)) {
-            // sdcard空间不足，无法下载当前视频
-            setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE);
+        if (checkSdCardSpace(fileSize))
             return;
-
-        }
 
         LogCat.e("video", "fileSize: " + fileSize);
 
@@ -207,9 +188,8 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
         // 计算每条线程下载的数据长度
-        int blockSize = (fileSize % threadNum) == 0 ? fileSize / threadNum
-                : fileSize / threadNum + 1;
-
+        int blockSize = (fileSize % threadNum) == 0 ? (fileSize / threadNum) : (fileSize / threadNum + 1);
+        LogCat.e("video", "blockSize: " + blockSize);
 
         if (isCancel) {
             return;
@@ -248,7 +228,7 @@ public class DownloadPrepareThread extends Thread {
                 LogCat.e("video", "线程数发生变化，删除记录，重新下载......");
                 DLDao.delete(context);
                 startThreadWithOutSql(url, fileSize, blockSize, size);
-            } else if (file.length() == 0){
+            } else if (file.length() == 0) {
                 LogCat.e("video", "可能数据表还在，但是文件已经删除了......");
                 DLDao.delete(context);
                 startThreadWithOutSql(url, fileSize, blockSize, size);
@@ -280,6 +260,7 @@ public class DownloadPrepareThread extends Thread {
         if (isCancel) {
             return;
         }
+
 
         int downloadSize = -2;
         try {
@@ -375,6 +356,32 @@ public class DownloadPrepareThread extends Thread {
 
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private boolean checkSdCardSpace(int fileSize) {
+        File path = Environment.getExternalStorageDirectory();
+        StatFs statFs = new StatFs(path.getPath());
+        long blockSizeLong = 0;
+        long availableBlocksLong = 0;
+        if (Build.VERSION.SDK_INT >= 18) {
+            blockSizeLong = statFs.getBlockSizeLong();
+            availableBlocksLong = statFs.getAvailableBlocksLong();
+        } else {
+            blockSizeLong = statFs.getBlockSizeLong();
+            availableBlocksLong = statFs.getAvailableBlocksLong();
+        }
+
+        //计算SD卡的空间大小
+        long availableSize = availableBlocksLong * blockSizeLong;
+        long preSpace = 10 * 1024 * 1024; // 10M的预留空间
+        if (availableSize < (fileSize + preSpace)) {
+            // sdcard空间不足，无法下载当前视频
+            setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE);
+            return true;
+
+        }
+        return false;
+    }
+
     private void updateFileLength(int fileSize) {
         try {
             String fileName = ToolUtils.getFileName(file.getName());
@@ -394,16 +401,15 @@ public class DownloadPrepareThread extends Thread {
             DownloadInfo downloadInfo = downloadInfos.get(i);
             LogCat.e("video", "记录位置的startPos: " + downloadInfo.startPos);
             LogCat.e("video", "记录位置的endPos: " + downloadInfo.endPos);
-            if(downloadInfo.endPos > fileSize - 1){
-                // 此时表示发生异常，数据表的下载数据出现问题，需要纠正，简单处理，删除重新下载
-                startThreadWithOutSql(url, fileSize, blockSize, size);
-                break;
-            } else {
-                threads[i] = new DownloadThread(context, url, file, blockSize, threadId, downloadInfo);
-                threads[i].start();
-            }
+//            if(downloadInfo.endPos > fileSize - 1){
+//                // 此时表示发生异常，数据表的下载数据出现问题，需要纠正，简单处理，删除重新下载
+//                startThreadWithOutSql(url, fileSize, blockSize, size);
+//                break;
+//            } else {
+            threads[i] = new DownloadThread(context, url, file, blockSize, threadId, downloadInfo);
+            threads[i].start();
+//            }
         }
-
     }
 
     private String getTableName(boolean isToday) {
@@ -436,15 +442,37 @@ public class DownloadPrepareThread extends Thread {
 
             downloadInfo.tlength = fileSize;
 
+            boolean blockIsAdd = fileSize % threadNum == 0;
+
+//            int sizeBlock = i * (fileSize / threadNum);
+//            int startPos = sizeBlock;
+//            int endPos = 0;
+//            //设置最后一个结束点的位置
+//            if (i == threadNum - 1) {
+//                endPos = fileSize;
+//            } else {
+//                sizeBlock = (i + 1) * (fileSize / threadNum);
+//                endPos = sizeBlock;
+//            }
+//            LogCat.e("video", "start-end Position[" + i + "]: " + startPos + "-" + endPos);
+
+
             long startPos = blockSize * (threadId - 1);//开始位置
-            long endPos = blockSize * threadId - 1;//结束位置
+            long endPos = 0;
+            if (blockIsAdd) {
+                endPos = blockSize * threadId - 1;//结束位置
+            } else {
+                endPos = blockSize * threadId - 2;//结束位置
+            }
+
             downloadInfo.startPos = startPos;
 
-            if(endPos > fileSize - 1){
-                downloadInfo.endPos = fileSize - 1;
-            }else {
-                downloadInfo.endPos = endPos;
-            }
+//            if(endPos > fileSize - 1){
+//                LogCat.e("video", "startThreadWithOutSql......endPos值不对 ，需要处理");
+//                downloadInfo.endPos = fileSize - 1;
+//            }else {
+            downloadInfo.endPos = endPos;
+//            }
 
 
             LogCat.e("video", "startThreadWithOutSql......startPos: " + startPos);
