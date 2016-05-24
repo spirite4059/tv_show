@@ -14,6 +14,7 @@ public class ADDeviceDataResponse {
     public String adStruct;
     public long pollInterval;
     public long currentTime;
+    public String code;
     public ScreenShotResponse screenShot;
 
     public ArrayList<LayoutResponse>  layout;

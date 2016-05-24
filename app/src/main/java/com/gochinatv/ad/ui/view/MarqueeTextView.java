@@ -86,10 +86,11 @@ public class MarqueeTextView extends TextView implements Runnable {
     }
 
     public void startScroll() {
-        if(!isStopping){
-            removeCallbacks(this);
-            LogCat.e("ADFourFragment","removeCallbacks 之前的滑动！！！！！！！！！！！！！！！！！");
-        }
+//        if(!isStopping){
+//            removeCallbacks(this);
+//            LogCat.e("ADFourFragment","removeCallbacks 之前的滑动！！！！！！！！！！！！！！！！！");
+//        }
+        removeCallbacks(this);
         getTextWidth();
         isStopping = false;
         scrollX = 0;
@@ -98,10 +99,11 @@ public class MarqueeTextView extends TextView implements Runnable {
 
 
     public void stopScroll() {
-        if(!isStopping){
-            removeCallbacks(this);
-            LogCat.e("ADFourFragment","removeCallbacks 之前的滑动！！！！！！！！！！！！！！！！！");
-        }
+//        if(!isStopping){
+//            removeCallbacks(this);
+//            LogCat.e("ADFourFragment","removeCallbacks 之前的滑动！！！！！！！！！！！！！！！！！");
+//        }
+        removeCallbacks(this);
         isStopping = true;
         // 恢复初始状态
         if( scrollX != 0){

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="@dimen/d_216dp"
-    android:layout_height="@dimen/d_432dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:layout_alignParentRight="true"
     android:layout_alignParentBottom="true"
+    android:paddingLeft="@dimen/d_4dp"
     >
 
     <!--<ScrollView-->

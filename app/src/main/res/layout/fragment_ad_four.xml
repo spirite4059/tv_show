@@ -3,8 +3,8 @@
     xmlns:auto3d="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_alignParentBottom="true"
-    android:layout_width="@dimen/d_1064dp"
-    android:layout_height="@dimen/d_62dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:gravity="center"
     >
 
@@ -16,8 +16,6 @@
         android:background="@android:color/black"
         android:layout_gravity="center_vertical"
         android:padding="@dimen/d_10dp"
-        android:clipChildren="false"
-        android:clipToPadding="false"
         >
     </com.gochinatv.ad.ui.view.AutoTextView>
 

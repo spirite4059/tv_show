@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.download.DLUtils;
@@ -61,8 +62,9 @@ import java.util.Map;
 public class MainActivity extends Activity {
 
     private RelativeLayout rootLayout;
+    private RelativeLayout titleLayout;
     private ImageView imgLoge;//LOGE图
-
+    private TextView textDeviceId;
     private LinearLayout loadingView;
     /**
      * 下载info
@@ -115,6 +117,8 @@ public class MainActivity extends Activity {
         rootLayout = (RelativeLayout) findViewById(R.id.root_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
         imgLoge = (ImageView) findViewById(R.id.img_loge);
+        textDeviceId = (TextView) findViewById(R.id.text_device_id);
+        titleLayout = (RelativeLayout) findViewById(R.id.rel_title);
         init();
     }
 
@@ -437,8 +441,8 @@ public class MainActivity extends Activity {
         if (isFinishing()) {
             return;
         }
-        rootLayout.setBackground(null);
-        rootLayout.setBackgroundColor(Color.BLACK);
+        //rootLayout.setBackground(null);
+        //rootLayout.setBackgroundColor(Color.WHITE);
         imgLoge.setVisibility(View.VISIBLE);
         loadingView.setVisibility(View.GONE);
         FragmentManager fm = getFragmentManager();
@@ -679,7 +683,7 @@ public class MainActivity extends Activity {
             rootLayout.setBackground(null);
             rootLayout.setBackgroundColor(Color.BLACK);
             loadingView.setVisibility(View.GONE);
-            imgLoge.setVisibility(View.VISIBLE);
+            //imgLoge.setVisibility(View.VISIBLE);
 
             adOneFragment = new AdOneFragment();
             if (isDownload) {
@@ -700,11 +704,17 @@ public class MainActivity extends Activity {
                     adOneFragment.setPollInterval(adDeviceDataResponse.pollInterval);
                 }
 
+                //String decviceID = "";
+
+
                 if (!TextUtils.isEmpty(adDeviceDataResponse.adStruct)) {
                     if ("1".equals(adDeviceDataResponse.adStruct)) {
                         //一个广告位
                         showOneAD();
                     } else if ("4".equals(adDeviceDataResponse.adStruct)) {
+
+
+
                         //四个广告位
                         //遍历获取布局参数
                         if (adDeviceDataResponse.layout != null && adDeviceDataResponse.layout.size() > 0) {
@@ -774,6 +784,12 @@ public class MainActivity extends Activity {
                             }
                         }
                         ft.commit();
+
+                        if(!TextUtils.isEmpty(adDeviceDataResponse.code)){
+                            //显示title栏
+                            showTitleLayout(adDeviceDataResponse.code);
+                        }
+
                     } else {
                         //一个广告位
                         showOneAD();
@@ -889,9 +905,35 @@ public class MainActivity extends Activity {
 
 
     /**
-     * 上报
+     * 加载title栏-logo图和设备id
      */
+    private void showTitleLayout(String text){
 
+        RelativeLayout.LayoutParams  params = (RelativeLayout.LayoutParams) titleLayout.getLayoutParams();
+
+        String widthStr = "0.83125";
+        String heightStr = "0.0833";
+        String topStr = "0.0";
+        String leftStr = "0.0";
+
+        double width = (float) (DataUtils.getDisplayMetricsWidth(this)*(Float.parseFloat(widthStr)));
+        double height = (float) (DataUtils.getDisplayMetricsHeight(this)*(Float.parseFloat(heightStr)));
+        double top = (float) (DataUtils.getDisplayMetricsHeight(this)*(Float.parseFloat(topStr)));
+        double left = (float) (DataUtils.getDisplayMetricsWidth(this)*(Float.parseFloat(leftStr)));
+
+        params.width = (int) Math.round(width);
+        params.height = (int) Math.round(height);
+        params.topMargin = (int) Math.round(top);
+        params.leftMargin = (int) Math.round(left);
+
+        titleLayout.setLayoutParams(params);
+        titleLayout.setVisibility(View.VISIBLE);
+
+        textDeviceId.setText("DEVICE ID:"+text);
+
+        LogCat.e(" DataUtils.getDisplayMetricsWidth: "+ DataUtils.getDisplayMetricsWidth(this) +"   DataUtils.getDisplayMetricsHeight: "+ DataUtils.getDisplayMetricsHeight(this));
+
+    }
 
 
 

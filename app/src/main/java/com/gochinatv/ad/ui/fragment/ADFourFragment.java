@@ -90,12 +90,12 @@ public class ADFourFragment extends BaseFragment {
                 double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
                 double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
                 double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
-                viewWidth = (int) Math.floor(width);
-                params.width = (int) Math.floor(width);
-                params.height = (int) Math.floor(height);
-                params.topMargin = (int) Math.floor(top);
+                viewWidth = (int) Math.round(width);
+                params.width = (int) Math.round(width);
+                params.height = (int) Math.round(height);
+                params.topMargin = (int) Math.round(top);
 
-                params.leftMargin = (int) Math.floor(left);
+                params.leftMargin = (int) Math.round(left);
                 linearLayout.setLayoutParams(params);
                 LogCat.e("ADFourFragment"," 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
 
@@ -144,7 +144,7 @@ public class ADFourFragment extends BaseFragment {
         }
 
         if(autoTextView != null){
-            //autoTextView.stopScroll();
+            autoTextView.stopScroll();
         }
 
         super.onDestroy();

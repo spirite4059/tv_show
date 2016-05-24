@@ -1029,11 +1029,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity()) * (Float.parseFloat(topStr)));
                 double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity()) * (Float.parseFloat(leftStr)));
 
-                params.width = (int) Math.floor(width);
-                params.height = (int) Math.floor(height);
-                params.topMargin = (int) Math.floor(top);
+                params.width = (int) Math.round(width);
+                params.height = (int) Math.round(height);
+                params.topMargin = (int) Math.round(top);
 
-                params.leftMargin = (int) Math.floor(left);
+                params.leftMargin = (int) Math.round(left);
                 layout.setLayoutParams(params);
                 LogCat.e("video", " 广告一布局 width: " + params.width + " height: " + params.height + " top: " + params.topMargin + " left: " + params.leftMargin);
 
