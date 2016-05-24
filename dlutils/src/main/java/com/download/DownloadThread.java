@@ -78,13 +78,16 @@ public class DownloadThread extends Thread {
         LogCat.e("current thread " + threadId  + "endPos........" +  endPos);
         // 如果线程已经下载完成就不去在做操作
         if(downloadLength != 0 && downloadLength == endPos){
+            isCompleted = true;
             LogCat.e("current thread " + threadId  + ": 已经下载完全部的文件");
             return;
         }
 
         if(startPos == endPos){
+            LogCat.e("current thread " + threadId  + "downloadLength: " + downloadLength);
             LogCat.e("current thread " + threadId  + ": startPos == endPos，终止下载......");
-            downloadLength = endPos;
+            isCompleted = true;
+            downloadLength = endPos - blockSize * (threadId - 1);
             return;
         }
 
@@ -199,6 +202,7 @@ public class DownloadThread extends Thread {
             }
 
             downloadLength += len;
+
             downloadSize += len;
             try {
                 long startPosition = startPos + downloadSize - 1;
@@ -207,6 +211,16 @@ public class DownloadThread extends Thread {
                 e.printStackTrace();
                 errorCode = ErrorCodes.ERROR_DB_UPDATE;
             }
+
+
+
+            if(downloadLength > blockSize){
+                LogCat.e("video" , "downloadLength > blockSize，下载已经完成.....");
+                break;
+            }
+
+
+
             if(errorCode == ErrorCodes.ERROR_DB_UPDATE){
                 // 彻底放弃当前下载
                 break;
@@ -256,7 +270,7 @@ public class DownloadThread extends Thread {
         if(downloadLength - 1 == endPos){
             LogCat.e("current thread " + threadId  + "已经下载完全部的文件");
         }else {
-            LogCat.e("current thread " + threadId  + "尚未完成下载任务。。。。。。");
+            LogCat.e("current thread " + threadId  + "尚未完成下载任务。。。。。。" + downloadLength);
         }
         long startPosition = startPos + downloadSize - 1;
         LogCat.e("current thread " + threadId  + "startPos......." + startPosition);
