@@ -222,7 +222,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
                             public void run() {
                                 doGetTextAD();
                             }
-                        }, 30000, 30000);
+                        }, getTextADTime, getTextADTime);
                     }
                 }
                 isFirstDoHttp = false;
@@ -349,6 +349,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
      */
     public void setGetWebADTime(int getWebADTime) {
         this.getWebADTime = getWebADTime;
+        LogCat.e("ADTwoFragment","请求接口时间的间隔 getTextADTime:  " + getTextADTime );
     }
 
     @Override

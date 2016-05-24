@@ -263,7 +263,7 @@ public class ADFourFragment extends BaseFragment {
                             public void run() {
                                 doGetTextAD();
                             }
-                        },30000,30000);
+                        },getTextADTime,getTextADTime);
                     }
                 }
                 isFirstDoHttp = false;
@@ -341,5 +341,6 @@ public class ADFourFragment extends BaseFragment {
      */
     public void setGetTextADTime(int getTextADTime) {
         this.getTextADTime = getTextADTime;
+        LogCat.e("ADFourFragment","请求接口时间的间隔 getTextADTime:  " + getTextADTime );
     }
 }

@@ -779,10 +779,9 @@ public class MainActivity extends Activity {
                         }
                         ft.commit();
 
-                        if(!TextUtils.isEmpty(adDeviceDataResponse.code)){
-                            //显示title栏
-                            showTitleLayout(adDeviceDataResponse.code);
-                        }
+
+                        //显示title栏
+                        showTitleLayout(adDeviceDataResponse.code);
 
                     } else {
                         //一个广告位
@@ -919,12 +918,12 @@ public class MainActivity extends Activity {
         params.height = (int) Math.round(height);
         params.topMargin = (int) Math.round(top);
         params.leftMargin = (int) Math.round(left);
-
         titleLayout.setLayoutParams(params);
         titleLayout.setVisibility(View.VISIBLE);
 
-        textDeviceId.setText("DEVICE ID:"+text);
-
+        if(!TextUtils.isEmpty(text)){
+            textDeviceId.setText("DEVICE ID: "+text);
+        }
         LogCat.e(" DataUtils.getDisplayMetricsWidth: "+ DataUtils.getDisplayMetricsWidth(this) +"   DataUtils.getDisplayMetricsHeight: "+ DataUtils.getDisplayMetricsHeight(this));
 
     }
