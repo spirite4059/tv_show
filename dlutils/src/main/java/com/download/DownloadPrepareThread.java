@@ -401,14 +401,8 @@ public class DownloadPrepareThread extends Thread {
             DownloadInfo downloadInfo = downloadInfos.get(i);
             LogCat.e("video", "记录位置的startPos: " + downloadInfo.startPos);
             LogCat.e("video", "记录位置的endPos: " + downloadInfo.endPos);
-//            if(downloadInfo.endPos > fileSize - 1){
-//                // 此时表示发生异常，数据表的下载数据出现问题，需要纠正，简单处理，删除重新下载
-//                startThreadWithOutSql(url, fileSize, blockSize, size);
-//                break;
-//            } else {
             threads[i] = new DownloadThread(context, url, file, blockSize, threadId, downloadInfo);
             threads[i].start();
-//            }
         }
     }
 
