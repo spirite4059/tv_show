@@ -75,4 +75,5 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.0.1'
     compile project(path: ':library')
     compile project(':PushSDK')
+    compile project(':jsBridge')
 }

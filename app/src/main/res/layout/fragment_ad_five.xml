@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WebView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.github.lzyzsd.jsbridge.BridgeWebView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root_fragment_web"
-    android:layout_width="@dimen/d_216dp"
-    android:layout_height="@dimen/d_432dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:layout_alignParentRight="true"
     android:layout_alignParentBottom="true"
-
     android:orientation="vertical"
-    android:paddingLeft="@dimen/d_4dp"
-    >
+    />
 
-
-</WebView>

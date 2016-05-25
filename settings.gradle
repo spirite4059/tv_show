@@ -1,1 +1,1 @@
-include ':app', ':httpUtils', ':dlutils', ':db', ':statistics', ':library', ':PushSDK'
+include ':app', ':httpUtils', ':dlutils', ':db', ':statistics', ':library', ':PushSDK', ':jsBridge'

@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
@@ -36,6 +37,7 @@ import com.gochinatv.ad.tools.UmengUtils;
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeOtherFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
+import com.gochinatv.ad.ui.fragment.AdFiveFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.statistics.request.RetryErrorRequest;
@@ -75,6 +77,8 @@ public class MainActivity extends Activity {
      */
     private UpdateResponse.UpdateInfoResponse updateInfo;
     private AdOneFragment adOneFragment;
+    private ADTwoFragment adTwoFragment;
+    private AdFiveFragment adFiveFragment;
 
     /**
      * 是否升级接口成功
@@ -118,12 +122,43 @@ public class MainActivity extends Activity {
         // 情况fragment的状态，保证getActivity不为null
         cleanFragmentState(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initView();
+
+        init();
+    }
+
+    private void initView() {
         rootLayout = (RelativeLayout) findViewById(R.id.root_main);
         loadingView = (LinearLayout) findViewById(R.id.loading);
         imgLoge = (ImageView) findViewById(R.id.img_loge);
         textDeviceId = (TextView) findViewById(R.id.text_device_id);
         titleLayout = (RelativeLayout) findViewById(R.id.rel_title);
-        init();
+    }
+
+
+
+
+    private void init() {
+        // 删除升级安装包
+        deleteUpdateApk();
+
+        handler = new Handler(Looper.getMainLooper());
+        // 初始化友盟统计
+        initUmeng();
+
+        /**
+         * 隐藏NavigationBar
+         */
+        DataUtils.hideNavigationBar(this);
+
+        // 请求网络
+        doHttp();
+        /**
+         * 如果要启动测试，需要注释此段代码，否则无法正常启动
+         */
+        if (!Constants.isTest) {
+            //DataUtils.startAppServer(this);
+        }
     }
 
     // 清空fragment的状态
@@ -134,41 +169,10 @@ public class MainActivity extends Activity {
         }
     }
 
-
-    private void init() {
-        // 删除升级安装包
-        deleteUpdateApk();
-
-        handler = new Handler(Looper.getMainLooper());
-
-        initUmeng();
-
-
-
-
-
-        /**
-         * 隐藏NavigationBar
-         */
-        DataUtils.hideNavigationBar(this);
-
-        // 请求网络
-        doHttp();
-
-        /**
-         * 如果要启动测试，需要注释此段代码，否则无法正常启动
-         */
-        if (!Constants.isTest) {
-            //DataUtils.startAppServer(this);
-        }
-
-
-
-    }
-
     private PushAgent mPushAgent;
     private void initPush(String mac){
         mPushAgent = PushAgent.getInstance(this);
+        LogCat.e("device_token", "start............");
         mPushAgent.enable(new IUmengRegisterCallback() {
 
             @Override
@@ -177,7 +181,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void run() {
                         //onRegistered方法的参数registrationId即是device_token
-                        LogCat.d("device_token", registrationId);
+                        LogCat.e("device_token", registrationId);
 
                     }
                 });
@@ -194,9 +198,23 @@ public class MainActivity extends Activity {
             @Override
             public void dealWithCustomMessage(Context context, UMessage uMessage) {
                 super.dealWithCustomMessage(context, uMessage);
-
-                LogCat.e("tokenID: " + uMessage.text);
-
+                LogCat.e("tokenID: " + uMessage.custom);
+                // 执行命令
+                // 替换2号广告位，添加5号
+                if (twoLayout != null) {
+                    FragmentManager fragmentManager = getFragmentManager();
+                    FragmentTransaction ft = fragmentManager.beginTransaction();
+                    if (!TextUtils.isEmpty(twoLayout.adWidth) && !TextUtils.isEmpty(twoLayout.adHeight)
+                            && !TextUtils.isEmpty(twoLayout.adTop) && !TextUtils.isEmpty(twoLayout.adLeft)) {
+                        //此时加载广告二
+                        LogCat.e("成功加载了广告二");
+                        adFiveFragment = new AdFiveFragment();
+                        adFiveFragment.setLayoutResponse(twoLayout);
+                        ft.add(R.id.root_main, adFiveFragment);
+                    }
+                    ft.commit();
+                }
+                // 加载内容
 
             }
         });
@@ -285,10 +303,7 @@ public class MainActivity extends Activity {
 
 
     private void deleteUpdateApk() {
-        File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-        if (file.exists()) {
-            file.delete();
-        }
+        DeleteFileUtils.getInstance().deleteFile(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
     }
 
     private void testInstall() {
@@ -798,7 +813,7 @@ public class MainActivity extends Activity {
                                 //此时加载广告一
                                 LogCat.e("成功加载了广告一");
                                 adOneFragment.setLayoutResponse(oneLayout);
-                                ft.add(R.id.root_main, adOneFragment);
+                                ft.add(R.id.root_main, adOneFragment, "adOneFragment");
                             }
                         }
                         //广告二
@@ -807,12 +822,12 @@ public class MainActivity extends Activity {
                                     && !TextUtils.isEmpty(twoLayout.adTop) && !TextUtils.isEmpty(twoLayout.adLeft)) {
                                 //此时加载广告二
                                 LogCat.e("成功加载了广告二");
-                                ADTwoFragment adTwoFragment = new ADTwoFragment();
+                                adTwoFragment = new ADTwoFragment();
                                 adTwoFragment.setLayoutResponse(twoLayout);
                                 if (adDeviceDataResponse.pollInterval > 0) {
                                     adTwoFragment.setGetWebADTime((int)adDeviceDataResponse.pollInterval);
                                 }
-                                ft.add(R.id.root_main, adTwoFragment);
+                                ft.add(R.id.root_main, adTwoFragment, "adTwoFragment");
                             }
                         }
                         //广告三
