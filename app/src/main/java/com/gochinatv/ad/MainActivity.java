@@ -47,6 +47,10 @@ import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.ADHttpService;
 import com.tools.HttpUrls;
 import com.umeng.analytics.MobclickAgent;
+import com.umeng.message.IUmengRegisterCallback;
+import com.umeng.message.PushAgent;
+import com.umeng.message.UmengMessageHandler;
+import com.umeng.message.entity.UMessage;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -139,6 +143,10 @@ public class MainActivity extends Activity {
 
         initUmeng();
 
+
+
+
+
         /**
          * 隐藏NavigationBar
          */
@@ -157,6 +165,53 @@ public class MainActivity extends Activity {
 
 
     }
+
+    private PushAgent mPushAgent;
+    private void initPush(String mac){
+        mPushAgent = PushAgent.getInstance(this);
+        mPushAgent.enable(new IUmengRegisterCallback() {
+
+            @Override
+            public void onRegistered(final String registrationId) {
+                new Handler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        //onRegistered方法的参数registrationId即是device_token
+                        LogCat.d("device_token", registrationId);
+
+                    }
+                });
+            }
+        });
+        mPushAgent.onAppStart();
+        mPushAgent.setMessageChannel(mac);
+        mPushAgent.setDebugMode(true);
+
+
+
+        mPushAgent.setMessageHandler(new UmengMessageHandler(){
+
+            @Override
+            public void dealWithCustomMessage(Context context, UMessage uMessage) {
+                super.dealWithCustomMessage(context, uMessage);
+
+                LogCat.e("tokenID: " + uMessage.text);
+
+
+            }
+        });
+
+
+    }
+
+    public PushAgent getPushAgent(){
+        return mPushAgent;
+    }
+
+
+
+
+
 
     private void doHttp() {
         if (DataUtils.isNetworkConnected(this)) {
@@ -211,6 +266,12 @@ public class MainActivity extends Activity {
             if(sharedPreference != null){
                 sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
             }
+
+
+            initPush(mac);
+
+
+
         }else {
             if(sharedPreference != null){
                 sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, false);
@@ -273,6 +334,10 @@ public class MainActivity extends Activity {
 //        if (handler != null && progressRunnable != null) {
 //            handler.removeCallbacks(progressRunnable);
 //        }
+
+        if(mPushAgent != null){
+            mPushAgent.disable();
+        }
 
         super.onStop();
     }

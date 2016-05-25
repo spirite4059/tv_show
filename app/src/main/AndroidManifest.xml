@@ -44,7 +44,9 @@
             android:name="UMENG_APPKEY"
             android:value="${UMENG_APPKEY_VALUE}" />
 
-
+        <meta-data
+            android:name="UMENG_MESSAGE_SECRET"
+            android:value="5eb3c4eb651ff25c517b01fd229a33d0" />
         <!-- <activity -->
         <!-- android:name=".MainTestActivity" -->
         <!-- android:screenOrientation="landscape" > -->

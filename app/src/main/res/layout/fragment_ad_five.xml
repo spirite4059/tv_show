@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root_fragment_episode"
+<WebView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_fragment_web"
     android:layout_width="@dimen/d_216dp"
     android:layout_height="@dimen/d_432dp"
     android:layout_alignParentRight="true"
@@ -11,21 +11,4 @@
     >
 
 
-    <com.gochinatv.ad.recycler.NoTouchRecyclerView
-        android:id="@+id/recycler_episodes"
-        android:layout_width="@dimen/d_650dp"
-        android:layout_height="match_parent"
-        android:layout_alignParentRight="true"
-        android:background="@android:color/white"
-        />
-
-
-    <ImageView
-        android:id="@+id/ad_three_bg_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/ad_three_bg"
-        android:scaleType="fitXY"
-        />
-
-</RelativeLayout>
+</WebView>
