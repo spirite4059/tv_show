@@ -28,8 +28,7 @@ public class MacUtils {
             default:
                 break;
         }
-//        return macAddress;
-        return "cc:79:cf:47:41:bc";
+        return macAddress;
     }
     /**
      * 获取wifi的mac
