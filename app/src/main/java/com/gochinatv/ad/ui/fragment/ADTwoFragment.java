@@ -459,4 +459,27 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
     }
 
 
+
+    /**
+     * 恢复滚动
+     */
+    public void recoveryRollingAnimation(){
+        if(mDemoSlider != null){
+            LogCat.e("ADTwoFragment","恢复了广告2的滚动" );
+            mDemoSlider.startAutoCycle();
+        }
+    }
+
+
+    /**
+     * 暂停滚动
+     */
+    public void pauseRollingAnimation(){
+        if(mDemoSlider != null){
+            LogCat.e("ADTwoFragment","暂停了广告2的滚动" );
+            mDemoSlider.pauseAutoCycle();
+        }
+    }
+
+
 }

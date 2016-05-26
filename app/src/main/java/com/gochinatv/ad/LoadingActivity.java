@@ -154,18 +154,16 @@ public class LoadingActivity extends Activity {
             if(loadingView != null){
                 loadingView.setVisibility(View.GONE);
             }
-            if(adDeviceDataResponse !=null ){
-                //跳转到MainActivity
-                Intent intent = new Intent(this,MainActivity.class);
-                intent.putExtra("device",adDeviceDataResponse);
-                if(isHasUpgrade){
-                    if(updateInfo != null && !TextUtils.isEmpty(updateInfo.fileUrl)){
-                        intent.putExtra("apkUrl",updateInfo.fileUrl);
-                    }
+            //跳转到MainActivity
+            Intent intent = new Intent(this,MainActivity.class);
+            intent.putExtra("device",adDeviceDataResponse);
+            if(isHasUpgrade){
+                if(updateInfo != null && !TextUtils.isEmpty(updateInfo.fileUrl)){
+                    intent.putExtra("apkUrl",updateInfo.fileUrl);
                 }
-                startActivity(intent);
-                finish();
             }
+            startActivity(intent);
+            finish();
 
         }
 

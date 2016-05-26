@@ -343,4 +343,11 @@ public class ADFourFragment extends BaseFragment {
         this.getTextADTime = getTextADTime;
         LogCat.e("ADFourFragment","请求接口时间的间隔 getTextADTime:  " + getTextADTime );
     }
+
+
+
+
+
+
+    
 }

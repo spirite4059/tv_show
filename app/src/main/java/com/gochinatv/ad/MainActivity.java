@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import com.download.DLUtils;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.thread.DeleteFileUtils;
+import com.gochinatv.ad.tools.AlertUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
@@ -72,6 +75,9 @@ public class MainActivity extends Activity {
     private int reTryTimes;
     private PushAgent mPushAgent;
 
+    //网络广播
+    private NetworkBroadcastReceiver networkBroadcastReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +97,7 @@ public class MainActivity extends Activity {
 
 
     private void init() {
+        registerNetworkReceiver();
         /**
          * 隐藏NavigationBar
          */
@@ -115,6 +122,27 @@ public class MainActivity extends Activity {
         //动态布局部分
         ADDeviceDataResponse adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
         loadFragmentTwo(hasApkDownload, adDeviceDataResponse);
+
+    }
+
+    /**
+     * 动态注册网络状态广播,并回调
+     */
+    private void registerNetworkReceiver() {
+        networkBroadcastReceiver = new NetworkBroadcastReceiver();
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkBroadcastReceiver,filter);
+
+        networkBroadcastReceiver.setNetworkChangeLinstener(new NetworkBroadcastReceiver.NetworkChangeLinstener() {
+            @Override
+            public void networkChange(boolean hasNetwork) {
+                if(hasNetwork){
+                    AlertUtils.alert(MainActivity.this,"当前有网络连接!!!!!!!!!!!!!");
+                }else{
+                    AlertUtils.alert(MainActivity.this,"当前无网络连接xxxxxxxxxxxxxx");
+                }
+            }
+        });
 
     }
 
@@ -243,6 +271,16 @@ public class MainActivity extends Activity {
             mPushAgent.disable();
         }
         super.onStop();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //卸载广播
+        if(networkBroadcastReceiver != null){
+            unregisterReceiver(networkBroadcastReceiver);
+        }
     }
 
     /**

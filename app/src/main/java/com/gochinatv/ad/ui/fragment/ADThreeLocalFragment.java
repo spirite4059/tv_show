@@ -30,7 +30,7 @@ import java.util.TimerTask;
 /**
  * Created by zfy on 2016/4/22.
  */
-public class ADThreeOtherFragment extends BaseFragment {
+public class ADThreeLocalFragment extends BaseFragment {
 
     private RecycleAnimationLayout linearLayout;
     //private RecycleUpAnimationView linearLayout;
@@ -407,7 +407,7 @@ public class ADThreeOtherFragment extends BaseFragment {
         SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
         boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
         if(isHasMac){
-            MobclickAgent.onPageStart("ADThreeOtherFragment");
+            MobclickAgent.onPageStart("ADThreeLocalFragment");
         }
     }
 
@@ -418,7 +418,25 @@ public class ADThreeOtherFragment extends BaseFragment {
         SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(getActivity());
         boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);
         if(isHasMac){
-            MobclickAgent.onPageEnd("ADThreeOtherFragment");
+            MobclickAgent.onPageEnd("ADThreeLocalFragment");
+        }
+    }
+
+    /**
+     * 恢复滚动
+     */
+    public void recoveryRollingAnimation(){
+        if(linearLayout != null){
+            linearLayout.recoveryRollingAnimation();
+        }
+    }
+
+    /**
+     * 暂停滚动
+     */
+    public void puaseRollingAnimation(){
+        if(linearLayout != null ){
+            linearLayout.puaseRecycleAnimation();
         }
     }
 

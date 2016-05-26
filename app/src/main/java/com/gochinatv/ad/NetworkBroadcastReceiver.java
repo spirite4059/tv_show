@@ -18,7 +18,7 @@ public class NetworkBroadcastReceiver extends BroadcastReceiver {
 
 
 
-    private NetworkChageLinstener networkChageLinstener;
+    private NetworkChangeLinstener networkChangeLinstener;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -31,45 +31,41 @@ public class NetworkBroadcastReceiver extends BroadcastReceiver {
             if (wifiState != null && ethernetState != null && State.CONNECTED != wifiState && State.CONNECTED == ethernetState) {
                 //Toast.makeText(context, "有线网络连接成功！", Toast.LENGTH_SHORT).show();
 
-                if(networkChageLinstener != null){
-                    networkChageLinstener.networkChage(true);
+                if(networkChangeLinstener != null){
+                    networkChangeLinstener.networkChange(true);
                 }
 
             } else if (wifiState != null && ethernetState != null && NetworkInfo.State.CONNECTED == wifiState && State.CONNECTED != ethernetState) {
                 //Toast.makeText(context, "无线网络连接成功！", Toast.LENGTH_SHORT).show();
-                if(networkChageLinstener != null){
-                    networkChageLinstener.networkChage(true);
+                if(networkChangeLinstener != null){
+                    networkChangeLinstener.networkChange(true);
                 }
 
             } else if (wifiState != null && ethernetState != null && State.CONNECTED != wifiState && State.CONNECTED != ethernetState) {
                 //Toast.makeText(context, "设备没有任何网络...", Toast.LENGTH_SHORT).show();
 
-                if(networkChageLinstener != null){
-                    networkChageLinstener.networkChage(false);
+                if(networkChangeLinstener != null){
+                    networkChangeLinstener.networkChange(false);
                 }
-
             }
-
-
         }
 
 
-
     }
 
 
-    interface NetworkChageLinstener{
-        void networkChage(boolean hasNetwork);
+    interface NetworkChangeLinstener{
+        void networkChange(boolean hasNetwork);
     }
 
 
 
-    public NetworkChageLinstener getNetworkChageLinstener() {
-        return networkChageLinstener;
+    public NetworkChangeLinstener getNetworkChangeLinstener() {
+        return networkChangeLinstener;
     }
 
-    public void setNetworkChageLinstener(NetworkChageLinstener networkChageLinstener) {
-        this.networkChageLinstener = networkChageLinstener;
+    public void setNetworkChangeLinstener(NetworkChangeLinstener networkChangeLinstener) {
+        this.networkChangeLinstener = networkChangeLinstener;
     }
 
 
