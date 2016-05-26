@@ -423,7 +423,12 @@ public class MainActivity extends Activity {
 
     private void loadFragmentTwo(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse) {
         //显示title栏
-        showTitleLayout(adDeviceDataResponse.code);
+        if(adDeviceDataResponse == null){
+            titleLayout.setVisibility(View.VISIBLE);
+        }else{
+            showTitleLayout(adDeviceDataResponse.code);
+        }
+
         // 显示大屏广告
         if (adDeviceDataResponse == null || TextUtils.isEmpty(adDeviceDataResponse.adStruct) || !"4".equals(adDeviceDataResponse.adStruct)) {
             showOneAD(isDownload, adDeviceDataResponse);
