@@ -4,7 +4,7 @@
     android:id="@+id/root_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/loading_bg"
+    android:background="@color/c000000"
     android:keepScreenOn="true"
     >
 
@@ -48,29 +48,29 @@
         <!--/>-->
 
 
-    <LinearLayout
-        android:id="@+id/loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:orientation="vertical"
+    <!--<LinearLayout-->
+        <!--android:id="@+id/loading"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_centerInParent="true"-->
+        <!--android:orientation="vertical"-->
 
-        >
-        <ProgressBar
-            android:layout_width="@dimen/d_90dp"
-            android:layout_height="@dimen/d_90dp"
-            android:layout_gravity="center"
-            style="@style/Widget.AppCompat.ProgressBar"
-            android:layout_marginTop="@dimen/d_120dp"
-            />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/d_20sp"
-            android:textColor="#f1f1f1"
-            android:text="Loading......"
-            />
-    </LinearLayout>
+        <!--&gt;-->
+        <!--<ProgressBar-->
+            <!--android:layout_width="@dimen/d_90dp"-->
+            <!--android:layout_height="@dimen/d_90dp"-->
+            <!--android:layout_gravity="center"-->
+            <!--style="@style/Widget.AppCompat.ProgressBar"-->
+            <!--android:layout_marginTop="@dimen/d_120dp"-->
+            <!--/>-->
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="@dimen/d_20sp"-->
+            <!--android:textColor="#f1f1f1"-->
+            <!--android:text="Loading......"-->
+            <!--/>-->
+    <!--</LinearLayout>-->
 
 
 
