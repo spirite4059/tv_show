@@ -83,7 +83,7 @@ public class DownloadThread extends Thread {
             return;
         }
 
-        if(startPos == endPos){
+        if(startPos >= endPos){
             LogCat.e("current thread " + threadId  + "downloadLength: " + downloadLength);
             LogCat.e("current thread " + threadId  + ": startPos == endPos，终止下载......");
             isCompleted = true;
