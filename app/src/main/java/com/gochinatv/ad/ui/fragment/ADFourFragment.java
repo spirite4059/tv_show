@@ -345,9 +345,34 @@ public class ADFourFragment extends BaseFragment {
     }
 
 
+    /**
+     * 暂停滚动
+     */
+    public void puaseRollingAnimation(){
+
+        if(taotalSize>1){
+            if(cycleHandler != null && runnable != null){
+                LogCat.e("ADFourFragment","暂停广告4的滚动");
+                cycleHandler.removeCallbacks(runnable);
+                //isCycleState = false;
+            }
+        }
+
+    }
 
 
+    /**
+     * 恢复滚动
+     */
+    public void recoveryRollingAnimation(){
+        if(taotalSize>1){
+            if(cycleHandler != null && runnable != null){
+                LogCat.e("ADFourFragment","恢复广告4的滚动");
+                cycleHandler.postDelayed(runnable,5000);
+                //isCycleState = false;
+            }
+        }
+    }
 
 
-    
 }
