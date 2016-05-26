@@ -2,20 +2,20 @@ package com.gochinatv.ad;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.LinearLayout;
 
-import com.download.DLUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.UmengUtils;
-import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.statistics.request.RetryErrorRequest;
 import com.okhtttp.OkHttpCallBack;
@@ -49,7 +49,7 @@ public class LoadingActivity extends Activity {
      * 下载info
      */
     private UpdateResponse.UpdateInfoResponse updateInfo;
-    private AdOneFragment adOneFragment;
+    //private AdOneFragment adOneFragment;
 
     /**
      * 是否升级接口成功
@@ -82,17 +82,13 @@ public class LoadingActivity extends Activity {
         setContentView(R.layout.activity_loading);
         loadingView = (LinearLayout) findViewById(R.id.loading);
 
-
         handler = new Handler(Looper.getMainLooper());
-
         /**
          * 隐藏NavigationBar
          */
         DataUtils.hideNavigationBar(this);
-
         // 请求网络
         doHttp();
-
         /**
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
@@ -107,15 +103,12 @@ public class LoadingActivity extends Activity {
     @Override
     protected void onStop() {
 
-        DLUtils.cancel();
         if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
         }
 
-
         super.onStop();
     }
-
 
 
 
@@ -158,8 +151,28 @@ public class LoadingActivity extends Activity {
         }
     };
 
+    private void loadFragmentTwo(boolean isHasUpgrade) {
 
+        if (isUpgradeSucceed && isGetDerviceSucceed ){
+            if(loadingView != null){
+                loadingView.setVisibility(View.GONE);
+            }
+            if(adDeviceDataResponse !=null ){
+                //跳转到MainActivity
+                Intent intent = new Intent(this,MainActivity.class);
+                intent.putExtra("device",adDeviceDataResponse);
+                if(isHasUpgrade){
+                    if(updateInfo != null && !TextUtils.isEmpty(updateInfo.fileUrl)){
+                        intent.putExtra("apkUrl",updateInfo.fileUrl);
+                    }
+                }
+                startActivity(intent);
+                finish();
+            }
 
+        }
+
+    }
 
 
     /**
@@ -252,7 +265,7 @@ public class LoadingActivity extends Activity {
                                     LogCat.e("需要升级。。。。。");
                                     // 去下载当前的apk
                                     isHasUpgrade = true;
-                                    downloadAPKNew();
+                                    //downloadAPKNew();
                                     // 加载布局.但是不让AdOneFragment，下载视频
                                     //loadFragment(true);
                                     loadFragmentTwo(isHasUpgrade);

@@ -109,15 +109,15 @@ public class ADThreeOtherFragment extends BaseFragment {
         getImgADTime = Constants.isImageTest? 30*1000:3*60*1000;
         //double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
         //double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
-        if(width == 0){
-            width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
-        }
-        if(height == 0){
-            height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
-        }
-        linearLayout.setItemWidth((int) Math.floor(width));
-        linearLayout.setItemHeight((int) Math.floor(height / 2));
-        LogCat.e("width: " + (int) Math.floor(width) + "     height:" + (int) Math.floor(height / 2));
+//        if(width == 0){
+//            width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*0.16875f);
+//        }
+//        if(height == 0){
+//            height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*0.6f);
+//        }
+        linearLayout.setItemWidth((int) Math.round(width));
+        linearLayout.setItemHeight((int) Math.round(height / 2));
+        LogCat.e("width: " + (int) Math.round(width) + "     height:" + (int) Math.round(height / 2));
 
         //准备好本地数据集合
         imgLocalResponses = new ArrayList<>();
