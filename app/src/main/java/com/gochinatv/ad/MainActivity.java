@@ -1,22 +1,15 @@
 package com.gochinatv.ad;
 
-import android.Manifest.permission;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.base.BaseFragment;
@@ -77,7 +70,7 @@ public class MainActivity extends Activity {
 
     //下载apk尝试的次数
     private int reTryTimes;
-
+    private PushAgent mPushAgent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,7 +126,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private PushAgent mPushAgent;
+
 
     private void initPush(String mac) {
         mPushAgent = PushAgent.getInstance(this);
@@ -163,6 +156,10 @@ public class MainActivity extends Activity {
             public void dealWithCustomMessage(Context context, UMessage uMessage) {
                 super.dealWithCustomMessage(context, uMessage);
                 LogCat.e("tokenID: " + uMessage.custom);
+
+
+
+
                 // 执行命令
 
                 // 加载内容
@@ -173,18 +170,6 @@ public class MainActivity extends Activity {
 
     }
 
-    private void initAdFive() {
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        LogCat.e("成功加载了广告5");
-        adFiveFragment = new AdFiveFragment();
-        ft.add(R.id.root_main, adFiveFragment);
-        ft.commit();
-    }
-
-    public PushAgent getPushAgent() {
-        return mPushAgent;
-    }
 
 
     private void initUmeng() {
@@ -216,32 +201,32 @@ public class MainActivity extends Activity {
         DeleteFileUtils.getInstance().deleteFile(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
     }
 
-    private void testInstall() {
-        File file = Environment.getExternalStorageDirectory();
+//    private void testInstall() {
+//        File file = Environment.getExternalStorageDirectory();
+////
+//        File fileApk = new File(file.getAbsolutePath() + "/Music/test.apk");
 //
-        File fileApk = new File(file.getAbsolutePath() + "/Music/test.apk");
-
-        LogCat.e("fileApk: " + fileApk.getAbsolutePath());
-//
-        PackageInfo pInfo = null;
-        try {
-            pInfo = getPackageManager().getPackageInfo("com.gochinatv.ad", 0);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (InstallUtils.hasRootPermission()) {
-            //  have  root
-            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), true);
-            Toast.makeText(this, "提醒：获取到root权限，可以静默升级！", Toast.LENGTH_LONG).show();
-            // rootClientInstall(apkFile.getAbsolutePath());
-        } else if (InstallUtils.isSystemApp(pInfo) || InstallUtils.isSystemUpdateApp(pInfo)) {
-//                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
-            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), false);
-            Toast.makeText(this, "提醒：获取到系统权限，可以静默升级！", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, "提醒：没有获取到系统权限和root权限，请选择普通安装！", Toast.LENGTH_LONG).show();
-        }
-    }
+//        LogCat.e("fileApk: " + fileApk.getAbsolutePath());
+////
+//        PackageInfo pInfo = null;
+//        try {
+//            pInfo = getPackageManager().getPackageInfo("com.gochinatv.ad", 0);
+//        } catch (PackageManager.NameNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        if (InstallUtils.hasRootPermission()) {
+//            //  have  root
+//            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), true);
+//            Toast.makeText(this, "提醒：获取到root权限，可以静默升级！", Toast.LENGTH_LONG).show();
+//            // rootClientInstall(apkFile.getAbsolutePath());
+//        } else if (InstallUtils.isSystemApp(pInfo) || InstallUtils.isSystemUpdateApp(pInfo)) {
+////                Toast.makeText(context,"正在更新软件！",Toast.LENGTH_SHORT).show();
+//            InstallUtils.installSilent(this, fileApk.getAbsolutePath(), false);
+//            Toast.makeText(this, "提醒：获取到系统权限，可以静默升级！", Toast.LENGTH_LONG).show();
+//        } else {
+//            Toast.makeText(this, "提醒：没有获取到系统权限和root权限，请选择普通安装！", Toast.LENGTH_LONG).show();
+//        }
+//    }
 
 
     @Override
@@ -401,12 +386,13 @@ public class MainActivity extends Activity {
     private void loadFragmentTwo(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse) {
         //显示title栏
         showTitleLayout(adDeviceDataResponse.code);
-        //当升级和广告体接口都完成后，才加载布局
+        // 显示大屏广告
         if (adDeviceDataResponse == null || TextUtils.isEmpty(adDeviceDataResponse.adStruct) || !"4".equals(adDeviceDataResponse.adStruct)) {
             showOneAD(isDownload, adDeviceDataResponse);
             return;
         }
 
+        // 显示4屏广告
         if (adDeviceDataResponse.layout != null && adDeviceDataResponse.layout.size() > 0) {
             int size = adDeviceDataResponse.layout.size();
             FragmentManager fm = getFragmentManager();
@@ -475,62 +461,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    @SuppressLint("NewApi")
-    public static boolean checkPermission(Context context, String permission) {
-        boolean result = false;
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-                result = true;
-            }
-        } else {
-            PackageManager pm = context.getPackageManager();
-
-            if (pm.checkPermission(permission, context.getPackageName()) == PackageManager.PERMISSION_GRANTED) {
-                result = true;
-            }
-        }
-
-        return result;
-    }
-
-
-    public static String getDeviceInfo(Context context) {
-        try {
-            org.json.JSONObject json = new org.json.JSONObject();
-            android.telephony.TelephonyManager tm = (android.telephony.TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
-            String device_id = null;
-
-            if (checkPermission(context, permission.READ_PHONE_STATE)) {
-                device_id = tm.getDeviceId();
-            }
-
-            android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-
-            String mac = wifi.getConnectionInfo().getMacAddress();
-
-            json.put("mac", mac);
-
-            if (TextUtils.isEmpty(device_id)) {
-                device_id = mac;
-            }
-
-
-            if (TextUtils.isEmpty(device_id)) {
-                device_id = android.provider.Settings.Secure.getString(context.getContentResolver(),
-                        android.provider.Settings.Secure.ANDROID_ID);
-            }
-
-            json.put("device_id", device_id);
-
-            return json.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
 
 
     /**
