@@ -149,6 +149,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             playPresetVideo();
             return;
         }
+        // 没有网络
+        if (!DataUtils.isNetworkConnected(getActivity())) {
+            showNetSpeed(false, false, 0);
+        }
 
         // 1.初始化本地缓存表
         LogCat.e("video", "获取本地缓存视频列表.......");
