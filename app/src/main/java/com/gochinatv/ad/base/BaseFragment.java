@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
-import com.gochinatv.ad.ui.fragment.ADThreeFragment;
+import com.gochinatv.ad.ui.fragment.ADThreeOtherFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.okhtttp.response.LayoutResponse;
@@ -40,7 +40,7 @@ public abstract class BaseFragment extends Fragment {
                 baseFragment = new ADTwoFragment();
                 break;
             case 3:
-                baseFragment = new ADThreeFragment();
+                baseFragment = new ADThreeOtherFragment();
                 break;
             case 4:
                 baseFragment = new ADFourFragment();

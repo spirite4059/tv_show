@@ -413,19 +413,22 @@ public class MainActivity extends Activity {
                     continue;
                 }
                 int type = Integer.parseInt(adType);
-
-                FragmentTransaction ft = fm.beginTransaction();
-                BaseFragment fragment = BaseFragment.getInstance(type);
-                // 1号广告位
-                if (type == 1) {
-                    initAdOne((AdOneFragment)fragment, isDownload, adDeviceDataResponse);
-                }
-                // 添加布局参数
-                fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
-                ft.add(R.id.root_main, fragment, "ad_" + type);
-                ft.commit();
+                initAdFragment(isDownload, adDeviceDataResponse, fm, i, type);
             }
         }
+    }
+
+    private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
+        FragmentTransaction ft = fm.beginTransaction();
+        BaseFragment fragment = BaseFragment.getInstance(type);
+        // 1号广告位
+        if (type == 1) {
+            initAdOne((AdOneFragment)fragment, isDownload, adDeviceDataResponse);
+        }
+        // 添加布局参数
+        fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
+        ft.add(R.id.root_main, fragment, "ad_" + type);
+        ft.commit();
     }
 
     private void initAdOne(AdOneFragment fragment, boolean isDownload, ADDeviceDataResponse adDeviceDataResponse) {
