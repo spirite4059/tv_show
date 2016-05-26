@@ -51,6 +51,7 @@ public class MainActivity extends Activity {
     private RelativeLayout rootLayout;
     private RelativeLayout titleLayout;
     private TextView textDeviceId;
+    private final String FRAGMENT_TAG_AD_ONE = "ad_1";
     /**
      * 下载info
      */
@@ -295,7 +296,7 @@ public class MainActivity extends Activity {
             downLoadAPKUtils = new DownLoadAPKUtils();
         }
         downLoadAPKUtils.downLoad(this, url);
-
+        final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
         //下载失败监听
         downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
             @Override
@@ -327,7 +328,10 @@ public class MainActivity extends Activity {
             @Override
             public void onDownLoadProgress(int progress, String fileName) {
                 LogCat.e("APKdownload", "APK已经下载了 progress: " + progress + "%");
-
+                AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+                if (adOneFragment != null) {
+                    adOneFragment.startDownloadVideo();
+                }
                 if (adOneFragment != null) {
                     adOneFragment.showNetSpeed(true, true, progress);
                 }
@@ -342,7 +346,6 @@ public class MainActivity extends Activity {
                 LogCat.e("APKdownload", "下载升级成功，开始正式升级.......");
                 File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                 InstallUtils.installAuto(MainActivity.this, file, true);
-
                 if (adOneFragment != null) {
                     adOneFragment.hideNetSpeed();
                 }
