@@ -95,9 +95,7 @@ public class LoadingActivity extends Activity {
         if (!Constants.isTest) {
             //DataUtils.startAppServer(this);
         }
-
     }
-
 
 
     @Override
@@ -106,7 +104,6 @@ public class LoadingActivity extends Activity {
         if (handler != null && runnable != null) {
             handler.removeCallbacks(runnable);
         }
-
         super.onStop();
     }
 
