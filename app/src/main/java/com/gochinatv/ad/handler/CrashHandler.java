@@ -1,13 +1,14 @@
 package com.gochinatv.ad.handler;
 
 import android.content.Context;
-import android.util.Log;
+import android.os.Looper;
+import android.widget.Toast;
 
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.statistics.server.ErrorHttpServer;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ErrorResponse;
-import com.gochinatv.statistics.server.ErrorHttpServer;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -89,9 +90,9 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         } else {
             LogCat.e("exception", "uncaughtException..........退出系统");
             try {
-                Thread.sleep(20000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
-                Log.e(TAG, "error : ", e);
+                LogCat.e("exception", "error : " + e.getLocalizedMessage());
             }
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(1);
@@ -240,14 +241,14 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
             return false;
         }
         //使用Toast来显示异常信息
-//        new Thread() {
-//            @Override
-//            public void run() {
-//                Looper.prepare();
-//                Toast.makeText(mContext, "很抱歉,程序出现异常", Toast.LENGTH_LONG).show();
-//                Looper.loop();
-//            }
-//        }.start();
+        new Thread() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                Toast.makeText(mContext, "很抱歉,程序出现异常", Toast.LENGTH_LONG).show();
+                Looper.loop();
+            }
+        }.start();
 
         //收集设备参数信息
 //        collectDeviceInfo(mContext);

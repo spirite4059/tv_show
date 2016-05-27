@@ -23,11 +23,11 @@ import com.gochinatv.ad.tools.DownLoadAPKUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
-import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdFiveFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
-import com.gochinatv.statistics.request.RetryErrorRequest;
+import com.google.gson.Gson;
 import com.okhtttp.response.ADDeviceDataResponse;
+import com.okhtttp.response.CommendResponse;
 import com.okhtttp.response.LayoutResponse;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.message.IUmengRegisterCallback;
@@ -36,7 +36,6 @@ import com.umeng.message.UmengMessageHandler;
 import com.umeng.message.entity.UMessage;
 
 import java.io.File;
-import java.util.ArrayList;
 
 
 /**
@@ -48,27 +47,6 @@ public class MainActivity extends Activity {
     private RelativeLayout titleLayout;
     private TextView textDeviceId;
     private final String FRAGMENT_TAG_AD_ONE = "ad_1";
-    /**
-     * 下载info
-     */
-    //private UpdateResponse.UpdateInfoResponse updateInfo;
-    private AdOneFragment adOneFragment;
-    private ADTwoFragment adTwoFragment;
-    private AdFiveFragment adFiveFragment;
-
-
-    //private ADDeviceDataResponse adDeviceDataResponse;//
-
-
-    /**
-     * 升级接口日志
-     */
-    private ArrayList<RetryErrorRequest> upgradeLogList;
-
-    /**
-     * 布局接口日志
-     */
-    private ArrayList<RetryErrorRequest> layoutLogList;
 
 
     //下载apk尝试的次数
@@ -155,7 +133,6 @@ public class MainActivity extends Activity {
     }
 
 
-
     private void initPush(String mac) {
         mPushAgent = PushAgent.getInstance(this);
         LogCat.e("device_token", "start............");
@@ -183,21 +160,47 @@ public class MainActivity extends Activity {
             @Override
             public void dealWithCustomMessage(Context context, UMessage uMessage) {
                 super.dealWithCustomMessage(context, uMessage);
-                LogCat.e("tokenID: " + uMessage.custom);
+                LogCat.e("push: " + uMessage.custom);
+                if(TextUtils.isEmpty(uMessage.custom)){
+                    LogCat.e("push...........收到的命令为null");
+                    return;
+                }
+
+                String json = "{" +
+                                    "\"isJsCommend\": 0," +
+                                    "\"cmd\":[" +
+                                        "{" +
+                                            "\"cmdInfo\": \"open\"," +
+                                            "\"ad\":\"ad1\"" +
+                                        "}," +
+                                        "{" +
+                                            "\"cmdInfo\":\"close\"," +
+                                            "\"ad\":\"ad2\"" +
+                                        "}," +
+                                        "{" +
+                                        "\"cmdInfo\":\"fresh\"," +
+                                        "\"ad\":\"ad3\"" +
+                                        "}," +
+                                    "]" +
+                                "}";
+
+                CommendResponse commendResponse = new Gson().fromJson(json, CommendResponse.class);
+                if(commendResponse == null){
+                    LogCat.e("push...........commendResponse == null");
+                    return;
+                }
+                // js的命令
+                if(0  == commendResponse.getIsJsCommend()){
+                    AdFiveFragment adFiveFragment = (AdFiveFragment) getFragmentManager().findFragmentByTag("ad_5");
+                    adFiveFragment.setCommendInfo(json);
+                } else {
 
 
 
-
-                // 执行命令
-
-                // 加载内容
-
+                }
             }
         });
-
-
     }
-
 
 
     private void initUmeng() {
@@ -455,7 +458,11 @@ public class MainActivity extends Activity {
         BaseFragment fragment = BaseFragment.getInstance(type);
         // 1号广告位
         if (type == 1) {
-            initAdOne((AdOneFragment)fragment, isDownload, adDeviceDataResponse);
+            initAdOne((AdOneFragment) fragment, isDownload, adDeviceDataResponse);
+        }
+
+        if (type == 5) {
+            ((AdFiveFragment)fragment).setLayoutResponses(adDeviceDataResponse.layout);
         }
         // 添加布局参数
         fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
@@ -503,7 +510,6 @@ public class MainActivity extends Activity {
             MobclickAgent.onPause(this);
         }
     }
-
 
 
     /**
