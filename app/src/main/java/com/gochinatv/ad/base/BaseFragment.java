@@ -81,5 +81,17 @@ public abstract class BaseFragment extends Fragment {
         this.layoutResponse = layoutResponse;
     }
 
+    /**
+     * 移除fragment
+     */
+    public void removeFragment(){}
+
+
+    /**
+     * 网络请求
+     */
+    public void doHttpRequest(){}
+
+
 
 }

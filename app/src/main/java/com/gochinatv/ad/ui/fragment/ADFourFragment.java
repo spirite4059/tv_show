@@ -1,5 +1,6 @@
 package com.gochinatv.ad.ui.fragment;
 
+import android.app.FragmentTransaction;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -374,5 +375,18 @@ public class ADFourFragment extends BaseFragment {
         }
     }
 
+    @Override
+    public void doHttpRequest() {
+        if(taotalSize == 0){
+            //当没有数据时，才去做请求
+            doGetTextAD();
+        }
+    }
 
+    @Override
+    public void removeFragment() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.remove(this);
+        ft.commit();
+    }
 }
