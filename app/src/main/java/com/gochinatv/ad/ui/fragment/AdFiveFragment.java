@@ -13,7 +13,6 @@ import com.github.lzyzsd.jsbridge.BridgeWebView;
 import com.github.lzyzsd.jsbridge.CallBackFunction;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
-import com.gochinatv.ad.tools.AlertUtils;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.google.gson.Gson;
@@ -31,7 +30,7 @@ public class AdFiveFragment extends BaseFragment {
     private Button btn;
     private CommendResponse commendInfo;
     private final String JS_METHOD_NAME = "functionInJs";
-    private final String JS_LAYOUT_NAME = "layoutInJs";
+    private final String SUBMIT_FROM_WEB_NAME = "submitFromWeb";
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -39,10 +38,8 @@ public class AdFiveFragment extends BaseFragment {
         if (layoutResponse != null) {
             if (!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
                     && !TextUtils.isEmpty(layoutResponse.adTop) && !TextUtils.isEmpty(layoutResponse.adLeft)) {
-//                String widthStr = layoutResponse.adWidth;
-//                String heightStr = layoutResponse.adHeight;
-                String widthStr = "0.8";
-                String heightStr = "0.8";
+                String widthStr = layoutResponse.adWidth;
+                String heightStr = layoutResponse.adHeight;
                 String topStr = layoutResponse.adTop;
                 String leftStr = layoutResponse.adLeft;
                 //动态布局
@@ -79,7 +76,7 @@ public class AdFiveFragment extends BaseFragment {
         webView.loadUrl("http://192.168.2.210:8083/android");
 
 
-        webView.registerHandler("submitFromWeb", new BridgeHandler() {
+        webView.registerHandler(SUBMIT_FROM_WEB_NAME, new BridgeHandler() {
             @Override
             public void handler(String data, CallBackFunction function) {
                 LogCat.e("push", "handler = submitFromWeb, data from web = " + data);
@@ -116,6 +113,7 @@ public class AdFiveFragment extends BaseFragment {
         if(TextUtils.isEmpty(commend)){
             return;
         }
+        LogCat.e("push", "收到命令............" + commend);
         // 解析命令
         webView.callHandler(JS_METHOD_NAME, new Gson().toJson(commend), new CallBackFunction() {
             @Override
@@ -127,30 +125,6 @@ public class AdFiveFragment extends BaseFragment {
     }
 
 
-    public void layoutJs(ArrayList<LayoutResponse> layoutResponses){
-        if(layoutResponses == null || layoutResponses.size() == 0){
-            return;
-        }
-        try {
-            String layoutJson = new Gson().toJson(layoutResponses);
-
-            if(TextUtils.isEmpty(layoutJson)){
-                return;
-            }
-            LogCat.e("push", "layoutInJs........" + "{\"layout\":" + layoutJson + "}");
-
-            webView.callHandler(JS_LAYOUT_NAME, "{\"layout\":" + layoutJson + "}", new CallBackFunction() {
-                @Override
-                public void onCallBack(String data) {
-//                    webView.loadUrl("http://192.168.2.210:8083/android");
-                    LogCat.e("push", "onCallBack---layoutInJs........" + data);
-                    AlertUtils.alert(getActivity(), "onCallBack---layoutInJs........" + data);
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 
     public String layoutJsStr(ArrayList<LayoutResponse> layoutResponses){
         String layoutJson = null;
@@ -160,19 +134,6 @@ public class AdFiveFragment extends BaseFragment {
         try {
             layoutJson = new Gson().toJson(layoutResponses);
             layoutJson = "{\"layout\":" + layoutJson + "}";
-            if(TextUtils.isEmpty(layoutJson)){
-                return layoutJson;
-            }
-//            LogCat.e("push", "layoutInJs........" + "{\"layout\":" + layoutJson + "}");
-//
-//            webView.callHandler(JS_LAYOUT_NAME, "{\"layout\":" + layoutJson + "}", new CallBackFunction() {
-//                @Override
-//                public void onCallBack(String data) {
-////                    webView.loadUrl("http://192.168.2.210:8083/android");
-//                    LogCat.e("push", "onCallBack---layoutInJs........" + data);
-//                    AlertUtils.alert(getActivity(), "onCallBack---layoutInJs........" + data);
-//                }
-//            });
         }catch (Exception e){
             e.printStackTrace();
         }
