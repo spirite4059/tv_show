@@ -16,6 +16,11 @@ import android.widget.TextView;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.base.BaseFragment;
+import com.gochinatv.ad.cmd.CloseCommend;
+import com.gochinatv.ad.cmd.CmdReceiver;
+import com.gochinatv.ad.cmd.FreshCommend;
+import com.gochinatv.ad.cmd.Invoker;
+import com.gochinatv.ad.cmd.OpenCommend;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
@@ -59,6 +64,7 @@ public class MainActivity extends Activity {
 
     //网络广播
     private NetworkBroadcastReceiver networkBroadcastReceiver;
+    ADDeviceDataResponse adDeviceDataResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +108,7 @@ public class MainActivity extends Activity {
 
         }
         //动态布局部分
-        ADDeviceDataResponse adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
+        adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
         loadFragment(hasApkDownload, adDeviceDataResponse);
 
     }
@@ -113,23 +119,22 @@ public class MainActivity extends Activity {
     private void registerNetworkReceiver() {
         networkBroadcastReceiver = new NetworkBroadcastReceiver();
         final IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(networkBroadcastReceiver,filter);
+        registerReceiver(networkBroadcastReceiver, filter);
 
         networkBroadcastReceiver.setNetworkChangeLinstener(new NetworkBroadcastReceiver.NetworkChangeLinstener() {
             @Override
             public void networkChange(boolean hasNetwork) {
-                if(isFinishing()){
+                if (isFinishing()) {
                     return;
                 }
 
-                if(hasNetwork){
+                if (hasNetwork) {
 
 
-
-                }else{
+                } else {
                     // 显示当前的网络状态
                     AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag("ad_1");
-                    if(adOneFragment != null){
+                    if (adOneFragment != null) {
                         adOneFragment.showNetSpeed(false, false, 0);
                     }
 
@@ -149,6 +154,7 @@ public class MainActivity extends Activity {
 
 
     private static String pushToken;
+
     private void initPush(String mac) {
         mPushAgent = PushAgent.getInstance(this);
         LogCat.e("device_token", "start............");
@@ -161,34 +167,16 @@ public class MainActivity extends Activity {
         myHandler.sendEmptyMessage(HANDLER_MSG_GET_TOKEN);
 
 
-
         mPushAgent.setMessageHandler(new UmengMessageHandler() {
 
             @Override
             public void dealWithCustomMessage(Context context, UMessage uMessage) {
                 super.dealWithCustomMessage(context, uMessage);
                 LogCat.e("push: " + uMessage.custom);
-                if(TextUtils.isEmpty(uMessage.custom)){
+                if (TextUtils.isEmpty(uMessage.custom)) {
                     LogCat.e("push...........收到的命令为null");
                     return;
                 }
-                uMessage.custom = "{" +
-                                    "\"isJsCommend\": 0," +
-                                    "\"cmd\":[" +
-                                        "{" +
-                                            "\"cmdInfo\": \"open\"," +
-                                            "\"ad\":\"ad1\"" +
-                                        "}," +
-                                        "{" +
-                                            "\"cmdInfo\":\"close\"," +
-                                            "\"ad\":\"ad2\"" +
-                                        "}," +
-                                        "{" +
-                                        "\"cmdInfo\":\"fresh\"," +
-                                        "\"ad\":\"ad3\"" +
-                                        "}" +
-                                    "]" +
-                                "}";
                 LogCat.e("push", "commend -> json: " + uMessage.custom);
                 dispatchCommend(uMessage);
             }
@@ -199,10 +187,10 @@ public class MainActivity extends Activity {
         CommendResponse commendResponse = null;
         try {
             commendResponse = new Gson().fromJson(uMessage.custom, CommendResponse.class);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        if(commendResponse == null){
+        if (commendResponse == null) {
             LogCat.e("push...........commendResponse == null");
             return;
         }
@@ -211,21 +199,49 @@ public class MainActivity extends Activity {
     }
 
     private void sendCmd(UMessage uMessage, CommendResponse commendResponse) {
-        if(0  == commendResponse.getIsJsCommend()){   // 对js的命令
+        if (0 == commendResponse.getIsJsCommend()) {   // 对js的命令
             LogCat.e("push...........commend  code ......" + commendResponse.getIsJsCommend());
             cmdJs(uMessage);
         } else { // 本地的命令
-
-
+            cmdLocal(commendResponse);
         }
     }
 
     private void cmdJs(UMessage uMessage) {
         AdFiveFragment adFiveFragment = (AdFiveFragment) getFragmentManager().findFragmentByTag("ad_5");
-        if(adFiveFragment != null){
+        if (adFiveFragment != null) {
             LogCat.e("push...........adFiveFragment != null");
             adFiveFragment.setCommendInfo(uMessage.custom);
         }
+    }
+
+    private void cmdLocal(CommendResponse commendResponse) {
+        if (commendResponse == null) {
+            return;
+        }
+
+        LogCat.e("push", "执行本地命令.............");
+        Invoker invoker = new Invoker();
+
+        CmdReceiver receiver = new CmdReceiver(this);
+
+        for (CommendResponse.CmdResponse cmdResponse : commendResponse.getCmd()) {
+            String cmd = cmdResponse.getCmdInfo();
+            if (TextUtils.isEmpty(cmd)) {
+                continue;
+            }
+
+            if ("open".equals(cmd)) {
+                invoker.setCommend(new OpenCommend(cmdResponse.getAd(), receiver, adDeviceDataResponse));
+            } else if ("close".equals(cmd)) {
+                invoker.setCommend(new CloseCommend(cmdResponse.getAd(), receiver));
+            } else if ("fresh".equals(cmd)) {
+                invoker.setCommend(new FreshCommend(cmdResponse.getAd(), receiver));
+            }
+            invoker.execute();
+        }
+
+
     }
 
 
@@ -307,7 +323,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         //卸载广播
-        if(networkBroadcastReceiver != null){
+        if (networkBroadcastReceiver != null) {
             unregisterReceiver(networkBroadcastReceiver);
         }
     }
@@ -332,7 +348,7 @@ public class MainActivity extends Activity {
             AdOneFragment adOneFragment = (AdOneFragment) BaseFragment.getInstance(1);
             adOneFragment.setLayoutResponse(oneLayout);
             initAdOne(adOneFragment, isDownload, adDeviceDataResponse);
-            oneFT.add(R.id.root_main, adOneFragment);
+            oneFT.add(R.id.root_main, adOneFragment, Constants.FRAGMENT_TAG_PRE + 1);
             oneFT.commit();
         }
     }
@@ -452,9 +468,9 @@ public class MainActivity extends Activity {
 
     private void loadFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse) {
         //显示title栏
-        if(adDeviceDataResponse == null){
+        if (adDeviceDataResponse == null) {
             titleLayout.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             showTitleLayout(adDeviceDataResponse.code);
         }
 
@@ -488,11 +504,11 @@ public class MainActivity extends Activity {
         }
 
         if (type == 5) {
-            ((AdFiveFragment)fragment).setLayoutResponses(adDeviceDataResponse.layout);
+            ((AdFiveFragment) fragment).setLayoutResponses(adDeviceDataResponse.layout);
         }
         // 添加布局参数
         fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
-        ft.add(R.id.root_main, fragment, "ad_" + type);
+        ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
         ft.commit();
     }
 
@@ -501,7 +517,7 @@ public class MainActivity extends Activity {
             fragment.setIsDownloadAPK(true);
         }
 
-        if(adDeviceDataResponse == null){
+        if (adDeviceDataResponse == null) {
             return;
         }
 
@@ -574,19 +590,20 @@ public class MainActivity extends Activity {
     }
 
 
-    private static class MyHandler extends Handler{
+    private static class MyHandler extends Handler {
 
         private Context context;
-        public MyHandler(Context context){
+
+        public MyHandler(Context context) {
             this.context = context;
         }
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case HANDLER_MSG_TOKEN:
-                    if(TextUtils.isEmpty(pushToken)){
+                    if (TextUtils.isEmpty(pushToken)) {
                         LogCat.e("push", "仍未获取到token，继续延迟请求............");
                         sendEmptyMessage(HANDLER_MSG_GET_TOKEN);
                         return;
@@ -602,12 +619,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    private static String getPushToken(Context context){
+    private static String getPushToken(Context context) {
         LogCat.e("push", "请求token............");
         return UmengRegistrar.getRegistrationId(context);
     }
 
-    private static void doHttpUpdateUserInfo(Context context){
+    private static void doHttpUpdateUserInfo(Context context) {
 
     }
 

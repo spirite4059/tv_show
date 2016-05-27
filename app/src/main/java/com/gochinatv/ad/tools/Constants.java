@@ -60,6 +60,8 @@ public class Constants {
 
     public static final String PRESET_PIECE = "预置片";
 
+    public static final String FRAGMENT_TAG_PRE = "ad_";
+
 
     /**
      * --------------------------是否是静默安装-------------------------------
