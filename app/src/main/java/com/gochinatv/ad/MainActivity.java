@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -26,9 +27,11 @@ import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.AdFiveFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.google.gson.Gson;
+import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.CommendResponse;
 import com.okhtttp.response.LayoutResponse;
+import com.okhtttp.service.ADHttpService;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.message.IUmengRegisterCallback;
 import com.umeng.message.PushAgent;
@@ -42,7 +45,7 @@ import java.io.File;
  * Created by fq_mbp on 16/3/17.
  */
 public class MainActivity extends Activity {
-
+    private Button testButton;
     private RelativeLayout rootLayout;
     private RelativeLayout titleLayout;
     private TextView textDeviceId;
@@ -55,6 +58,8 @@ public class MainActivity extends Activity {
 
     //网络广播
     private NetworkBroadcastReceiver networkBroadcastReceiver;
+
+    private ADDeviceDataResponse adDeviceDataResponse;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +76,7 @@ public class MainActivity extends Activity {
         rootLayout = (RelativeLayout) findViewById(R.id.root_main);
         textDeviceId = (TextView) findViewById(R.id.text_device_id);
         titleLayout = (RelativeLayout) findViewById(R.id.rel_title);
+        testButton = (Button) findViewById(R.id.test);
     }
 
 
@@ -98,9 +104,25 @@ public class MainActivity extends Activity {
 
         }
         //动态布局部分
-        ADDeviceDataResponse adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
+        adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
         loadFragmentTwo(hasApkDownload, adDeviceDataResponse);
 
+        testButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isClick = false;
+                if(isClick){
+
+
+                    testButton.setText("恢复");
+                    isClick = true;
+                }else{
+                    recoveryLoadFragment();
+                    isClick = false;
+                    testButton.setText("删除");
+                }
+            }
+        });
     }
 
     /**
@@ -542,6 +564,83 @@ public class MainActivity extends Activity {
         LogCat.e(" DataUtils.getDisplayMetricsWidth: " + DataUtils.getDisplayMetricsWidth(this) + "   DataUtils.getDisplayMetricsHeight: " + DataUtils.getDisplayMetricsHeight(this));
 
     }
+
+    /**
+     * 重新加载fragment
+     */
+    private void recoveryLoadFragment(){
+        if(adDeviceDataResponse != null){
+            loadFragmentTwo(false, adDeviceDataResponse);
+        }else{
+            //请求设备信息接口
+            doGetDeviceInfo();
+        }
+    }
+
+
+    /**
+     * 请求广告体接口---布局大小
+     */
+    private int reTryTimesTwo;
+    //布局形式——1：一屏；4：4屏
+    private void doGetDeviceInfo() {
+        ADHttpService.doHttpGetDeviceInfo(this, new OkHttpCallBack<ADDeviceDataResponse>() {
+            @Override
+            public void onSuccess(String url, ADDeviceDataResponse response) {
+                LogCat.e("doGetDeviceInfo url:  " + url);
+                if (isFinishing()) {
+                    return;
+                }
+                if (response == null) {
+                    LogCat.e("请求广告体接口失败");
+                    doError();
+                    return;
+                }
+
+                if (!"0".equals(response.status)) {
+                    LogCat.e("请求广告体接口失败 status = 1");
+                    doError();
+                    return;
+                }
+                adDeviceDataResponse = response;
+                //广告体接口成功
+                //加载布局
+                loadFragmentTwo(false,adDeviceDataResponse);
+                //UmengUtils.onEvent(LoadingActivity.this, UmengUtils.UMENG_APP_START_TIME, DataUtils.getFormatTime(adDeviceDataResponse.currentTime));
+            }
+            private void doError() {
+                if (!isFinishing()) {
+                    // 做不升级处理, 继续请求广告视频列表
+                    reTryTimesTwo++;
+                    if (reTryTimesTwo > 4) {
+                        reTryTimesTwo = 0;
+                        LogCat.e("升级接口已连续请求3次，不在请求");
+                        //广告体接口成功
+                        //加载布局
+                        loadFragmentTwo(false,adDeviceDataResponse);
+                    } else {
+                        LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
+                        doGetDeviceInfo();
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                LogCat.e("请求广告体接口失败。。。。。" + url);
+                doError();
+                //存储布局接口失败信息
+//                layoutLogList = new ArrayList<RetryErrorRequest>();
+//                RetryErrorRequest request = new RetryErrorRequest();
+//                request.retry = String.valueOf(reTryTimesTwo);
+//                request.errorMsg = errorMsg;
+//                layoutLogList.add(request);
+            }
+        });
+    }
+
+
+
 
 
 }

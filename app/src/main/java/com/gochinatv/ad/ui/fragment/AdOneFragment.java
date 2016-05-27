@@ -1,5 +1,6 @@
 package com.gochinatv.ad.ui.fragment;
 
+import android.app.FragmentTransaction;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
@@ -1344,4 +1345,16 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     }
 
+
+    @Override
+    public void doHttpRequest() {
+        doHttpGetVideoList();
+    }
+
+    @Override
+    public void removeFragment() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.remove(this);
+        ft.commit();
+    }
 }

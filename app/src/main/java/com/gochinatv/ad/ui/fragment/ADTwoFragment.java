@@ -2,6 +2,7 @@ package com.gochinatv.ad.ui.fragment;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -481,5 +482,19 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
         }
     }
 
+    @Override
+    public void doHttpRequest() {
+        if(taotalSize == 0){
+            //当没有数据时，才去请求
+            doGetTextAD();
+        }
 
+    }
+
+    @Override
+    public void removeFragment() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.remove(this);
+        ft.commit();
+    }
 }

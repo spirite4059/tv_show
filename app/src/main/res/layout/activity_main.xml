@@ -25,6 +25,12 @@
             android:layout_marginLeft="@dimen/d_5dp"
             />
 
+        <Button
+            android:id="@+id/test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="test"/>
 
         <TextView
             android:id="@+id/text_device_id"

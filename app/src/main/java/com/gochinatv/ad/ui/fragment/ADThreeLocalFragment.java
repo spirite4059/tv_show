@@ -2,6 +2,7 @@ package com.gochinatv.ad.ui.fragment;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.app.FragmentTransaction;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -137,7 +138,9 @@ public class ADThreeLocalFragment extends BaseFragment {
 
 
     protected void initData() {
-
+        if(!DataUtils.isNetworkConnected(getActivity())){
+            return;
+        }
         ADHttpService.doHttpGetImageADInfo(getActivity(), new OkHttpCallBack<AdThreeDataResponse>() {
             @Override
             public void onSuccess(String url, AdThreeDataResponse response) {
@@ -288,13 +291,6 @@ public class ADThreeLocalFragment extends BaseFragment {
                     },2000);
                 }
 
-//                if (adThreeBg != null && adThreeBg.getVisibility() == View.GONE) {
-//                    //没有数据显示背景图
-//                    adThreeBg.setVisibility(View.VISIBLE);
-//                    adThreeBg.setAlpha(1.0f);
-//                    //停在滚动
-//                    linearLayout.stopRecycleAnimation();
-//                }
             }
         });
 
@@ -440,4 +436,19 @@ public class ADThreeLocalFragment extends BaseFragment {
         }
     }
 
+
+    @Override
+    public void doHttpRequest() {
+        if(imgServerResponses.size() == 0){
+            //当没有数据时，才去请求
+            initData();
+        }
+    }
+
+    @Override
+    public void removeFragment() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.remove(this);
+        ft.commit();
+    }
 }
