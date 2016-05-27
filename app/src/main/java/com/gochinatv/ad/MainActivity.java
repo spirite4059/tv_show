@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -29,6 +28,9 @@ import com.gochinatv.ad.tools.DownLoadAPKUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
+import com.gochinatv.ad.ui.fragment.ADFourFragment;
+import com.gochinatv.ad.ui.fragment.ADThreeLocalFragment;
+import com.gochinatv.ad.ui.fragment.ADTwoFragment;
 import com.gochinatv.ad.ui.fragment.AdFiveFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.google.gson.Gson;
@@ -50,7 +52,8 @@ import java.io.File;
  * Created by fq_mbp on 16/3/17.
  */
 public class MainActivity extends Activity {
-    private Button testButton;
+    //private Button testButton;
+    //boolean isClick = true;
     private RelativeLayout rootLayout;
     private RelativeLayout titleLayout;
     private TextView textDeviceId;
@@ -85,7 +88,7 @@ public class MainActivity extends Activity {
         rootLayout = (RelativeLayout) findViewById(R.id.root_main);
         textDeviceId = (TextView) findViewById(R.id.text_device_id);
         titleLayout = (RelativeLayout) findViewById(R.id.rel_title);
-        testButton = (Button) findViewById(R.id.test);
+        //testButton = (Button) findViewById(R.id.test);
     }
 
 
@@ -116,22 +119,22 @@ public class MainActivity extends Activity {
         adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
         loadFragment(hasApkDownload, adDeviceDataResponse);
 
-        testButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean isClick = false;
-                if(isClick){
 
-
-                    testButton.setText("恢复");
-                    isClick = true;
-                }else{
-                    recoveryLoadFragment();
-                    isClick = false;
-                    testButton.setText("删除");
-                }
-            }
-        });
+//        testButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                if(isClick){
+//                    removeAllFragment();
+//                    testButton.setText("恢复");
+//                    isClick = false;
+//                }else{
+//                    recoveryLoadFragment();
+//                    isClick = true;
+//                    testButton.setText("删除");
+//                }
+//            }
+//        });
     }
 
     /**
@@ -148,13 +151,12 @@ public class MainActivity extends Activity {
                 if (isFinishing()) {
                     return;
                 }
-
                 if (hasNetwork) {
-
-
+                    //当有网络时执行
+                    reLoadHttpRequest();
                 } else {
                     // 显示当前的网络状态
-                    AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag("ad_1");
+                    AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
                     if (adOneFragment != null) {
                         adOneFragment.showNetSpeed(false, false, 0);
                     }
@@ -610,6 +612,42 @@ public class MainActivity extends Activity {
 
     }
 
+
+    /**
+     * 移除所有的fragment
+     */
+    private void removeAllFragment(){
+        FragmentManager manager = getFragmentManager();
+        for(int i=1;i<5;i++){
+            switch (i){
+                case 1:
+                    AdOneFragment adOneFragment = (AdOneFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                    if(adOneFragment != null){
+                        adOneFragment.removeFragment();
+                    }
+                    break;
+                case 2:
+                    ADTwoFragment twoFragment = (ADTwoFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                    if(twoFragment != null){
+                        twoFragment.removeFragment();
+                    }
+                    break;
+                case 3:
+                    ADThreeLocalFragment threeLocalFragment = (ADThreeLocalFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                    if(threeLocalFragment != null){
+                        threeLocalFragment.removeFragment();
+                    }
+                    break;
+                case 4:
+                    ADFourFragment fourFragment = (ADFourFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                    if(fourFragment != null){
+                        fourFragment.removeFragment();
+                    }
+                    break;
+            }
+        }
+    }
+
     /**
      * 重新加载fragment
      */
@@ -619,6 +657,42 @@ public class MainActivity extends Activity {
         }else{
             //请求设备信息接口
             doGetDeviceInfo();
+        }
+    }
+
+
+    /**
+     * 当网络状态改变时，加载数据
+     */
+    private void reLoadHttpRequest(){
+        FragmentManager manager = getFragmentManager();
+        for(int i=1;i<5;i++){
+            switch (i){
+                case 1:
+                    AdOneFragment adOneFragment = (AdOneFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                    if(adOneFragment != null){
+                        adOneFragment.doHttpRequest();
+                    }
+                    break;
+                case 2:
+                    ADTwoFragment twoFragment = (ADTwoFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                    if(twoFragment != null){
+                        twoFragment.doHttpRequest();
+                    }
+                    break;
+                case 3:
+                    ADThreeLocalFragment threeLocalFragment = (ADThreeLocalFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                    if(threeLocalFragment != null){
+                        threeLocalFragment.doHttpRequest();
+                    }
+                    break;
+                case 4:
+                    ADFourFragment fourFragment = (ADFourFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                    if(fourFragment != null){
+                        fourFragment.doHttpRequest();
+                    }
+                    break;
+            }
         }
     }
 

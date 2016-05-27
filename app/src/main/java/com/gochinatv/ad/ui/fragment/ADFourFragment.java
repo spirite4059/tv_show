@@ -75,33 +75,37 @@ public class ADFourFragment extends BaseFragment {
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
 
         LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.fragment_ad_four, container, false);
+        String widthStr = null;
+        String heightStr = null;
+        String topStr = null;
+        String leftStr = null;
         if(layoutResponse != null){
-
-            if(!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
-                    && !TextUtils.isEmpty(layoutResponse.adTop) && !TextUtils.isEmpty(layoutResponse.adLeft)){
-
-                String widthStr = layoutResponse.adWidth;
-                String heightStr = layoutResponse.adHeight;
-                String topStr = layoutResponse.adTop;
-                String leftStr = layoutResponse.adLeft;
-
-                //动态布局
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
-                double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
-                double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
-                double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
-                double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
-                viewWidth = (int) Math.round(width);
-                params.width = (int) Math.round(width);
-                params.height = (int) Math.round(height);
-                params.topMargin = (int) Math.round(top);
-
-                params.leftMargin = (int) Math.round(left);
-                linearLayout.setLayoutParams(params);
-                LogCat.e("ADFourFragment"," 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
-
-            }
+            widthStr = TextUtils.isEmpty(layoutResponse.adWidth)?"0.83125":layoutResponse.adWidth;
+            heightStr = TextUtils.isEmpty(layoutResponse.adHeight)?"0.084375":layoutResponse.adHeight;
+            topStr = TextUtils.isEmpty(layoutResponse.adTop)?"0.915625":layoutResponse.adTop;
+            leftStr = TextUtils.isEmpty(layoutResponse.adLeft)?"0":layoutResponse.adLeft;
+        }else{
+            //默认布局
+            widthStr = "0.83125";
+            heightStr = "0.084375";
+            topStr = "0.915625";
+            leftStr = "0";
         }
+
+        //动态布局
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+        double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
+        double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
+        double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
+        double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
+        viewWidth = (int) Math.round(width);
+        params.width = (int) Math.round(width);
+        params.height = (int) Math.round(height);
+        params.topMargin = (int) Math.round(top);
+        params.leftMargin = (int) Math.round(left);
+        linearLayout.setLayoutParams(params);
+        LogCat.e("ADFourFragment"," 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
+
 
         return linearLayout;
     }
@@ -377,10 +381,7 @@ public class ADFourFragment extends BaseFragment {
 
     @Override
     public void doHttpRequest() {
-        if(taotalSize == 0){
-            //当没有数据时，才去做请求
-            doGetTextAD();
-        }
+        doGetTextAD();
     }
 
     @Override

@@ -67,34 +67,36 @@ public class ADThreeLocalFragment extends BaseFragment {
 
         RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.fragment_ad_three,container,false);
 
+        String widthStr = null;
+        String heightStr = null;
+        String topStr = null;
+        String leftStr = null;
         if(layoutResponse != null){
-
-            if(!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
-                    && !TextUtils.isEmpty(layoutResponse.adTop) && !TextUtils.isEmpty(layoutResponse.adLeft)){
-
-                String widthStr = layoutResponse.adWidth;
-                String heightStr = layoutResponse.adHeight;
-                String topStr = layoutResponse.adTop;
-                String leftStr = layoutResponse.adLeft;
-
-                //动态布局
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
-                width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
-                height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
-                double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
-                double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
-
-                params.width = (int) Math.round(width);
-                params.height = (int) Math.round(height);
-                params.topMargin = (int) Math.round(top);
-
-                params.leftMargin = (int) Math.round(left);
-                layout.setLayoutParams(params);
-                LogCat.e(" 广告三布局 width: " + params.width + " height: " + params.height + " top: " + params.topMargin + " left: " + params.leftMargin);
-
-            }
+            widthStr = TextUtils.isEmpty(layoutResponse.adWidth)?"0.16689":layoutResponse.adWidth;
+            heightStr = TextUtils.isEmpty(layoutResponse.adHeight)?"0.6":layoutResponse.adHeight;
+            topStr = TextUtils.isEmpty(layoutResponse.adTop)?"0.4":layoutResponse.adTop;
+            leftStr = TextUtils.isEmpty(layoutResponse.adLeft)?"0.8331":layoutResponse.adLeft;
+        }else{
+            //默认布局
+            widthStr = "0.16689";
+            heightStr = "0.6";
+            topStr = "0.4";
+            leftStr = "0.83315";
         }
 
+        //动态布局
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+        width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
+        height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
+        double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
+        double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
+
+        params.width = (int) Math.round(width);
+        params.height = (int) Math.round(height);
+        params.topMargin = (int) Math.round(top);
+        params.leftMargin = (int) Math.round(left);
+        layout.setLayoutParams(params);
+        LogCat.e(" 广告三布局 width: " + params.width + " height: " + params.height + " top: " + params.topMargin + " left: " + params.leftMargin);
 
         return layout;
     }
@@ -439,10 +441,8 @@ public class ADThreeLocalFragment extends BaseFragment {
 
     @Override
     public void doHttpRequest() {
-        if(imgServerResponses.size() == 0){
-            //当没有数据时，才去请求
-            initData();
-        }
+        initData();
+
     }
 
     @Override
