@@ -67,7 +67,6 @@ public class MainActivity extends Activity {
 
     //网络广播
     private NetworkBroadcastReceiver networkBroadcastReceiver;
-    ADDeviceDataResponse adDeviceDataResponse;
 
     private ADDeviceDataResponse adDeviceDataResponse;
 
@@ -616,7 +615,7 @@ public class MainActivity extends Activity {
      */
     private void recoveryLoadFragment(){
         if(adDeviceDataResponse != null){
-            loadFragmentTwo(false, adDeviceDataResponse);
+            loadFragment(false, adDeviceDataResponse);
         }else{
             //请求设备信息接口
             doGetDeviceInfo();
@@ -651,7 +650,7 @@ public class MainActivity extends Activity {
                 adDeviceDataResponse = response;
                 //广告体接口成功
                 //加载布局
-                loadFragmentTwo(false,adDeviceDataResponse);
+                loadFragment(false,adDeviceDataResponse);
                 //UmengUtils.onEvent(LoadingActivity.this, UmengUtils.UMENG_APP_START_TIME, DataUtils.getFormatTime(adDeviceDataResponse.currentTime));
             }
             private void doError() {
@@ -663,7 +662,7 @@ public class MainActivity extends Activity {
                         LogCat.e("升级接口已连续请求3次，不在请求");
                         //广告体接口成功
                         //加载布局
-                        loadFragmentTwo(false,adDeviceDataResponse);
+                        loadFragment(false,adDeviceDataResponse);
                     } else {
                         LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
                         doGetDeviceInfo();
