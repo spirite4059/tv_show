@@ -10,6 +10,7 @@ import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.ui.view.AdWebView;
 import com.okhtttp.response.ADDeviceDataResponse;
 
 /**
@@ -78,6 +79,22 @@ public class CmdReceiver {
         if(!isCanExecute(action)){
             return;
         }
+        int adType = getAdType(action);
+        if(adType == -1){
+            return;
+        }
+        if(adType == 5){
+            AdWebView adWebView = (AdWebView) activity.findViewById(R.id.ad_web);
+            adWebView.loadUrl();
+        }else {
+            FragmentManager fm = activity.getFragmentManager();
+            BaseFragment fragment = (BaseFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + adType);
+            if(fragment != null){
+                fragment.doHttpRequest();
+            }
+        }
+
+
 
 
     }

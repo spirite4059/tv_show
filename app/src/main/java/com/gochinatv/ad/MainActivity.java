@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -15,29 +16,28 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.download.DLUtils;
+import com.gochinatv.ad.base.BaseActivity;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.cmd.CloseCommend;
 import com.gochinatv.ad.cmd.CmdReceiver;
 import com.gochinatv.ad.cmd.FreshCommend;
+import com.gochinatv.ad.cmd.ICommend;
 import com.gochinatv.ad.cmd.Invoker;
 import com.gochinatv.ad.cmd.OpenCommend;
-import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
-import com.gochinatv.ad.ui.fragment.ADFourFragment;
-import com.gochinatv.ad.ui.fragment.ADThreeLocalFragment;
-import com.gochinatv.ad.ui.fragment.ADTwoFragment;
-import com.gochinatv.ad.ui.fragment.AdFiveFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
+import com.gochinatv.ad.ui.view.AdWebView;
 import com.google.gson.Gson;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.CommendResponse;
 import com.okhtttp.response.LayoutResponse;
+import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.ADHttpService;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.message.PushAgent;
@@ -51,7 +51,7 @@ import java.io.File;
 /**
  * Created by fq_mbp on 16/3/17.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends BaseActivity {
     //private Button testButton;
     //boolean isClick = true;
     private RelativeLayout rootLayout;
@@ -61,17 +61,27 @@ public class MainActivity extends Activity {
     private static final int HANDLER_MSG_TOKEN = 1000;
     private static final int HANDLER_MSG_GET_TOKEN = 1001;
 
-
     //下载apk尝试的次数
     private int reTryTimes;
     private PushAgent mPushAgent;
 
     private MyHandler myHandler;
+    private AdWebView adWebView;
 
     //网络广播
     private NetworkBroadcastReceiver networkBroadcastReceiver;
 
     private ADDeviceDataResponse adDeviceDataResponse;
+
+    /**
+     * 请求广告体接口---布局大小
+     */
+    private int reTryTimesTwo;
+
+    /**
+     * 新下载apk方法
+     */
+    private DownLoadAPKUtils downLoadAPKUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,22 +98,19 @@ public class MainActivity extends Activity {
         rootLayout = (RelativeLayout) findViewById(R.id.root_main);
         textDeviceId = (TextView) findViewById(R.id.text_device_id);
         titleLayout = (RelativeLayout) findViewById(R.id.rel_title);
-        //testButton = (Button) findViewById(R.id.test);
+        adWebView = (AdWebView) findViewById(R.id.ad_web);
     }
 
+    boolean isDoGetDevice;
 
     private void init() {
         registerNetworkReceiver();
-        /**
-         * 隐藏NavigationBar
-         */
-        DataUtils.hideNavigationBar(this);
-        // 删除升级安装包
-        deleteUpdateApk();
+
         // 初始化友盟统计
         initUmeng();
 
-        //apk下载部分
+        Intent intent = getIntent();
+
         boolean hasApkDownload;//是否有apk下载
         String apkUrl = getIntent().getStringExtra("apkUrl");
         if (!TextUtils.isEmpty(apkUrl)) {
@@ -113,59 +120,18 @@ public class MainActivity extends Activity {
         } else {
             //没有apk下载
             hasApkDownload = false;
-
         }
-        //动态布局部分
-        adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
+
+        isDoGetDevice = intent.getBooleanExtra("isDoGetDevice", false);
+        if (isDoGetDevice) {
+            //动态布局部分
+            adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
+        }
+
         loadFragment(hasApkDownload, adDeviceDataResponse);
 
-
-//        testButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                if(isClick){
-//                    removeAllFragment();
-//                    testButton.setText("恢复");
-//                    isClick = false;
-//                }else{
-//                    recoveryLoadFragment();
-//                    isClick = true;
-//                    testButton.setText("删除");
-//                }
-//            }
-//        });
     }
 
-    /**
-     * 动态注册网络状态广播,并回调
-     */
-    private void registerNetworkReceiver() {
-        networkBroadcastReceiver = new NetworkBroadcastReceiver();
-        final IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(networkBroadcastReceiver, filter);
-
-        networkBroadcastReceiver.setNetworkChangeLinstener(new NetworkBroadcastReceiver.NetworkChangeLinstener() {
-            @Override
-            public void networkChange(boolean hasNetwork) {
-                if (isFinishing()) {
-                    return;
-                }
-                if (hasNetwork) {
-                    //当有网络时执行
-                    reLoadHttpRequest();
-                } else {
-                    // 显示当前的网络状态
-                    AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                    if (adOneFragment != null) {
-                        adOneFragment.showNetSpeed(false, false, 0);
-                    }
-
-                }
-            }
-        });
-
-    }
 
     // 清空fragment的状态
     private void cleanFragmentState(Bundle savedInstanceState) {
@@ -231,10 +197,9 @@ public class MainActivity extends Activity {
     }
 
     private void cmdJs(UMessage uMessage) {
-        AdFiveFragment adFiveFragment = (AdFiveFragment) getFragmentManager().findFragmentByTag("ad_5");
-        if (adFiveFragment != null) {
-            LogCat.e("push...........adFiveFragment != null");
-            adFiveFragment.setCommendInfo(uMessage.custom);
+        if (adWebView != null) {
+            LogCat.e("push...........adWebView != null");
+            adWebView.setCommendInfo(uMessage.custom);
         }
     }
 
@@ -254,11 +219,11 @@ public class MainActivity extends Activity {
                 continue;
             }
 
-            if ("open".equals(cmd)) {
+            if (ICommend.COMMEND_OPEN.equals(cmd)) {
                 invoker.setCommend(new OpenCommend(cmdResponse.getAd(), receiver, adDeviceDataResponse));
-            } else if ("close".equals(cmd)) {
+            } else if (ICommend.COMMEND_CLOSE.equals(cmd)) {
                 invoker.setCommend(new CloseCommend(cmdResponse.getAd(), receiver));
-            } else if ("fresh".equals(cmd)) {
+            } else if (ICommend.COMMEND_FRESH.equals(cmd)) {
                 invoker.setCommend(new FreshCommend(cmdResponse.getAd(), receiver));
             }
             invoker.execute();
@@ -293,10 +258,6 @@ public class MainActivity extends Activity {
     }
 
 
-    private void deleteUpdateApk() {
-        DeleteFileUtils.getInstance().deleteFile(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-    }
-
 //    private void testInstall() {
 //        File file = Environment.getExternalStorageDirectory();
 ////
@@ -327,7 +288,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop() {
-
         DLUtils.cancel();
         if (downLoadAPKUtils != null) {
             downLoadAPKUtils.stopDownLoad();
@@ -376,74 +336,8 @@ public class MainActivity extends Activity {
         }
     }
 
-    /**
-     * 新下载apk方法
-     */
-    private DownLoadAPKUtils downLoadAPKUtils;
 
-    //private int progressTest;
-    private void downloadAPKNew(final String url) {
-        if (downLoadAPKUtils == null) {
-            downLoadAPKUtils = new DownLoadAPKUtils();
-        }
-        downLoadAPKUtils.downLoad(this, url);
-        final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-        //下载失败监听
-        downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
-            @Override
-            public void onDownLoadFinish(Exception e) {
-                //通知AdOneFragment去下载视频
-                LogCat.e("APKdownload", "下载apk出现错误: " + e.toString());
-                if (reTryTimes < 5) {
-                    LogCat.e("APKdownload", "下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
-                    reTryTimes += 1;
-                    //延迟2秒再去下载
-                    rootLayout.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            downloadAPKNew(url);
-                        }
-                    }, 2000);
 
-                } else {
-                    LogCat.e("APKdownload", "下载apk出现错误,重试5次不再重试 ");
-                    if (adOneFragment != null) {
-                        adOneFragment.startDownloadVideo();
-                    }
-                }
-            }
-        });
-
-        //下载进度监听
-        downLoadAPKUtils.setOnDownLoadProgressListener(new DownLoadAPKUtils.OnDownLoadProgressListener() {
-            @Override
-            public void onDownLoadProgress(int progress, String fileName) {
-                LogCat.e("APKdownload", "APK已经下载了 progress: " + progress + "%");
-                AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                if (adOneFragment != null) {
-                    adOneFragment.startDownloadVideo();
-                }
-                if (adOneFragment != null) {
-                    adOneFragment.showNetSpeed(true, true, progress);
-                }
-            }
-        });
-
-        // 下载成功监听
-        downLoadAPKUtils.setOnDownLoadFinishListener(new DownLoadAPKUtils.OnDownLoadFinishListener() {
-            @Override
-            public void onDownLoadFinish(String fileName) {
-                //新包下载完成得安装
-                LogCat.e("APKdownload", "下载升级成功，开始正式升级.......");
-                File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-                InstallUtils.installAuto(MainActivity.this, file, true);
-                if (adOneFragment != null) {
-                    adOneFragment.hideNetSpeed();
-                }
-            }
-        });
-
-    }
 
     /**
      * 之前的下载apk方法
@@ -507,15 +401,25 @@ public class MainActivity extends Activity {
         if (adDeviceDataResponse.layout != null && adDeviceDataResponse.layout.size() > 0) {
             int size = adDeviceDataResponse.layout.size();
             FragmentManager fm = getFragmentManager();
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < size - 1; i++) {
                 String adType = adDeviceDataResponse.layout.get(i).adType;
                 if (TextUtils.isEmpty(adType)) {
                     continue;
                 }
                 int type = Integer.parseInt(adType);
-                initAdFragment(isDownload, adDeviceDataResponse, fm, i, type);
+                if (i == 4) {
+                    initWebView(adDeviceDataResponse, i);
+                } else {
+                    initAdFragment(isDownload, adDeviceDataResponse, fm, i, type);
+                }
             }
         }
+    }
+
+    private void initWebView(ADDeviceDataResponse adDeviceDataResponse, int i) {
+        adWebView.init();
+        adWebView.setLayoutResponse(adDeviceDataResponse.layout.get(i));
+        adWebView.setLayoutResponses(adDeviceDataResponse.layout);
     }
 
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
@@ -526,9 +430,9 @@ public class MainActivity extends Activity {
             initAdOne((AdOneFragment) fragment, isDownload, adDeviceDataResponse);
         }
 
-        if (type == 5) {
-            ((AdFiveFragment) fragment).setLayoutResponses(adDeviceDataResponse.layout);
-        }
+//        if (type == 5) {
+//            ((AdFiveFragment) fragment).setLayoutResponses(adDeviceDataResponse.layout);
+//        }
         // 添加布局参数
         fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
         ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
@@ -613,154 +517,91 @@ public class MainActivity extends Activity {
     }
 
 
-    /**
-     * 移除所有的fragment
-     */
-    private void removeAllFragment(){
-        FragmentManager manager = getFragmentManager();
-        for(int i=1;i<5;i++){
-            switch (i){
-                case 1:
-                    AdOneFragment adOneFragment = (AdOneFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                    if(adOneFragment != null){
-                        adOneFragment.removeFragment();
-                    }
-                    break;
-                case 2:
-                    ADTwoFragment twoFragment = (ADTwoFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                    if(twoFragment != null){
-                        twoFragment.removeFragment();
-                    }
-                    break;
-                case 3:
-                    ADThreeLocalFragment threeLocalFragment = (ADThreeLocalFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                    if(threeLocalFragment != null){
-                        threeLocalFragment.removeFragment();
-                    }
-                    break;
-                case 4:
-                    ADFourFragment fourFragment = (ADFourFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                    if(fourFragment != null){
-                        fourFragment.removeFragment();
-                    }
-                    break;
-            }
-        }
-    }
 
-    /**
-     * 重新加载fragment
-     */
-    private void recoveryLoadFragment(){
-        if(adDeviceDataResponse != null){
-            loadFragment(false, adDeviceDataResponse);
-        }else{
-            //请求设备信息接口
-            doGetDeviceInfo();
-        }
-    }
+
+
 
 
     /**
-     * 当网络状态改变时，加载数据
+     * 动态注册网络状态广播,并回调
      */
-    private void reLoadHttpRequest(){
-        FragmentManager manager = getFragmentManager();
-        for(int i=1;i<5;i++){
-            switch (i){
-                case 1:
-                    AdOneFragment adOneFragment = (AdOneFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                    if(adOneFragment != null){
-                        adOneFragment.doHttpRequest();
-                    }
-                    break;
-                case 2:
-                    ADTwoFragment twoFragment = (ADTwoFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                    if(twoFragment != null){
-                        twoFragment.doHttpRequest();
-                    }
-                    break;
-                case 3:
-                    ADThreeLocalFragment threeLocalFragment = (ADThreeLocalFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                    if(threeLocalFragment != null){
-                        threeLocalFragment.doHttpRequest();
-                    }
-                    break;
-                case 4:
-                    ADFourFragment fourFragment = (ADFourFragment) manager.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                    if(fourFragment != null){
-                        fourFragment.doHttpRequest();
-                    }
-                    break;
-            }
-        }
-    }
+    private void registerNetworkReceiver() {
+        networkBroadcastReceiver = new NetworkBroadcastReceiver();
+        final IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkBroadcastReceiver, filter);
 
-
-    /**
-     * 请求广告体接口---布局大小
-     */
-    private int reTryTimesTwo;
-    //布局形式——1：一屏；4：4屏
-    private void doGetDeviceInfo() {
-        ADHttpService.doHttpGetDeviceInfo(this, new OkHttpCallBack<ADDeviceDataResponse>() {
+        networkBroadcastReceiver.setNetworkChangeLinstener(new NetworkBroadcastReceiver.NetworkChangeLinstener() {
             @Override
-            public void onSuccess(String url, ADDeviceDataResponse response) {
-                LogCat.e("doGetDeviceInfo url:  " + url);
+            public void networkChange(boolean hasNetwork) {
                 if (isFinishing()) {
                     return;
                 }
-                if (response == null) {
-                    LogCat.e("请求广告体接口失败");
-                    doError();
-                    return;
-                }
-
-                if (!"0".equals(response.status)) {
-                    LogCat.e("请求广告体接口失败 status = 1");
-                    doError();
-                    return;
-                }
-                adDeviceDataResponse = response;
-                //广告体接口成功
-                //加载布局
-                loadFragment(false,adDeviceDataResponse);
-                //UmengUtils.onEvent(LoadingActivity.this, UmengUtils.UMENG_APP_START_TIME, DataUtils.getFormatTime(adDeviceDataResponse.currentTime));
-            }
-            private void doError() {
-                if (!isFinishing()) {
-                    // 做不升级处理, 继续请求广告视频列表
-                    reTryTimesTwo++;
-                    if (reTryTimesTwo > 4) {
-                        reTryTimesTwo = 0;
-                        LogCat.e("升级接口已连续请求3次，不在请求");
-                        //广告体接口成功
-                        //加载布局
-                        loadFragment(false,adDeviceDataResponse);
-                    } else {
-                        LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
-                        doGetDeviceInfo();
+                if (hasNetwork) {
+                    //当有网络时执行
+                    reLoadHttpRequest();
+                } else {
+                    // 显示当前的网络状态
+                    AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+                    if (adOneFragment != null) {
+                        adOneFragment.showNetSpeed(false, false, 0);
                     }
                 }
-            }
-
-            @Override
-            public void onError(String url, String errorMsg) {
-                LogCat.e("请求广告体接口失败。。。。。" + url);
-                doError();
-                //存储布局接口失败信息
-//                layoutLogList = new ArrayList<RetryErrorRequest>();
-//                RetryErrorRequest request = new RetryErrorRequest();
-//                request.retry = String.valueOf(reTryTimesTwo);
-//                request.errorMsg = errorMsg;
-//                layoutLogList.add(request);
             }
         });
     }
 
+    /**
+     * 当网络状态改变时，加载数据
+     */
+    private void reLoadHttpRequest() {
+        if (isDoGetDevice) {
+            FragmentManager fm = getFragmentManager();
+            for (int i = 1; i < 5; i++) {
+                BaseFragment baseFragment = (BaseFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                baseFragment.doHttpRequest();
+            }
+        } else {
+            doGetDeviceInfo(MainActivity.this);
+        }
 
+    }
 
+    @Override
+    protected void onGetDeviceInfoSuccess(ADDeviceDataResponse response) {
+        super.onGetDeviceInfoSuccess(response);
+        if (!"0".equals(response.status)) {
+            LogCat.e("请求广告体接口失败 status = 1");
+            doGetDeviceInfoError();
+            return;
+        }
+        adDeviceDataResponse = response;
+        //广告体接口成功
+        //加载布局
+        loadFragment(false, adDeviceDataResponse);
+    }
 
+    @Override
+    protected void onGetDeviceInfoError(String msg) {
+        super.onGetDeviceInfoError(msg);
+        doGetDeviceInfoError();
+    }
+
+    private void doGetDeviceInfoError() {
+        if (!isFinishing()) {
+            // 做不升级处理, 继续请求广告视频列表
+            reTryTimesTwo++;
+            if (reTryTimesTwo > 4) {
+                reTryTimesTwo = 0;
+                LogCat.e("升级接口已连续请求3次，不在请求");
+                //广告体接口成功
+                //加载布局
+                loadFragment(false, adDeviceDataResponse);
+            } else {
+                LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
+                doGetDeviceInfo(MainActivity.this);
+            }
+        }
+    }
 
     private static class MyHandler extends Handler {
 
@@ -797,6 +638,71 @@ public class MainActivity extends Activity {
     }
 
     private static void doHttpUpdateUserInfo(Context context) {
+
+    }
+
+
+    //private int progressTest;
+    private void downloadAPKNew(final String url) {
+        if (downLoadAPKUtils == null) {
+            downLoadAPKUtils = new DownLoadAPKUtils();
+        }
+        downLoadAPKUtils.downLoad(this, url);
+        final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+        //下载失败监听
+        downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
+            @Override
+            public void onDownLoadFinish(Exception e) {
+                //通知AdOneFragment去下载视频
+                LogCat.e("APKdownload", "下载apk出现错误: " + e.toString());
+                if (reTryTimes < 5) {
+                    LogCat.e("APKdownload", "下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
+                    reTryTimes += 1;
+                    //延迟2秒再去下载
+                    rootLayout.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            downloadAPKNew(url);
+                        }
+                    }, 2000);
+
+                } else {
+                    LogCat.e("APKdownload", "下载apk出现错误,重试5次不再重试 ");
+                    if (adOneFragment != null) {
+                        adOneFragment.startDownloadVideo();
+                    }
+                }
+            }
+        });
+
+        //下载进度监听
+        downLoadAPKUtils.setOnDownLoadProgressListener(new DownLoadAPKUtils.OnDownLoadProgressListener() {
+            @Override
+            public void onDownLoadProgress(int progress, String fileName) {
+                LogCat.e("APKdownload", "APK已经下载了 progress: " + progress + "%");
+                AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+                if (adOneFragment != null) {
+                    adOneFragment.startDownloadVideo();
+                }
+                if (adOneFragment != null) {
+                    adOneFragment.showNetSpeed(true, true, progress);
+                }
+            }
+        });
+
+        // 下载成功监听
+        downLoadAPKUtils.setOnDownLoadFinishListener(new DownLoadAPKUtils.OnDownLoadFinishListener() {
+            @Override
+            public void onDownLoadFinish(String fileName) {
+                //新包下载完成得安装
+                LogCat.e("APKdownload", "下载升级成功，开始正式升级.......");
+                File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
+                InstallUtils.installAuto(MainActivity.this, file, true);
+                if (adOneFragment != null) {
+                    adOneFragment.hideNetSpeed();
+                }
+            }
+        });
 
     }
 

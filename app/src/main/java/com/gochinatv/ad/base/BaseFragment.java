@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import com.gochinatv.ad.ui.fragment.ADFourFragment;
 import com.gochinatv.ad.ui.fragment.ADThreeLocalFragment;
 import com.gochinatv.ad.ui.fragment.ADTwoFragment;
-import com.gochinatv.ad.ui.fragment.AdFiveFragment;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.okhtttp.response.LayoutResponse;
 
@@ -47,7 +46,7 @@ public abstract class BaseFragment extends Fragment {
                 baseFragment = new ADFourFragment();
                 break;
             case 5:
-                baseFragment = new AdFiveFragment();
+//                baseFragment = new AdFiveFragment();
                 break;
 
         }

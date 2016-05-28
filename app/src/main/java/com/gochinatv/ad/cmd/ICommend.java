@@ -5,6 +5,10 @@ package com.gochinatv.ad.cmd;
  */
 public interface ICommend {
 
+    String COMMEND_OPEN = "open";
+    String COMMEND_CLOSE = "close";
+    String COMMEND_FRESH = "fresh";
+
     void execute();
 
 }

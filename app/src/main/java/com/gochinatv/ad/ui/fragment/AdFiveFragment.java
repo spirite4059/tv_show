@@ -153,6 +153,9 @@ public class AdFiveFragment extends BaseFragment {
     public void setLayoutResponse(LayoutResponse layoutResponse) {
         super.setLayoutResponse(layoutResponse);
         this.layoutResponse = layoutResponse;
+
+
+
     }
 
     ArrayList<LayoutResponse> layoutResponses;

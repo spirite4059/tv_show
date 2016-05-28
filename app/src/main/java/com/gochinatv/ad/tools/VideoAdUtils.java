@@ -184,9 +184,8 @@ public class VideoAdUtils {
             }
         }
         LogCat.e("video", "------------------------------");
-        LogCat.e("video", "最终的明日下载列表.......");
         for (AdDetailResponse adDetailResponse : prepareDownloadLists) {
-            LogCat.e("video", "明日下载视频：" + adDetailResponse.adVideoName);
+            LogCat.e("video", "视频：" + adDetailResponse.adVideoName);
         }
         LogCat.e("video", "------------------------------");
         tomorrowList.addAll(prepareDownloadLists);
@@ -299,7 +298,8 @@ public class VideoAdUtils {
      *
      * @param cacheTodayList
      */
-    public static void checkFileLength(Context context, ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
+    public static ArrayList<AdDetailResponse> checkFileLength(Context context, ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
+        ArrayList<AdDetailResponse> deleteVideos = new ArrayList<>();
         if (cacheTodayList != null && cacheTodayList.size() != 0) {
             LogCat.e("video", "检测到播放列表, 开始检测文件完整性......");
             for (int i = 0; i < localVideoList.size(); i++) {
@@ -314,9 +314,9 @@ public class VideoAdUtils {
                             if (isDownloading) {
                                 LogCat.e("video", "当前文件正在下载中，不做额外处理.......");
                             } else {
-                                --i;
-                                localVideoList.remove(localVideo);
-                                DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
+                                deleteVideos.add(localVideo);
+//                                localVideoList.remove(localVideo);
+//                                DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
                                 LogCat.e("video", "由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
                             }
                             break;
@@ -325,30 +325,32 @@ public class VideoAdUtils {
                 }
 
                 if(!isHasCache){
-                    --i;
-                    localVideoList.remove(localVideo);
-                    DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以删除文件..........");
+                    deleteVideos.add(localVideo);
+//                    localVideoList.remove(localVideo);
+//                    DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
+                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以删除文件.........." + localVideo.adVideoName);
                 }
 
 
             }
         } else {
-            LogCat.e("video", "缓存表为空，清空所有缓存视频..........");
+
             for (int i = 0; i < localVideoList.size(); i++) {
                 AdDetailResponse localVideo = localVideoList.get(i);
+                deleteVideos.add(localVideo);
+                LogCat.e("video", "缓存表为空，清空所有缓存视频.........." + localVideo.adVideoName);
 //                if (localVideo.adVideoLength == 0) {
 //                    --i;
 //                    localVideoList.remove(localVideo);
 //                    DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-//                    LogCat.e("video", "由于文件大小==0，需要删除的文件是......." + localVideo.adVideoName);
-//                }
 
-                --i;
-                localVideoList.remove(localVideo);
-                DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
+//                }
+//                --i;
+//                localVideoList.remove(localVideo);
+//                DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
             }
         }
+        return deleteVideos;
     }
 
     public static void recordStartTime(Context context) {
