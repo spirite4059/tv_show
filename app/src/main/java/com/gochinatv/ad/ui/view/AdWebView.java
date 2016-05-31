@@ -50,7 +50,8 @@ public class AdWebView extends BridgeWebView {
         }
         try {
             layoutJson = new Gson().toJson(layoutResponses);
-            layoutJson = "{" + "\"deviceId\": \"" + deviceId + "\"," +
+            layoutJson = "{" + "\"mac\": \"" + DataUtils.getMacAddress(getContext()) + "\", "
+                    + "\"deviceId\": \"" + deviceId + "\"," +
                     "\"layout\":" + layoutJson + "}";
         }catch (Exception e){
             e.printStackTrace();
