@@ -90,6 +90,10 @@ public class LoadingActivity extends BaseActivity {
         setContentView(R.layout.activity_loading);
         loadingView = (LinearLayout) findViewById(R.id.loading);
 
+//        /**
+//         * 隐藏NavigationBar
+//         */
+//        DataUtils.hideNavigationBar(this);
 
         // 删除升级安装包
         deleteUpdateApk();

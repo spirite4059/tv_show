@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -29,14 +28,11 @@ import java.util.Map;
  */
 public class BaseActivity extends Activity{
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        /**
-         * 隐藏NavigationBar
-         */
-        DataUtils.hideNavigationBar(this);
-    }
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//
+//    }
 
     /**
      * 检查是否有版本更新

@@ -110,6 +110,11 @@ public class MainActivity extends BaseActivity {
     boolean isDoGetDevice;
 
     private void init() {
+        /**
+         * 隐藏NavigationBar
+         */
+        DataUtils.hideNavigationBar(this);
+
         registerNetworkReceiver();
 
         Intent intent = getIntent();
