@@ -13,7 +13,7 @@ public class CommendResponse {
      * cmd : [{"cmdInfo":"open","ad":"1"},{"cmdInfo":"close","ad":"2"}]
      */
 
-    private int isJsCommend;
+    private String isJsCommand;
     /**
      * cmdInfo : open
      * ad : 1
@@ -21,12 +21,12 @@ public class CommendResponse {
 
     private List<CmdResponse> cmd;
 
-    public int getIsJsCommend() {
-        return isJsCommend;
+    public String getIsJsCommand() {
+        return isJsCommand;
     }
 
-    public void setIsJsCommend(int isJsCommend) {
-        this.isJsCommend = isJsCommend;
+    public void setIsJsCommend(String isJsCommand) {
+        this.isJsCommand = isJsCommand;
     }
 
     public List<CmdResponse> getCmd() {

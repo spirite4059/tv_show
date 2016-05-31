@@ -187,7 +187,7 @@ public class MainActivity extends BaseActivity {
             e.printStackTrace();
         }
         if (commendResponse == null) {
-            LogCat.e("push...........commendResponse == null");
+            LogCat.e("push", "push...........commendResponse == null");
             return;
         }
         // 发送命令
@@ -195,8 +195,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void sendCmd(UMessage uMessage, CommendResponse commendResponse) {
-        if (1 == commendResponse.getIsJsCommend()) {   // 对js的命令
-            LogCat.e("push...........commend  code ......" + commendResponse.getIsJsCommend());
+        if ("1".equals(commendResponse.getIsJsCommand())) {   // 对js的命令
+            LogCat.e("push", "push...........commend  code ......" + commendResponse.getIsJsCommand());
             cmdJs(uMessage);
         } else { // 本地的命令
             cmdLocal(commendResponse);
@@ -205,7 +205,7 @@ public class MainActivity extends BaseActivity {
 
     private void cmdJs(UMessage uMessage) {
         if (adWebView != null) {
-            LogCat.e("push...........adWebView != null");
+            LogCat.e("push", "push...........adWebView != null");
             adWebView.setCommendInfo(uMessage.custom);
         }
     }

@@ -76,10 +76,10 @@ public class AdWebView extends BridgeWebView {
         }
         LogCat.e("push", "收到命令............" + commend);
         // 解析命令
-        callHandler(JS_METHOD_NAME, new Gson().toJson(commend), new CallBackFunction() {
+        callHandler(JS_METHOD_NAME, commend, new CallBackFunction() {
             @Override
             public void onCallBack(String data) {
-
+                LogCat.e("push", "functionJs的返回值 " + data);
             }
         });
 
