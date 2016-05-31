@@ -179,31 +179,31 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             if (cacheTomorrowList != null && cacheTomorrowList.size() != 0) {
                 LogCat.e("video", "开始根据明日播放列表检测文件的完整性......." + localVideoList.size());
                 // 处理deleteVideosTD的视频，检测看是否有视频需要使用
-                for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
-                    for (int i = deleteVideosTD.size() - 1; i >= 0; i--) {
-                        AdDetailResponse deleteVideo = deleteVideosTD.get(i);
-                        if (deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
-                            // 当前视频需要使用，从删除列表删除
-                            deleteVideosTD.remove(i);
-                            LogCat.e("video", "当前视频在明日播放列表使用到，从删除列表删除------------------------------" + adDetailResponse.adVideoName);
-                        }
-                    }
-                }
-                LogCat.e("video", "----------------最终deleteVideosTD的大小--------------" + deleteVideosTD.size());
+//                for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
+//                    for (int i = deleteVideosTD.size() - 1; i >= 0; i--) {
+//                        AdDetailResponse deleteVideo = deleteVideosTD.get(i);
+//                        if (deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
+//                            // 当前视频需要使用，从删除列表删除
+//                            deleteVideosTD.remove(i);
+//                            LogCat.e("video", "当前视频在明日播放列表使用到，从删除列表删除------------------------------" + adDetailResponse.adVideoName);
+//                        }
+//                    }
+//                }
+//                LogCat.e("video", "----------------最终deleteVideosTD的大小--------------" + deleteVideosTD.size());
 
 
                 ArrayList<AdDetailResponse> deleteVideosTM = VideoAdUtils.checkFileLength(getActivity(), localVideoList, cacheTomorrowList);
 
-                for (AdDetailResponse adDetailResponse : cacheTodayList) {
-                    for (int i = deleteVideosTM.size() - 1; i >= 0; i--) {
-                        AdDetailResponse deleteVideo = deleteVideosTM.get(i);
-                        if (deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
-                            // 当前视频需要使用，从删除列表删除
-                            deleteVideosTM.remove(i);
-                            LogCat.e("video", "当前视频在今日播放列表使用到，从删除列表删除------------------------------" + adDetailResponse.adVideoName);
-                        }
-                    }
-                }
+//                for (AdDetailResponse adDetailResponse : cacheTodayList) {
+//                    for (int i = deleteVideosTM.size() - 1; i >= 0; i--) {
+//                        AdDetailResponse deleteVideo = deleteVideosTM.get(i);
+//                        if (deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
+//                            // 当前视频需要使用，从删除列表删除
+//                            deleteVideosTM.remove(i);
+//                            LogCat.e("video", "当前视频在今日播放列表使用到，从删除列表删除------------------------------" + adDetailResponse.adVideoName);
+//                        }
+//                    }
+//                }
                 LogCat.e("video", "----------------最终deleteVideosTM的大小--------------" + deleteVideosTM.size());
                 ArrayList<AdDetailResponse> deleteVideos = VideoAdUtils.reconnectedPrepare(deleteVideosTD, deleteVideosTM);
                 for (int i = deleteVideos.size() - 1; i >= 0; i--) {
@@ -1003,7 +1003,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                         // 当前下载视频
                         // 当前已下载视频的个数
                         StringBuilder logBuilder = new StringBuilder();
-                        logBuilder.append("正在播放：" + getPlayingVideoInfo().adVideoName);
+                        AdDetailResponse playingVideoInfo = getPlayingVideoInfo();
+                        if(playingVideoInfo != null){
+                            logBuilder.append("正在播放：" + playingVideoInfo.adVideoName);
+                        }
+
                         logBuilder.append('\n');
                         logBuilder.append("当前正在下载：");
                         if (downloadingVideoResponse != null) {
@@ -1238,7 +1242,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 doHttpGetVideoList();
                 LogCat.e("video", "已经联网。。。。。");
             } else {
-                LogCat.e("video", "没有联网。。。。。继续检查");
+                LogCat.e("video", "没有联网。。。。。");
             }
         }
     }

@@ -35,10 +35,11 @@ import com.gochinatv.ad.ui.view.AdWebView;
 import com.google.gson.Gson;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADDeviceDataResponse;
+import com.okhtttp.response.AdVideoListResponse;
 import com.okhtttp.response.CommendResponse;
 import com.okhtttp.response.LayoutResponse;
-import com.okhtttp.response.UpdateResponse;
-import com.okhtttp.service.ADHttpService;
+import com.okhtttp.service.UpPushInfoService;
+import com.tools.MacUtils;
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.message.PushAgent;
 import com.umeng.message.UmengMessageHandler;
@@ -46,6 +47,8 @@ import com.umeng.message.UmengRegistrar;
 import com.umeng.message.entity.UMessage;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -83,6 +86,9 @@ public class MainActivity extends BaseActivity {
      */
     private DownLoadAPKUtils downLoadAPKUtils;
 
+    private boolean isInitNetState = true;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,9 +112,6 @@ public class MainActivity extends BaseActivity {
     private void init() {
         registerNetworkReceiver();
 
-        // 初始化友盟统计
-        initUmeng();
-
         Intent intent = getIntent();
 
         boolean hasApkDownload;//是否有apk下载
@@ -122,14 +125,18 @@ public class MainActivity extends BaseActivity {
             hasApkDownload = false;
         }
 
+
         isDoGetDevice = intent.getBooleanExtra("isDoGetDevice", false);
         if (isDoGetDevice) {
             //动态布局部分
+            LogCat.e("push", "获取到设备信息...........");
             adDeviceDataResponse = (ADDeviceDataResponse) getIntent().getSerializableExtra("device");
         }
 
-        loadFragment(hasApkDownload, adDeviceDataResponse);
+        // 初始化友盟统计
+        initUmeng();
 
+        loadFragment(hasApkDownload, adDeviceDataResponse);
     }
 
 
@@ -150,11 +157,11 @@ public class MainActivity extends BaseActivity {
         mPushAgent.enable();
         mPushAgent.onAppStart();
         mPushAgent.setMessageChannel(mac);
-        mPushAgent.setDebugMode(true);
+        mPushAgent.setDebugMode(false);
 
         myHandler = new MyHandler(this);
         myHandler.sendEmptyMessage(HANDLER_MSG_GET_TOKEN);
-
+        myHandler.setAdDeviceDataResponse(adDeviceDataResponse);
 
         mPushAgent.setMessageHandler(new UmengMessageHandler() {
 
@@ -188,7 +195,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void sendCmd(UMessage uMessage, CommendResponse commendResponse) {
-        if (0 == commendResponse.getIsJsCommend()) {   // 对js的命令
+        if (1 == commendResponse.getIsJsCommend()) {   // 对js的命令
             LogCat.e("push...........commend  code ......" + commendResponse.getIsJsCommend());
             cmdJs(uMessage);
         } else { // 本地的命令
@@ -237,24 +244,29 @@ public class MainActivity extends BaseActivity {
         if (isFinishing()) {
             return;
         }
-        String mac = DataUtils.getMacAddress(MainActivity.this);
-        SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
-        if (!TextUtils.isEmpty(mac)) {
-            final String macAddress = mac.replaceAll(":", "");
-            LogCat.e("mac: " + macAddress);
-            MobclickAgent.startWithConfigure(new MobclickAgent.UMAnalyticsConfig(this, "572c1246e0f55aa6c5001533", mac));
-            MobclickAgent.openActivityDurationTrack(false);
-            MobclickAgent.setCatchUncaughtExceptions(true);
-            MobclickAgent.setDebugMode(false);
-            if (sharedPreference != null) {
-                sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
-            }
-            initPush(mac);
-        } else {
-            if (sharedPreference != null) {
-                sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, false);
+        if (DataUtils.isNetworkConnected(this)) {
+            // 先去请求服务器，查看视频列表
+            String mac = DataUtils.getMacAddress(MainActivity.this);
+            SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
+            if (!TextUtils.isEmpty(mac)) {
+                final String macAddress = mac.replaceAll(":", "");
+                LogCat.e("mac: " + macAddress);
+                MobclickAgent.startWithConfigure(new MobclickAgent.UMAnalyticsConfig(this, "572c1246e0f55aa6c5001533", mac));
+                MobclickAgent.openActivityDurationTrack(false);
+                MobclickAgent.setCatchUncaughtExceptions(true);
+                MobclickAgent.setDebugMode(false);
+                if (sharedPreference != null) {
+                    sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
+                }
+                initPush(mac);
+            } else {
+                if (sharedPreference != null) {
+                    sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, false);
+                }
             }
         }
+
+
     }
 
 
@@ -292,9 +304,9 @@ public class MainActivity extends BaseActivity {
         if (downLoadAPKUtils != null) {
             downLoadAPKUtils.stopDownLoad();
         }
-//        if (handler != null && progressRunnable != null) {
-//            handler.removeCallbacks(progressRunnable);
-//        }
+        if (myHandler != null) {
+            myHandler = null;
+        }
         if (mPushAgent != null) {
             mPushAgent.disable();
         }
@@ -335,8 +347,6 @@ public class MainActivity extends BaseActivity {
             oneFT.commit();
         }
     }
-
-
 
 
     /**
@@ -401,7 +411,7 @@ public class MainActivity extends BaseActivity {
         if (adDeviceDataResponse.layout != null && adDeviceDataResponse.layout.size() > 0) {
             int size = adDeviceDataResponse.layout.size();
             FragmentManager fm = getFragmentManager();
-            for (int i = 0; i < size - 1; i++) {
+            for (int i = 0; i < size; i++) {
                 String adType = adDeviceDataResponse.layout.get(i).adType;
                 if (TextUtils.isEmpty(adType)) {
                     continue;
@@ -420,6 +430,7 @@ public class MainActivity extends BaseActivity {
         adWebView.init();
         adWebView.setLayoutResponse(adDeviceDataResponse.layout.get(i));
         adWebView.setLayoutResponses(adDeviceDataResponse.layout);
+        adWebView.setDeviceId(adDeviceDataResponse.code);
     }
 
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
@@ -517,11 +528,6 @@ public class MainActivity extends BaseActivity {
     }
 
 
-
-
-
-
-
     /**
      * 动态注册网络状态广播,并回调
      */
@@ -536,6 +542,12 @@ public class MainActivity extends BaseActivity {
                 if (isFinishing()) {
                     return;
                 }
+
+                if(isInitNetState){
+                    isInitNetState = false;
+                    return;
+                }
+
                 if (hasNetwork) {
                     //当有网络时执行
                     reLoadHttpRequest();
@@ -558,8 +570,11 @@ public class MainActivity extends BaseActivity {
             FragmentManager fm = getFragmentManager();
             for (int i = 1; i < 5; i++) {
                 BaseFragment baseFragment = (BaseFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
-                baseFragment.doHttpRequest();
+                if (baseFragment != null) {
+                    baseFragment.doHttpRequest();
+                }
             }
+            adWebView.loadUrl();
         } else {
             doGetDeviceInfo(MainActivity.this);
         }
@@ -575,6 +590,7 @@ public class MainActivity extends BaseActivity {
             return;
         }
         adDeviceDataResponse = response;
+        initUmeng();
         //广告体接口成功
         //加载布局
         loadFragment(false, adDeviceDataResponse);
@@ -607,8 +623,14 @@ public class MainActivity extends BaseActivity {
 
         private Context context;
 
+        private ADDeviceDataResponse adDeviceDataResponse;
+
         public MyHandler(Context context) {
             this.context = context;
+        }
+
+        public void setAdDeviceDataResponse(ADDeviceDataResponse adDeviceDataResponse) {
+            this.adDeviceDataResponse = adDeviceDataResponse;
         }
 
         @Override
@@ -622,9 +644,16 @@ public class MainActivity extends BaseActivity {
                         return;
                     }
                     LogCat.e("push", "获取到token............" + pushToken);
-                    doHttpUpdateUserInfo(context);
+                    String deviceId = null;
+                    if (adDeviceDataResponse != null) {
+                        deviceId = adDeviceDataResponse.code;
+                    }
+                    doHttpUpdateUserInfo(context, deviceId);
                     break;
                 case HANDLER_MSG_GET_TOKEN:
+                    if(((Activity)context).isFinishing()){
+                        return;
+                    }
                     pushToken = getPushToken(context);
                     sendEmptyMessageDelayed(HANDLER_MSG_TOKEN, 2000);
                     break;
@@ -637,8 +666,24 @@ public class MainActivity extends BaseActivity {
         return UmengRegistrar.getRegistrationId(context);
     }
 
-    private static void doHttpUpdateUserInfo(Context context) {
+    private static void doHttpUpdateUserInfo(Context context, String deviceId) {
+        Map<String, String> params = new HashMap<>();
+        params.put("mac", MacUtils.getMacAddress(context));
+        params.put("deviceId", deviceId);
 
+        params.put("token", pushToken);
+//        LogCat.e("push", "上传信息成功...........deviceId： " + deviceId);
+        UpPushInfoService.doHttpUpPushInfo(params, new OkHttpCallBack<AdVideoListResponse>() {
+            @Override
+            public void onSuccess(String url, AdVideoListResponse response) {
+                LogCat.e("push", "上传信息成功...........");
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                LogCat.e("push", "上传信息失败...........");
+            }
+        });
     }
 
 

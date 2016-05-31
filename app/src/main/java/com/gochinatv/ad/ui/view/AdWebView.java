@@ -27,6 +27,7 @@ public class AdWebView extends BridgeWebView {
     private final String JS_METHOD_NAME = "functionInJs";
     private final String SUBMIT_FROM_WEB_NAME = "submitFromWeb";
     private ArrayList<LayoutResponse> layoutResponses;
+    private String deviceId;
 
     public AdWebView(Context context) {
         this(context, null);
@@ -42,13 +43,15 @@ public class AdWebView extends BridgeWebView {
 
 
     private String layoutJsStr(ArrayList<LayoutResponse> layoutResponses){
+        LogCat.e("push", "layoutJsStr.............");
         String layoutJson = null;
         if(layoutResponses == null || layoutResponses.size() == 0){
             return layoutJson;
         }
         try {
             layoutJson = new Gson().toJson(layoutResponses);
-            layoutJson = "{\"layout\":" + layoutJson + "}";
+            layoutJson = "{" + "\"deviceId\": \"" + deviceId + "\"," +
+                    "\"layout\":" + layoutJson + "}";
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -60,6 +63,10 @@ public class AdWebView extends BridgeWebView {
     public void setLayoutResponses(ArrayList<LayoutResponse> layoutResponses) {
         this.layoutResponses = layoutResponses;
 
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
 
@@ -85,8 +92,9 @@ public class AdWebView extends BridgeWebView {
             @Override
             public void handler(String data, CallBackFunction function) {
                 LogCat.e("push", "handler = submitFromWeb, data from web = " + data);
-                LogCat.e("push", "layoutJsStr(layoutResponses) = " + layoutJsStr(layoutResponses));
-                function.onCallBack(layoutJsStr(layoutResponses));
+                String layoutCmd = layoutJsStr(layoutResponses);
+                LogCat.e("push", "layoutJsStr(layoutResponses) = " + layoutCmd);
+                function.onCallBack(layoutCmd);
             }
         });
     }

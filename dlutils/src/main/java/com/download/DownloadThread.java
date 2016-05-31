@@ -135,9 +135,6 @@ public class DownloadThread extends Thread {
     }
 
 
-
-
-
     private void downloadFile(HttpURLConnection connection){
         try {
             bis = new BufferedInputStream(connection.getInputStream());

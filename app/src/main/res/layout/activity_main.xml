@@ -37,6 +37,7 @@
                 android:layout_alignParentRight="true"
                 android:textColor="@color/cf1f1f1"
                 android:layout_marginRight="@dimen/d_5dp"
+
                 />
 
         </RelativeLayout>
@@ -45,7 +46,9 @@
     <com.gochinatv.ad.ui.view.AdWebView
         android:id="@+id/ad_web"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        />
 
 
 

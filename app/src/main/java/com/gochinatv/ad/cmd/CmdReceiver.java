@@ -76,6 +76,7 @@ public class CmdReceiver {
     }
 
     public void fresh(String action){
+        LogCat.e("push", "执行fresh命令.........");
         if(!isCanExecute(action)){
             return;
         }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -27,6 +28,15 @@ import java.util.Map;
  * Created by fq_mbp on 16/5/28.
  */
 public class BaseActivity extends Activity{
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        /**
+         * 隐藏NavigationBar
+         */
+        DataUtils.hideNavigationBar(this);
+    }
 
     /**
      * 检查是否有版本更新
@@ -145,7 +155,6 @@ public class BaseActivity extends Activity{
                 }
 
                 onGetDeviceInfoSuccess(response);
-
                 UmengUtils.onEvent(BaseActivity.this, UmengUtils.UMENG_APP_START_TIME, DataUtils.getFormatTime(response.currentTime));
             }
 
