@@ -14,6 +14,11 @@ import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.statistics.request.RetryErrorRequest;
+import com.gochinatv.statistics.request.UpgradeLogRequest;
+import com.gochinatv.statistics.server.UpgradeServerLog;
+import com.gochinatv.statistics.tools.Constant;
+import com.okhtttp.OkHttpCallBack;
+import com.okhtttp.request.ErrorMsgRequest;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.UpdateResponse;
 
@@ -73,6 +78,11 @@ public class LoadingActivity extends BaseActivity {
     //截屏数据
     private int reTryTimesTwo;
 
+
+    //private int isNeedUpdate;//1：升级，0：不升级
+
+    private int isGetUpdateInfo;//1：接口请求成功，0：接口请求不成
+    private int isGetLayoutInfo;//1：接口请求成功，0：接口请求不成
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,6 +152,7 @@ public class LoadingActivity extends BaseActivity {
 
     private void loadFragmentTwo(boolean isHasUpgrade) {
         if (isUpgradeSucceed && isGetDerviceSucceed) {
+            sendLogHttpRequest();//上传接口日志
             if (loadingView != null) {
                 loadingView.setVisibility(View.GONE);
             }
@@ -166,6 +177,7 @@ public class LoadingActivity extends BaseActivity {
         if (response.resultForApk == null) {
             if ("3".equals(response.status)) {
                 isUpgradeSucceed = true;
+                isGetUpdateInfo = 1;//接口请求成功
                 //loadFragment(false);
                 loadFragmentTwo(isHasUpgrade);
                 LogCat.e("没有升级包，不需要更新");
@@ -183,6 +195,7 @@ public class LoadingActivity extends BaseActivity {
         }
         reTryTimes = 0;
         updateInfo = response.resultForApk;
+        isGetUpdateInfo = 1;//接口请求成功
         // 获取当前最新版本号
         if (!TextUtils.isEmpty(updateInfo.versionCode)) {
             double netVersonCode = Integer.parseInt(updateInfo.versionCode);
@@ -278,6 +291,7 @@ public class LoadingActivity extends BaseActivity {
         adDeviceDataResponse = response;
         //广告体接口成功
         isGetDerviceSucceed = true;
+        isGetLayoutInfo = 1;
         //加载布局
         loadFragmentTwo(isHasUpgrade);
     }
@@ -304,6 +318,78 @@ public class LoadingActivity extends BaseActivity {
             request.errorMsg = errorMsg;
             layoutLogList.add(request);
         }
+    }
+
+    /**
+     * 上报接口数据
+     */
+    private void sendLogHttpRequest(){
+        //升级接口
+        sendUpgradeLog();
+        //布局接口
+        sendLayoutLog();
+    }
+
+    /**
+     * 升级接口日志
+     */
+    private void sendUpgradeLog(){
+        UpgradeLogRequest request = new UpgradeLogRequest();
+        request.mac = DataUtils.getMacAddress(this);
+        request.versionCode = String.valueOf(DataUtils.getAppVersionCode(this));
+        request.versionName = DataUtils.getVersionName(this);
+        request.sdk = String.valueOf(DataUtils.getSystemSDKVersion());
+        if(isHasUpgrade){
+            request.isNeedUpdate ="1";
+        }else{
+            request.isNeedUpdate ="0";
+        }
+        request.isGetUpdateInfo = String.valueOf(isGetUpdateInfo);
+        if(layoutLogList != null && layoutLogList.size()>0){
+            request.interfaceError = layoutLogList;
+        }
+        UpgradeServerLog.doPostHttpUpgradeLog(this, Constant.LOG_TYPE_UPGRADE, request, new OkHttpCallBack<ErrorMsgRequest>() {
+            @Override
+            public void onSuccess(String url, ErrorMsgRequest response) {
+                LogCat.e("升级接口日志上传成功");
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                LogCat.e("升级接口日志上传失败");
+            }
+        });
+    }
+
+    /**
+     * 设备信息接口日志
+     */
+    private void sendLayoutLog(){
+        UpgradeLogRequest request = new UpgradeLogRequest();
+        request.mac = DataUtils.getMacAddress(this);
+        request.versionCode = String.valueOf(DataUtils.getAppVersionCode(this));
+        request.versionName = DataUtils.getVersionName(this);
+        request.sdk = String.valueOf(DataUtils.getSystemSDKVersion());
+//        if(isHasUpgrade){
+//            request.isNeedUpdate ="1";
+//        }else{
+//            request.isNeedUpdate ="0";
+//        }
+        request.isGetUpdateInfo = String.valueOf(isGetLayoutInfo);
+        if(upgradeLogList != null && upgradeLogList.size()>0){
+            request.interfaceError = upgradeLogList;
+        }
+        UpgradeServerLog.doPostHttpUpgradeLog(this, Constant.LOG_TYPE_LAYOUT, request, new OkHttpCallBack<ErrorMsgRequest>() {
+            @Override
+            public void onSuccess(String url, ErrorMsgRequest response) {
+                LogCat.e("设备信息接口日志上传成功");
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                LogCat.e("设备信息接口日志上传失败");
+            }
+        });
     }
 
 

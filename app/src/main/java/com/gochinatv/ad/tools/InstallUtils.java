@@ -53,6 +53,11 @@ public class InstallUtils {
 
             }else {
                 LogCat.e("没有获取到任何权限，普通安装。。。。。。。");
+//                Intent installAPKIntent = new Intent(Intent.ACTION_VIEW);
+//                installAPKIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                installAPKIntent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+//                context.startActivity(installAPKIntent);
+
             }
             return;
         }

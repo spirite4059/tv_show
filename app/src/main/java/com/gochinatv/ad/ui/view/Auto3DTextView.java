@@ -1,3 +1,4 @@
+/*
 package com.gochinatv.ad.ui.view;
 
 import android.content.Context;
@@ -12,9 +13,11 @@ import android.widget.TextView;
 
 import com.gochinatv.ad.tools.LogCat;
 
+*/
 /**
  * Created by ulplanet on 2016/5/17.
- */
+ *//*
+
 public class Auto3DTextView extends TextView implements Runnable{
 
 
@@ -60,9 +63,11 @@ public class Auto3DTextView extends TextView implements Runnable{
 
     }
 
-    /**
+    */
+/**
      * 获取文字宽度
-     */
+     *//*
+
     private void getTextWidth() {
         Paint paint = this.getPaint();
         String str = this.getText().toString();
@@ -255,3 +260,4 @@ public class Auto3DTextView extends TextView implements Runnable{
     }
 
 }
+*/
