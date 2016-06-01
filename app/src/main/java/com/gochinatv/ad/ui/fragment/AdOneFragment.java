@@ -17,8 +17,6 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.screenshot.ScreenShotUtils;
-import com.gochinatv.ad.screenshot.SystemScreenShotPolicy;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
@@ -241,7 +239,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 //        LogCat.e("video", "开始上传截屏文件.....");
         // 7.开启上传截图
-//        startScreenShot();
+        startScreenShot();
 
 
         //  开启轮询接口
@@ -670,12 +668,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
                 long currentPosition = videoView.getCurrentPosition();
 
-                ScreenShotUtils screenShotUtils = new ScreenShotUtils();
-//                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
-//                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
-//                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
-                screenShotUtils.setScreenShotPolicy(new SystemScreenShotPolicy());
-                screenShotUtils.screenShot(getActivity(), videoAdBean.videoPath, currentPosition, screenShotResponse);
+//                ScreenShotUtils screenShotUtils = new ScreenShotUtils();
+////                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
+////                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
+////                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
+//                screenShotUtils.setScreenShotPolicy(new SystemScreenShotPolicy());
+//                screenShotUtils.screenShot(getActivity(), videoAdBean.videoPath, currentPosition, screenShotResponse);
 
                 // 下载设备网速
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_SCREEN_SHOT, videoAdBean.adVideoName + " 截图时间：" + VideoAdUtils.computeTime(currentPosition));
