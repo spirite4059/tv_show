@@ -110,10 +110,6 @@ public class MainActivity extends BaseActivity {
     boolean isDoGetDevice;
 
     private void init() {
-        /**
-         * 隐藏NavigationBar
-         */
-        DataUtils.hideNavigationBar(this);
 
         registerNetworkReceiver();
 
@@ -477,6 +473,11 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        /**
+         * 隐藏NavigationBar
+         */
+        DataUtils.hideNavigationBar(this);
 
         SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
         boolean isHasMac = sharedPreference.getDate(Constants.SHARE_KEY_UMENG, false);

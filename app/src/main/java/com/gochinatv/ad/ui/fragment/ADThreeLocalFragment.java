@@ -305,14 +305,14 @@ public class ADThreeLocalFragment extends BaseFragment {
     @Override
     public void onStop() {
         super.onStop();
-        if(linearLayout != null ){
-            linearLayout.destoryRecycleAnimation();
-        }
-
-        if(getImgADTimer != null){
-            getImgADTimer.cancel();
-            getImgADTimer = null;
-        }
+//        if(linearLayout != null ){
+//            linearLayout.destoryRecycleAnimation();
+//        }
+//
+//        if(getImgADTimer != null){
+//            getImgADTimer.cancel();
+//            getImgADTimer = null;
+//        }
 
     }
 
