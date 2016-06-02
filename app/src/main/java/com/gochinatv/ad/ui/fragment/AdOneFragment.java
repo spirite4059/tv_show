@@ -17,6 +17,8 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.ad.screenshot.FullScreenPolicy;
+import com.gochinatv.ad.screenshot.ScreenShotUtils;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
@@ -653,7 +655,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             delay = 1000 * 60 * 15; // 15分钟
         }
         if (Constants.isTest) {
-            delay = 1000 * 60;
+            delay = 1000 * 20;
         }
 
         screenShotService.scheduleAtFixedRate(new Runnable() {
@@ -670,46 +672,16 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
                 long currentPosition = videoView.getCurrentPosition();
 
-//                ScreenShotUtils screenShotUtils = new ScreenShotUtils();
-////                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
-////                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
-////                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
+                ScreenShotUtils screenShotUtils = new ScreenShotUtils();
+//                screenShotUtils.setScreenShotPolicy(new MediaMetadataPolicy());
+//                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
+//                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
 //                screenShotUtils.setScreenShotPolicy(new SystemScreenShotPolicy());
-//                screenShotUtils.screenShot(getActivity(), videoAdBean.videoPath, currentPosition, screenShotResponse);
+                screenShotUtils.setScreenShotPolicy(new FullScreenPolicy(getActivity()));
+                screenShotUtils.screenShot(getActivity(), videoAdBean.videoPath, currentPosition, screenShotResponse);
 
                 // 下载设备网速
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_SCREEN_SHOT, videoAdBean.adVideoName + " 截图时间：" + VideoAdUtils.computeTime(currentPosition));
-//                LogCat.e("screenShot", "开始进行截图...........");
-//                if (getActivity() == null || isDetached()) {
-//                    return;
-//                }
-//                AdDetailResponse videoAdBean = getPlayingVideoInfo();
-//                long currentPosition = videoView.getCurrentPosition();
-//
-//                Bundle bundle = new Bundle();
-//                try {
-//                    bundle.putString("uri", URLDecoder.decode(videoAdBean.videoPath, "UTF-8"));
-//                    bundle.putLong("currentPosition", currentPosition);
-//                    int width = 0;
-//                    int height = 0;
-//                    if (screenShotResponse == null) {
-//                        // 获取状况栏高度
-//                        width = getActivity().getWindowManager().getDefaultDisplay().getWidth();
-//                        height = getActivity().getWindowManager().getDefaultDisplay().getHeight();
-//                    } else {
-//                        width = screenShotResponse.screenShotImgW;
-//                        height = screenShotResponse.screenShotImgH;
-//                    }
-//                    bundle.putInt("width", width);
-//                    bundle.putInt("height", height);
-//                    bundle.putString("adName", videoAdBean.adVideoName);
-//                    AdOneFragment.this.getLoaderManager().initLoader(mId, bundle, AdOneFragment.this);
-//                    mId++;
-//
-//                } catch (UnsupportedEncodingException e) {
-//                    e.printStackTrace();
-//                }
-
             }
         }, delay, delay, TimeUnit.MILLISECONDS);
     }
@@ -1004,7 +976,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                         // 当前已下载视频的个数
                         StringBuilder logBuilder = new StringBuilder();
                         AdDetailResponse playingVideoInfo = getPlayingVideoInfo();
-                        if(playingVideoInfo != null){
+                        if (playingVideoInfo != null) {
                             logBuilder.append("正在播放：" + playingVideoInfo.adVideoName);
                         }
 
@@ -1050,9 +1022,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-
     public void intLayoutParams(LayoutResponse layoutResponse) {
-        if(layoutResponse != null){
+        if (layoutResponse != null) {
             return;
         }
         String widthStr = null;
@@ -1082,7 +1053,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         params.height = (int) Math.round(height);
         params.topMargin = (int) Math.round(top);
         params.leftMargin = (int) Math.round(left);
-        if(rootView != null){
+        if (rootView != null) {
             rootView.setLayoutParams(params);
         }
     }
