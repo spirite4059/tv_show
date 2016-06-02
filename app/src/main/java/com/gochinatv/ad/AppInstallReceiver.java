@@ -21,7 +21,7 @@ public class AppInstallReceiver extends BroadcastReceiver {
             LogCat.e("静默安装完成，广播启动 packageName " + "package:com.gochinatv.ad".equals(packageName));
             LogCat.e("静默安装完成，广播启动  is  "+ is);
             if("package:com.gochinatv.ad".equals(packageName) && is){
-                RootUtils.startApp("com.gochinatv.ad", "com.gochinatv.ad.MainActivity");
+                RootUtils.startApp("com.gochinatv.ad", "com.gochinatv.ad.LoadingActivity");
                 LogCat.e("静默安装完成，广播启动");
             }
 
@@ -39,7 +39,7 @@ public class AppInstallReceiver extends BroadcastReceiver {
             LogCat.e("静默安装完成，广播启动 packageName " + "package:com.gochinatv.ad".equals(packageName));
             LogCat.e("静默安装完成，广播启动  is  "+ is);
             if("package:com.gochinatv.ad".equals(packageName) && is){
-                  RootUtils.startApp("com.gochinatv.ad", "com.gochinatv.ad.MainActivity");
+                  RootUtils.startApp("com.gochinatv.ad", "com.gochinatv.ad.LoadingActivity");
                   LogCat.e("静默安装完成，广播启动");
             }
 
