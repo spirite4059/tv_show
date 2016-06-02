@@ -15,10 +15,12 @@ import com.okhtttp.response.LayoutResponse;
 
 public abstract class BaseFragment extends Fragment {
 
+    protected View rootView;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = initLayout(inflater, container);
+        rootView = initLayout(inflater, container);
         initView(rootView);
         return rootView;
     }

@@ -118,7 +118,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
-        return getRelativeLayout(inflater, container);
+        rootView = inflater.inflate(R.layout.fragment_ad_video, container, false);
+        intLayoutParams(layoutResponse);
+        return rootView;
     }
 
 
@@ -1047,9 +1049,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
-    private RelativeLayout getRelativeLayout(LayoutInflater inflater, ViewGroup container) {
-        RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.fragment_ad_video, container, false);
 
+
+    public void intLayoutParams(LayoutResponse layoutResponse) {
+        if(layoutResponse != null){
+            return;
+        }
         String widthStr = null;
         String heightStr = null;
         String topStr = null;
@@ -1077,9 +1082,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         params.height = (int) Math.round(height);
         params.topMargin = (int) Math.round(top);
         params.leftMargin = (int) Math.round(left);
-        layout.setLayoutParams(params);
-        LogCat.e("video", " 广告一布局 width: " + params.width + " height: " + params.height + " top: " + params.topMargin + " left: " + params.leftMargin);
-        return layout;
+        if(rootView != null){
+            rootView.setLayoutParams(params);
+        }
     }
 
     private void playNext(boolean isVideoError) {

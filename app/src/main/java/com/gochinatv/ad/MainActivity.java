@@ -436,15 +436,13 @@ public class MainActivity extends BaseActivity {
 
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
         FragmentTransaction ft = fm.beginTransaction();
+
         BaseFragment fragment = BaseFragment.getInstance(type);
         // 1号广告位
         if (type == 1) {
             initAdOne((AdOneFragment) fragment, isDownload, adDeviceDataResponse);
         }
 
-//        if (type == 5) {
-//            ((AdFiveFragment) fragment).setLayoutResponses(adDeviceDataResponse.layout);
-//        }
         // 添加布局参数
         fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
         ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
