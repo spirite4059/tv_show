@@ -417,12 +417,17 @@ public class MainActivity extends BaseActivity {
                 if (TextUtils.isEmpty(adType)) {
                     continue;
                 }
-                int type = Integer.parseInt(adType);
-                if (i == 4) {
-                    initWebView(adDeviceDataResponse, i);
-                } else {
-                    initAdFragment(isDownload, adDeviceDataResponse, fm, i, type);
+                try {
+                    int type = Integer.parseInt(adType);
+                    if (i == 4) {
+                        initWebView(adDeviceDataResponse, i);
+                    } else {
+                        initAdFragment(isDownload, adDeviceDataResponse, fm, i, type);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
+
             }
         }
     }
@@ -436,17 +441,32 @@ public class MainActivity extends BaseActivity {
 
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
         FragmentTransaction ft = fm.beginTransaction();
-
         BaseFragment fragment = BaseFragment.getInstance(type);
-        // 1号广告位
-        if (type == 1) {
-            initAdOne((AdOneFragment) fragment, isDownload, adDeviceDataResponse);
+        if(type == 1){
+            AdOneFragment adOneFragment = (AdOneFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + 1);
+            if(adOneFragment == null){
+                //广告一没有创建
+                //BaseFragment fragment = BaseFragment.getInstance(type);
+                initAdOne((AdOneFragment) fragment, isDownload, adDeviceDataResponse);
+                fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
+                ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
+                ft.commit();
+            }else{
+                //广告一已经创建
+                initAdOneLayout(adOneFragment, isDownload, adDeviceDataResponse,i);
+
+            }
+        }else{
+            // 添加布局参数
+            fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
+            if (adDeviceDataResponse.pollInterval > 0) {
+                fragment.setHttpIntervalTime((int)adDeviceDataResponse.pollInterval);
+            }
+            ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
+            ft.commit();
         }
 
-        // 添加布局参数
-        fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
-        ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
-        ft.commit();
+
     }
 
     private void initAdOne(AdOneFragment fragment, boolean isDownload, ADDeviceDataResponse adDeviceDataResponse) {
@@ -466,6 +486,34 @@ public class MainActivity extends BaseActivity {
             fragment.setPollInterval(adDeviceDataResponse.pollInterval);
         }
     }
+
+
+    private void initAdOneLayout(AdOneFragment fragment, boolean isDownload, ADDeviceDataResponse adDeviceDataResponse,int i) {
+        if (isDownload) {
+            fragment.setIsDownloadAPK(true);
+        }
+
+        if (adDeviceDataResponse == null) {
+            return;
+        }
+
+        if (adDeviceDataResponse.screenShot != null) {
+            fragment.setScreenShotResponse(adDeviceDataResponse.screenShot);
+        }
+        //截屏的参数
+        if (adDeviceDataResponse.pollInterval > 0) {
+            fragment.setPollInterval(adDeviceDataResponse.pollInterval);
+        }
+
+        if(adDeviceDataResponse.layout != null){
+            fragment.intLayoutParams(adDeviceDataResponse.layout.get(i));
+        }
+
+
+    }
+
+
+
 
 
     @Override

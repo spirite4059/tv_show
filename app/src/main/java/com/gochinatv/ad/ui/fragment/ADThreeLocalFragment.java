@@ -20,7 +20,6 @@ import com.gochinatv.ad.ui.view.RecycleAnimationLayout;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.AdImgResponse;
 import com.okhtttp.response.AdThreeDataResponse;
-import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.service.ADHttpService;
 import com.umeng.analytics.MobclickAgent;
 
@@ -43,16 +42,16 @@ public class ADThreeLocalFragment extends BaseFragment {
     private ArrayList<AdImgResponse> imgFinalResponses;//最终显示的数据集合
 
 
-    public LayoutResponse getLayoutResponse() {
-        return layoutResponse;
-    }
-
-    public void setLayoutResponse(LayoutResponse layoutResponse) {
-        this.layoutResponse = layoutResponse;
-    }
-
-    //布局参数
-    private LayoutResponse layoutResponse;
+//    public LayoutResponse getLayoutResponse() {
+//        return layoutResponse;
+//    }
+//
+//    public void setLayoutResponse(LayoutResponse layoutResponse) {
+//        this.layoutResponse = layoutResponse;
+//    }
+//
+//    //布局参数
+//    private LayoutResponse layoutResponse;
 
     //轮询间隔请求接口
     private int getImgADTime = 3*60*1000;//默认的是3个分钟
@@ -96,7 +95,7 @@ public class ADThreeLocalFragment extends BaseFragment {
         params.topMargin = (int) Math.round(top);
         params.leftMargin = (int) Math.round(left);
         layout.setLayoutParams(params);
-        LogCat.e(" 广告三布局 width: " + params.width + " height: " + params.height + " top: " + params.topMargin + " left: " + params.leftMargin);
+        LogCat.e("ADThreeLocalFragment"," 广告三布局 width: " + params.width + " height: " + params.height + " top: " + params.topMargin + " left: " + params.leftMargin);
 
         return layout;
     }
@@ -120,7 +119,7 @@ public class ADThreeLocalFragment extends BaseFragment {
 //        }
         linearLayout.setItemWidth((int) Math.round(width));
         linearLayout.setItemHeight((int) Math.round(height / 2));
-        LogCat.e("width: " + (int) Math.round(width) + "     height:" + (int) Math.round(height / 2));
+        LogCat.e("ADThreeLocalFragment","width: " + (int) Math.round(width) + "     height:" + (int) Math.round(height / 2));
 
         //准备好本地数据集合
         imgLocalResponses = new ArrayList<>();
@@ -149,7 +148,7 @@ public class ADThreeLocalFragment extends BaseFragment {
                 if (!isAdded()) {
                     return;
                 }
-                LogCat.e("RecycleAnimationLayout", " 广告三 url " + url);
+                LogCat.e("ADThreeLocalFragment", " 广告三 url " + url);
                 if (response == null || !(response instanceof AdThreeDataResponse)) {
                     //再次请求
                     initData();
@@ -158,7 +157,7 @@ public class ADThreeLocalFragment extends BaseFragment {
 
                 if (response.data == null || !(response.data instanceof ArrayList)) {
                     //再次请求
-                    LogCat.e("RecycleAnimationLayout"," !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    LogCat.e("ADThreeLocalFragment"," !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     initData();
                     return;
                 }
@@ -170,7 +169,7 @@ public class ADThreeLocalFragment extends BaseFragment {
 
                 int totalSize = imgServerResponses.size();
                 if (totalSize == 0) {
-                    LogCat.e("RecycleAnimationLayout","  totalSize == 0 来自服务器广告图片总数为 0 ，全部轮询本地图片");
+                    LogCat.e("ADThreeLocalFragment","  totalSize == 0 来自服务器广告图片总数为 0 ，全部轮询本地图片");
                     if(imgFinalResponses == null){
                         imgFinalResponses = new ArrayList<AdImgResponse>();
                     }
@@ -199,7 +198,7 @@ public class ADThreeLocalFragment extends BaseFragment {
                     }
 
                 } else if(totalSize >=4)  {
-                    LogCat.e("RecycleAnimationLayout","  totalSize >=4  全部轮询服务器图片广告");
+                    LogCat.e("ADThreeLocalFragment","  totalSize >=4  全部轮询服务器图片广告");
                     //当服务器图片个数大于或等于4，全部轮询服务器的广告
                     if(imgFinalResponses == null){
                         imgFinalResponses = new ArrayList<AdImgResponse>();
@@ -216,7 +215,7 @@ public class ADThreeLocalFragment extends BaseFragment {
                         linearLayout.setImgResponses(imgFinalResponses);//设置数据
                     }
                 }else{
-                    LogCat.e("RecycleAnimationLayout"," 来自服务器广告图片总数为： "+totalSize);
+                    LogCat.e("ADThreeLocalFragment"," 来自服务器广告图片总数为： "+totalSize);
                     //当服务器图片广告个数大于0但是不足4个，此时随机取本地来补充
                     if(imgFinalResponses == null){
                         imgFinalResponses = new ArrayList<AdImgResponse>();
@@ -240,14 +239,14 @@ public class ADThreeLocalFragment extends BaseFragment {
                     }
 
                     int needAmount = 4-totalSize;//需要needAmount个本地图片来填充
-                    LogCat.e("RecycleAnimationLayout", " 本地图片补充的 needAmount ：" + needAmount);
+                    LogCat.e("ADThreeLocalFragment", " 本地图片补充的 needAmount ：" + needAmount);
                     int [] needArray = DataUtils.randomCommon(0, 3, needAmount);
-                    LogCat.e("RecycleAnimationLayout", " 本地图片补充的 needAmount #################### ：" + needAmount);
+                    LogCat.e("ADThreeLocalFragment", " 本地图片补充的 needAmount #################### ：" + needAmount);
 
 
                     if(needArray != null){
                         for(int i=0;i<needArray.length;i++){
-                            LogCat.e("RecycleAnimationLayout", " 本地图片补充的：" + needArray[i]);
+                            LogCat.e("ADThreeLocalFragment", " 本地图片补充的：" + needArray[i]);
                             if(needArray[i]<imgLocalResponses.size()){
                                 imgFinalResponses.add(imgLocalResponses.get(needArray[i]));
                             }
@@ -265,7 +264,7 @@ public class ADThreeLocalFragment extends BaseFragment {
 
                 if (isFirstDoHttp) {
                     if (getImgADTimer == null) {
-                        LogCat.e("RecycleAnimationLayout"," 开启广告三的轮询接口 ！！！！");
+                        LogCat.e("ADThreeLocalFragment"," 开启广告三的轮询接口 ！！！！");
                         getImgADTimer = new Timer();
                         getImgADTimer.schedule(new TimerTask() {
                             @Override
@@ -287,7 +286,7 @@ public class ADThreeLocalFragment extends BaseFragment {
                     linearLayout.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            LogCat.e("RecycleAnimationLayout"," 广告三的接口 ！！！！onError ");
+                            LogCat.e("ADThreeLocalFragment"," 广告三的接口 ！！！！onError ");
                             initData();
                         }
                     },2000);

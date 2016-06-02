@@ -95,4 +95,13 @@ public abstract class BaseFragment extends Fragment {
 
 
 
+    //接口请求的时间间隔
+    protected int httpIntervalTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
+
+    public void setHttpIntervalTime(int httpIntervalTime) {
+        this.httpIntervalTime = httpIntervalTime;
+    }
+
+
+
 }

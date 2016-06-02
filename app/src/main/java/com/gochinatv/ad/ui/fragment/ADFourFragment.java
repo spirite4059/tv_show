@@ -19,7 +19,6 @@ import com.gochinatv.ad.ui.view.AutoTextView;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADFourResponse;
 import com.okhtttp.response.ADTextRseponse;
-import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.service.ADHttpService;
 import com.umeng.analytics.MobclickAgent;
 
@@ -50,12 +49,12 @@ public class ADFourFragment extends BaseFragment {
 
 
     //请求文字广告接口的定时器
-    private int getTextADTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
+    //private int getTextADTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
     private Timer getTextADTimer;
 
 
     //布局参数
-    private LayoutResponse layoutResponse;
+    //private LayoutResponse layoutResponse;
 
     //是否是第一次网络请求
     private boolean isFirstDoHttp = true;
@@ -121,6 +120,7 @@ public class ADFourFragment extends BaseFragment {
         cycleHandler = new Handler();
         //得到轮询请求接口间隔
         doGetTextAD();//请求接口
+        LogCat.e("ADFourFragment"," httpIntervalTime:  "+ httpIntervalTime);
     }
 
     @Override
@@ -201,7 +201,7 @@ public class ADFourFragment extends BaseFragment {
                 if(!isAdded()){
                     return;
                 }
-                LogCat.e(" 广告四 url " + url);
+                LogCat.e("ADFourFragment"," 广告四 url " + url);
                 if (response == null || !(response instanceof ADFourResponse)) {
                     LogCat.e("ADFourFragment","请求文字接口失败");
                     doError();
@@ -268,7 +268,7 @@ public class ADFourFragment extends BaseFragment {
                             public void run() {
                                 doGetTextAD();
                             }
-                        },getTextADTime,getTextADTime);
+                        },httpIntervalTime,httpIntervalTime);
                     }
                 }
                 isFirstDoHttp = false;
@@ -328,26 +328,26 @@ public class ADFourFragment extends BaseFragment {
 
 
 
-    public LayoutResponse getLayoutResponse() {
-        return layoutResponse;
-    }
-
-    /**
-     * 设置布局参数
-     * @param layoutResponse
-     */
-    public void setLayoutResponse(LayoutResponse layoutResponse) {
-        this.layoutResponse = layoutResponse;
-    }
+//    public LayoutResponse getLayoutResponse() {
+//        return layoutResponse;
+//    }
+//
+//    /**
+//     * 设置布局参数
+//     * @param layoutResponse
+//     */
+//    public void setLayoutResponse(LayoutResponse layoutResponse) {
+//        this.layoutResponse = layoutResponse;
+//    }
 
     /**
      * 设置请求接口的间隔
      * @param getTextADTime
      */
-    public void setGetTextADTime(int getTextADTime) {
-        this.getTextADTime = getTextADTime;
-        LogCat.e("ADFourFragment","请求接口时间的间隔 getTextADTime:  " + getTextADTime );
-    }
+//    public void setGetTextADTime(int getTextADTime) {
+//        this.getTextADTime = getTextADTime;
+//        LogCat.e("ADFourFragment","请求接口时间的间隔 getTextADTime:  " + getTextADTime );
+//    }
 
 
     /**
