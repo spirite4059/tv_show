@@ -58,11 +58,6 @@ public class ScreenShotUtils {
             uploadFile(context, file, true, duration, file.getName());
         }
 
-        // 将截图文件写入本地
-
-
-
-//        uploadFile(context, null, true, duration, videoFile.getName());
     }
 
 

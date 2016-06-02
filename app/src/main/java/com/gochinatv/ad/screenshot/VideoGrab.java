@@ -14,6 +14,10 @@ public interface VideoGrab {
 
     String getFileName();
 
+    /**
+     * 是否要将图片缓存到本地
+     * @return
+     */
     boolean isNeedCacheImageLocal();
 
 }
