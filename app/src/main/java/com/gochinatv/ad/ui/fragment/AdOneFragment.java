@@ -1023,9 +1023,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
     public void intLayoutParams(LayoutResponse layoutResponse) {
-        if (layoutResponse != null) {
-            return;
-        }
+//        if (layoutResponse != null) {
+//            return;
+//        }
         String widthStr = null;
         String heightStr = null;
         String topStr = null;
