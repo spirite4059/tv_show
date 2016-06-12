@@ -6,6 +6,7 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,6 +39,7 @@ import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.AdVideoListResponse;
 import com.okhtttp.response.CommendResponse;
 import com.okhtttp.response.LayoutResponse;
+import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.UpPushInfoService;
 import com.tools.MacUtils;
 import com.umeng.analytics.MobclickAgent;
@@ -417,12 +419,17 @@ public class MainActivity extends BaseActivity {
                 if (TextUtils.isEmpty(adType)) {
                     continue;
                 }
-                int type = Integer.parseInt(adType);
-                if (i == 4) {
-                    initWebView(adDeviceDataResponse, i);
-                } else {
-                    initAdFragment(isDownload, adDeviceDataResponse, fm, i, type);
+                try {
+                    int type = Integer.parseInt(adType);
+                    if (i == 4) {
+                        initWebView(adDeviceDataResponse, i);
+                    } else {
+                        initAdFragment(isDownload, adDeviceDataResponse, fm, i, type);
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
+
             }
         }
     }
@@ -436,17 +443,32 @@ public class MainActivity extends BaseActivity {
 
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
         FragmentTransaction ft = fm.beginTransaction();
-
         BaseFragment fragment = BaseFragment.getInstance(type);
-        // 1号广告位
-        if (type == 1) {
-            initAdOne((AdOneFragment) fragment, isDownload, adDeviceDataResponse);
+        if(type == 1){
+            AdOneFragment adOneFragment = (AdOneFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + 1);
+            if(adOneFragment == null){
+                //广告一没有创建
+                //BaseFragment fragment = BaseFragment.getInstance(type);
+                initAdOne((AdOneFragment) fragment, isDownload, adDeviceDataResponse);
+                fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
+                ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
+                ft.commit();
+            }else{
+                //广告一已经创建
+                initAdOneLayout(adOneFragment, isDownload, adDeviceDataResponse,i);
+
+            }
+        }else{
+            // 添加布局参数
+            fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
+            if (adDeviceDataResponse.pollInterval > 0) {
+                fragment.setHttpIntervalTime((int)adDeviceDataResponse.pollInterval);
+            }
+            ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
+            ft.commit();
         }
 
-        // 添加布局参数
-        fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
-        ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
-        ft.commit();
+
     }
 
     private void initAdOne(AdOneFragment fragment, boolean isDownload, ADDeviceDataResponse adDeviceDataResponse) {
@@ -466,6 +488,34 @@ public class MainActivity extends BaseActivity {
             fragment.setPollInterval(adDeviceDataResponse.pollInterval);
         }
     }
+
+
+    private void initAdOneLayout(AdOneFragment fragment, boolean isDownload, ADDeviceDataResponse adDeviceDataResponse,int i) {
+        if (isDownload) {
+            fragment.setIsDownloadAPK(true);
+        }
+
+        if (adDeviceDataResponse == null) {
+            return;
+        }
+
+        if (adDeviceDataResponse.screenShot != null) {
+            fragment.setScreenShotResponse(adDeviceDataResponse.screenShot);
+        }
+        //截屏的参数
+        if (adDeviceDataResponse.pollInterval > 0) {
+            fragment.setPollInterval(adDeviceDataResponse.pollInterval);
+        }
+
+        if(adDeviceDataResponse.layout != null){
+            fragment.intLayoutParams(adDeviceDataResponse.layout.get(i));
+        }
+
+
+    }
+
+
+
 
 
     @Override
@@ -555,6 +605,8 @@ public class MainActivity extends BaseActivity {
                 if (hasNetwork) {
                     //当有网络时执行
                     reLoadHttpRequest();
+                    //请求升级接口
+                    doHttpUpdate(MainActivity.this);
                 } else {
                     // 显示当前的网络状态
                     AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
@@ -756,4 +808,84 @@ public class MainActivity extends BaseActivity {
     }
 
 
+    @Override
+    protected void onUpdateError(String errorMsg) {
+        super.onUpdateError(errorMsg);
+        doError(errorMsg);
+    }
+
+    private int retryUpgradeTimes;
+    @Override
+    protected void onUpdateSuccess(UpdateResponse response) {
+        super.onUpdateSuccess(response);
+        if (response.resultForApk == null) {
+            if ("3".equals(response.status)) {
+                LogCat.e("没有升级包，不需要更新");
+            } else {
+                LogCat.e("升级数据出错，无法正常升级2。。。。。");
+                doError("\"3\".equals(response.status) = false");
+            }
+            return;
+        }
+
+        if (!"1".equals(response.status)) {
+            LogCat.e("升级接口的status == 0。。。。。");
+            doError("升级接口的status == 0");
+            return;
+        }
+        retryUpgradeTimes = 0;
+        UpdateResponse.UpdateInfoResponse updateInfo = response.resultForApk;
+        // 获取当前最新版本号
+        if (!TextUtils.isEmpty(updateInfo.versionCode)) {
+            double netVersonCode = Integer.parseInt(updateInfo.versionCode);
+            try {
+                LogCat.e("当前的app版本：" + DataUtils.getAppVersion(this));
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+            LogCat.e("当前的最新版本：" + netVersonCode);
+
+            // 检测是否要升级
+            try {
+                //升级接口成功
+                if (DataUtils.getAppVersion(this) < netVersonCode) { // 升级
+                    // 升级
+                    // 下载最新安装包，下载完成后，提示安装
+                    LogCat.e("需要升级。。。。。");
+                    // 去下载当前的apk
+                    if(!TextUtils.isEmpty(updateInfo.fileUrl)){
+                        downloadAPKNew(updateInfo.fileUrl);
+                    }
+
+                } else {
+                    // 不升级,加载布局
+                    LogCat.e("无需升级。。。。。");
+                    // 5.清空所有升级包，为了节省空间
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+                LogCat.e("判断升级过程中出错。。。。。");
+                doError("判断升级过程中出错" + e.getLocalizedMessage());
+            }
+        } else {
+            // 不升级
+            LogCat.e("升级版本为null。。。。。");
+            doError("升级版本为null");
+        }
+
+    }
+
+    private void doError(String errorMsg) {
+        if (!isFinishing()) {
+            // 做不升级处理, 继续请求广告视频列表
+            retryUpgradeTimes++;
+            if (retryUpgradeTimes >= 3) {
+                retryUpgradeTimes = 0;
+                LogCat.e("升级接口已连续请求3次，不在请求");
+            } else {
+                LogCat.e("进行第 " + retryUpgradeTimes + " 次重试请求。。。。。。。");
+                doHttpUpdate(MainActivity.this);
+            }
+        }
+    }
 }

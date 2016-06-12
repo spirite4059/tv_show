@@ -17,7 +17,6 @@ import android.widget.ViewSwitcher;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.tools.Constants;
-import com.gochinatv.ad.tools.LogCat;
 
 /**
  * Created by zfy on 2016/3/17.
@@ -99,7 +98,7 @@ public class AutoTextView extends TextSwitcher implements
     //这里返回的TextView，就是我们看到的View
     @Override
     public View makeView() {
-        LogCat.e("ADFourFragment"," &&&&&&&&&&&&&  makeView makeView  makeView   makeView");
+        //LogCat.e("ADFourFragment"," &&&&&&&&&&&&&  makeView makeView  makeView   makeView");
         MarqueeTextView textView = new MarqueeTextView(mContext);
 //        FrameLayout.LayoutParams lp = (LayoutParams) textView.getLayoutParams();
 //        if(lp == null){
