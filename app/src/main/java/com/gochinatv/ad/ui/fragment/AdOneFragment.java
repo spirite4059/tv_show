@@ -421,6 +421,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
 
 
+
+
+
         // 10.开始下载
         LogCat.e("video", "开始下载......");
         for (AdDetailResponse adDetailResponse : downloadLists) {
@@ -687,7 +690,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
     private void startPlayVideo() {
-        String playingVideoPath = null;
         if (playVideoLists == null || playVideoLists.size() < 2) {
             // 如果播放列表视频数量不足2个，继续检查本地缓存列表
             if (cachePlayVideoLists == null || cachePlayVideoLists.size() < 2) {
@@ -912,6 +914,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     });
                 }
 
+                cachePlayVideoLists.clear();
+
             } else {
                 LogCat.e("video", "当日的下载列表下载完成，继续下载明日与播放的视频列表");
                 if (downloadLists != null) {
@@ -1134,7 +1138,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 playOrderPos = 0;
             }
             String videoPath = null;
-            for (; playOrderPos < orderSize; ) {
+            for(; playOrderPos < orderSize; ){
                 boolean isPlayVideo = false;
                 LogCat.e("order", "playOrderPos......." + playOrderPos);
                 AdDetailResponse adDetailResponse = orderVideoList.get(playOrderPos);
