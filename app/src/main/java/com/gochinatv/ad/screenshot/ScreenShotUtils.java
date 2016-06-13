@@ -48,7 +48,7 @@ public class ScreenShotUtils {
             LogCat.e("screenShot", "本地截图缓存创建失败.......");
             return;
         }
-
+        LogCat.e("screenShot", "截图视频id......." + videoAdBean.adVideoId);
         if(videoGrab.isNeedCacheImageLocal()){
             boolean isScreenShot = createScreenShotFile(bitmap, file);
             if(isScreenShot){
