@@ -232,7 +232,7 @@ public class OkHttpUtils {
 
 
 
-    public void doUploadFile(Context context, File file, String url, long duration, String name) throws IOException {
+    public void doUploadFile(Context context, File file, String url, long duration, String name, int id) throws IOException {
         RequestBody fileBody = RequestBody.create(MediaType.parse("application/octet-stream"), file);
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -240,7 +240,7 @@ public class OkHttpUtils {
                 .addFormDataPart("file", file.getName(), fileBody)
                 .addFormDataPart("mac", MacUtils.getMacAddress(context))
                 .addFormDataPart("duration", String.valueOf(duration))
-                .addFormDataPart("name", name)
+                .addFormDataPart("name", String.valueOf(id))
                 .build();
 
         Request request = new Request.Builder()

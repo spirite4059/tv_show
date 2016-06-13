@@ -11,6 +11,7 @@ import android.view.View;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.okhtttp.OkHttpUtils;
+import com.okhtttp.response.AdDetailResponse;
 import com.okhtttp.response.ScreenShotResponse;
 
 import java.io.File;
@@ -33,12 +34,12 @@ public class ScreenShotUtils {
         this.videoGrab = videoGrab;
     }
 
-    public void screenShot(Context context, String videoPath, long duration, ScreenShotResponse screenShotResponse){
+    public void screenShot(Context context, AdDetailResponse videoAdBean, long duration, ScreenShotResponse screenShotResponse){
         if(videoGrab == null){
             return;
         }
         // 获取本地视频文件
-        File videoFile = getVideoFile(videoPath);
+        File videoFile = getVideoFile(videoAdBean.videoPath);
         // 根据不同的策略获取不同的图片
         Bitmap bitmap = videoGrab.getVideoGrab(videoFile, duration, screenShotResponse.screenShotImgW, screenShotResponse.screenShotImgH);
         // 初始化截图本地文件
@@ -52,10 +53,10 @@ public class ScreenShotUtils {
             boolean isScreenShot = createScreenShotFile(bitmap, file);
             if(isScreenShot){
                 LogCat.e("screenShot", "截图成功..........");
-                uploadFile(context, file, isScreenShot, duration, file.getName());
+                uploadFile(context, file, isScreenShot, duration, file.getName(), videoAdBean.adVideoId);
             }
         }else {
-            uploadFile(context, file, true, duration, file.getName());
+            uploadFile(context, file, true, duration, file.getName(), videoAdBean.adVideoId);
         }
 
     }
@@ -64,12 +65,12 @@ public class ScreenShotUtils {
 
 
 
-    private void uploadFile(Context context, File file, boolean isScreenShot, long duration, String name) {
+    private void uploadFile(Context context, File file, boolean isScreenShot, long duration, String name, int id) {
         if (isScreenShot) {
             //截图成功
             LogCat.e("screenShot", "开始上传......");
             try {
-                OkHttpUtils.getInstance().doUploadFile(context, file, ULR, duration, name);
+                OkHttpUtils.getInstance().doUploadFile(context, file, ULR, duration, name, id);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -289,10 +289,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
                 LogCat.e("video", "视频播放出错......");
                 videoView.stopPlayback();
-                fixVideoError();
-                LogCat.e("video", "开始播放下一个视频......");
-                playNext(true);
 
+                videoView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        fixVideoError();
+                        LogCat.e("video", "开始播放下一个视频......");
+                        playNext(true);
+                    }
+                }, 2000);
                 return true;
             }
         });
@@ -701,7 +706,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
 //                screenShotUtils.setScreenShotPolicy(new SystemScreenShotPolicy());
                 screenShotUtils.setScreenShotPolicy(new FullScreenPolicy(getActivity()));
-                screenShotUtils.screenShot(getActivity(), videoAdBean.videoPath, currentPosition, screenShotResponse);
+                screenShotUtils.screenShot(getActivity(), videoAdBean, currentPosition, screenShotResponse);
 
                 // 下载设备网速
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_SCREEN_SHOT, videoAdBean.adVideoName + " 截图时间：" + VideoAdUtils.computeTime(currentPosition));
@@ -1123,14 +1128,14 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         } else {
             LogCat.e("video", "播放列表数据多于2个.......");
             // 删除所有需要删除的缓存文件
-            if (deleteLists != null && deleteLists.size() > 0) {
-                LogCat.e("video", "删除列表还有内容，则进行删除操作.......");
-                for (AdDetailResponse deleteResponse : deleteLists) {
-                    LogCat.e("video", "删除文件......." + deleteResponse.adVideoName);
-                    DeleteFileUtils.getInstance().deleteFile(deleteResponse.videoPath);
-                }
-                deleteLists.clear();
-            }
+//            if (deleteLists != null && deleteLists.size() > 0) {
+//                LogCat.e("video", "删除列表还有内容，则进行删除操作.......");
+//                for (AdDetailResponse deleteResponse : deleteLists) {
+//                    LogCat.e("video", "删除文件......." + deleteResponse.adVideoName);
+//                    DeleteFileUtils.getInstance().deleteFile(deleteResponse.videoPath);
+//                }
+//                deleteLists.clear();
+//            }
 
             executeDeleteVideos();
 
