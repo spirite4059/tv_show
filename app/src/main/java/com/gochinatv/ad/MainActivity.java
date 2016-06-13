@@ -13,6 +13,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -442,10 +446,26 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initWebView(ADDeviceDataResponse adDeviceDataResponse, int i) {
+        if(adWebView != null){
+            adWebView.setWebViewClient( new WebViewClient(){
+                @Override
+                public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                    super.onReceivedError(view, request, error);
+                    //加载失败监听
+                    LogCat.e("MainActivity", "webview加载失败！！！！！！！！！！！！");
+                    adWebView.setVisibility(View.GONE);
+                    //view.stopLoading();
+                    //view.clearView();
+                }
+            });
+        }
         adWebView.init();
         adWebView.setLayoutResponse(adDeviceDataResponse.layout.get(i));
         adWebView.setLayoutResponses(adDeviceDataResponse.layout);
         adWebView.setDeviceId(adDeviceDataResponse.code);
+
+
+
     }
 
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {

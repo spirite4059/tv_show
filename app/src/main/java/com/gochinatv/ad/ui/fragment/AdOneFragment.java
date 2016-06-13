@@ -125,7 +125,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private AdDetailResponse playingVideoInfo;
 
     private long startDownloadTime;//开始下载时间
-    private long endDownloadTime;//开始下载时间
+    //private long endDownloadTime;//开始下载时间
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -534,11 +534,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_DOWNLOAD_FILE, downloadingVideoResponse.adVideoName);
 
             //上传视频下载的时长
-            endDownloadTime = System.currentTimeMillis();
+            long endDownloadTime = System.currentTimeMillis();
+            LogCat.e("MainActivity", downloadingVideoResponse.adVideoName+" 完成下载的时间： "+endDownloadTime+" 毫秒");
             long time = endDownloadTime - startDownloadTime;
+            LogCat.e("MainActivity", downloadingVideoResponse.adVideoName+" 下载的时长： "+time+" 毫秒");
             if(time > 0 ){
                 long second = time/1000;
                 sendVideoDownloadTime(downloadingVideoResponse.adVideoId,downloadingVideoResponse.adVideoName,second);
+                LogCat.e("MainActivity", downloadingVideoResponse.adVideoName+" 下载的时长： "+second+" 秒");
+                DataUtils.saveToSDCard("  "+downloadingVideoResponse.adVideoName+" 完成下载的时间： "+endDownloadTime+" 毫秒" +" 总耗时："+second);
             }
 
         }
@@ -973,7 +977,14 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 retryTimes = 0;
                 videoUrl = downloadingVideoResponse.adVideoUrl;
                 LogCat.e("video", "获取到当前视频的下载地址。。。。。。。。" + videoUrl);
+
+                //记录第一次下载视频的时间
+                startDownloadTime = System.currentTimeMillis();
+                LogCat.e("MainActivity", downloadingVideoResponse.adVideoName+" 开始下载的时间： "+startDownloadTime+" 毫秒");
+                DataUtils.saveToSDCard("\n"+downloadingVideoResponse.adVideoName+" 开始下载的时间： "+startDownloadTime+" 毫秒");
+
                 download(videoUrl);
+
             }
 
         }
@@ -1049,7 +1060,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private void download(String url) {
         // 一个视频一个视频的下载
-        startDownloadTime = System.currentTimeMillis();
         DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
@@ -1165,7 +1175,18 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 LogCat.e("order", "重置playOrderPos.......");
                 playOrderPos = 0;
             }
-            String videoPath = null;
+
+            if(playingVideoInfo != null){
+                LogCat.e("video", "playingVideoInfo --- 当前正在播放结束的是：" + playingVideoInfo.adVideoName);
+                // 添加友盟统计
+                UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_VIDEO_PLAY_TIMES, playingVideoInfo.adVideoName);
+                //上传播放次数
+                sendVideoPlayTimes(playingVideoInfo.adVideoId,playingVideoInfo.adVideoName);
+            }else{
+                LogCat.e("video", "playingVideoInfo == null ");
+            }
+
+
             for(; playOrderPos < orderSize; ){
                 boolean isPlayVideo = false;
                 LogCat.e("order", "playOrderPos......." + playOrderPos);

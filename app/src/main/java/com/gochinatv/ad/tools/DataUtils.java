@@ -29,9 +29,11 @@ import android.view.View;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -967,6 +969,27 @@ public class DataUtils {
 		}
 
 		return null;
+	}
+
+	/**
+	 * 向sdcard中写入文件
+	 * @param
+	 * @param content 文件内容
+	 */
+	public static void saveToSDCard(String content){
+		OutputStream out = null;
+		try {
+			File file = new File(Environment.getExternalStorageDirectory(), "TESTDOWNLOAD.txt");
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			out = new FileOutputStream(file,true);
+			out.write(content.getBytes());
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 
