@@ -28,9 +28,16 @@ import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.tools.UmengUtils;
 import com.gochinatv.ad.tools.VideoAdUtils;
 import com.gochinatv.ad.video.MeasureVideoView;
+import com.gochinatv.statistics.request.DeleteVideoRequest;
+import com.gochinatv.statistics.request.VideoDownloadInfoRequest;
+import com.gochinatv.statistics.request.VideoSendRequest;
+import com.gochinatv.statistics.server.ErrorHttpServer;
+import com.gochinatv.statistics.tools.Constant;
+import com.gochinatv.statistics.tools.MacUtils;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.AdDetailResponse;
 import com.okhtttp.response.AdVideoListResponse;
+import com.okhtttp.response.ErrorResponse;
 import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.VideoHttpService;
@@ -110,13 +117,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private Handler handler;
     // 接口重复刷新时间
-    private long pollInterval;
+    private long pollInterval = 4*60*60*1000;//默认4个小时
 
     private int playOrderPos;
     private ArrayList<AdDetailResponse> orderVideoList;
 
     private AdDetailResponse playingVideoInfo;
 
+    private long startDownloadTime;//开始下载时间
+    private long endDownloadTime;//开始下载时间
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -447,6 +456,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             public void run() {
                 if (isAdded() && getActivity() != null) {
                     doHttpGetVideoList();
+                    //上报开机时间
+                    sendAPPStartTime();
                 }
 
             }
@@ -513,6 +524,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
             // 统计下载完成的视频
             UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_DOWNLOAD_FILE, downloadingVideoResponse.adVideoName);
+
+            //上传视频下载的时长
+            endDownloadTime = System.currentTimeMillis();
+            long time = endDownloadTime - startDownloadTime;
+            if(time > 0 ){
+                long second = time/1000;
+                sendVideoDownloadTime(downloadingVideoResponse.adVideoId,downloadingVideoResponse.adVideoName,second);
+            }
+
         }
 
 
@@ -786,6 +806,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private void executeDeleteVideos() {
         if (deleteLists != null && deleteLists.size() > 0) {
+            //上报视频删除
+            sendDeleteVideos(deleteLists);
             LogCat.e("video", "删除列表还有内容，则进行删除操作.......");
             AdDetailResponse playingInfo = getPlayingVideoInfo();
             if (playingInfo == null) {
@@ -1018,6 +1040,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private void download(String url) {
         // 一个视频一个视频的下载
+        startDownloadTime = System.currentTimeMillis();
         DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
@@ -1172,6 +1195,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 LogCat.e("video", "当前正在播放结束的是：" + adDetailResponse.adVideoName);
                 // 添加友盟统计
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_VIDEO_PLAY_TIMES, adDetailResponse.adVideoName);
+                //上传播放次数
+                sendVideoPlayTimes(adDetailResponse.adVideoId,adDetailResponse.adVideoName);
+
             }
 
             LogCat.e("video", "当前播放列表数量：" + length);
@@ -1346,4 +1372,108 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         ft.remove(this);
         ft.commit();
     }
+
+    /**
+     * 上报开始时间
+     */
+    private void sendAPPStartTime(){
+        if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
+            ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.APP_START_TIME, "开机时间", new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity","上传开机时间成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity","上传开机时间失败");
+                }
+            });
+        }
+    }
+
+    /**
+     * 上报文件下载时长
+     */
+    private void sendVideoDownloadTime(int id,String name,long time){
+        if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
+
+            VideoDownloadInfoRequest infoRequest = new VideoDownloadInfoRequest();
+            infoRequest.videoId = id;
+            infoRequest.videoName = name;
+            infoRequest.downloadTime =time;
+            String json = MacUtils.getJsonStringByEntity(infoRequest);
+            ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.VIDEO_DOWNLOAD_TIME, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity","上传视频下载时长成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity","上传视频下载时长失败");
+                }
+            });
+        }
+    }
+
+
+    /**
+     * 上报播放次数
+     */
+    private void sendVideoPlayTimes(int id,String name){
+        if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
+
+            VideoSendRequest infoRequest = new VideoSendRequest();
+            infoRequest.videoId = id;
+            infoRequest.videoName = name;
+            String json = MacUtils.getJsonStringByEntity(infoRequest);
+            ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.VIDEO_PLAY_TIMES, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity","上传视频播放次数成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity","上传视频播放次数失败");
+                }
+            });
+        }
+    }
+
+
+    /**
+     * 上报删除视频
+     */
+    private void sendDeleteVideos(ArrayList<AdDetailResponse> deleteLists){
+        if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
+            if(deleteLists == null || deleteLists.size() ==0){
+                return;
+            }
+
+            DeleteVideoRequest deleteVideoRequest = new DeleteVideoRequest();
+            ArrayList<VideoSendRequest> deleteList = new ArrayList<>();
+            for (AdDetailResponse delete:deleteLists) {
+                VideoSendRequest infoRequest = new VideoSendRequest();
+                infoRequest.videoId = delete.adVideoId;
+                infoRequest.videoName = delete.adVideoName;
+                deleteList.add(infoRequest);
+            }
+            deleteVideoRequest.deleteData = deleteList;
+            String json = MacUtils.getJsonStringByEntity(deleteVideoRequest);
+            ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.VIDEO_DELETE, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity","上传删除视频成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity","上传删除视频失败");
+                }
+            });
+        }
+    }
+
 }

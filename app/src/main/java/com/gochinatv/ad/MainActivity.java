@@ -33,11 +33,14 @@ import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.gochinatv.ad.ui.view.AdWebView;
+import com.gochinatv.statistics.server.ErrorHttpServer;
+import com.gochinatv.statistics.tools.Constant;
 import com.google.gson.Gson;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.AdVideoListResponse;
 import com.okhtttp.response.CommendResponse;
+import com.okhtttp.response.ErrorResponse;
 import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.UpPushInfoService;
@@ -140,6 +143,10 @@ public class MainActivity extends BaseActivity {
         initUmeng();
 
         loadFragment(hasApkDownload, adDeviceDataResponse);
+
+
+        //上报开机时间
+        sendAPPStartTime();
     }
 
 
@@ -886,6 +893,25 @@ public class MainActivity extends BaseActivity {
                 LogCat.e("进行第 " + retryUpgradeTimes + " 次重试请求。。。。。。。");
                 doHttpUpdate(MainActivity.this);
             }
+        }
+    }
+
+    /**
+     * 上报开始时间
+     */
+    private void sendAPPStartTime(){
+        if(!TextUtils.isEmpty(DataUtils.getMacAddress(this)) && DataUtils.isNetworkConnected(this)){
+            ErrorHttpServer.doStatisticsHttp(this, Constant.APP_START_TIME, "开机时间", new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity","上传开机时间成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity","上传开机时间失败");
+                }
+            });
         }
     }
 }

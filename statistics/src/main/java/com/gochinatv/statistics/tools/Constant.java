@@ -19,5 +19,14 @@ public class Constant {
 
     public static String LOG_TYPE_APKDOWNLOAD = "APKDownload";//APKDownload:apk下载
 
+    //开机时间
+    public static final  int APP_START_TIME = 101;
+    //文件下载时长
+    public static final  int VIDEO_DOWNLOAD_TIME = 102;
+    //视频播放次数
+    public static final  int VIDEO_PLAY_TIMES = 103;
+    //视频删除反馈
+    public static final  int VIDEO_DELETE = 104;
+
 
 }
