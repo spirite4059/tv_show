@@ -1408,7 +1408,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      */
     private void sendAPPStartTime(){
         if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
-            ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.APP_START_TIME, "开机时间", new OkHttpCallBack<ErrorResponse>() {
+            String msg  ="{\"time\""+":}";
+            ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.APP_START_TIME, msg, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
                     LogCat.e("MainActivity","上传开机时间成功");

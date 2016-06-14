@@ -13,12 +13,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.base.BaseActivity;
@@ -448,14 +447,12 @@ public class MainActivity extends BaseActivity {
     private void initWebView(ADDeviceDataResponse adDeviceDataResponse, int i) {
         if(adWebView != null){
             adWebView.setWebViewClient( new WebViewClient(){
+
                 @Override
-                public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                    super.onReceivedError(view, request, error);
-                    //加载失败监听
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                    super.onReceivedError(view, errorCode, description, failingUrl);
                     LogCat.e("MainActivity", "webview加载失败！！！！！！！！！！！！");
                     adWebView.setVisibility(View.GONE);
-                    //view.stopLoading();
-                    //view.clearView();
                 }
             });
         }
@@ -624,23 +621,44 @@ public class MainActivity extends BaseActivity {
                     return;
                 }
 
-                if(isInitNetState){
-                    isInitNetState = false;
-                    return;
-                }
+                Toast.makeText(MainActivity.this,"11111111111111 网络监听",Toast.LENGTH_LONG).show();
 
-                if (hasNetwork) {
-                    //当有网络时执行
-                    reLoadHttpRequest();
-                    //请求升级接口
-                    doHttpUpdate(MainActivity.this);
-                } else {
-                    // 显示当前的网络状态
-                    AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                    if (adOneFragment != null) {
-                        adOneFragment.showNetSpeed(false, false, 0);
+                if(isDoGetDevice){
+                    isDoGetDevice = true;
+                    //loading页面接口请求
+                    if(isInitNetState){
+                        isInitNetState = false;
+                        Toast.makeText(MainActivity.this,"22222222222222222 屏蔽第一次",Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    if (hasNetwork) {
+                        Toast.makeText(MainActivity.this,"33333333333333333333 网络连接上 再次请求",Toast.LENGTH_LONG).show();
+                        //当有网络时执行
+                        reLoadHttpRequest();
+                        //请求升级接口
+                        doHttpUpdate(MainActivity.this);
+                    } else {
+                        Toast.makeText(MainActivity.this,"444444444444444444444 无网络",Toast.LENGTH_LONG).show();
+                        // 显示当前的网络状态
+                        AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+                        if (adOneFragment != null) {
+                            adOneFragment.showNetSpeed(false, false, 0);
+                        }
+                    }
+                }else{
+                    if(hasNetwork){
+                        Toast.makeText(MainActivity.this,"5555555555555555 有网络再次请求",Toast.LENGTH_LONG).show();
+                        //当有网络时执行
+                        reLoadHttpRequest();
+                        //请求升级接口
+                        doHttpUpdate(MainActivity.this);
+
+
                     }
                 }
+
+
             }
         });
     }
@@ -650,6 +668,7 @@ public class MainActivity extends BaseActivity {
      */
     private void reLoadHttpRequest() {
         if (isDoGetDevice) {
+            isDoGetDevice = true;
             FragmentManager fm = getFragmentManager();
             for (int i = 1; i < 5; i++) {
                 BaseFragment baseFragment = (BaseFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
@@ -672,6 +691,7 @@ public class MainActivity extends BaseActivity {
             doGetDeviceInfoError();
             return;
         }
+        isDoGetDevice = true;
         adDeviceDataResponse = response;
         initUmeng();
         //广告体接口成功
@@ -921,7 +941,8 @@ public class MainActivity extends BaseActivity {
      */
     private void sendAPPStartTime(){
         if(!TextUtils.isEmpty(DataUtils.getMacAddress(this)) && DataUtils.isNetworkConnected(this)){
-            ErrorHttpServer.doStatisticsHttp(this, Constant.APP_START_TIME, "开机时间", new OkHttpCallBack<ErrorResponse>() {
+            String msg  ="{\"time\""+":}";
+            ErrorHttpServer.doStatisticsHttp(this, Constant.APP_START_TIME, msg, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
                     LogCat.e("MainActivity","上传开机时间成功");
