@@ -35,7 +35,7 @@ public class FullScreenPolicy implements VideoGrab {
 
     @Override
     public String getFileName() {
-        String fileName = "screenShot_" + System.currentTimeMillis() + ".png";
+        String fileName = "screenShot.png";
         return fileName;
     }
 
