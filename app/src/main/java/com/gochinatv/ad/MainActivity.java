@@ -17,7 +17,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.download.DLUtils;
 import com.gochinatv.ad.base.BaseActivity;
@@ -620,26 +619,23 @@ public class MainActivity extends BaseActivity {
                 if (isFinishing()) {
                     return;
                 }
-
-                Toast.makeText(MainActivity.this,"11111111111111 网络监听",Toast.LENGTH_LONG).show();
-
+                //Toast.makeText(MainActivity.this,"11111111111111 网络监听",Toast.LENGTH_LONG).show();
                 if(isDoGetDevice){
                     isDoGetDevice = true;
                     //loading页面接口请求
                     if(isInitNetState){
                         isInitNetState = false;
-                        Toast.makeText(MainActivity.this,"22222222222222222 屏蔽第一次",Toast.LENGTH_LONG).show();
+                        //Toast.makeText(MainActivity.this,"22222222222222222 屏蔽第一次",Toast.LENGTH_LONG).show();
                         return;
                     }
-
                     if (hasNetwork) {
-                        Toast.makeText(MainActivity.this,"33333333333333333333 网络连接上 再次请求",Toast.LENGTH_LONG).show();
+                        //Toast.makeText(MainActivity.this,"33333333333333333333 网络连接上 再次请求",Toast.LENGTH_LONG).show();
                         //当有网络时执行
                         reLoadHttpRequest();
                         //请求升级接口
                         doHttpUpdate(MainActivity.this);
                     } else {
-                        Toast.makeText(MainActivity.this,"444444444444444444444 无网络",Toast.LENGTH_LONG).show();
+                        //Toast.makeText(MainActivity.this,"444444444444444444444 无网络",Toast.LENGTH_LONG).show();
                         // 显示当前的网络状态
                         AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
                         if (adOneFragment != null) {
@@ -647,18 +643,15 @@ public class MainActivity extends BaseActivity {
                         }
                     }
                 }else{
+                    //loading没有请求成功
                     if(hasNetwork){
-                        Toast.makeText(MainActivity.this,"5555555555555555 有网络再次请求",Toast.LENGTH_LONG).show();
+                        //Toast.makeText(MainActivity.this,"5555555555555555 有网络再次请求",Toast.LENGTH_LONG).show();
                         //当有网络时执行
                         reLoadHttpRequest();
                         //请求升级接口
                         doHttpUpdate(MainActivity.this);
-
-
                     }
                 }
-
-
             }
         });
     }
@@ -795,8 +788,14 @@ public class MainActivity extends BaseActivity {
         if (downLoadAPKUtils == null) {
             downLoadAPKUtils = new DownLoadAPKUtils();
         }
-        downLoadAPKUtils.downLoad(this, url);
+
         final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+        if(adOneFragment != null){
+            //停止下载视频
+            DLUtils.cancel();
+        }
+
+        downLoadAPKUtils.downLoad(this, url);
         //下载失败监听
         downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
             @Override

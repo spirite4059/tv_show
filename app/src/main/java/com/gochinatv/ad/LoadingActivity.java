@@ -3,6 +3,7 @@ package com.gochinatv.ad;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -69,11 +70,9 @@ public class LoadingActivity extends BaseActivity {
      */
     private int reTryTimes;
 
-
     /**
      * 请求广告体接口---布局大小
      */
-
     //布局数据
     //截屏数据
     private int reTryTimesTwo;
@@ -83,6 +82,9 @@ public class LoadingActivity extends BaseActivity {
 
     private int isGetUpdateInfo;//1：接口请求成功，0：接口请求不成
     private int isGetLayoutInfo;//1：接口请求成功，0：接口请求不成
+
+    private Handler postHandler;
+    private int reTryPostTimes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,20 +100,25 @@ public class LoadingActivity extends BaseActivity {
         // 删除升级安装包
         deleteUpdateApk();
 
+        postHandler = new Handler();
 
-        // 请求网络
-        doHttp();
         /**
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
             //DataUtils.startAppServer(this);
         }
+
+        // 请求网络
+        doHttp();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        if(postHandler != null && postRunnable != null){
+            postHandler.removeCallbacks(postRunnable);
+        }
     }
 
 
@@ -119,6 +126,30 @@ public class LoadingActivity extends BaseActivity {
         DeleteFileUtils.getInstance().deleteFile(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
     }
 
+    private Runnable postRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if(DataUtils.isNetworkConnected(LoadingActivity.this)){
+                doHttpUpdate(LoadingActivity.this);
+                doGetDeviceInfo(LoadingActivity.this);
+                SendStatisticsLog.sendInitializeLog(LoadingActivity.this);//提交激活日志
+            }else{
+                if(reTryPostTimes>= 4){
+                    postHandler.removeCallbacks(postRunnable);
+                    LogCat.e("已进行了4次重试，不再重试，直接进入main");
+                    goToMainActivity();
+
+                }else{
+                    reTryPostTimes++;
+                    LogCat.e("没有网络进行第："+reTryPostTimes +" 次重试");
+                    if(postHandler != null && postRunnable != null){
+                        postHandler.postDelayed(postRunnable,6000);
+                    }
+                }
+
+            }
+        }
+    };
 
     private void doHttp() {
         if (DataUtils.isNetworkConnected(this)) {
@@ -128,25 +159,37 @@ public class LoadingActivity extends BaseActivity {
             SendStatisticsLog.sendInitializeLog(this);//提交激活日志
         } else {
             LogCat.e("net", "没有联网。。。。。。。。。。");
-            // 进入main
-            loadingView.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    //跳转到MainActivity
-                    Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
-                    intent.putExtra("device", adDeviceDataResponse);
-                    if (isHasUpgrade) {
-                        if (updateInfo != null && !TextUtils.isEmpty(updateInfo.fileUrl)) {
-                            intent.putExtra("apkUrl", updateInfo.fileUrl);
-                        }
-                    }
 
-                    intent.putExtra("isDoGetDevice", false);
-                    startActivity(intent);
-                    finish();
-                }
-            }, 2000);
+            if(postHandler != null && postRunnable != null){
+                postHandler.postDelayed(postRunnable,6000);
+            }
+
+//            // 进入main
+//            loadingView.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    //跳转到MainActivity
+//                    goToMainActivity();
+//                }
+//            }, 2000);
         }
+    }
+
+    /**
+     * 跳转main
+     */
+    private void goToMainActivity() {
+        Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
+        intent.putExtra("device", adDeviceDataResponse);
+        if (isHasUpgrade) {
+            if (updateInfo != null && !TextUtils.isEmpty(updateInfo.fileUrl)) {
+                intent.putExtra("apkUrl", updateInfo.fileUrl);
+            }
+        }
+
+        intent.putExtra("isDoGetDevice", false);
+        startActivity(intent);
+        finish();
     }
 
 
