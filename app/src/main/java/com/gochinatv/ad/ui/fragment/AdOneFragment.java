@@ -849,7 +849,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             LogCat.e("video", "当前视频在本地缓存列表中......");
             if (localVideoList != null && localVideoList.size() < 2) {
                 AdDetailResponse adDetailResponse = searchPlayVideo(playVideoIndex, localVideoList);
-                if (!Constants.PRESET_PIECE.equals(adDetailResponse.adVideoName)) {
+                if (adDetailResponse != null && !Constants.PRESET_PIECE.equals(adDetailResponse.adVideoName)) {
                     localVideoList.remove(adDetailResponse);
                     LogCat.e("video", "不是预置片，则从本地缓存列表中删除，并删除文件......" + adDetailResponse.adVideoName);
                     // 如果是缓存文件出错，直接删除当前文件，并播放下一个
@@ -1251,7 +1251,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private AdDetailResponse searchPlayVideo(int playVideoIndex, ArrayList<AdDetailResponse> playVideoLists) {
         int size = playVideoLists.size();
         AdDetailResponse detailResponse = null;
-        if (playVideoIndex <= size) {
+        if (playVideoIndex < size) {
             detailResponse = playVideoLists.get(playVideoIndex);
             if (detailResponse == null) {
                 searchPlayVideo(playVideoIndex + 1, playVideoLists);

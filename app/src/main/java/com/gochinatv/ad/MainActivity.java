@@ -830,9 +830,6 @@ public class MainActivity extends BaseActivity {
                 LogCat.e("APKdownload", "APK已经下载了 progress: " + progress + "%");
                 AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
                 if (adOneFragment != null) {
-                    adOneFragment.startDownloadVideo();
-                }
-                if (adOneFragment != null) {
                     adOneFragment.showNetSpeed(true, true, progress);
                 }
             }
