@@ -33,6 +33,16 @@ public class AdWebView extends BridgeWebView {
         this(context, null);
     }
 
+    public ConnectJsSuccessListener getConnectJsSuccessListener() {
+        return connectJsSuccessListener;
+    }
+
+    public void setConnectJsSuccessLinister(ConnectJsSuccessListener connectJsSuccessListener) {
+        this.connectJsSuccessListener = connectJsSuccessListener;
+    }
+
+    private ConnectJsSuccessListener connectJsSuccessListener;
+
     public AdWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.setBackgroundColor(0);
@@ -96,6 +106,46 @@ public class AdWebView extends BridgeWebView {
                 String layoutCmd = layoutJsStr(layoutResponses);
                 LogCat.e("push", "layoutJsStr(layoutResponses) = " + layoutCmd);
                 function.onCallBack(layoutCmd);
+
+                //通知main交互成功
+                if(!TextUtils.isEmpty(data)){
+                    //连接js成功
+                    if(connectJsSuccessListener != null){
+                        connectJsSuccessListener.connectJsSuccess(true);
+                    }
+                }else{
+                    //连接js失败
+                    if(connectJsSuccessListener != null){
+                        connectJsSuccessListener.connectJsSuccess(false);
+                    }
+                }
+            }
+        });
+    }
+
+    public void initRetry(){
+
+        loadUrl();
+
+        registerHandler(SUBMIT_FROM_WEB_NAME, new BridgeHandler() {
+            @Override
+            public void handler(String data, CallBackFunction function) {
+                LogCat.e("push", "handler = submitFromWeb, data from web = " + data);
+                String layoutCmd = layoutJsStr(layoutResponses);
+                LogCat.e("push", "layoutJsStr(layoutResponses) = " + layoutCmd);
+                function.onCallBack(layoutCmd);
+
+                if(!TextUtils.isEmpty(data)){
+                    //连接js成功
+                    if(connectJsSuccessListener != null){
+                        connectJsSuccessListener.connectJsSuccess(true);
+                    }
+                }else{
+                    //连接js失败
+                    if(connectJsSuccessListener != null){
+                        connectJsSuccessListener.connectJsSuccess(false);
+                    }
+                }
             }
         });
     }
@@ -131,6 +181,12 @@ public class AdWebView extends BridgeWebView {
         params.leftMargin = (int) Math.round(left);
         setLayoutParams(params);
 
+    }
+
+
+
+   public interface ConnectJsSuccessListener{
+        void connectJsSuccess(boolean isSuccess);
     }
 
 

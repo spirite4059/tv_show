@@ -1178,6 +1178,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
             if(playingVideoInfo != null){
                 LogCat.e("video", "playingVideoInfo --- 当前正在播放结束的是：" + playingVideoInfo.adVideoName);
+                LogCat.e("MainActivity","上传播放完成的视频："+playingVideoInfo.adVideoName);
                 // 添加友盟统计
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_VIDEO_PLAY_TIMES, playingVideoInfo.adVideoName);
                 //上传播放次数
@@ -1223,6 +1224,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
                 AdDetailResponse adDetailResponse = searchPlayVideo(playVideoIndex, playVideoLists);
                 LogCat.e("video", "当前正在播放结束的是：" + adDetailResponse.adVideoName);
+                LogCat.e("MainActivity","上传播放完成的视频："+playingVideoInfo.adVideoName);
                 // 添加友盟统计
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_VIDEO_PLAY_TIMES, adDetailResponse.adVideoName);
                 //上传播放次数

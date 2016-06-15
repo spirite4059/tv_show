@@ -322,6 +322,11 @@ public class MainActivity extends BaseActivity {
         if (mPushAgent != null) {
             mPushAgent.disable();
         }
+
+        if(webViewHandler != null && webViewRunnable != null){
+            webViewHandler.removeCallbacks(webViewRunnable);
+        }
+
         super.onStop();
     }
 
@@ -443,25 +448,74 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+
+    /**
+     *
+     */
+    private Handler webViewHandler;
+    private int webViewInterval = 1*60*1000;//默认3分钟
+    private WebViewRunnable webViewRunnable;
+    private class WebViewRunnable implements Runnable{
+        @Override
+        public void run() {
+            if(adWebView != null){
+                LogCat.e("MainActivity","互动网页加载失败，继续尝试");
+                adWebView.init();
+            }
+        }
+    }
+
+//    private Runnable webViewRunnable = new Runnable() {
+//        @Override
+//        public void run() {
+//
+//        }
+//    };
+
+
     private void initWebView(ADDeviceDataResponse adDeviceDataResponse, int i) {
         if(adWebView != null){
             adWebView.setWebViewClient( new WebViewClient(){
-
                 @Override
                 public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                     super.onReceivedError(view, errorCode, description, failingUrl);
                     LogCat.e("MainActivity", "webview加载失败！！！！！！！！！！！！");
                     adWebView.setVisibility(View.GONE);
+
+                    //继续加载网页
+                    if(webViewHandler == null){
+                        webViewHandler = new Handler();
+                    }
+                    if(webViewRunnable == null){
+                        webViewRunnable = new WebViewRunnable();
+                    }
+                    webViewHandler.postDelayed(webViewRunnable,webViewInterval);
                 }
             });
         }
-        adWebView.init();
+
         adWebView.setLayoutResponse(adDeviceDataResponse.layout.get(i));
         adWebView.setLayoutResponses(adDeviceDataResponse.layout);
         adWebView.setDeviceId(adDeviceDataResponse.code);
+        adWebView.init();
 
 
-
+        adWebView.setConnectJsSuccessLinister(new AdWebView.ConnectJsSuccessListener() {
+            @Override
+            public void connectJsSuccess(boolean isSuccess) {
+                if(isSuccess){
+                    adWebView.setVisibility(View.VISIBLE);
+                    LogCat.e("MainActivity","互动网页加载成功，显示网页");
+                    if(webViewHandler != null && webViewRunnable != null){
+                        webViewHandler.removeCallbacks(webViewRunnable);
+                    }
+                }else{
+//                    if(webViewHandler != null && webViewRunnable != null){
+//                        webViewHandler.postDelayed(webViewRunnable,webViewInterval);
+//                    }
+                }
+            }
+        });
     }
 
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
@@ -483,12 +537,19 @@ public class MainActivity extends BaseActivity {
             }
         }else{
             // 添加布局参数
-            fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
-            if (adDeviceDataResponse.pollInterval > 0) {
-                fragment.setHttpIntervalTime((int)adDeviceDataResponse.pollInterval);
+            BaseFragment baseFragment = (BaseFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + type);
+            if(baseFragment == null){
+                //当fragment没有创建时，才创建
+                fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
+                if (adDeviceDataResponse.pollInterval > 0) {
+                    fragment.setHttpIntervalTime((int)adDeviceDataResponse.pollInterval);
+                }
+                ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
+                ft.commit();
             }
-            ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
-            ft.commit();
+
+
+
         }
 
 
