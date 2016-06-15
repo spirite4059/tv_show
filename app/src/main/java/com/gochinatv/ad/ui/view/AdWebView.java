@@ -125,7 +125,7 @@ public class AdWebView extends BridgeWebView {
 
     public void initRetry(){
 
-        loadUrl();
+        //loadUrl();
 
         registerHandler(SUBMIT_FROM_WEB_NAME, new BridgeHandler() {
             @Override
@@ -151,7 +151,7 @@ public class AdWebView extends BridgeWebView {
     }
 
     public void loadUrl(){
-        loadUrl("http://192.168.2.210:8083/android");
+        loadUrl("http://interact.gochinatv.com/android");
     }
 
 

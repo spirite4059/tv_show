@@ -215,13 +215,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //                        }
 //                    }
 //                }
-                LogCat.e("video", "----------------最终deleteVideosTM的大小--------------" + deleteVideosTM.size());
-                ArrayList<AdDetailResponse> deleteVideos = VideoAdUtils.reconnectedPrepare(deleteVideosTD, deleteVideosTM);
-                for (int i = deleteVideos.size() - 1; i >= 0; i--) {
-                    AdDetailResponse delete = deleteVideos.get(i);
-                    DeleteFileUtils.getInstance().deleteFile(delete.videoPath);
-                    LogCat.e("video", "最终删除的缓存视频-----------------------" + delete.adVideoName);
-                }
+               // LogCat.e("video", "----------------最终deleteVideosTM的大小--------------" + deleteVideosTM.size());
+//                ArrayList<AdDetailResponse> deleteVideos = VideoAdUtils.reconnectedPrepare(deleteVideosTD, deleteVideosTM);
+//                for (int i = deleteVideos.size() - 1; i >= 0; i--) {
+//                    AdDetailResponse delete = deleteVideos.get(i);
+//                    DeleteFileUtils.getInstance().deleteFile(delete.videoPath);
+//                    LogCat.e("video", "最终删除的缓存视频-----------------------" + delete.adVideoName);
+//                }
             }
 
             LogCat.e("video", "检测完后的视频列表个数......." + localVideoList.size());
@@ -1492,6 +1492,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 infoRequest.videoId = delete.adVideoId;
                 infoRequest.videoName = delete.adVideoName;
                 deleteList.add(infoRequest);
+                LogCat.e("MainActivity","需要删除的视频："+delete.adVideoName);
             }
             deleteVideoRequest.deleteData = deleteList;
             String json = MacUtils.getJsonStringByEntity(deleteVideoRequest);

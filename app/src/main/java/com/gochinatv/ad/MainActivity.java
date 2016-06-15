@@ -452,6 +452,7 @@ public class MainActivity extends BaseActivity {
     /**
      *
      */
+    int i = 0;
     private Handler webViewHandler;
     private int webViewInterval = 1*60*1000;//默认3分钟
     private WebViewRunnable webViewRunnable;
@@ -461,6 +462,7 @@ public class MainActivity extends BaseActivity {
             if(adWebView != null){
                 LogCat.e("MainActivity","互动网页加载失败，继续尝试");
                 adWebView.init();
+                adWebView.setVisibility(View.VISIBLE);
             }
         }
     }
