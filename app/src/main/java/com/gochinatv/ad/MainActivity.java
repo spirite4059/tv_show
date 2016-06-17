@@ -454,7 +454,7 @@ public class MainActivity extends BaseActivity {
      */
     int i = 0;
     private Handler webViewHandler;
-    private int webViewInterval = 1*60*1000;//默认3分钟
+    private int webViewInterval = 3*60*1000;//默认3分钟
     private WebViewRunnable webViewRunnable;
     private class WebViewRunnable implements Runnable{
         @Override
@@ -462,7 +462,7 @@ public class MainActivity extends BaseActivity {
             if(adWebView != null){
                 LogCat.e("MainActivity","互动网页加载失败，继续尝试");
                 adWebView.init();
-                adWebView.setVisibility(View.VISIBLE);
+                //adWebView.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -478,6 +478,12 @@ public class MainActivity extends BaseActivity {
     private void initWebView(ADDeviceDataResponse adDeviceDataResponse, int i) {
         if(adWebView != null){
             adWebView.setWebViewClient( new WebViewClient(){
+
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                    return super.shouldOverrideUrlLoading(view, url);
+                }
+
                 @Override
                 public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                     super.onReceivedError(view, errorCode, description, failingUrl);
