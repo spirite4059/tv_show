@@ -6,7 +6,14 @@ import android.text.TextUtils;
 import com.download.db.DLDao;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.db.AdDao;
+import com.gochinatv.statistics.request.DeleteVideoRequest;
+import com.gochinatv.statistics.request.VideoSendRequest;
+import com.gochinatv.statistics.server.ErrorHttpServer;
+import com.gochinatv.statistics.tools.Constant;
+import com.gochinatv.statistics.tools.MacUtils;
+import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.AdDetailResponse;
+import com.okhtttp.response.ErrorResponse;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,11 +24,13 @@ import java.util.ArrayList;
 public class VideoAdUtils {
 
 
+
     /**
      * 更新数据表的所有数据
      */
     public static synchronized void updateSqlVideoList(Context context, boolean isToday, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
         LogCat.e("video", "更新数据库.........");
+
         // 删除所有删除列表的video
         String tableName = getTableName(isToday);
         AdDao.deleteAll(context, tableName, deleteVideos);
@@ -184,9 +193,8 @@ public class VideoAdUtils {
             }
         }
         LogCat.e("video", "------------------------------");
-        LogCat.e("video", "最终的明日下载列表.......");
         for (AdDetailResponse adDetailResponse : prepareDownloadLists) {
-            LogCat.e("video", "明日下载视频：" + adDetailResponse.adVideoName);
+            LogCat.e("video", "视频：" + adDetailResponse.adVideoName);
         }
         LogCat.e("video", "------------------------------");
         tomorrowList.addAll(prepareDownloadLists);
@@ -299,7 +307,8 @@ public class VideoAdUtils {
      *
      * @param cacheTodayList
      */
-    public static void checkFileLength(Context context, ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
+    public static ArrayList<AdDetailResponse> checkFileLength(Context context, ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
+        ArrayList<AdDetailResponse> deleteVideos = new ArrayList<>();
         if (cacheTodayList != null && cacheTodayList.size() != 0) {
             LogCat.e("video", "检测到播放列表, 开始检测文件完整性......");
             for (int i = 0; i < localVideoList.size(); i++) {
@@ -314,7 +323,7 @@ public class VideoAdUtils {
                             if (isDownloading) {
                                 LogCat.e("video", "当前文件正在下载中，不做额外处理.......");
                             } else {
-                                --i;
+                                deleteVideos.add(cacheVideo);
                                 localVideoList.remove(localVideo);
                                 DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
                                 LogCat.e("video", "由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
@@ -325,30 +334,34 @@ public class VideoAdUtils {
                 }
 
                 if(!isHasCache){
-                    --i;
+                    deleteVideos.add(localVideo);
                     localVideoList.remove(localVideo);
                     DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以删除文件..........");
+                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以删除文件.........." + localVideo.adVideoName);
                 }
 
 
             }
         } else {
-            LogCat.e("video", "缓存表为空，清空所有缓存视频..........");
+
             for (int i = 0; i < localVideoList.size(); i++) {
                 AdDetailResponse localVideo = localVideoList.get(i);
-//                if (localVideo.adVideoLength == 0) {
-//                    --i;
-//                    localVideoList.remove(localVideo);
-//                    DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
-//                    LogCat.e("video", "由于文件大小==0，需要删除的文件是......." + localVideo.adVideoName);
-//                }
+                deleteVideos.add(localVideo);
+                LogCat.e("video", "缓存表为空，清空所有缓存视频.........." + localVideo.adVideoName);
+                if (localVideo.adVideoLength == 0) {
+                    --i;
+                    localVideoList.remove(localVideo);
+                    DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
 
+                }
                 --i;
                 localVideoList.remove(localVideo);
                 DeleteFileUtils.getInstance().deleteFile(localVideo.videoPath);
             }
         }
+        //return deleteVideos;
+        sendDeleteVideos(context,deleteVideos);
+        return null;
     }
 
     public static void recordStartTime(Context context) {
@@ -381,5 +394,45 @@ public class VideoAdUtils {
         }
         return str;
     }
+
+
+    /**
+     * 上报删除视频
+     */
+    private static void sendDeleteVideos(Context context, ArrayList<AdDetailResponse> deleteLists){
+        if(!TextUtils.isEmpty(DataUtils.getMacAddress(context)) && DataUtils.isNetworkConnected(context)){
+            if(deleteLists == null || deleteLists.size() ==0){
+                return;
+            }
+
+            DeleteVideoRequest deleteVideoRequest = new DeleteVideoRequest();
+            ArrayList<VideoSendRequest> deleteList = new ArrayList<>();
+            for (AdDetailResponse delete:deleteLists) {
+                VideoSendRequest infoRequest = new VideoSendRequest();
+                infoRequest.videoId = delete.adVideoId;
+                infoRequest.videoName = delete.adVideoName;
+                deleteList.add(infoRequest);
+                LogCat.e("MainActivity","需要删除的视频："+delete.adVideoName);
+            }
+            deleteVideoRequest.deleteData = deleteList;
+            String json = MacUtils.getJsonStringByEntity(deleteVideoRequest);
+            ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_DELETE, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity","上传删除视频成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity","上传删除视频失败");
+                }
+            });
+        }
+    }
+
+
+
+
+
 
 }

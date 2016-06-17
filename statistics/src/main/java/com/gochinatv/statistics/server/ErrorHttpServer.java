@@ -68,4 +68,39 @@ public class ErrorHttpServer {
     }
 
 
+    /**
+     * 上报统计数据
+     */
+    public static void doStatisticsHttp(Context context, int type, String errorMsg, OkHttpCallBack<ErrorResponse> listener){
+        if(context == null || TextUtils.isEmpty(errorMsg)){
+            return;
+        }
+        try{
+            ErrorMsgRequest errorMsgRequest = new ErrorMsgRequest();
+            errorMsgRequest.mac = MacUtils.getMacAddress(context);
+            errorMsgRequest.type = type;
+            errorMsgRequest.msg = errorMsg;
+
+            OkHttpUtils.getInstance().doHttpPost(HTTP_URL_GET_VIDEO_LIST, errorMsgRequest, listener);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

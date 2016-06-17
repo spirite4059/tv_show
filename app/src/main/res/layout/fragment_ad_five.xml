@@ -1,31 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root_fragment_episode"
-    android:layout_width="@dimen/d_216dp"
-    android:layout_height="@dimen/d_432dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:layout_alignParentRight="true"
     android:layout_alignParentBottom="true"
-
     android:orientation="vertical"
-    android:paddingLeft="@dimen/d_4dp"
     >
-
-
-    <com.gochinatv.ad.recycler.NoTouchRecyclerView
-        android:id="@+id/recycler_episodes"
-        android:layout_width="@dimen/d_650dp"
-        android:layout_height="match_parent"
-        android:layout_alignParentRight="true"
-        android:background="@android:color/white"
-        />
-
-
-    <ImageView
-        android:id="@+id/ad_three_bg_image"
+    <com.github.lzyzsd.jsbridge.BridgeWebView
+        android:id="@+id/root_fragment_web"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/ad_three_bg"
-        android:scaleType="fitXY"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
         />
 
+    <Button
+        android:id="@+id/btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="loadUrl"/>
+
 </RelativeLayout>
+
+

@@ -12,7 +12,12 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 
 /**
  * Created by hqc on 2015/8/12.
@@ -53,6 +58,11 @@ public class InstallUtils {
 
             }else {
                 LogCat.e("没有获取到任何权限，普通安装。。。。。。。");
+//                Intent installAPKIntent = new Intent(Intent.ACTION_VIEW);
+//                installAPKIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                installAPKIntent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+//                context.startActivity(installAPKIntent);
+
             }
             return;
         }

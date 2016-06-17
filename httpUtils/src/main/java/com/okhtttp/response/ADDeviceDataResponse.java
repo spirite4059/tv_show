@@ -1,11 +1,12 @@
 package com.okhtttp.response;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by zfy on 2016/4/7.
  */
-public class ADDeviceDataResponse {
+public class ADDeviceDataResponse implements Serializable{
 
     public String status;
 

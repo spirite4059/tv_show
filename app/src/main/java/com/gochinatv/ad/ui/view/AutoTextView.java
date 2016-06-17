@@ -9,17 +9,14 @@ import android.graphics.Paint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
-import android.widget.FrameLayout;
 import android.widget.TextSwitcher;
 import android.widget.ViewSwitcher;
 
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.tools.Constants;
-import com.gochinatv.ad.tools.LogCat;
 
 /**
  * Created by zfy on 2016/3/17.
@@ -101,15 +98,15 @@ public class AutoTextView extends TextSwitcher implements
     //这里返回的TextView，就是我们看到的View
     @Override
     public View makeView() {
-        LogCat.e("ADFourFragment"," &&&&&&&&&&&&&  makeView makeView  makeView   makeView");
+        //LogCat.e("ADFourFragment"," &&&&&&&&&&&&&  makeView makeView  makeView   makeView");
         MarqueeTextView textView = new MarqueeTextView(mContext);
-        FrameLayout.LayoutParams lp = (LayoutParams) textView.getLayoutParams();
-        if(lp == null){
-            lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-        lp.width = 1044;
-        lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-        textView.setLayoutParams(lp);
+//        FrameLayout.LayoutParams lp = (LayoutParams) textView.getLayoutParams();
+//        if(lp == null){
+//            lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//        }
+//        lp.width = 1044;
+//        lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+//        textView.setLayoutParams(lp);
         textView.setTextColor(Color.WHITE);
         if(Constants.isPhone){
             //适配手机

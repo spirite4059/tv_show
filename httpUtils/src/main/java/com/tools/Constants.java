@@ -15,5 +15,4 @@ public class Constants {
     public static final  int LAYOUT = 4;
     public static final  int APK_DOWNLOAD = 5;
     public static final  int CRASH = 6;
-
 }

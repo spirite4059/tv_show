@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import com.gochinatv.statistics.request.ContentLogRequest;
 import com.gochinatv.statistics.request.UpgradeLogRequest;
+import com.gochinatv.statistics.tools.Constant;
 import com.gochinatv.statistics.tools.MacUtils;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.OkHttpUtils;
@@ -23,15 +24,12 @@ public class UpgradeServerLog {
         if(TextUtils.isEmpty(MacUtils.getMacAddress(context))){
             return;
         }
-        String url = "http://api.bm.gochinatv.com/device_v1/uploadLog";
         ContentLogRequest contentLogRequest = new ContentLogRequest();
         contentLogRequest.mac = MacUtils.getMacAddress(context);
         contentLogRequest.type = tpye;//
         contentLogRequest.content = MacUtils.getJsonStringByEntity(request);
-        OkHttpUtils.getInstance().doHttpPost(url,contentLogRequest,listener);
+        OkHttpUtils.getInstance().doHttpPost(Constant.LOG_HTTP_URL,contentLogRequest,listener);
 
     }
-
-
 
 }

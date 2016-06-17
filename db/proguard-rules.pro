@@ -15,3 +15,48 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-dontwarn com.ut.mini.**
+-dontwarn okio.**
+-dontwarn com.xiaomi.**
+-dontwarn com.squareup.wire.**
+-dontwarn android.support.v4.**
+
+-keepattributes *Annotation*
+
+-keep class android.support.v4.** { *; }
+-keep interface android.support.v4.app.** { *; }
+
+-keep class okio.** {*;}
+-keep class com.squareup.wire.** {*;}
+
+-keep class com.umeng.message.protobuffer.* {
+	 public <fields>;
+         public <methods>;
+}
+
+-keep class com.umeng.message.* {
+	 public <fields>;
+         public <methods>;
+}
+
+-keep class org.android.agoo.impl.* {
+	 public <fields>;
+         public <methods>;
+}
+
+-keep class org.android.agoo.service.* {*;}
+
+-keep class org.android.spdy.**{*;}
+
+-keep public class **.R$*{
+    public static final int *;
+}
+//如果compileSdkVersion为23，请添加以下混淆代码
+-dontwarn org.apache.http.**
+-dontwarn android.webkit.**
+-keep class org.apache.http.** { *; }
+-keep class org.apache.commons.codec.** { *; }
+-keep class org.apache.commons.logging.** { *; }
+-keep class android.net.compatibility.** { *; }
+-keep class android.net.http.** { *; }

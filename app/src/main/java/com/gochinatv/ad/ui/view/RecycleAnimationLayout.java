@@ -434,8 +434,6 @@ public class RecycleAnimationLayout extends LinearLayout {
      */
     public void destoryRecycleAnimation(){
         LogCat.e("RecycleAnimationLayout"," 取消了广告三的滚动 ");
-        isRecycle = false;//将滚动状态置为:false
-
         position = 2;//重置为2
         isRecycle = false;//将滚动状态置为:false
         if(handler != null && recycleRunnable != null) {
@@ -445,4 +443,29 @@ public class RecycleAnimationLayout extends LinearLayout {
         }
 
     }
+
+    /**
+     * 暂停滚动
+     */
+    public void puaseRecycleAnimation(){
+        LogCat.e("RecycleAnimationLayout"," 暂停了广告三的滚动 ");
+        if(isRecycle && isViewUp){
+            LogCat.e("RecycleAnimationLayout"," 将父view的位置恢复了 ");
+            scrollDown();//恢复到原来的位置
+        }
+        if(handler != null && recycleRunnable != null) {
+            //isRecycle = false;//将滚动状态置为:false
+            handler.removeCallbacks(recycleRunnable);
+        }
+    }
+
+
+    public void recoveryRollingAnimation(){
+        if(handler != null && recycleRunnable != null && imgResponses != null && imgResponses.size()>2){
+            LogCat.e("RecycleAnimationLayout"," 恢复了广告三的滚动 ");
+            handler.postDelayed(recycleRunnable,secondTime);
+        }
+    }
+
+
 }

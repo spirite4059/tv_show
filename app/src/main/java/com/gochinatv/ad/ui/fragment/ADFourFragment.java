@@ -1,5 +1,6 @@
 package com.gochinatv.ad.ui.fragment;
 
+import android.app.FragmentTransaction;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -18,7 +19,6 @@ import com.gochinatv.ad.ui.view.AutoTextView;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADFourResponse;
 import com.okhtttp.response.ADTextRseponse;
-import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.service.ADHttpService;
 import com.umeng.analytics.MobclickAgent;
 
@@ -49,12 +49,12 @@ public class ADFourFragment extends BaseFragment {
 
 
     //请求文字广告接口的定时器
-    private int getTextADTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
+    //private int getTextADTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
     private Timer getTextADTimer;
 
 
     //布局参数
-    private LayoutResponse layoutResponse;
+    //private LayoutResponse layoutResponse;
 
     //是否是第一次网络请求
     private boolean isFirstDoHttp = true;
@@ -74,33 +74,37 @@ public class ADFourFragment extends BaseFragment {
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
 
         LinearLayout linearLayout = (LinearLayout) inflater.inflate(R.layout.fragment_ad_four, container, false);
+        String widthStr = null;
+        String heightStr = null;
+        String topStr = null;
+        String leftStr = null;
         if(layoutResponse != null){
-
-            if(!TextUtils.isEmpty(layoutResponse.adWidth) && !TextUtils.isEmpty(layoutResponse.adHeight)
-                    && !TextUtils.isEmpty(layoutResponse.adTop) && !TextUtils.isEmpty(layoutResponse.adLeft)){
-
-                String widthStr = layoutResponse.adWidth;
-                String heightStr = layoutResponse.adHeight;
-                String topStr = layoutResponse.adTop;
-                String leftStr = layoutResponse.adLeft;
-
-                //动态布局
-                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
-                double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
-                double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
-                double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
-                double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
-                viewWidth = (int) Math.round(width);
-                params.width = (int) Math.round(width);
-                params.height = (int) Math.round(height);
-                params.topMargin = (int) Math.round(top);
-
-                params.leftMargin = (int) Math.round(left);
-                linearLayout.setLayoutParams(params);
-                LogCat.e("ADFourFragment"," 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
-
-            }
+            widthStr = TextUtils.isEmpty(layoutResponse.adWidth)?"0.83125":layoutResponse.adWidth;
+            heightStr = TextUtils.isEmpty(layoutResponse.adHeight)?"0.084375":layoutResponse.adHeight;
+            topStr = TextUtils.isEmpty(layoutResponse.adTop)?"0.915625":layoutResponse.adTop;
+            leftStr = TextUtils.isEmpty(layoutResponse.adLeft)?"0":layoutResponse.adLeft;
+        }else{
+            //默认布局
+            widthStr = "0.83125";
+            heightStr = "0.084375";
+            topStr = "0.915625";
+            leftStr = "0";
         }
+
+        //动态布局
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+        double width = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(widthStr)));
+        double height = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(heightStr)));
+        double top = (float) (DataUtils.getDisplayMetricsHeight(getActivity())*(Float.parseFloat(topStr)));
+        double left = (float) (DataUtils.getDisplayMetricsWidth(getActivity())*(Float.parseFloat(leftStr)));
+        viewWidth = (int) Math.round(width);
+        params.width = (int) Math.round(width);
+        params.height = (int) Math.round(height);
+        params.topMargin = (int) Math.round(top);
+        params.leftMargin = (int) Math.round(left);
+        linearLayout.setLayoutParams(params);
+        LogCat.e("ADFourFragment"," 广告四布局 width: "+params.width+" height: "+params.height+" top: "+params.topMargin+" left: "+params.leftMargin);
+
 
         return linearLayout;
     }
@@ -116,6 +120,7 @@ public class ADFourFragment extends BaseFragment {
         cycleHandler = new Handler();
         //得到轮询请求接口间隔
         doGetTextAD();//请求接口
+        LogCat.e("ADFourFragment"," httpIntervalTime:  "+ httpIntervalTime);
     }
 
     @Override
@@ -196,7 +201,7 @@ public class ADFourFragment extends BaseFragment {
                 if(!isAdded()){
                     return;
                 }
-                LogCat.e(" 广告四 url " + url);
+                LogCat.e("ADFourFragment"," 广告四 url " + url);
                 if (response == null || !(response instanceof ADFourResponse)) {
                     LogCat.e("ADFourFragment","请求文字接口失败");
                     doError();
@@ -263,7 +268,7 @@ public class ADFourFragment extends BaseFragment {
                             public void run() {
                                 doGetTextAD();
                             }
-                        },getTextADTime,getTextADTime);
+                        },httpIntervalTime,httpIntervalTime);
                     }
                 }
                 isFirstDoHttp = false;
@@ -323,24 +328,66 @@ public class ADFourFragment extends BaseFragment {
 
 
 
-    public LayoutResponse getLayoutResponse() {
-        return layoutResponse;
-    }
-
-    /**
-     * 设置布局参数
-     * @param layoutResponse
-     */
-    public void setLayoutResponse(LayoutResponse layoutResponse) {
-        this.layoutResponse = layoutResponse;
-    }
+//    public LayoutResponse getLayoutResponse() {
+//        return layoutResponse;
+//    }
+//
+//    /**
+//     * 设置布局参数
+//     * @param layoutResponse
+//     */
+//    public void setLayoutResponse(LayoutResponse layoutResponse) {
+//        this.layoutResponse = layoutResponse;
+//    }
 
     /**
      * 设置请求接口的间隔
      * @param getTextADTime
      */
-    public void setGetTextADTime(int getTextADTime) {
-        this.getTextADTime = getTextADTime;
-        LogCat.e("ADFourFragment","请求接口时间的间隔 getTextADTime:  " + getTextADTime );
+//    public void setGetTextADTime(int getTextADTime) {
+//        this.getTextADTime = getTextADTime;
+//        LogCat.e("ADFourFragment","请求接口时间的间隔 getTextADTime:  " + getTextADTime );
+//    }
+
+
+    /**
+     * 暂停滚动
+     */
+    public void puaseRollingAnimation(){
+
+        if(taotalSize>1){
+            if(cycleHandler != null && runnable != null){
+                LogCat.e("ADFourFragment","暂停广告4的滚动");
+                cycleHandler.removeCallbacks(runnable);
+                //isCycleState = false;
+            }
+        }
+
+    }
+
+
+    /**
+     * 恢复滚动
+     */
+    public void recoveryRollingAnimation(){
+        if(taotalSize>1){
+            if(cycleHandler != null && runnable != null){
+                LogCat.e("ADFourFragment","恢复广告4的滚动");
+                cycleHandler.postDelayed(runnable,5000);
+                //isCycleState = false;
+            }
+        }
+    }
+
+    @Override
+    public void doHttpRequest() {
+        doGetTextAD();
+    }
+
+    @Override
+    public void removeFragment() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.remove(this);
+        ft.commit();
     }
 }

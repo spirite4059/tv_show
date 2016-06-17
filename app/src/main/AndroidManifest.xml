@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sharedUserId="android.uid.system"
     package="com.gochinatv.ad" >
 
     <!-- android:sharedUserId="android.uid.system" -->
@@ -15,6 +16,7 @@
     <user-permission android:name="android.permission.WRITE_SCURE_SETTINGS" />
     <user-permission android:name="android.permission.WRITE_SETTINGS" />
 
+
     <application
         android:name=".base.MyApplication"
         android:allowBackup="true"
@@ -26,13 +28,30 @@
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="landscape" >
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+                <!--<category android:name="android.intent.category.DEFAULT" />-->
+            <!--</intent-filter>-->
+        </activity>
+
+        <activity android:name=".LoadingActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="landscape"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+
         </activity>
+
+
+
+
 
         <receiver android:name=".BootCompletedReceiver" >
             <intent-filter>
@@ -44,7 +63,9 @@
             android:name="UMENG_APPKEY"
             android:value="${UMENG_APPKEY_VALUE}" />
 
-
+        <meta-data
+            android:name="UMENG_MESSAGE_SECRET"
+            android:value="5eb3c4eb651ff25c517b01fd229a33d0" />
         <!-- <activity -->
         <!-- android:name=".MainTestActivity" -->
         <!-- android:screenOrientation="landscape" > -->
