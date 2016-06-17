@@ -1484,7 +1484,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             if(deleteLists == null || deleteLists.size() ==0){
                 return;
             }
-
             DeleteVideoRequest deleteVideoRequest = new DeleteVideoRequest();
             ArrayList<VideoSendRequest> deleteList = new ArrayList<>();
             for (AdDetailResponse delete:deleteLists) {
@@ -1509,5 +1508,4 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             });
         }
     }
-
 }

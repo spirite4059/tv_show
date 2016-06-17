@@ -16,6 +16,7 @@
     <user-permission android:name="android.permission.WRITE_SCURE_SETTINGS" />
     <user-permission android:name="android.permission.WRITE_SETTINGS" />
 
+
     <application
         android:name=".base.MyApplication"
         android:allowBackup="true"
