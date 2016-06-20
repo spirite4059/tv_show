@@ -1524,12 +1524,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
     // 视频播放卡顿出现的次数
-    private int errorPlayTimes;
+
     public class CheckVideoStatusRunnable implements Runnable {
 
         private long oldVideoPosition;
         private int videoId;
         private long errorPlayTime;
+        private int errorPlayTimes;
 
         @Override
         public void run() {
@@ -1557,6 +1558,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 LogCat.e("alarm", "playingVideoInfo == null......");
                 handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
                 return;
+            }
+
+            // 重置错误时间
+            if(errorPlayTime >= 1800000 && errorPlayTimes < 2){
+                errorPlayTime = 0;
+                errorPlayTimes = 0;
             }
 
             try {
@@ -1613,15 +1620,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             errorPlayTimes++;
 //            AlertUtils.alert(getActivity(), "app出错了，第 " + errorPlayTimes +" 次");
             // 超过2次出现错误，并且在30分钟之内，就重启设备
-            if(errorPlayTimes >= 2 && errorPlayTime >= 1000 * 60 * 30){
+            if(errorPlayTimes >= 2 && errorPlayTime <= 1800000){
                 PowerManager pManager=(PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
                 pManager.reboot("");
                 return;
             }
-
             errorPlayTime = System.currentTimeMillis();
         }
-
-
     }
 }
