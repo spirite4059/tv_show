@@ -152,9 +152,7 @@ public class MainActivity extends BaseActivity {
         //上报开机时间
         sendAPPStartTime();
 
-
     }
-
 
 
 
@@ -334,6 +332,8 @@ public class MainActivity extends BaseActivity {
             webViewHandler.removeCallbacks(webViewRunnable);
         }
 
+
+
         super.onStop();
     }
 
@@ -345,6 +345,7 @@ public class MainActivity extends BaseActivity {
         if (networkBroadcastReceiver != null) {
             unregisterReceiver(networkBroadcastReceiver);
         }
+
     }
 
     /**

@@ -14,7 +14,7 @@
     <!-- 在sdcard中创建/删除文件的权限 -->
     <user-permission android:name="android.permission.WRITE_SCURE_SETTINGS" />
     <user-permission android:name="android.permission.WRITE_SETTINGS" />
-
+    <uses-permission android:name="android.permission.GET_TASKS" />
 
     <application
         android:name=".base.MyApplication"

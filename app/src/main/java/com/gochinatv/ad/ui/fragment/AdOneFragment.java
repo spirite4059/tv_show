@@ -1,11 +1,9 @@
 package com.gochinatv.ad.ui.fragment;
 
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +19,7 @@ import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.ad.screenshot.ScreenShotUtils;
 import com.gochinatv.ad.thread.DeleteFileUtils;
+import com.gochinatv.ad.thread.VideoStatusRunnable;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
@@ -120,7 +119,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private Handler handler;
     // 接口重复刷新时间
-    private long pollInterval = 4 * 60 * 60 * 1000;//默认4个小时
+//    private long pollInterval = 4 * 60 * 60 * 1000;//默认4个小时
+    private long pollInterval = 20 * 1000;//默认4个小时
 
     private int playOrderPos;
     private ArrayList<AdDetailResponse> orderVideoList;
@@ -130,7 +130,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private long startDownloadTime;//开始下载时间
     //private long endDownloadTime;//开始下载时间
 
-    private CheckVideoStatusRunnable checkVideoStatusRunnable;
+    private VideoStatusRunnable videoStatusRunnable;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -260,9 +260,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         //  开启轮询接口
         handler = new Handler(Looper.getMainLooper());
-        checkVideoStatusRunnable = new CheckVideoStatusRunnable();
+        videoStatusRunnable = new VideoStatusRunnable(getActivity(), videoView, getPlayingVideoInfo(), handler);
         // 开始视频的守护线程
-        handler.postDelayed(checkVideoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
+        handler.postDelayed(videoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
     }
 
 
@@ -922,14 +922,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
 
         if (handler != null) {
-            if (checkVideoStatusRunnable != null) {
-                handler.removeCallbacks(checkVideoStatusRunnable);
+            if (videoStatusRunnable != null) {
+                handler.removeCallbacks(videoStatusRunnable);
             }
-
-            if (checkVideoStatusRunnable != null) {
-                handler.removeCallbacks(checkVideoStatusRunnable);
-            }
-
 
         }
 
@@ -1523,109 +1518,111 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    // 视频播放卡顿出现的次数
 
-    public class CheckVideoStatusRunnable implements Runnable {
 
-        private long oldVideoPosition;
-        private int videoId;
-        private long errorPlayTime;
-        private int errorPlayTimes;
-
-        @Override
-        public void run() {
-            LogCat.e("alarm", "开始检测视频......");
-            if (oldVideoPosition == 0) {
-                LogCat.e("alarm", "初始化......");
-                try {
-                    if (videoView != null) {
-                        oldVideoPosition = videoView.getCurrentPosition();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                if (playingVideoInfo == null) {
-                    handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
-                    return;
-                }
-                videoId = playingVideoInfo.adVideoId;
-                handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
-                return;
-            }
-
-            if (playingVideoInfo == null) {
-                LogCat.e("alarm", "playingVideoInfo == null......");
-                handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
-                return;
-            }
-
-            // 重置错误时间
-            if(errorPlayTime >= 1800000 && errorPlayTimes < 2){
-                errorPlayTime = 0;
-                errorPlayTimes = 0;
-            }
-
-            try {
-                int currentVideoId = playingVideoInfo.adVideoId;
-
-                if (currentVideoId == videoId && oldVideoPosition == videoView.getCurrentPosition()) {
-                    LogCat.e("alarm", "播放同一个视频， 同一个位置......");
-                    LogCat.e("alarm", "视频卡死了......");
-                    // 需要重新开始视频
-                    rePlayView();
-                } else {
-                    LogCat.e("alarm", "继续监控视频播放......");
-                    oldVideoPosition = videoView.getCurrentPosition();
-                    videoId = playingVideoInfo.adVideoId;
-                    handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                rePlayView();
-            }
-        }
-
-        private void rePlayView() {
-//            Intent restartIntent = new Intent(getActivity(), LoadingActivity.class);
-//            int pendingId = 1;
-//            PendingIntent pendingIntent = PendingIntent.getActivity(getActivity(), pendingId, restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-//            AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-//            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 2000, pendingIntent);
-//            getActivity().finish();
-
-            if (videoView != null) {
-                try {
-                    videoView.stopPlayback();
-                    videoView.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (playingVideoInfo != null) {
-                                playVideo(playingVideoInfo.videoPath);
-                            }
-                        }
-                    }, 3000);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    rePlayError();
-                }
-            } else {
-                rePlayError();
-            }
-            handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
-        }
-
-        private void rePlayError(){
-            errorPlayTimes++;
-//            AlertUtils.alert(getActivity(), "app出错了，第 " + errorPlayTimes +" 次");
-            // 超过2次出现错误，并且在30分钟之内，就重启设备
-            if(errorPlayTimes >= 2 && errorPlayTime <= 1800000){
-                PowerManager pManager=(PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
-                pManager.reboot("");
-                return;
-            }
-            errorPlayTime = System.currentTimeMillis();
-        }
-    }
+//    // 视频播放卡顿出现的次数
+//
+//    public class CheckVideoStatusRunnable implements Runnable {
+//
+//        private long oldVideoPosition;
+//        private int videoId;
+//        private long errorPlayTime;
+//        private int errorPlayTimes;
+//
+//        @Override
+//        public void run() {
+//            LogCat.e("alarm", "开始检测视频......");
+//            if (oldVideoPosition == 0) {
+//                LogCat.e("alarm", "初始化......");
+//                try {
+//                    if (videoView != null) {
+//                        oldVideoPosition = videoView.getCurrentPosition();
+//                    }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//
+//                if (playingVideoInfo == null) {
+//                    handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+//                    return;
+//                }
+//                videoId = playingVideoInfo.adVideoId;
+//                handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+//                return;
+//            }
+//
+//            if (playingVideoInfo == null) {
+//                LogCat.e("alarm", "playingVideoInfo == null......");
+//                handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+//                return;
+//            }
+//
+//            // 重置错误时间
+//            if(errorPlayTime >= 1800000 && errorPlayTimes < 2){
+//                errorPlayTime = 0;
+//                errorPlayTimes = 0;
+//            }
+//
+//            try {
+//                int currentVideoId = playingVideoInfo.adVideoId;
+//
+//                if (currentVideoId == videoId && oldVideoPosition == videoView.getCurrentPosition()) {
+//                    LogCat.e("alarm", "播放同一个视频， 同一个位置......");
+//                    LogCat.e("alarm", "视频卡死了......");
+//                    // 需要重新开始视频
+//                    rePlayView();
+//                } else {
+//                    LogCat.e("alarm", "继续监控视频播放......");
+//                    oldVideoPosition = videoView.getCurrentPosition();
+//                    videoId = playingVideoInfo.adVideoId;
+//                    handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+//                }
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                rePlayView();
+//            }
+//        }
+//
+//        private void rePlayView() {
+////            Intent restartIntent = new Intent(getActivity(), LoadingActivity.class);
+////            int pendingId = 1;
+////            PendingIntent pendingIntent = PendingIntent.getActivity(getActivity(), pendingId, restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+////            AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+////            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 2000, pendingIntent);
+////            getActivity().finish();
+//
+//            if (videoView != null) {
+//                try {
+//                    videoView.stopPlayback();
+//                    videoView.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            if (playingVideoInfo != null) {
+//                                playVideo(playingVideoInfo.videoPath);
+//                            }
+//                        }
+//                    }, 3000);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    rePlayError();
+//                }
+//            } else {
+//                rePlayError();
+//            }
+//            handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+//        }
+//
+//        private void rePlayError(){
+//            errorPlayTimes++;
+////            AlertUtils.alert(getActivity(), "app出错了，第 " + errorPlayTimes +" 次");
+//            // 超过2次出现错误，并且在30分钟之内，就重启设备
+//            if(errorPlayTimes >= 2 && errorPlayTime <= 1800000){
+//                PowerManager pManager=(PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
+//                pManager.reboot("");
+//                return;
+//            }
+//            errorPlayTime = System.currentTimeMillis();
+//        }
+//    }
 }

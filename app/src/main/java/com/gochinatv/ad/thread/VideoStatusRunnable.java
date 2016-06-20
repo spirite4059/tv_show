@@ -21,11 +21,13 @@ public class VideoStatusRunnable implements Runnable {
     private int videoId;
     private long errorPlayTime;
     private int errorPlayTimes;
-    private final int TIME_CHECK_VIDEO_DURATION = 1000 * 20;
+    private final int TIME_CHECK_VIDEO_DURATION = 1000 * 2 * 60;
 
     public VideoStatusRunnable(Context context, MeasureVideoView videoView, AdDetailResponse playingVideoInfo, Handler handler ){
         this.videoView = videoView;
-
+        this.context = context;
+        this.playingVideoInfo = playingVideoInfo;
+        this.handler = handler;
     }
 
 
@@ -85,12 +87,7 @@ public class VideoStatusRunnable implements Runnable {
     }
 
     private void rePlayView() {
-//            Intent restartIntent = new Intent(getActivity(), LoadingActivity.class);
-//            int pendingId = 1;
-//            PendingIntent pendingIntent = PendingIntent.getActivity(getActivity(), pendingId, restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-//            AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-//            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 2000, pendingIntent);
-//            getActivity().finish();
+
 
         if (videoView != null) {
             try {
