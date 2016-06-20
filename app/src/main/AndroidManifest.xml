@@ -101,6 +101,16 @@
             </intent-filter>
         </receiver>
 
+        <meta-data
+            android:name="GETUI_APP_ID"
+            android:value="pHVyx3BqcZ9Y90iERc1952" />
+        <meta-data
+            android:name="GETUI_APP_KEY"
+            android:value="X9Cb2px5o57nqDeI664h32" />
+        <meta-data
+            android:name="GETUI_APP_SECRET"
+            android:value="nNGvbAFyKs6YfqA0BDmVv" />
+
     </application>
 
 </manifest>

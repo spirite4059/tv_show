@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.download.DLUtils;
 import com.download.ErrorCodes;
+import com.gochinatv.ad.MainActivity;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
@@ -28,6 +29,7 @@ import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.tools.UmengUtils;
 import com.gochinatv.ad.tools.VideoAdUtils;
 import com.gochinatv.ad.video.MeasureVideoView;
+import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.statistics.request.DeleteVideoRequest;
 import com.gochinatv.statistics.request.VideoDownloadInfoRequest;
 import com.gochinatv.statistics.request.VideoSendRequest;
@@ -53,6 +55,8 @@ import java.util.concurrent.TimeUnit;
  * Created by zfy on 2016/3/16.
  */
 public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener {
+
+    MainActivity mainActivity;//主activity实例
 
     private MeasureVideoView videoView;
     private LinearLayout loading;
@@ -257,7 +261,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         //  开启轮询接口
         handler = new Handler(Looper.getMainLooper());
-
 
     }
 
@@ -466,6 +469,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     doHttpGetVideoList();
                     //上报开机时间
                     sendAPPStartTime();
+                    SendStatisticsLog.sendInitializeLog(getActivity());//提交激活日志
                 }
 
             }

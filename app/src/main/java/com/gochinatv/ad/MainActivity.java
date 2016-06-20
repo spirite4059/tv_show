@@ -27,6 +27,7 @@ import com.gochinatv.ad.cmd.FreshCommend;
 import com.gochinatv.ad.cmd.ICommend;
 import com.gochinatv.ad.cmd.Invoker;
 import com.gochinatv.ad.cmd.OpenCommend;
+import com.gochinatv.ad.receiver.PushGetuiReceiver;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
@@ -38,6 +39,7 @@ import com.gochinatv.ad.ui.view.AdWebView;
 import com.gochinatv.statistics.server.ErrorHttpServer;
 import com.gochinatv.statistics.tools.Constant;
 import com.google.gson.Gson;
+import com.igexin.sdk.PushManager;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.AdVideoListResponse;
@@ -68,7 +70,9 @@ public class MainActivity extends BaseActivity {
     //boolean isClick = true;
     private RelativeLayout rootLayout;
     private RelativeLayout titleLayout;
-    private TextView textDeviceId;
+    private TextView textDeviceId;//设备id
+    private TextView textDownloadInfo;//下载信息
+    private TextView textSpeedInfo;//下载速度
     private final String FRAGMENT_TAG_AD_ONE = "ad_1";
     private static final int HANDLER_MSG_TOKEN = 1000;
     private static final int HANDLER_MSG_GET_TOKEN = 1001;
@@ -98,6 +102,12 @@ public class MainActivity extends BaseActivity {
     private boolean isInitNetState = true;
 
 
+    /**
+     * 个推推送
+     */
+    private PushGetuiReceiver pushGetuiReceiver;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,6 +124,8 @@ public class MainActivity extends BaseActivity {
         textDeviceId = (TextView) findViewById(R.id.text_device_id);
         titleLayout = (RelativeLayout) findViewById(R.id.rel_title);
         adWebView = (AdWebView) findViewById(R.id.ad_web);
+        textDownloadInfo = (TextView) findViewById(R.id.text_download_info);
+        textSpeedInfo = (TextView) findViewById(R.id.text_speed_info);
     }
 
     boolean isDoGetDevice;
@@ -162,9 +174,56 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    /**
+     *个推推送
+     */
+    private void initGetuiPush(){
+        pushGetuiReceiver = new PushGetuiReceiver();
+        String filter = "com.igexin.sdk.action."+"pHVyx3BqcZ9Y90iERc1952";
+        IntentFilter intentFilter = new IntentFilter(filter);
+        registerReceiver(pushGetuiReceiver,intentFilter);
+
+        //初始化个推
+        PushManager.getInstance().initialize(this.getApplicationContext());
+        //开启推送
+        PushManager.getInstance().turnOnPush(this);
+
+        pushGetuiReceiver.setPushGetuiListener(new PushGetuiReceiver.PushGetuiListener() {
+            @Override
+            public void hasPushDataListener(int type, String msg) {
+                switch (type){
+                    case 1:
+                        //cid
+                        if(!TextUtils.isEmpty(msg)){
+                            LogCat.e("push","cid: "+ msg);
+                            //上传cid
+                            String deviceId = null;
+                            if (adDeviceDataResponse != null) {
+                                deviceId = adDeviceDataResponse.code;
+                            }
+                            doHttpUpdateUserInfo(MainActivity.this, deviceId);
+                        }
+                        break;
+                    case 2:
+                        //消息
+                        if(!TextUtils.isEmpty(msg)){
+                            LogCat.e("push", "commend -> json: " + msg);
+                            dispatchCommend(msg);
+                        }else{
+                            LogCat.e("push...........收到的命令为null");
+                        }
+                        break;
+                }
+            }
+        });
+
+    }
 
     private static String pushToken;
-
+    /**
+     * 友盟推送
+     * @param mac
+     */
     private void initPush(String mac) {
         mPushAgent = PushAgent.getInstance(this);
         LogCat.e("device_token", "start............");
@@ -188,15 +247,15 @@ public class MainActivity extends BaseActivity {
                     return;
                 }
                 LogCat.e("push", "commend -> json: " + uMessage.custom);
-                dispatchCommend(uMessage);
+                dispatchCommend(uMessage.custom);
             }
         });
     }
 
-    private void dispatchCommend(UMessage uMessage) {
+    private void dispatchCommend(String uMessage) {
         CommendResponse commendResponse = null;
         try {
-            commendResponse = new Gson().fromJson(uMessage.custom, CommendResponse.class);
+            commendResponse = new Gson().fromJson(uMessage, CommendResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -208,7 +267,7 @@ public class MainActivity extends BaseActivity {
         sendCmd(uMessage, commendResponse);
     }
 
-    private void sendCmd(UMessage uMessage, CommendResponse commendResponse) {
+    private void sendCmd(String uMessage, CommendResponse commendResponse) {
         if ("1".equals(commendResponse.getIsJsCommand())) {   // 对js的命令
             LogCat.e("push", "push...........commend  code ......" + commendResponse.getIsJsCommand());
             cmdJs(uMessage);
@@ -217,10 +276,10 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void cmdJs(UMessage uMessage) {
+    private void cmdJs(String uMessage) {
         if (adWebView != null) {
             LogCat.e("push", "push...........adWebView != null");
-            adWebView.setCommendInfo(uMessage.custom);
+            adWebView.setCommendInfo(uMessage);
         }
     }
 
@@ -272,7 +331,8 @@ public class MainActivity extends BaseActivity {
                 if (sharedPreference != null) {
                     sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
                 }
-                initPush(mac);
+                initPush(mac);//友盟
+                //initGetuiPush();//个推
             } else {
                 if (sharedPreference != null) {
                     sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, false);
@@ -340,6 +400,13 @@ public class MainActivity extends BaseActivity {
         if (networkBroadcastReceiver != null) {
             unregisterReceiver(networkBroadcastReceiver);
         }
+
+        //卸载个推推送广播
+        if(pushGetuiReceiver != null){
+            unregisterReceiver(pushGetuiReceiver);
+        }
+        //关闭个推推送
+        PushManager.getInstance().turnOffPush(this);
     }
 
     /**
@@ -1074,4 +1141,25 @@ public class MainActivity extends BaseActivity {
             });
         }
     }
+
+    /**
+     *  设置下载信息
+     * @param info
+     */
+    public void setDownloadInfo(String info){
+        if(!TextUtils.isEmpty(info) && textDownloadInfo != null){
+            textDownloadInfo.setText(info);
+        }
+    }
+
+    /**
+     *  设置下载速度
+     * @param info
+     */
+    public void setSInfo(String info){
+        if(!TextUtils.isEmpty(info) && textSpeedInfo != null){
+            textSpeedInfo.setText(info);
+        }
+    }
+
 }

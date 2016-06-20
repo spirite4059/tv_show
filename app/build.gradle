@@ -17,7 +17,17 @@ android {
         versionName "2.2.1"
         // dex突破65535的限制
         multiDexEnabled true
-        manifestPlaceholders = [UMENG_APPKEY_VALUE: "572c1246e0f55aa6c5001533"]
+        manifestPlaceholders = [UMENG_APPKEY_VALUE: "572c1246e0f55aa6c5001533",
+
+                                GETUI_APP_ID : "pHVyx3BqcZ9Y90iERc1952",
+                                GETUI_APP_KEY : "X9Cb2px5o57nqDeI664h32",
+                                GETUI_APP_SECRET : "nNGvbAFyKs6YfqA0BDmVv",
+                                PACKAGE_NAME : applicationId
+        ]
+
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "mips", "mips64", "x86", "x86_64"
+        }
 
     }
     // 禁用lint报错
@@ -76,4 +86,5 @@ dependencies {
     compile project(path: ':library')
     compile project(':PushSDK')
     compile project(':jsBridge')
+    compile 'com.getui:sdk:+'
 }
