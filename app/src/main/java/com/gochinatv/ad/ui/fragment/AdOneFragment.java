@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.download.DLUtils;
 import com.download.ErrorCodes;
+import com.gochinatv.ad.MainActivity;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
@@ -28,6 +29,7 @@ import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.tools.UmengUtils;
 import com.gochinatv.ad.tools.VideoAdUtils;
 import com.gochinatv.ad.video.MeasureVideoView;
+import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.statistics.request.DeleteVideoRequest;
 import com.gochinatv.statistics.request.VideoDownloadInfoRequest;
 import com.gochinatv.statistics.request.VideoSendRequest;
@@ -53,6 +55,8 @@ import java.util.concurrent.TimeUnit;
  * Created by zfy on 2016/3/16.
  */
 public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListener {
+
+    MainActivity mainActivity;
 
     private MeasureVideoView videoView;
     private LinearLayout loading;
@@ -150,6 +154,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     @Override
     protected void init() {
+        mainActivity  = (MainActivity) getActivity();
         // 显示loading加载状态
         showLoading();
 
@@ -467,6 +472,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     doHttpGetVideoList();
                     //上报开机时间
                     sendAPPStartTime();
+                    SendStatisticsLog.sendInitializeLog(getActivity());//提交激活日志
                 }
 
             }
@@ -582,6 +588,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 @Override
                 public void run() {
                     tvSpeed.setVisibility(View.GONE);
+                    setSpeedInfo("");
                 }
             });
         }
@@ -594,6 +601,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 public void run() {
                     if (!isHasNet) {
                         tvSpeed.setText("wifi:off");
+                        setSpeedInfo("wifi:off");
                         return;
                     }
 
@@ -621,6 +629,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                             msg = "wifi:on-" + speed + "-downloading";
                         }
                         tvSpeed.setText(msg);
+                        setSpeedInfo(msg);
                         // 下载设备网速
                         UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_NET_SPEED, speed);
                     }
@@ -949,6 +958,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                         @Override
                         public void run() {
                             tvSpeed.setVisibility(View.GONE);
+                            setSpeedInfo("wifi:on");
                         }
                     });
                 }
@@ -1021,6 +1031,27 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+
+                    if(!isDetached()){
+                        StringBuilder downloadBuilder = new StringBuilder();
+                        //当前正在下载
+                        if (downloadingVideoResponse != null) {
+                            downloadBuilder.append("downloading：");
+                            downloadBuilder.append(downloadingVideoResponse.adVideoName +" ");
+                        }
+                        //当前下载进度
+                        downloadBuilder.append(logProgress(progress, fileLength));
+                        //下载完成的个数
+                        downloadBuilder.append('\n');
+                        if(playVideoLists != null){
+                            int size = playVideoLists.size();
+                            downloadBuilder.append("completed video：" + size);
+                        }
+                        setDownlaodInfo(downloadBuilder.toString());
+
+                    }
+
+
                     if (Constants.isTest && !isDetached()) {
                         // 当前下载视频
                         // 当前已下载视频的个数
@@ -1517,7 +1548,27 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
     }
 
+    /**
+     * 设置下载速度
+     * @param speed
+     */
+    private void setSpeedInfo(String speed){
+        if(mainActivity != null){
+            mainActivity.setSpeedInfo(speed);
+        }
 
+    }
+
+    /**
+     * 设置下载速度
+     * @param info
+     */
+    private void setDownlaodInfo(String info){
+        if(mainActivity != null){
+            mainActivity.setDownloadInfo(info);
+        }
+
+    }
 
 
 //    // 视频播放卡顿出现的次数

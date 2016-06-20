@@ -845,6 +845,12 @@ public class MainActivity extends BaseActivity {
                         reLoadHttpRequest();
                         //请求升级接口
                         doHttpUpdate(MainActivity.this);
+                    }else{
+                        // 显示当前的网络状态
+                        AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+                        if (adOneFragment != null) {
+                            adOneFragment.showNetSpeed(false, false, 0);
+                        }
                     }
                 }
             }
@@ -1153,7 +1159,12 @@ public class MainActivity extends BaseActivity {
      */
     public void setDownloadInfo(String info){
         if(!TextUtils.isEmpty(info) && textDownloadInfo != null){
+            textDownloadInfo.setVisibility(View.VISIBLE);
             textDownloadInfo.setText(info);
+        }else{
+            if(textDownloadInfo != null){
+                textDownloadInfo.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -1161,10 +1172,15 @@ public class MainActivity extends BaseActivity {
      *  设置下载速度
      * @param info
      */
-    public void setSInfo(String info){
+    public void setSpeedInfo(String info){
         if(!TextUtils.isEmpty(info) && textSpeedInfo != null){
+            textSpeedInfo.setVisibility(View.VISIBLE);
             textSpeedInfo.setText(info);
+        }else{
+        if(textSpeedInfo != null){
+            textSpeedInfo.setVisibility(View.GONE);
         }
+    }
     }
 
 }
