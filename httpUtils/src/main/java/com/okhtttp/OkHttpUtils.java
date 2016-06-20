@@ -233,11 +233,12 @@ public class OkHttpUtils {
 
 
     public void doUploadFile(Context context, File file, String url, long duration, String name, int id) throws IOException {
-        RequestBody fileBody = RequestBody.create(MediaType.parse("application/octet-stream"), file);
+//        RequestBody fileBody = RequestBody.create(MediaType.parse("application/octet-stream"), file);
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addPart(fileBody)
-                .addFormDataPart("file", file.getName(), fileBody)
+//                .addPart(fileBody)
+//                .addFormDataPart("file", file.getName(), fileBody)
+                .addFormDataPart("file", name)
                 .addFormDataPart("mac", MacUtils.getMacAddress(context))
                 .addFormDataPart("duration", String.valueOf(duration))
                 .addFormDataPart("name", String.valueOf(id))
@@ -257,9 +258,9 @@ public class OkHttpUtils {
 
         }
         // 上传成功就删除文件
-        if(file != null && file.exists()){
+//        if(file != null && file.exists()){
 //            file.delete();
-        }
+//        }
     }
 
 

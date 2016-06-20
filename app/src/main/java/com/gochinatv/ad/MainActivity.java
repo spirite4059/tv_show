@@ -163,7 +163,10 @@ public class MainActivity extends BaseActivity {
 
         //上报开机时间
         sendAPPStartTime();
+
     }
+
+
 
 
     // 清空fragment的状态
@@ -388,6 +391,8 @@ public class MainActivity extends BaseActivity {
         if(webViewHandler != null && webViewRunnable != null){
             webViewHandler.removeCallbacks(webViewRunnable);
         }
+
+
 
         super.onStop();
     }

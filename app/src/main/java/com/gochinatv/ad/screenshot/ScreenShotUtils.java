@@ -35,29 +35,29 @@ public class ScreenShotUtils {
     }
 
     public void screenShot(Context context, AdDetailResponse videoAdBean, long duration, ScreenShotResponse screenShotResponse){
-        if(videoGrab == null){
-            return;
-        }
+//        if(videoGrab == null){
+//            return;
+//        }
         // 获取本地视频文件
-        File videoFile = getVideoFile(videoAdBean.videoPath);
-        // 根据不同的策略获取不同的图片
-        Bitmap bitmap = videoGrab.getVideoGrab(videoFile, duration, screenShotResponse.screenShotImgW, screenShotResponse.screenShotImgH);
-        // 初始化截图本地文件
-        File file = initScreenShotFile(videoGrab.getFileName());
-        if(!file.exists()){
-            LogCat.e("screenShot", "本地截图缓存创建失败.......");
-            return;
-        }
-        LogCat.e("screenShot", "截图视频id......." + videoAdBean.adVideoId);
-        if(videoGrab.isNeedCacheImageLocal()){
-            boolean isScreenShot = createScreenShotFile(bitmap, file);
-            if(isScreenShot){
-                LogCat.e("screenShot", "截图成功..........");
-                uploadFile(context, file, isScreenShot, duration, file.getName(), videoAdBean.adVideoId);
-            }
-        }else {
-            uploadFile(context, file, true, duration, file.getName(), videoAdBean.adVideoId);
-        }
+//        File videoFile = getVideoFile(videoAdBean.videoPath);
+//        // 根据不同的策略获取不同的图片
+//        Bitmap bitmap = videoGrab.getVideoGrab(videoFile, duration, screenShotResponse.screenShotImgW, screenShotResponse.screenShotImgH);
+//        // 初始化截图本地文件
+//        File file = initScreenShotFile(videoGrab.getFileName());
+//        if(!file.exists()){
+//            LogCat.e("screenShot", "本地截图缓存创建失败.......");
+//            return;
+//        }
+//        LogCat.e("screenShot", "截图视频id......." + videoAdBean.adVideoId);
+//        if(videoGrab.isNeedCacheImageLocal()){
+//            boolean isScreenShot = createScreenShotFile(bitmap, file);
+//            if(isScreenShot){
+//                LogCat.e("screenShot", "截图成功..........");
+//                uploadFile(context, file, isScreenShot, duration, file.getName(), videoAdBean.adVideoId);
+//            }
+//        }else {
+            uploadFile(context, null, true, duration, videoAdBean.adVideoName, videoAdBean.adVideoId);
+//        }
 
     }
 

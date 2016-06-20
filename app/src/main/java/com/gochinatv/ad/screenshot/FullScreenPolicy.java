@@ -41,7 +41,7 @@ public class FullScreenPolicy implements VideoGrab {
 
     @Override
     public boolean isNeedCacheImageLocal() {
-        return true;
+        return false;
     }
 
 
