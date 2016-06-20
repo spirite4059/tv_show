@@ -119,7 +119,13 @@ public class ADFourFragment extends BaseFragment {
         autoTextView.setViewWidth(viewWidth);
         cycleHandler = new Handler();
         //得到轮询请求接口间隔
-        doGetTextAD();//请求接口
+        if(DataUtils.isNetworkConnected(getActivity())){
+            doGetTextAD();//请求接口
+        }else{
+            autoTextView.next();
+            autoTextView.setText(textADString);
+        }
+
         LogCat.e("ADFourFragment"," httpIntervalTime:  "+ httpIntervalTime);
     }
 

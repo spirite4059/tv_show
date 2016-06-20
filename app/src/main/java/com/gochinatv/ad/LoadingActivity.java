@@ -106,7 +106,7 @@ public class LoadingActivity extends BaseActivity {
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
-            DataUtils.startAppServer(this);
+            //DataUtils.startAppServer(this);
         }
 
         // 请求网络
@@ -295,7 +295,7 @@ public class LoadingActivity extends BaseActivity {
         if (!isFinishing()) {
             // 做不升级处理, 继续请求广告视频列表
             reTryTimes++;
-            if (reTryTimes >= 3) {
+            if (reTryTimes >= 4) {
                 reTryTimes = 0;
                 LogCat.e("升级接口已连续请求3次，不在请求");
                 //升级接口成功

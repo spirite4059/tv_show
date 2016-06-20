@@ -44,6 +44,7 @@ import com.okhtttp.response.AdVideoListResponse;
 import com.okhtttp.response.CommendResponse;
 import com.okhtttp.response.ErrorResponse;
 import com.okhtttp.response.LayoutResponse;
+import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.UpPushInfoService;
 import com.tools.MacUtils;
@@ -54,6 +55,7 @@ import com.umeng.message.UmengRegistrar;
 import com.umeng.message.entity.UMessage;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -418,11 +420,11 @@ public class MainActivity extends BaseActivity {
             showTitleLayout(adDeviceDataResponse.code);
         }
 
-        // 显示大屏广告
-        if (adDeviceDataResponse == null || TextUtils.isEmpty(adDeviceDataResponse.adStruct) || !"4".equals(adDeviceDataResponse.adStruct)) {
-            showOneAD(isDownload, adDeviceDataResponse);
-            return;
+        if(adDeviceDataResponse == null){
+            //如果布局数据为空，就手动创造数据
+            adDeviceDataResponse = createDeviceDataResponse();
         }
+
 
         // 显示4屏广告
         if (adDeviceDataResponse.layout != null && adDeviceDataResponse.layout.size() > 0) {
@@ -448,11 +450,69 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    /**
+     * 手动创建布局参数
+     * @return ADDeviceDataResponse
+     */
+    private ADDeviceDataResponse createDeviceDataResponse() {
+        ADDeviceDataResponse adDeviceDataResponse = new ADDeviceDataResponse();
+        adDeviceDataResponse.pollInterval = 4*60*60*1000;//默认4个小时
+        ScreenShotResponse screenShotResponse = new ScreenShotResponse();
+        screenShotResponse.screenShotInterval = 15*60*1000;//默认15分钟
+        screenShotResponse.screenShotImgW = 320;
+        screenShotResponse.screenShotImgH = 180;
+        adDeviceDataResponse.screenShot = screenShotResponse;
+        ArrayList<LayoutResponse> layoutList = new ArrayList<>();
+        //广告一
+        LayoutResponse oneLayout = new LayoutResponse();
+        oneLayout.adType = "1";
+        oneLayout.adWidth = "0.83125";
+        oneLayout.adHeight = "0.83125";
+        oneLayout.adTop = "0.084375";
+        oneLayout.adLeft = "0";
+        layoutList.add(oneLayout);
+        //广告二
+        LayoutResponse twoLayout = new LayoutResponse();
+        twoLayout.adType = "2";
+        twoLayout.adWidth = "0.16689";
+        twoLayout.adHeight = "0.4";
+        twoLayout.adTop = "0";
+        twoLayout.adLeft = "0.83315";
+        layoutList.add(twoLayout);
+        //广告三
+        LayoutResponse threeLayout = new LayoutResponse();
+        threeLayout.adType = "3";
+        threeLayout.adWidth = "0.16689";
+        threeLayout.adHeight = "0.6";
+        threeLayout.adTop = "0.4";
+        threeLayout.adLeft = "0.83315";
+        layoutList.add(threeLayout);
+        //广告四
+        LayoutResponse fourLayout = new LayoutResponse();
+        fourLayout.adType = "4";
+        fourLayout.adWidth = "0.83125";
+        fourLayout.adHeight = "0.084375";
+        fourLayout.adTop = "0.915625";
+        fourLayout.adLeft = "0";
+        layoutList.add(fourLayout);
+        //广告五
+        LayoutResponse fiveLayout = new LayoutResponse();
+        fiveLayout.adType = "5";
+        fiveLayout.adWidth = "1";
+        fiveLayout.adHeight = "1";
+        fiveLayout.adTop = "0";
+        fiveLayout.adLeft = "0";
+        layoutList.add(fiveLayout);
+
+        adDeviceDataResponse.layout = layoutList;
+
+        return adDeviceDataResponse;
+    }
+
 
     /**
      *
      */
-    int i = 0;
     private Handler webViewHandler;
     private int webViewInterval = 3*60*1000;//默认3分钟
     private WebViewRunnable webViewRunnable;
@@ -466,13 +526,6 @@ public class MainActivity extends BaseActivity {
             }
         }
     }
-
-//    private Runnable webViewRunnable = new Runnable() {
-//        @Override
-//        public void run() {
-//
-//        }
-//    };
 
 
     private void initWebView(ADDeviceDataResponse adDeviceDataResponse, int i) {
@@ -554,9 +607,10 @@ public class MainActivity extends BaseActivity {
                 }
                 ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
                 ft.commit();
+            }else {
+                //如果fragment已经创建了就重新请求数据
+                baseFragment.doHttpRequest();
             }
-
-
 
         }
 
