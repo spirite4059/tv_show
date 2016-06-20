@@ -18,6 +18,7 @@ public class HdmiListener extends BroadcastReceiver {
             boolean state = receivedIt.getBooleanExtra("state", false);
             if (state == true) {
                 LogCat.e("hdmi", "HDMI_ON。。。。。。。已经连接");
+
             } else {
                 LogCat.e("hdmi", "HDMI_OFF。。。。。。。失去连接");
             }

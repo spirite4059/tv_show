@@ -151,7 +151,12 @@ public class MainActivity extends BaseActivity {
 
         //上报开机时间
         sendAPPStartTime();
+
+
     }
+
+
+
 
 
     // 清空fragment的状态

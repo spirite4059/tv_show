@@ -1,9 +1,11 @@
 package com.gochinatv.ad.ui.fragment;
 
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +19,6 @@ import com.download.ErrorCodes;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
-import com.gochinatv.ad.screenshot.FullScreenPolicy;
 import com.gochinatv.ad.screenshot.ScreenShotUtils;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
@@ -105,6 +106,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      * 测试的时间间隔
      */
     private final int TEST_TIME_DURATION = 1000 * 60;
+
+    private final int TIME_CHECK_VIDEO_DURATION = 1000 * 20;
     /**
      * 最多进行重试的次数
      */
@@ -117,7 +120,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private Handler handler;
     // 接口重复刷新时间
-    private long pollInterval = 4*60*60*1000;//默认4个小时
+    private long pollInterval = 4 * 60 * 60 * 1000;//默认4个小时
 
     private int playOrderPos;
     private ArrayList<AdDetailResponse> orderVideoList;
@@ -126,6 +129,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private long startDownloadTime;//开始下载时间
     //private long endDownloadTime;//开始下载时间
+
+    private CheckVideoStatusRunnable checkVideoStatusRunnable;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -190,38 +195,36 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             if (cacheTomorrowList != null && cacheTomorrowList.size() != 0) {
                 LogCat.e("video", "开始根据明日播放列表检测文件的完整性......." + localVideoList.size());
                 // 处理deleteVideosTD的视频，检测看是否有视频需要使用
-//                for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
-//                    for (int i = deleteVideosTD.size() - 1; i >= 0; i--) {
-//                        AdDetailResponse deleteVideo = deleteVideosTD.get(i);
-//                        if (deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
-//                            // 当前视频需要使用，从删除列表删除
-//                            deleteVideosTD.remove(i);
-//                            LogCat.e("video", "当前视频在明日播放列表使用到，从删除列表删除------------------------------" + adDetailResponse.adVideoName);
-//                        }
-//                    }
-//                }
-//                LogCat.e("video", "----------------最终deleteVideosTD的大小--------------" + deleteVideosTD.size());
-
-
+                for (AdDetailResponse adDetailResponse : cacheTomorrowList) {
+                    for (int i = deleteVideosTD.size() - 1; i >= 0; i--) {
+                        AdDetailResponse deleteVideo = deleteVideosTD.get(i);
+                        if (deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
+                            // 当前视频需要使用，从删除列表删除
+                            deleteVideosTD.remove(i);
+                            LogCat.e("video", "当前视频在明日播放列表使用到，从删除列表删除------------------------------" + adDetailResponse.adVideoName);
+                        }
+                    }
+                }
+                LogCat.e("video", "----------------最终deleteVideosTD的大小--------------" + deleteVideosTD.size());
                 ArrayList<AdDetailResponse> deleteVideosTM = VideoAdUtils.checkFileLength(getActivity(), localVideoList, cacheTomorrowList);
-
-//                for (AdDetailResponse adDetailResponse : cacheTodayList) {
-//                    for (int i = deleteVideosTM.size() - 1; i >= 0; i--) {
-//                        AdDetailResponse deleteVideo = deleteVideosTM.get(i);
-//                        if (deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
-//                            // 当前视频需要使用，从删除列表删除
-//                            deleteVideosTM.remove(i);
-//                            LogCat.e("video", "当前视频在今日播放列表使用到，从删除列表删除------------------------------" + adDetailResponse.adVideoName);
-//                        }
-//                    }
-//                }
-               // LogCat.e("video", "----------------最终deleteVideosTM的大小--------------" + deleteVideosTM.size());
-//                ArrayList<AdDetailResponse> deleteVideos = VideoAdUtils.reconnectedPrepare(deleteVideosTD, deleteVideosTM);
-//                for (int i = deleteVideos.size() - 1; i >= 0; i--) {
-//                    AdDetailResponse delete = deleteVideos.get(i);
-//                    DeleteFileUtils.getInstance().deleteFile(delete.videoPath);
-//                    LogCat.e("video", "最终删除的缓存视频-----------------------" + delete.adVideoName);
-//                }
+                for (AdDetailResponse adDetailResponse : cacheTodayList) {
+                    for (int i = deleteVideosTM.size() - 1; i >= 0; i--) {
+                        AdDetailResponse deleteVideo = deleteVideosTM.get(i);
+                        if (deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
+                            // 当前视频需要使用，从删除列表删除
+                            deleteVideosTM.remove(i);
+                            LogCat.e("video", "当前视频在今日播放列表使用到，从删除列表删除------------------------------" + adDetailResponse.adVideoName);
+                        }
+                    }
+                }
+                LogCat.e("video", "----------------最终deleteVideosTM的大小--------------" + deleteVideosTM.size());
+                ArrayList<AdDetailResponse> deleteVideos = VideoAdUtils.reconnectedPrepare(deleteVideosTD, deleteVideosTM);
+                for (int i = deleteVideos.size() - 1; i >= 0; i--) {
+                    AdDetailResponse delete = deleteVideos.get(i);
+                    DeleteFileUtils.getInstance().deleteFile(delete.videoPath);
+                    LogCat.e("video", "最终删除的缓存视频-----------------------" + delete.adVideoName);
+                }
+                sendDeleteVideos(deleteVideos);
             }
 
             LogCat.e("video", "检测完后的视频列表个数......." + localVideoList.size());
@@ -257,8 +260,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         //  开启轮询接口
         handler = new Handler(Looper.getMainLooper());
-
-
+        checkVideoStatusRunnable = new CheckVideoStatusRunnable();
+        // 开始视频的守护线程
+        handler.postDelayed(checkVideoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
     }
 
 
@@ -435,9 +439,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
 
 
-
-
-
         // 10.开始下载
         LogCat.e("video", "开始下载......");
         for (AdDetailResponse adDetailResponse : downloadLists) {
@@ -535,14 +536,14 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
             //上传视频下载的时长
             long endDownloadTime = System.currentTimeMillis();
-            LogCat.e("MainActivity", downloadingVideoResponse.adVideoName+" 完成下载的时间： "+endDownloadTime+" 毫秒");
+            LogCat.e("MainActivity", downloadingVideoResponse.adVideoName + " 完成下载的时间： " + endDownloadTime + " 毫秒");
             long time = endDownloadTime - startDownloadTime;
-            LogCat.e("MainActivity", downloadingVideoResponse.adVideoName+" 下载的时长： "+time+" 毫秒");
-            if(time > 0 ){
-                long second = time/1000;
-                sendVideoDownloadTime(downloadingVideoResponse.adVideoId,downloadingVideoResponse.adVideoName,second);
-                LogCat.e("MainActivity", downloadingVideoResponse.adVideoName+" 下载的时长： "+second+" 秒");
-                DataUtils.saveToSDCard("  "+downloadingVideoResponse.adVideoName+" 完成下载的时间： "+endDownloadTime+" 毫秒" +" 总耗时："+second);
+            LogCat.e("MainActivity", downloadingVideoResponse.adVideoName + " 下载的时长： " + time + " 毫秒");
+            if (time > 0) {
+                long second = time / 1000;
+                sendVideoDownloadTime(downloadingVideoResponse.adVideoId, downloadingVideoResponse.adVideoName, second);
+                LogCat.e("MainActivity", downloadingVideoResponse.adVideoName + " 下载的时长： " + second + " 秒");
+                DataUtils.saveToSDCard("  " + downloadingVideoResponse.adVideoName + " 完成下载的时间： " + endDownloadTime + " 毫秒" + " 总耗时：" + second);
             }
 
         }
@@ -709,7 +710,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //                screenShotUtils.setScreenShotPolicy(new JcodecPolicy());
 //                screenShotUtils.setScreenShotPolicy(new TexturePolicy(videoView));
 //                screenShotUtils.setScreenShotPolicy(new SystemScreenShotPolicy());
-                screenShotUtils.setScreenShotPolicy(new FullScreenPolicy(getActivity()));
+//                screenShotUtils.setScreenShotPolicy(new FullScreenPolicy(getActivity()));
                 screenShotUtils.screenShot(getActivity(), videoAdBean, currentPosition, screenShotResponse);
 
                 // 下载设备网速
@@ -920,6 +921,18 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             screenShotService = null;
         }
 
+        if (handler != null) {
+            if (checkVideoStatusRunnable != null) {
+                handler.removeCallbacks(checkVideoStatusRunnable);
+            }
+
+            if (checkVideoStatusRunnable != null) {
+                handler.removeCallbacks(checkVideoStatusRunnable);
+            }
+
+
+        }
+
 //        if (downloadingVideoResponse != null) {
 //            DeleteFileUtils.getInstance().deleteFile(downloadingVideoResponse.videoPath);
 //        }
@@ -980,8 +993,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
                 //记录第一次下载视频的时间
                 startDownloadTime = System.currentTimeMillis();
-                LogCat.e("MainActivity", downloadingVideoResponse.adVideoName+" 开始下载的时间： "+startDownloadTime+" 毫秒");
-                DataUtils.saveToSDCard("\n"+downloadingVideoResponse.adVideoName+" 开始下载的时间： "+startDownloadTime+" 毫秒");
+                LogCat.e("MainActivity", downloadingVideoResponse.adVideoName + " 开始下载的时间： " + startDownloadTime + " 毫秒");
+                DataUtils.saveToSDCard("\n" + downloadingVideoResponse.adVideoName + " 开始下载的时间： " + startDownloadTime + " 毫秒");
 
                 download(videoUrl);
 
@@ -1176,19 +1189,19 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 playOrderPos = 0;
             }
 
-            if(playingVideoInfo != null){
+            if (playingVideoInfo != null) {
                 LogCat.e("video", "playingVideoInfo --- 当前正在播放结束的是：" + playingVideoInfo.adVideoName);
-                LogCat.e("MainActivity","上传播放完成的视频："+playingVideoInfo.adVideoName);
+                LogCat.e("MainActivity", "上传播放完成的视频：" + playingVideoInfo.adVideoName);
                 // 添加友盟统计
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_VIDEO_PLAY_TIMES, playingVideoInfo.adVideoName);
                 //上传播放次数
-                sendVideoPlayTimes(playingVideoInfo.adVideoId,playingVideoInfo.adVideoName);
-            }else{
+                sendVideoPlayTimes(playingVideoInfo.adVideoId, playingVideoInfo.adVideoName);
+            } else {
                 LogCat.e("video", "playingVideoInfo == null ");
             }
 
 
-            for(; playOrderPos < orderSize; ){
+            for (; playOrderPos < orderSize; ) {
                 boolean isPlayVideo = false;
                 LogCat.e("order", "playOrderPos......." + playOrderPos);
                 AdDetailResponse adDetailResponse = orderVideoList.get(playOrderPos);
@@ -1224,11 +1237,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
                 AdDetailResponse adDetailResponse = searchPlayVideo(playVideoIndex, playVideoLists);
                 LogCat.e("video", "当前正在播放结束的是：" + adDetailResponse.adVideoName);
-                LogCat.e("MainActivity","上传播放完成的视频："+playingVideoInfo.adVideoName);
+                LogCat.e("MainActivity", "上传播放完成的视频：" + playingVideoInfo.adVideoName);
                 // 添加友盟统计
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_VIDEO_PLAY_TIMES, adDetailResponse.adVideoName);
                 //上传播放次数
-                sendVideoPlayTimes(adDetailResponse.adVideoId,adDetailResponse.adVideoName);
+                sendVideoPlayTimes(adDetailResponse.adVideoId, adDetailResponse.adVideoName);
 
             }
 
@@ -1408,18 +1421,18 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 上报开始时间
      */
-    private void sendAPPStartTime(){
-        if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
-            String msg  ="{\"time\""+":}";
+    private void sendAPPStartTime() {
+        if (!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())) {
+            String msg = "{\"time\"" + ":}";
             ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.APP_START_TIME, msg, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
-                    LogCat.e("MainActivity","上传开机时间成功");
+                    LogCat.e("MainActivity", "上传开机时间成功");
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
-                    LogCat.e("MainActivity","上传开机时间失败");
+                    LogCat.e("MainActivity", "上传开机时间失败");
                 }
             });
         }
@@ -1428,23 +1441,23 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 上报文件下载时长
      */
-    private void sendVideoDownloadTime(int id,String name,long time){
-        if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
+    private void sendVideoDownloadTime(int id, String name, long time) {
+        if (!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())) {
 
             VideoDownloadInfoRequest infoRequest = new VideoDownloadInfoRequest();
             infoRequest.videoId = id;
             infoRequest.videoName = name;
-            infoRequest.downloadTime =time;
+            infoRequest.downloadTime = time;
             String json = MacUtils.getJsonStringByEntity(infoRequest);
             ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.VIDEO_DOWNLOAD_TIME, json, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
-                    LogCat.e("MainActivity","上传视频下载时长成功");
+                    LogCat.e("MainActivity", "上传视频下载时长成功");
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
-                    LogCat.e("MainActivity","上传视频下载时长失败");
+                    LogCat.e("MainActivity", "上传视频下载时长失败");
                 }
             });
         }
@@ -1454,8 +1467,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 上报播放次数
      */
-    private void sendVideoPlayTimes(int id,String name){
-        if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
+    private void sendVideoPlayTimes(int id, String name) {
+        if (!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())) {
 
             VideoSendRequest infoRequest = new VideoSendRequest();
             infoRequest.videoId = id;
@@ -1464,12 +1477,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.VIDEO_PLAY_TIMES, json, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
-                    LogCat.e("MainActivity","上传视频播放次数成功");
+                    LogCat.e("MainActivity", "上传视频播放次数成功");
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
-                    LogCat.e("MainActivity","上传视频播放次数失败");
+                    LogCat.e("MainActivity", "上传视频播放次数失败");
                 }
             });
         }
@@ -1479,33 +1492,136 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 上报删除视频
      */
-    private void sendDeleteVideos(ArrayList<AdDetailResponse> deleteLists){
-        if(!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())){
-            if(deleteLists == null || deleteLists.size() ==0){
+    private void sendDeleteVideos(ArrayList<AdDetailResponse> deleteLists) {
+        if (!TextUtils.isEmpty(DataUtils.getMacAddress(getActivity())) && DataUtils.isNetworkConnected(getActivity())) {
+            if (deleteLists == null || deleteLists.size() == 0) {
                 return;
             }
             DeleteVideoRequest deleteVideoRequest = new DeleteVideoRequest();
             ArrayList<VideoSendRequest> deleteList = new ArrayList<>();
-            for (AdDetailResponse delete:deleteLists) {
+            for (AdDetailResponse delete : deleteLists) {
                 VideoSendRequest infoRequest = new VideoSendRequest();
                 infoRequest.videoId = delete.adVideoId;
                 infoRequest.videoName = delete.adVideoName;
                 deleteList.add(infoRequest);
-                LogCat.e("MainActivity","需要删除的视频："+delete.adVideoName);
+                LogCat.e("MainActivity", "需要删除的视频：" + delete.adVideoName);
             }
             deleteVideoRequest.deleteData = deleteList;
             String json = MacUtils.getJsonStringByEntity(deleteVideoRequest);
             ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.VIDEO_DELETE, json, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
-                    LogCat.e("MainActivity","上传删除视频成功");
+                    LogCat.e("MainActivity", "上传删除视频成功");
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
-                    LogCat.e("MainActivity","上传删除视频失败");
+                    LogCat.e("MainActivity", "上传删除视频失败");
                 }
             });
         }
+    }
+
+
+    // 视频播放卡顿出现的次数
+    private int errorPlayTimes;
+    public class CheckVideoStatusRunnable implements Runnable {
+
+        private long oldVideoPosition;
+        private int videoId;
+        private long errorPlayTime;
+
+        @Override
+        public void run() {
+            LogCat.e("alarm", "开始检测视频......");
+            if (oldVideoPosition == 0) {
+                LogCat.e("alarm", "初始化......");
+                try {
+                    if (videoView != null) {
+                        oldVideoPosition = videoView.getCurrentPosition();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if (playingVideoInfo == null) {
+                    handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+                    return;
+                }
+                videoId = playingVideoInfo.adVideoId;
+                handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+                return;
+            }
+
+            if (playingVideoInfo == null) {
+                LogCat.e("alarm", "playingVideoInfo == null......");
+                handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+                return;
+            }
+
+            try {
+                int currentVideoId = playingVideoInfo.adVideoId;
+
+                if (currentVideoId == videoId && oldVideoPosition == videoView.getCurrentPosition()) {
+                    LogCat.e("alarm", "播放同一个视频， 同一个位置......");
+                    LogCat.e("alarm", "视频卡死了......");
+                    // 需要重新开始视频
+                    rePlayView();
+                } else {
+                    LogCat.e("alarm", "继续监控视频播放......");
+                    oldVideoPosition = videoView.getCurrentPosition();
+                    videoId = playingVideoInfo.adVideoId;
+                    handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                rePlayView();
+            }
+        }
+
+        private void rePlayView() {
+//            Intent restartIntent = new Intent(getActivity(), LoadingActivity.class);
+//            int pendingId = 1;
+//            PendingIntent pendingIntent = PendingIntent.getActivity(getActivity(), pendingId, restartIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+//            AlarmManager mgr = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+//            mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 2000, pendingIntent);
+//            getActivity().finish();
+
+            if (videoView != null) {
+                try {
+                    videoView.stopPlayback();
+                    videoView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (playingVideoInfo != null) {
+                                playVideo(playingVideoInfo.videoPath);
+                            }
+                        }
+                    }, 3000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    rePlayError();
+                }
+            } else {
+                rePlayError();
+            }
+            handler.postDelayed(this, TIME_CHECK_VIDEO_DURATION);
+        }
+
+        private void rePlayError(){
+            errorPlayTimes++;
+//            AlertUtils.alert(getActivity(), "app出错了，第 " + errorPlayTimes +" 次");
+            // 超过2次出现错误，并且在30分钟之内，就重启设备
+            if(errorPlayTimes >= 2 && errorPlayTime >= 1000 * 60 * 30){
+                PowerManager pManager=(PowerManager) getActivity().getSystemService(Context.POWER_SERVICE);
+                pManager.reboot("");
+                return;
+            }
+
+            errorPlayTime = System.currentTimeMillis();
+        }
+
+
     }
 }
