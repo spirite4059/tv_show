@@ -70,7 +70,7 @@ public class DownLoadAPKUtils {
 
                 case 1:
                     if (onDownLoadProgressListener != null) {
-                        onDownLoadProgressListener.onDownLoadProgress(progress, apkFile);
+                        onDownLoadProgressListener.onDownLoadProgress(progress, msg.arg2, apkFile);
                     }
                     break;
                 case 2:
@@ -171,6 +171,7 @@ public class DownLoadAPKUtils {
                             Message msg = handler.obtainMessage();
                             msg.what = 1;
                             msg.arg1 = progress;
+                            msg.arg2 = contentLength;
                             handler.sendMessage(msg);
                             startTime = System.currentTimeMillis();
                         }
@@ -245,7 +246,7 @@ public class DownLoadAPKUtils {
     }
 
     public interface OnDownLoadProgressListener {
-        void onDownLoadProgress(int progress, String fileName);
+        void onDownLoadProgress(int progress, long fileSize, String fileName);
     }
 
     public void setOnDownLoadProgressListener(OnDownLoadProgressListener onDownLoadProgressListener) {

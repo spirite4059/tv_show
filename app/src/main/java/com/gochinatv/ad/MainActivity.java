@@ -57,6 +57,7 @@ import com.umeng.message.UmengRegistrar;
 import com.umeng.message.entity.UMessage;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -1024,9 +1025,35 @@ public class MainActivity extends BaseActivity {
 
         //下载进度监听
         downLoadAPKUtils.setOnDownLoadProgressListener(new DownLoadAPKUtils.OnDownLoadProgressListener() {
+
+            private String logProgress(long progress, long fileLength) {
+                if (fileLength == 0) {
+                    return "";
+                }
+                double size = (int) (progress / 1024);
+                String sizeStr;
+                int s = (int) (progress * 100 / fileLength);
+                if (size > 1000) {
+                    size = (progress / 1024) / 1024f;
+                    BigDecimal b = new BigDecimal(size);
+                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    sizeStr = String.valueOf(f1 + "MB，  ");
+                } else {
+                    sizeStr = String.valueOf((int) size + "KB，  ");
+                }
+                return (sizeStr + s + "%");
+            }
+
             @Override
-            public void onDownLoadProgress(int progress, String fileName) {
-                LogCat.e("APKdownload", "APK已经下载了 progress: " + progress + "%");
+            public void onDownLoadProgress(int progress, long fileSize, String fileName) {
+                try {
+                    LogCat.e("upgrading", logProgress(progress, fileSize));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
                 AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
                 if (adOneFragment != null) {
                     adOneFragment.showNetSpeed(true, true, progress);
