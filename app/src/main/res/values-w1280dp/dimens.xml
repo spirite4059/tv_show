@@ -22,4 +22,5 @@
     
      <dimen name="d_26sp">20.00sp</dimen>
     <dimen name="d_22sp">18.00sp</dimen>
+    <dimen name="d_24sp">24.00sp</dimen>
 </resources>

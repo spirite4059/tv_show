@@ -710,7 +710,8 @@ public class DataUtils {
 		DisplayMetrics metrics = new DisplayMetrics();
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		//metrics.density
-		//LogCat.e("metrics.density  "+ metrics.density +" metrics.densityDpi "+metrics.densityDpi);
+		//LogCat.e("metrics","metrics.density  "+ metrics.density +" metrics.densityDpi "+metrics.densityDpi);
+		//LogCat.e("metrics","metrics.widthPixels  "+ metrics.widthPixels );
          return metrics.widthPixels;
 	}
 
@@ -723,9 +724,11 @@ public class DataUtils {
 		context.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		if(checkDeviceHasNavigationBar(context)){
 			//适配手机
+			//LogCat.e("metrics"," metrics.heightPixels "+(metrics.heightPixels + getNavigationBarHeight(context)));
 			return metrics.heightPixels + getNavigationBarHeight(context);
 		}else{
 			//适配电视棒
+			//LogCat.e("metrics"," metrics.heightPixels "+metrics.heightPixels );
 			return metrics.heightPixels;
 		}
 

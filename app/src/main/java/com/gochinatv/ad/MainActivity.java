@@ -487,7 +487,7 @@ public class MainActivity extends BaseActivity {
     private void loadFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse) {
         //显示title栏
         if (adDeviceDataResponse == null) {
-            titleLayout.setVisibility(View.VISIBLE);
+            //titleLayout.setVisibility(View.VISIBLE);
         } else {
             showTitleLayout(adDeviceDataResponse.code);
         }
@@ -790,7 +790,6 @@ public class MainActivity extends BaseActivity {
         params.topMargin = (int) Math.round(top);
         params.leftMargin = (int) Math.round(left);
         titleLayout.setLayoutParams(params);
-        titleLayout.setVisibility(View.VISIBLE);
 
         if (!TextUtils.isEmpty(text)) {
             textDeviceId.setText("DEVICE ID: " + text);
