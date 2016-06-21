@@ -1043,7 +1043,7 @@ public class MainActivity extends BaseActivity {
                 File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                 InstallUtils.installAuto(MainActivity.this, file, true);
                 if (adOneFragment != null) {
-                    adOneFragment.hideNetSpeed();
+                    //adOneFragment.hideNetSpeed();
                 }
             }
         });

@@ -224,10 +224,10 @@ public class RecycleAnimationLayout extends LinearLayout {
      * 向上滚动
      */
     private void scrollUp(){
-        LogCat.e("RecycleAnimationLayout","开始向上滚动 scrollUp ");
+        //LogCat.e("RecycleAnimationLayout","开始向上滚动 scrollUp ");
         isViewUp = true;//将其置为滑动上面去了
         //oldScrollerY = mScroller.getCurrY();
-        LogCat.e("RecycleAnimationLayout", "scrollUp  Y的偏移量 oldScrollerY :  "  +  mScroller.getCurrY() );
+        //LogCat.e("RecycleAnimationLayout", "scrollUp  Y的偏移量 oldScrollerY :  "  +  mScroller.getCurrY() );
         mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), 0, itemHeight, duration * 1000);
         invalidate();
 
@@ -237,10 +237,10 @@ public class RecycleAnimationLayout extends LinearLayout {
      * 向下滚动，恢复初始位置
      */
     private void scrollDown(){
-        LogCat.e("RecycleAnimationLayout","开始向下滚动 scrollDown ");
+        //LogCat.e("RecycleAnimationLayout","开始向下滚动 scrollDown ");
         isViewUp = false;//将其置为恢复原来状态了
         newScrollerY = mScroller.getCurrY();
-        LogCat.e("RecycleAnimationLayout", " scrollDown Y的偏移量 newScrollerY :  " + newScrollerY);
+        //LogCat.e("RecycleAnimationLayout", " scrollDown Y的偏移量 newScrollerY :  " + newScrollerY);
         mScroller.startScroll(mScroller.getFinalX(), mScroller.getFinalY(), 0, -(newScrollerY), 0);
         invalidate();
 
@@ -270,7 +270,7 @@ public class RecycleAnimationLayout extends LinearLayout {
      * 将最上面一个view移动最下面复用,translationY
      */
     private void moveViewToBottom(){
-        LogCat.e("RecycleAnimationLayout","将最顶的view移动动到最低 ");
+        //LogCat.e("RecycleAnimationLayout","将最顶的view移动动到最低 ");
         scrollDown();
         final View reuseView = this.getChildAt(0);
 //        LinearLayout.LayoutParams params4 = (LinearLayout.LayoutParams) reuseView.getLayoutParams();
@@ -279,12 +279,12 @@ public class RecycleAnimationLayout extends LinearLayout {
 //        reuseView.setLayoutParams(params4);
         this.removeViewAt(0);
         this.addView(reuseView);
-        LogCat.e("RecycleAnimationLayout"," 子view个数 getChildCount:  " + this.getChildCount());
+        //LogCat.e("RecycleAnimationLayout"," 子view个数 getChildCount:  " + this.getChildCount());
         if (position > imgResponses.size()-1) {
             position = 0;
         }
-        LogCat.e("RecycleAnimationLayout"," position:  " + position);
-        LogCat.e("RecycleAnimationLayout"," oldPositionID:  " + oldPositionID + "    下个要出来图片的adImgId;   " + imgResponses.get(position).adImgId);
+        //LogCat.e("RecycleAnimationLayout"," position:  " + position);
+        //LogCat.e("RecycleAnimationLayout"," oldPositionID:  " + oldPositionID + "    下个要出来图片的adImgId;   " + imgResponses.get(position).adImgId);
         if(oldPositionID == imgResponses.get(position).adImgId){
             //表示下一个数据与这个相同
             position++;
@@ -345,7 +345,7 @@ public class RecycleAnimationLayout extends LinearLayout {
 
         //记录旧的id
         oldPositionID = imgResponses.get(position).adImgId;
-        LogCat.e("RecycleAnimationLayout"," moveViewToBottom  position: " + position + "   菜名：   " + imgResponses.get(position).adImgName);
+        //LogCat.e("RecycleAnimationLayout"," moveViewToBottom  position: " + position + "   菜名：   " + imgResponses.get(position).adImgName);
 
     }
 
@@ -379,7 +379,7 @@ public class RecycleAnimationLayout extends LinearLayout {
      * @param itemHeight
      */
     public void setItemHeight(int itemHeight) {
-        LogCat.e("RecycleAnimationLayout"," itemHeight: "+ itemHeight);
+        //LogCat.e("RecycleAnimationLayout"," itemHeight: "+ itemHeight);
         this.itemHeight = itemHeight;
     }
 
@@ -392,7 +392,7 @@ public class RecycleAnimationLayout extends LinearLayout {
      * @param itemWidth
      */
     public void setItemWidth(int itemWidth) {
-        LogCat.e("RecycleAnimationLayout"," itemWidth: "+ itemWidth);
+        //LogCat.e("RecycleAnimationLayout"," itemWidth: "+ itemWidth);
         this.itemWidth = itemWidth;
     }
 

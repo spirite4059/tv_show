@@ -172,7 +172,7 @@ public class ADFourFragment extends BaseFragment {
                 index = 0;
                 //i = 1;
             }
-            LogCat.e("ADFourFragment","index :"+index  + "     "+textData.get(index).adTextStr);
+            //LogCat.e("ADFourFragment","index :"+index  + "     "+textData.get(index).adTextStr);
             if(!TextUtils.isEmpty(textData.get(index).adTextStr)){
                 autoTextView.next();
                 autoTextView.setText(textData.get(index).adTextStr);

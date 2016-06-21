@@ -119,7 +119,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private LayoutResponse layoutResponse;
 
     private TextView tvProgress;
-    private TextView tvSpeed;
+    //private TextView tvSpeed;
 
     private Handler handler;
     // 接口重复刷新时间
@@ -149,7 +149,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         videoView = (MeasureVideoView) rootView.findViewById(R.id.videoView);
         loading = (LinearLayout) rootView.findViewById(R.id.loading);
         tvProgress = (TextView) rootView.findViewById(R.id.tv_progress);
-        tvSpeed = (TextView) rootView.findViewById(R.id.tv_internet_speeds);
+        //tvSpeed = (TextView) rootView.findViewById(R.id.tv_internet_speeds);
     }
 
     @Override
@@ -587,7 +587,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    tvSpeed.setVisibility(View.GONE);
+                    //tvSpeed.setVisibility(View.GONE);
                     setSpeedInfo("");
                 }
             });
@@ -600,7 +600,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 @Override
                 public void run() {
                     if (!isHasNet) {
-                        tvSpeed.setText("wifi:off");
+                        //tvSpeed.setText("wifi:off");
                         setSpeedInfo("wifi:off");
                         return;
                     }
@@ -628,7 +628,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                         } else {
                             msg = "wifi:on-" + speed + "-downloading";
                         }
-                        tvSpeed.setText(msg);
+                        //tvSpeed.setText(msg);
                         setSpeedInfo(msg);
                         // 下载设备网速
                         UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_NET_SPEED, speed);
@@ -957,7 +957,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            tvSpeed.setVisibility(View.GONE);
+                            //tvSpeed.setVisibility(View.GONE);
                             setSpeedInfo("wifi:on");
                         }
                     });
