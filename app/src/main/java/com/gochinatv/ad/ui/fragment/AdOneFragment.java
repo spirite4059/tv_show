@@ -477,7 +477,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
 
             }
-        }, Constants.isTest?20000:pollInterval);
+        }, pollInterval);
     }
 
 
@@ -1032,13 +1032,22 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    try {
+                        showDownLoadMsg();
 
+                        showTestMsg();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+
+                void showDownLoadMsg(){
                     if(!isDetached()){
                         StringBuilder downloadBuilder = new StringBuilder();
                         //当前正在下载
                         if (downloadingVideoResponse != null) {
                             downloadBuilder.append("downloading：");
-                            downloadBuilder.append(downloadingVideoResponse.adVideoName +" ");
+                            downloadBuilder.append(downloadingVideoResponse.adVideoId +" ");
 
                         }
                         //当前下载进度
@@ -1054,8 +1063,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                         setDownlaodInfo(downloadBuilder.toString());
 
                     }
+                }
 
-
+                void showTestMsg(){
                     if (Constants.isTest && !isDetached()) {
                         // 当前下载视频
                         // 当前已下载视频的个数
@@ -1096,6 +1106,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
                     }
                 }
+
             });
         }
 

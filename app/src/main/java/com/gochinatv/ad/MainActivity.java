@@ -27,7 +27,6 @@ import com.gochinatv.ad.cmd.FreshCommend;
 import com.gochinatv.ad.cmd.ICommend;
 import com.gochinatv.ad.cmd.Invoker;
 import com.gochinatv.ad.cmd.OpenCommend;
-import com.gochinatv.ad.receiver.PushGetuiReceiver;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
@@ -39,7 +38,6 @@ import com.gochinatv.ad.ui.view.AdWebView;
 import com.gochinatv.statistics.server.ErrorHttpServer;
 import com.gochinatv.statistics.tools.Constant;
 import com.google.gson.Gson;
-import com.igexin.sdk.PushManager;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.AdVideoListResponse;
@@ -103,10 +101,6 @@ public class MainActivity extends BaseActivity {
     private boolean isInitNetState = true;
 
 
-    /**
-     * 个推推送
-     */
-    private PushGetuiReceiver pushGetuiReceiver;
 
 
     @Override
@@ -178,50 +172,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    /**
-     *个推推送
-     */
-    private void initGetuiPush(){
-        pushGetuiReceiver = new PushGetuiReceiver();
-        String filter = "com.igexin.sdk.action."+"pHVyx3BqcZ9Y90iERc1952";
-        IntentFilter intentFilter = new IntentFilter(filter);
-        registerReceiver(pushGetuiReceiver,intentFilter);
 
-        //初始化个推
-        PushManager.getInstance().initialize(this.getApplicationContext());
-        //开启推送
-        PushManager.getInstance().turnOnPush(this);
-
-        pushGetuiReceiver.setPushGetuiListener(new PushGetuiReceiver.PushGetuiListener() {
-            @Override
-            public void hasPushDataListener(int type, String msg) {
-                switch (type){
-                    case 1:
-                        //cid
-                        if(!TextUtils.isEmpty(msg)){
-                            LogCat.e("push","cid: "+ msg);
-                            //上传cid
-                            String deviceId = null;
-                            if (adDeviceDataResponse != null) {
-                                deviceId = adDeviceDataResponse.code;
-                            }
-                            doHttpUpdateUserInfo(MainActivity.this, deviceId);
-                        }
-                        break;
-                    case 2:
-                        //消息
-                        if(!TextUtils.isEmpty(msg)){
-                            LogCat.e("push", "commend -> json: " + msg);
-                            dispatchCommend(msg);
-                        }else{
-                            LogCat.e("push...........收到的命令为null");
-                        }
-                        break;
-                }
-            }
-        });
-
-    }
 
     private static String pushToken;
     /**
@@ -406,13 +357,6 @@ public class MainActivity extends BaseActivity {
         if (networkBroadcastReceiver != null) {
             unregisterReceiver(networkBroadcastReceiver);
         }
-
-        //卸载个推推送广播
-        if(pushGetuiReceiver != null){
-            unregisterReceiver(pushGetuiReceiver);
-        }
-        //关闭个推推送
-        PushManager.getInstance().turnOffPush(this);
     }
 
     /**
