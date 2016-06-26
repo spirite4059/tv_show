@@ -33,15 +33,6 @@ public class AdWebView extends BridgeWebView {
         this(context, null);
     }
 
-    public ConnectJsSuccessListener getConnectJsSuccessListener() {
-        return connectJsSuccessListener;
-    }
-
-    public void setConnectJsSuccessLinister(ConnectJsSuccessListener connectJsSuccessListener) {
-        this.connectJsSuccessListener = connectJsSuccessListener;
-    }
-
-    private ConnectJsSuccessListener connectJsSuccessListener;
 
     public AdWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -106,19 +97,6 @@ public class AdWebView extends BridgeWebView {
                 String layoutCmd = layoutJsStr(layoutResponses);
                 LogCat.e("push", "layoutJsStr(layoutResponses) = " + layoutCmd);
                 function.onCallBack(layoutCmd);
-
-                //通知main交互成功
-                if(!TextUtils.isEmpty(data)){
-                    //连接js成功
-                    if(connectJsSuccessListener != null){
-                        connectJsSuccessListener.connectJsSuccess(true);
-                    }
-                }else{
-                    //连接js失败
-                    if(connectJsSuccessListener != null){
-                        connectJsSuccessListener.connectJsSuccess(false);
-                    }
-                }
             }
         });
     }
@@ -135,22 +113,12 @@ public class AdWebView extends BridgeWebView {
                 LogCat.e("push", "layoutJsStr(layoutResponses) = " + layoutCmd);
                 function.onCallBack(layoutCmd);
 
-                if(!TextUtils.isEmpty(data)){
-                    //连接js成功
-                    if(connectJsSuccessListener != null){
-                        connectJsSuccessListener.connectJsSuccess(true);
-                    }
-                }else{
-                    //连接js失败
-                    if(connectJsSuccessListener != null){
-                        connectJsSuccessListener.connectJsSuccess(false);
-                    }
-                }
             }
         });
     }
 
     public void loadUrl(){
+        //loadUrl("http://192.168.3.129:8083/android");
         loadUrl("http://interact.gochinatv.com/android");
     }
 
@@ -184,10 +152,6 @@ public class AdWebView extends BridgeWebView {
     }
 
 
-
-   public interface ConnectJsSuccessListener{
-        void connectJsSuccess(boolean isSuccess);
-    }
 
 
 }

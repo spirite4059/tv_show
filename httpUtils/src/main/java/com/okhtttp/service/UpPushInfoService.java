@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class UpPushInfoService {
 
-    private static final String HTTP_URL_GET_VIDEO_LIST = "http://114.215.142.23:7001/hudong/api/v2/device/config";
+    private static final String HTTP_URL_GET_VIDEO_LIST = "http://interact.gochinatv.com/hudong/api/v2/device/config";
 
     public static void doHttpUpPushInfo(Map<String, String> params, OkHttpCallBack<AdVideoListResponse> listener){
         OkHttpUtils.getInstance().doHttpGet(HTTP_URL_GET_VIDEO_LIST, params, listener);
