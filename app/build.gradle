@@ -14,7 +14,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 23
         versionCode 14
-        versionName "2.2.1"
+        versionName "2.2.2"
         // dex突破65535的限制
         multiDexEnabled true
         manifestPlaceholders = [UMENG_APPKEY_VALUE: "572c1246e0f55aa6c5001533"]

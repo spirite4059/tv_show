@@ -93,6 +93,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 LogCat.e("exception", "error : " + e.getLocalizedMessage());
+                e.printStackTrace();
             }
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(1);
@@ -158,7 +159,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
             String result = writer.toString();
             sb.append(result); //将写入的结果
             final String errorMsg = sb.toString();
-
+            LogCat.e("崩溃信息：" + errorMsg);
             //写文件和限制数量
             executorService.execute(new Runnable() {
                 @Override

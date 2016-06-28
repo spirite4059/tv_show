@@ -202,6 +202,30 @@ public class VideoAdUtils {
 
     }
 
+    public static ArrayList<AdDetailResponse> dealWithDeleteVideos(ArrayList<AdDetailResponse> todayVideos, ArrayList<AdDetailResponse> tomorrowVideos) {
+        ArrayList<AdDetailResponse> deleteVideos = new ArrayList<>();
+        deleteVideos.addAll(todayVideos);
+        int tmSize = tomorrowVideos.size();
+        int deleteSize = todayVideos.size();
+        for (int i = 0; i < tmSize; i++) {
+            AdDetailResponse tomorrowVideo = tomorrowVideos.get(i);
+            boolean isContains = false;
+            for (int j = 0; j < deleteSize; j++) {
+                AdDetailResponse todayVideo = todayVideos.get(j);
+                if (!TextUtils.isEmpty(tomorrowVideo.adVideoName) && tomorrowVideo.adVideoName.equals(todayVideo.adVideoName)) {
+                    isContains = true;
+                    break;
+                }
+            }
+            if(!isContains){
+                deleteVideos.add(tomorrowVideo);
+            }
+        }
+
+        return deleteVideos;
+
+    }
+
     /**
      * 删除旧文件目录
      */
@@ -332,7 +356,7 @@ public class VideoAdUtils {
                 }
                 if(!isHasCache){
                     deleteVideos.add(localVideo);
-                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以删除文件.........." + localVideo.adVideoName);
+                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以将.........." + localVideo.adVideoName + " 文件加入删除列表");
                 }
             }
         } else {
