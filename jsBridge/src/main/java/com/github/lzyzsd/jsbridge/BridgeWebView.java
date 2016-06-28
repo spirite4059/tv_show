@@ -61,8 +61,6 @@ public class BridgeWebView extends WebView implements WebViewJavascriptBridge {
        this.defaultHandler = handler;
 	}
 
-	private BridgeWebViewClient bridgeWebViewClient;
-
     private void init() {
 		this.setVerticalScrollBarEnabled(false);
 		this.setHorizontalScrollBarEnabled(false);
@@ -70,15 +68,12 @@ public class BridgeWebView extends WebView implements WebViewJavascriptBridge {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             WebView.setWebContentsDebuggingEnabled(true);
         }
-		this.setWebViewClient(getBridgeWebViewClient());
+		this.setWebViewClient(generateBridgeWebViewClient());
 	}
 
-	public BridgeWebViewClient getBridgeWebViewClient() {
-		if(bridgeWebViewClient == null){
-			bridgeWebViewClient = new BridgeWebViewClient(this);
-		}
-		return bridgeWebViewClient;
-	}
+    protected BridgeWebViewClient generateBridgeWebViewClient() {
+        return new BridgeWebViewClient(this);
+    }
 
 	void handlerReturnData(String url) {
 		String functionName = BridgeUtil.getFunctionFromReturnUrl(url);
