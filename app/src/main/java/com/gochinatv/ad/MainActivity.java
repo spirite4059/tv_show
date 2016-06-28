@@ -13,8 +13,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -340,12 +338,6 @@ public class MainActivity extends BaseActivity {
             mPushAgent.disable();
         }
 
-        if(webViewHandler != null && webViewRunnable != null){
-            webViewHandler.removeCallbacks(webViewRunnable);
-        }
-
-
-
         super.onStop();
     }
 
@@ -530,47 +522,8 @@ public class MainActivity extends BaseActivity {
     /**
      *
      */
-    private Handler webViewHandler;
-    private int webViewInterval = 3*60*1000;//默认3分钟
-    private WebViewRunnable webViewRunnable;
-    private class WebViewRunnable implements Runnable{
-        @Override
-        public void run() {
-            if(adWebView != null){
-                LogCat.e("MainActivity","互动网页加载失败，继续尝试");
-                adWebView.init();
-                //adWebView.setVisibility(View.VISIBLE);
-            }
-        }
-    }
-
 
     private void initWebView(ADDeviceDataResponse adDeviceDataResponse, int i) {
-        if(adWebView != null){
-            adWebView.setWebViewClient( new WebViewClient(){
-
-                @Override
-                public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                    return super.shouldOverrideUrlLoading(view, url);
-                }
-
-                @Override
-                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                    super.onReceivedError(view, errorCode, description, failingUrl);
-                    LogCat.e("MainActivity", "webview加载失败！！！！！！！！！！！！");
-                    adWebView.setVisibility(View.GONE);
-
-                    //继续加载网页
-                    if(webViewHandler == null){
-                        webViewHandler = new Handler();
-                    }
-                    if(webViewRunnable == null){
-                        webViewRunnable = new WebViewRunnable();
-                    }
-                    webViewHandler.postDelayed(webViewRunnable,webViewInterval);
-                }
-            });
-        }
 
         adWebView.setLayoutResponse(adDeviceDataResponse.layout.get(i));
         adWebView.setLayoutResponses(adDeviceDataResponse.layout);
@@ -578,22 +531,6 @@ public class MainActivity extends BaseActivity {
         adWebView.init();
 
 
-        adWebView.setConnectJsSuccessLinister(new AdWebView.ConnectJsSuccessListener() {
-            @Override
-            public void connectJsSuccess(boolean isSuccess) {
-                if(isSuccess){
-                    adWebView.setVisibility(View.VISIBLE);
-                    LogCat.e("MainActivity","互动网页加载成功，显示网页");
-                    if(webViewHandler != null && webViewRunnable != null){
-                        webViewHandler.removeCallbacks(webViewRunnable);
-                    }
-                }else{
-//                    if(webViewHandler != null && webViewRunnable != null){
-//                        webViewHandler.postDelayed(webViewRunnable,webViewInterval);
-//                    }
-                }
-            }
-        });
     }
 
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
@@ -917,6 +854,7 @@ public class MainActivity extends BaseActivity {
         UpPushInfoService.doHttpUpPushInfo(params, new OkHttpCallBack<AdVideoListResponse>() {
             @Override
             public void onSuccess(String url, AdVideoListResponse response) {
+                LogCat.e("push", "上传token url : " + url);
                 LogCat.e("push", "上传信息成功...........");
             }
 

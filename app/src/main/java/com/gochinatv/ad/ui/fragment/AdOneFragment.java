@@ -517,7 +517,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 long second = time / 1000;
                 sendVideoDownloadTime(downloadingVideoResponse.adVideoId, downloadingVideoResponse.adVideoName, second);
                 LogCat.e("MainActivity", downloadingVideoResponse.adVideoName + " 下载的时长： " + second + " 秒");
-                DataUtils.saveToSDCard("  " + downloadingVideoResponse.adVideoName + " 完成下载的时间： " + endDownloadTime + " 毫秒" + " 总耗时：" + second);
             }
 
         }
@@ -967,7 +966,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 //记录第一次下载视频的时间
                 startDownloadTime = System.currentTimeMillis();
                 LogCat.e("MainActivity", downloadingVideoResponse.adVideoName + " 开始下载的时间： " + startDownloadTime + " 毫秒");
-                DataUtils.saveToSDCard("\n" + downloadingVideoResponse.adVideoName + " 开始下载的时间： " + startDownloadTime + " 毫秒");
 
                 download(videoUrl);
 
