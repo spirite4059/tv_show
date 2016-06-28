@@ -2,17 +2,13 @@ package com.github.lzyzsd.jsbridge;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +61,8 @@ public class BridgeWebView extends WebView implements WebViewJavascriptBridge {
        this.defaultHandler = handler;
 	}
 
+	private BridgeWebViewClient bridgeWebViewClient;
+
     private void init() {
 		this.setVerticalScrollBarEnabled(false);
 		this.setHorizontalScrollBarEnabled(false);
@@ -72,12 +70,15 @@ public class BridgeWebView extends WebView implements WebViewJavascriptBridge {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             WebView.setWebContentsDebuggingEnabled(true);
         }
-		this.setWebViewClient(generateBridgeWebViewClient());
+		this.setWebViewClient(getBridgeWebViewClient());
 	}
 
-    protected BridgeWebViewClient generateBridgeWebViewClient() {
-        return new BridgeWebViewClient(this);
-    }
+	public BridgeWebViewClient getBridgeWebViewClient() {
+		if(bridgeWebViewClient == null){
+			bridgeWebViewClient = new BridgeWebViewClient(this);
+		}
+		return bridgeWebViewClient;
+	}
 
 	void handlerReturnData(String url) {
 		String functionName = BridgeUtil.getFunctionFromReturnUrl(url);
