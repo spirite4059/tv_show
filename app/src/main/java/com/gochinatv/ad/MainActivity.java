@@ -33,6 +33,7 @@ import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.gochinatv.ad.ui.view.AdWebView;
+import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.statistics.server.ErrorHttpServer;
 import com.gochinatv.statistics.tools.Constant;
 import com.google.gson.Gson;
@@ -57,6 +58,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -98,7 +101,11 @@ public class MainActivity extends BaseActivity {
 
     private boolean isInitNetState = true;
 
-
+    /**
+     * 每隔4个小时
+     */
+    private int intervalTime = 4 * 60 * 60 * 1000;//默认4个小时;
+    private Timer intervalTimer;//定时器
 
 
     @Override
@@ -157,9 +164,28 @@ public class MainActivity extends BaseActivity {
         //上报开机时间
         sendAPPStartTime();
 
+        intervalUpdate();
+
     }
 
-
+    /**
+     * 每4隔小时请求升级和上报开机
+     */
+    private void intervalUpdate() {
+        if(intervalTimer == null){
+            intervalTimer = new Timer();
+        }
+        intervalTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                //升级接口
+                doHttpUpdate(MainActivity.this);
+                //上报开机时间
+                sendAPPStartTime();
+                SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
+            }
+        },intervalTime,intervalTime);
+    }
 
 
     // 清空fragment的状态
@@ -340,6 +366,10 @@ public class MainActivity extends BaseActivity {
 
         if(adWebView != null){
             adWebView.cancelReloadRunnable();
+        }
+
+        if(intervalTimer != null){
+            intervalTimer.cancel();
         }
 
         super.onStop();
@@ -561,6 +591,7 @@ public class MainActivity extends BaseActivity {
                 //当fragment没有创建时，才创建
                 fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
                 if (adDeviceDataResponse.pollInterval > 0) {
+                    intervalTime = (int)adDeviceDataResponse.pollInterval;
                     fragment.setHttpIntervalTime((int)adDeviceDataResponse.pollInterval);
                 }
                 ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
@@ -589,6 +620,7 @@ public class MainActivity extends BaseActivity {
         }
         //截屏的参数
         if (adDeviceDataResponse.pollInterval > 0) {
+            intervalTime = (int)adDeviceDataResponse.pollInterval;
             fragment.setPollInterval(adDeviceDataResponse.pollInterval);
         }
     }
@@ -608,6 +640,7 @@ public class MainActivity extends BaseActivity {
         }
         //截屏的参数
         if (adDeviceDataResponse.pollInterval > 0) {
+            intervalTime = (int)adDeviceDataResponse.pollInterval;
             fragment.setPollInterval(adDeviceDataResponse.pollInterval);
         }
 
