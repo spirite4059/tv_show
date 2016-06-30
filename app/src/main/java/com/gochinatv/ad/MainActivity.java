@@ -338,6 +338,10 @@ public class MainActivity extends BaseActivity {
             mPushAgent.disable();
         }
 
+        if(adWebView != null){
+            adWebView.cancelReloadRunnable();
+        }
+
         super.onStop();
     }
 

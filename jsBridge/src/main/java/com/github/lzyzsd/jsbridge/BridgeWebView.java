@@ -71,8 +71,13 @@ public class BridgeWebView extends WebView implements WebViewJavascriptBridge {
 		this.setWebViewClient(generateBridgeWebViewClient());
 	}
 
-    protected BridgeWebViewClient generateBridgeWebViewClient() {
-        return new BridgeWebViewClient(this);
+	private BridgeWebViewClient bridgeWebViewClient;
+
+    public BridgeWebViewClient generateBridgeWebViewClient() {
+		if(bridgeWebViewClient == null ){
+			bridgeWebViewClient = new BridgeWebViewClient(this);
+		}
+        return bridgeWebViewClient;
     }
 
 	void handlerReturnData(String url) {
@@ -222,4 +227,14 @@ public class BridgeWebView extends WebView implements WebViewJavascriptBridge {
 	public void callHandler(String handlerName, String data, CallBackFunction callBack) {
         doSend(handlerName, data, callBack);
 	}
+
+	/**
+	 *取消了URL的重新加载
+	 */
+	public void cancelReloadRunnable(){
+		if(bridgeWebViewClient != null){
+			bridgeWebViewClient.cancelRunnable();
+		}
+	}
+
 }

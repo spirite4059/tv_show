@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.webkit.WebChromeClient;
 import android.widget.RelativeLayout;
 
@@ -97,6 +98,11 @@ public class AdWebView extends BridgeWebView {
                 String layoutCmd = layoutJsStr(layoutResponses);
                 LogCat.e("push", "layoutJsStr(layoutResponses) = " + layoutCmd);
                 function.onCallBack(layoutCmd);
+
+                //此时网页加载成功,显示webview
+                Log.e("BridgeWebView","URL加载成功！！！！");
+                setVisibility(VISIBLE);
+                cancelReloadRunnable();
             }
         });
     }
@@ -118,8 +124,8 @@ public class AdWebView extends BridgeWebView {
     }
 
     public void loadUrl(){
-        //loadUrl("http://192.168.3.129:8083/android");
-        loadUrl("http://interact.gochinatv.com/android");
+        loadUrl("http://192.168.3.129:8083/android");
+        //loadUrl("http://interact.gochinatv.com/android");
     }
 
 
@@ -152,6 +158,9 @@ public class AdWebView extends BridgeWebView {
     }
 
 
+    /**
+     *
+     */
 
 
 }
