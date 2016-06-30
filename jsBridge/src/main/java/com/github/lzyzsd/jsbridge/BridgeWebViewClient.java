@@ -16,7 +16,7 @@ public class BridgeWebViewClient extends WebViewClient {
     private BridgeWebView webView;
 
     //private Handler reloadHandler;
-    private RelaodRunnable relaodRunnable;
+    private ReloadRunnable reloadRunnable;
     private int interval = 3*60*1000;//默认3分钟
 
     public BridgeWebViewClient(BridgeWebView webView) {
@@ -74,16 +74,16 @@ public class BridgeWebViewClient extends WebViewClient {
 //        if(reloadHandler == null){
 //            reloadHandler = new Handler();
 //        }
-        if(relaodRunnable == null){
-            relaodRunnable = new RelaodRunnable();
+        if(reloadRunnable == null){
+            reloadRunnable = new ReloadRunnable();
         }
-        if(webView != null && relaodRunnable != null){
-            webView.postDelayed(relaodRunnable,interval);
+        if(webView != null && reloadRunnable != null){
+            webView.postDelayed(reloadRunnable,interval);
         }
         super.onReceivedError(view, errorCode, description, failingUrl);
     }
 
-    private class  RelaodRunnable implements Runnable{
+    private class  ReloadRunnable implements Runnable{
         @Override
         public void run() {
             if(webView != null){
@@ -97,9 +97,9 @@ public class BridgeWebViewClient extends WebViewClient {
      * 取消重新加载
      */
     public void cancelRunnable(){
-        if(webView != null && relaodRunnable != null){
+        if(webView != null && reloadRunnable != null){
             Log.e("BridgeWebView","cancelRunnable : 取消了url的重新加载！！！");
-            webView.removeCallbacks(relaodRunnable);
+            webView.removeCallbacks(reloadRunnable);
         }
     }
 
