@@ -210,7 +210,6 @@ public class MainActivity extends BaseActivity {
                 if (adDeviceDataResponse != null) {
                     deviceId = adDeviceDataResponse.code;
                 }
-                //doHttpUpdateUserInfo(MainActivity.this, deviceId);
                 doHttpUpdateToken(MainActivity.this, deviceId,refreshedToken);
                 if(rootLayout != null && firebaseTokenRunnable != null){
                     rootLayout.removeCallbacks(firebaseTokenRunnable);
@@ -218,6 +217,8 @@ public class MainActivity extends BaseActivity {
             }else{
                 if(rootLayout != null && firebaseTokenRunnable != null){
                     rootLayout.postDelayed(firebaseTokenRunnable,2000);
+                }else{
+                    LogCat.e("service", "再次获取refreshedToken失败2222222");
                 }
             }
 
@@ -237,12 +238,13 @@ public class MainActivity extends BaseActivity {
             if (adDeviceDataResponse != null) {
                 deviceId = adDeviceDataResponse.code;
             }
-            //doHttpUpdateUserInfo(MainActivity.this, deviceId);
             doHttpUpdateToken(MainActivity.this, deviceId,refreshedToken);
         }else{
             LogCat.e("service", "refreshedToken  = null");
             if(rootLayout != null && firebaseTokenRunnable != null){
                 rootLayout.postDelayed(firebaseTokenRunnable,2000);
+            }else{
+                LogCat.e("service", "再次获取refreshedToken失败1111111111");
             }
         }
 
@@ -398,8 +400,8 @@ public class MainActivity extends BaseActivity {
                 if (sharedPreference != null) {
                     sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, true);
                 }
-                initPush(mac);//友盟
-                //initGetuiPush();//个推
+                //initPush(mac);//友盟
+                initFirebaseMessage();//firebase推送
             } else {
                 if (sharedPreference != null) {
                     sharedPreference.saveDate(Constants.SHARE_KEY_UMENG, false);
@@ -1224,6 +1226,31 @@ public class MainActivity extends BaseActivity {
             textSpeedInfo.setVisibility(View.GONE);
         }
     }
+    }
+
+
+    /**
+     *
+     * @param context
+     * @param deviceId
+     */
+    private static void doHttpUpdateToken(Context context, String deviceId,String token) {
+        Map<String, String> params = new HashMap<>();
+        params.put("mac", MacUtils.getMacAddress(context));
+        params.put("deviceId", deviceId);
+        params.put("token", token);
+//        LogCat.e("push", "上传信息成功...........deviceId： " + deviceId);
+        UpPushInfoService.doHttpUpPushInfo(params, new OkHttpCallBack<AdVideoListResponse>() {
+            @Override
+            public void onSuccess(String url, AdVideoListResponse response) {
+                LogCat.e("push", "上传信息成功...........");
+            }
+
+            @Override
+            public void onError(String url, String errorMsg) {
+                LogCat.e("push", "上传信息失败...........");
+            }
+        });
     }
 
 }
