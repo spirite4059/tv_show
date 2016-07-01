@@ -26,7 +26,6 @@ import com.gochinatv.ad.cmd.ICommend;
 import com.gochinatv.ad.cmd.Invoker;
 import com.gochinatv.ad.cmd.OpenCommend;
 import com.gochinatv.ad.receiver.FirebaseMessageReceiver;
-import com.gochinatv.ad.tools.AlertUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
@@ -172,7 +171,6 @@ public class MainActivity extends BaseActivity {
         sendAPPStartTime();
 
         intervalUpdate();
-
     }
 
 
@@ -216,15 +214,14 @@ public class MainActivity extends BaseActivity {
                 }
             }else{
                 if(rootLayout != null && firebaseTokenRunnable != null){
+                    LogCat.e("service", "再次获取refreshedToken！！！");
                     rootLayout.postDelayed(firebaseTokenRunnable,2000);
                 }else{
                     LogCat.e("service", "再次获取refreshedToken失败2222222");
                 }
             }
-
         }
     };
-
 
     /**
      * 获取firebase-token并上传服务器
@@ -242,6 +239,7 @@ public class MainActivity extends BaseActivity {
         }else{
             LogCat.e("service", "refreshedToken  = null");
             if(rootLayout != null && firebaseTokenRunnable != null){
+                LogCat.e("service", "再次获取refreshedToken！！！");
                 rootLayout.postDelayed(firebaseTokenRunnable,2000);
             }else{
                 LogCat.e("service", "再次获取refreshedToken失败1111111111");
@@ -275,8 +273,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void sendFirebaseMessage(String msg) {
                 if(!TextUtils.isEmpty(msg)){
-                    //DataUtils.saveToSDCard("\n" + "来自firebase的消息： "+ msg +" ---- "+ DataUtils.getFormatTime(System.currentTimeMillis()));
-                    AlertUtils.alert(MainActivity.this,"来自firebase的消息："+msg);
+                    DataUtils.saveToSDCard("\n" + "来自firebase的消息： "+ msg +" ---- "+ DataUtils.getFormatTime(System.currentTimeMillis()));
                     LogCat.e("push", "commend -> json: " + msg);
                     LogCat.e("Message", "google-firebase的消息: " + msg);
                     dispatchCommend(msg);
