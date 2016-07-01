@@ -517,7 +517,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         }
 
-
         // 继续进行下载任务
         prepareDownloading();
         // 还原状态
@@ -556,7 +555,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             });
         }
     }
-
+    String speed;
     public void showNetSpeed(final boolean isHasNet, final boolean isDownloadingAPK, final long progress) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
@@ -575,7 +574,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     }
 
                     long current = progress - oldProgress;
-                    String speed;
+
                     if (current >= 0 && current < 1024) {
                         speed = current + "B/s";
                     } else if (current >= 1024 && current < K_SIZE) {
@@ -587,14 +586,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     if (current > 0) {
                         String msg = null;
                         if (isDownloadingAPK) {
-                            msg = "wifi:on-" + speed + "-upgrading";
+                           msg = "wifi:on -" + speed + "-upgrading";
                         } else {
                             msg = "wifi:on-" + speed + "-downloading";
                         }
                         //tvSpeed.setText(msg);
                         setSpeedInfo(msg);
-                        // 下载设备网速
-                        UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_NET_SPEED, speed);
+
                     }
                     oldProgress = progress;
                 }
@@ -684,6 +682,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //                screenShotUtils.setScreenShotPolicy(new SystemScreenShotPolicy());
 //                screenShotUtils.setScreenShotPolicy(new FullScreenPolicy(getActivity()));
                 screenShotUtils.screenShot(getActivity(), videoAdBean, currentPosition, screenShotResponse);
+
+                // 下载设备网速
+                if(!TextUtils.isEmpty(speed)){
+                    UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_NET_SPEED, speed);
+                }
+
 
                 // 下载设备网速
                 UmengUtils.onEvent(getActivity(), UmengUtils.UMENG_SCREEN_SHOT, videoAdBean.adVideoName + " 截图时间：" + VideoAdUtils.computeTime(currentPosition));

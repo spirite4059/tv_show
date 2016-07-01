@@ -64,7 +64,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile project(':dlutils')
     compile project(':db')
@@ -73,9 +73,9 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.jakewharton:butterknife:8.0.1'
     compile project(path: ':library')
-    compile project(':PushSDK')
     compile project(':jsBridge')
     compile 'com.google.firebase:firebase-messaging:9.0.2'
+    compile project(':PushSDK')
 }
 
 apply plugin: 'com.google.gms.google-services'

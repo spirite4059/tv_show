@@ -50,13 +50,8 @@ import com.okhtttp.response.UpdateResponse;
 import com.okhtttp.service.UpPushInfoService;
 import com.tools.MacUtils;
 import com.umeng.analytics.MobclickAgent;
-import com.umeng.message.PushAgent;
-import com.umeng.message.UmengMessageHandler;
-import com.umeng.message.UmengRegistrar;
-import com.umeng.message.entity.UMessage;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +76,7 @@ public class MainActivity extends BaseActivity {
 
     //下载apk尝试的次数
     private int reTryTimes;
-    private PushAgent mPushAgent;
+//    private PushAgent mPushAgent;
 
     private MyHandler myHandler;
     private AdWebView adWebView;
@@ -171,6 +166,12 @@ public class MainActivity extends BaseActivity {
         sendAPPStartTime();
 
         intervalUpdate();
+        if (DataUtils.isNetworkConnected(this)) {
+            textSpeedInfo.setText("wifi:on");
+        } else {
+            LogCat.e("net", "off..............");
+            textSpeedInfo.setText("wifi:off");
+        }
     }
 
 
@@ -178,7 +179,7 @@ public class MainActivity extends BaseActivity {
      * 每4隔小时请求升级和上报开机
      */
     private void intervalUpdate() {
-        if(intervalTimer == null){
+        if (intervalTimer == null) {
             intervalTimer = new Timer();
         }
         intervalTimer.schedule(new TimerTask() {
@@ -190,7 +191,7 @@ public class MainActivity extends BaseActivity {
                 sendAPPStartTime();
                 SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
             }
-        },intervalTime,intervalTime);
+        }, intervalTime, intervalTime);
     }
 
 
@@ -286,36 +287,38 @@ public class MainActivity extends BaseActivity {
 
 
     private static String pushToken;
+
     /**
      * 友盟推送
+     *
      * @param mac
      */
     private void initPush(String mac) {
-        mPushAgent = PushAgent.getInstance(this);
-        LogCat.e("device_token", "start............");
-        mPushAgent.enable();
-        mPushAgent.onAppStart();
-        mPushAgent.setMessageChannel(mac);
-        mPushAgent.setDebugMode(false);
-
-        myHandler = new MyHandler(this);
-        myHandler.sendEmptyMessage(HANDLER_MSG_GET_TOKEN);
-        myHandler.setAdDeviceDataResponse(adDeviceDataResponse);
-
-        mPushAgent.setMessageHandler(new UmengMessageHandler() {
-
-            @Override
-            public void dealWithCustomMessage(Context context, UMessage uMessage) {
-                super.dealWithCustomMessage(context, uMessage);
-                LogCat.e("push: " + uMessage.custom);
-                if (TextUtils.isEmpty(uMessage.custom)) {
-                    LogCat.e("push...........收到的命令为null");
-                    return;
-                }
-                LogCat.e("push", "commend -> json: " + uMessage.custom);
-                dispatchCommend(uMessage.custom);
-            }
-        });
+//        mPushAgent = PushAgent.getInstance(this);
+//        LogCat.e("device_token", "start............");
+//        mPushAgent.enable();
+//        mPushAgent.onAppStart();
+//        mPushAgent.setMessageChannel(mac);
+//        mPushAgent.setDebugMode(false);
+//
+//        myHandler = new MyHandler(this);
+//        myHandler.sendEmptyMessage(HANDLER_MSG_GET_TOKEN);
+//        myHandler.setAdDeviceDataResponse(adDeviceDataResponse);
+//
+//        mPushAgent.setMessageHandler(new UmengMessageHandler() {
+//
+//            @Override
+//            public void dealWithCustomMessage(Context context, UMessage uMessage) {
+//                super.dealWithCustomMessage(context, uMessage);
+//                LogCat.e("push: " + uMessage.custom);
+//                if (TextUtils.isEmpty(uMessage.custom)) {
+//                    LogCat.e("push...........收到的命令为null");
+//                    return;
+//                }
+//                LogCat.e("push", "commend -> json: " + uMessage.custom);
+//                dispatchCommend(uMessage.custom);
+//            }
+//        });
     }
 
     private void dispatchCommend(String uMessage) {
@@ -383,6 +386,7 @@ public class MainActivity extends BaseActivity {
         if (isFinishing()) {
             return;
         }
+
         if (DataUtils.isNetworkConnected(this)) {
             // 先去请求服务器，查看视频列表
             String mac = DataUtils.getMacAddress(MainActivity.this);
@@ -447,15 +451,15 @@ public class MainActivity extends BaseActivity {
         if (myHandler != null) {
             myHandler = null;
         }
-        if (mPushAgent != null) {
-            mPushAgent.disable();
-        }
+//        if (mPushAgent != null) {
+//            mPushAgent.disable();
+//        }
 
-        if(adWebView != null){
+        if (adWebView != null) {
             adWebView.cancelReloadRunnable();
         }
 
-        if(intervalTimer != null){
+        if (intervalTimer != null) {
             intervalTimer.cancel();
         }
 
@@ -560,7 +564,7 @@ public class MainActivity extends BaseActivity {
             showTitleLayout(adDeviceDataResponse.code);
         }
 
-        if(adDeviceDataResponse == null){
+        if (adDeviceDataResponse == null) {
             //如果布局数据为空，就手动创造数据
             adDeviceDataResponse = createDeviceDataResponse();
         }
@@ -582,7 +586,7 @@ public class MainActivity extends BaseActivity {
                     } else {
                         initAdFragment(isDownload, adDeviceDataResponse, fm, i, type);
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -592,13 +596,14 @@ public class MainActivity extends BaseActivity {
 
     /**
      * 手动创建布局参数
+     *
      * @return ADDeviceDataResponse
      */
     private ADDeviceDataResponse createDeviceDataResponse() {
         ADDeviceDataResponse adDeviceDataResponse = new ADDeviceDataResponse();
-        adDeviceDataResponse.pollInterval = 4*60*60*1000;//默认4个小时
+        adDeviceDataResponse.pollInterval = 4 * 60 * 60 * 1000;//默认4个小时
         ScreenShotResponse screenShotResponse = new ScreenShotResponse();
-        screenShotResponse.screenShotInterval = 15*60*1000;//默认15分钟
+        screenShotResponse.screenShotInterval = 15 * 60 * 1000;//默认15分钟
         screenShotResponse.screenShotImgW = 320;
         screenShotResponse.screenShotImgH = 180;
         adDeviceDataResponse.screenShot = screenShotResponse;
@@ -667,33 +672,33 @@ public class MainActivity extends BaseActivity {
     private void initAdFragment(boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, FragmentManager fm, int i, int type) {
         FragmentTransaction ft = fm.beginTransaction();
         BaseFragment fragment = BaseFragment.getInstance(type);
-        if(type == 1){
+        if (type == 1) {
             AdOneFragment adOneFragment = (AdOneFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + 1);
-            if(adOneFragment == null){
+            if (adOneFragment == null) {
                 //广告一没有创建
                 //BaseFragment fragment = BaseFragment.getInstance(type);
                 initAdOne((AdOneFragment) fragment, isDownload, adDeviceDataResponse);
                 fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
                 ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
                 ft.commit();
-            }else{
+            } else {
                 //广告一已经创建
-                initAdOneLayout(adOneFragment, isDownload, adDeviceDataResponse,i);
+                initAdOneLayout(adOneFragment, isDownload, adDeviceDataResponse, i);
 
             }
-        }else{
+        } else {
             // 添加布局参数
             BaseFragment baseFragment = (BaseFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + type);
-            if(baseFragment == null){
+            if (baseFragment == null) {
                 //当fragment没有创建时，才创建
                 fragment.setLayoutResponse(adDeviceDataResponse.layout.get(i));
                 if (adDeviceDataResponse.pollInterval > 0) {
-                    intervalTime = (int)adDeviceDataResponse.pollInterval;
-                    fragment.setHttpIntervalTime((int)adDeviceDataResponse.pollInterval);
+                    intervalTime = (int) adDeviceDataResponse.pollInterval;
+                    fragment.setHttpIntervalTime((int) adDeviceDataResponse.pollInterval);
                 }
                 ft.add(R.id.root_main, fragment, Constants.FRAGMENT_TAG_PRE + type);
                 ft.commit();
-            }else {
+            } else {
                 //如果fragment已经创建了就重新请求数据
                 baseFragment.doHttpRequest();
             }
@@ -717,13 +722,13 @@ public class MainActivity extends BaseActivity {
         }
         //截屏的参数
         if (adDeviceDataResponse.pollInterval > 0) {
-            intervalTime = (int)adDeviceDataResponse.pollInterval;
+            intervalTime = (int) adDeviceDataResponse.pollInterval;
             fragment.setPollInterval(adDeviceDataResponse.pollInterval);
         }
     }
 
 
-    private void initAdOneLayout(AdOneFragment fragment, boolean isDownload, ADDeviceDataResponse adDeviceDataResponse,int i) {
+    private void initAdOneLayout(AdOneFragment fragment, boolean isDownload, ADDeviceDataResponse adDeviceDataResponse, int i) {
         if (isDownload) {
             fragment.setIsDownloadAPK(true);
         }
@@ -737,19 +742,16 @@ public class MainActivity extends BaseActivity {
         }
         //截屏的参数
         if (adDeviceDataResponse.pollInterval > 0) {
-            intervalTime = (int)adDeviceDataResponse.pollInterval;
+            intervalTime = (int) adDeviceDataResponse.pollInterval;
             fragment.setPollInterval(adDeviceDataResponse.pollInterval);
         }
 
-        if(adDeviceDataResponse.layout != null){
+        if (adDeviceDataResponse.layout != null) {
             fragment.intLayoutParams(adDeviceDataResponse.layout.get(i));
         }
 
 
     }
-
-
-
 
 
     @Override
@@ -829,43 +831,40 @@ public class MainActivity extends BaseActivity {
                 if (isFinishing()) {
                     return;
                 }
+
                 //Toast.makeText(MainActivity.this,"11111111111111 网络监听",Toast.LENGTH_LONG).show();
-                if(isDoGetDevice){
+                if (isDoGetDevice) {
                     isDoGetDevice = true;
                     //loading页面接口请求
-                    if(isInitNetState){
+                    if (isInitNetState) {
                         isInitNetState = false;
                         //Toast.makeText(MainActivity.this,"22222222222222222 屏蔽第一次",Toast.LENGTH_LONG).show();
                         return;
                     }
-                    if (hasNetwork) {
-                        //Toast.makeText(MainActivity.this,"33333333333333333333 网络连接上 再次请求",Toast.LENGTH_LONG).show();
-                        //当有网络时执行
-                        reLoadHttpRequest();
-                        //请求升级接口
-                        doHttpUpdate(MainActivity.this);
-                    } else {
-                        //Toast.makeText(MainActivity.this,"444444444444444444444 无网络",Toast.LENGTH_LONG).show();
-                        // 显示当前的网络状态
-                        AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                        if (adOneFragment != null) {
-                            adOneFragment.showNetSpeed(false, false, 0);
-                        }
-                    }
-                }else{
-                    //loading没有请求成功
-                    if(hasNetwork){
-                        //Toast.makeText(MainActivity.this,"5555555555555555 有网络再次请求",Toast.LENGTH_LONG).show();
-                        //当有网络时执行
-                        reLoadHttpRequest();
-                        //请求升级接口
-                        doHttpUpdate(MainActivity.this);
-                    }else{
-                        // 显示当前的网络状态
-                        AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                        if (adOneFragment != null) {
-                            adOneFragment.showNetSpeed(false, false, 0);
-                        }
+                    showNetStatus(hasNetwork);
+                } else {
+                    showNetStatus(hasNetwork);
+                }
+            }
+
+            private void showNetStatus(boolean hasNetwork) {
+                //loading没有请求成功
+                if (hasNetwork) {
+                    //Toast.makeText(MainActivity.this,"5555555555555555 有网络再次请求",Toast.LENGTH_LONG).show();
+                    //当有网络时执行
+                    reLoadHttpRequest();
+                    //请求升级接口
+                    doHttpUpdate(MainActivity.this);
+
+                    textSpeedInfo.setText("wifi:on");
+                } else {
+                    // 显示当前的网络状态
+                    textSpeedInfo.setText("wifi:off");
+                    LogCat.e("net", "networkChange    off..............");
+                    final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+                    if (adOneFragment != null) {
+                        //停止下载视频
+                        DLUtils.cancel();
                     }
                 }
             }
@@ -963,20 +962,20 @@ public class MainActivity extends BaseActivity {
                     doHttpUpdateUserInfo(context, deviceId);
                     break;
                 case HANDLER_MSG_GET_TOKEN:
-                    if(((Activity)context).isFinishing()){
+                    if (((Activity) context).isFinishing()) {
                         return;
                     }
-                    pushToken = getPushToken(context);
+//                    pushToken = getPushToken(context);
                     sendEmptyMessageDelayed(HANDLER_MSG_TOKEN, 2000);
                     break;
             }
         }
     }
 
-    private static String getPushToken(Context context) {
-        LogCat.e("push", "请求token............");
-        return UmengRegistrar.getRegistrationId(context);
-    }
+//    private static String getPushToken(Context context) {
+//        LogCat.e("push", "请求token............");
+//        return UmengRegistrar.getRegistrationId(context);
+//    }
 
     private static void doHttpUpdateUserInfo(Context context, String deviceId) {
         Map<String, String> params = new HashMap<>();
@@ -1007,7 +1006,7 @@ public class MainActivity extends BaseActivity {
         }
 
         final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-        if(adOneFragment != null){
+        if (adOneFragment != null) {
             //停止下载视频
             DLUtils.cancel();
         }
@@ -1042,37 +1041,41 @@ public class MainActivity extends BaseActivity {
         //下载进度监听
         downLoadAPKUtils.setOnDownLoadProgressListener(new DownLoadAPKUtils.OnDownLoadProgressListener() {
 
-            private String logProgress(long progress, long fileLength) {
-                if (fileLength == 0) {
-                    return "";
-                }
-                double size = (int) (progress / 1024);
-                String sizeStr;
-                int s = (int) (progress * 100 / fileLength);
-                if (size > 1000) {
-                    size = (progress / 1024) / 1024f;
-                    BigDecimal b = new BigDecimal(size);
-                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
-                    sizeStr = String.valueOf(f1 + "MB，  ");
-                } else {
-                    sizeStr = String.valueOf((int) size + "KB，  ");
-                }
-                return (sizeStr + s + "%");
-            }
+            private int oldProgress;
+            private final int K_SIZE = 1024 * 1024;
 
             @Override
             public void onDownLoadProgress(int progress, long fileSize, String fileName) {
+                showNetSpeed(progress);
+            }
+
+            private void showNetSpeed(int progress) {
                 try {
-                    LogCat.e("upgrading", logProgress(progress, fileSize));
-                }catch (Exception e){
+                    if (oldProgress <= 0) {
+                        oldProgress = progress;
+                        return;
+                    }
+                    long current = progress - oldProgress;
+                    String speed;
+                    if (current >= 0 && current < 1024) {
+                        speed = current + "B/s";
+                    } else if (current >= 1024 && current < K_SIZE) {
+                        speed = current / 1024 + "KB/s";
+                    } else {
+                        speed = current / K_SIZE + "MB/s";
+                    }
+                    LogCat.e("net_speed", "speed: " + speed);
+                    if (current > 0) {
+                        String msg = "wifi:on -" + speed + "-upgrading";
+
+                        textSpeedInfo.setText(msg);
+                        //tvSpeed.setText(msg);
+//                        setSpeedInfo(msg);
+                        // 下载设备网速
+                    }
+                    oldProgress = progress;
+                } catch (Exception e) {
                     e.printStackTrace();
-                }
-
-
-
-                AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                if (adOneFragment != null) {
-                    adOneFragment.showNetSpeed(true, true, progress);
                 }
             }
         });
@@ -1085,9 +1088,6 @@ public class MainActivity extends BaseActivity {
                 LogCat.e("APKdownload", "下载升级成功，开始正式升级.......");
                 File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                 InstallUtils.installAuto(MainActivity.this, file, true);
-                if (adOneFragment != null) {
-                    //adOneFragment.hideNetSpeed();
-                }
             }
         });
 
@@ -1101,6 +1101,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private int retryUpgradeTimes;
+
     @Override
     protected void onUpdateSuccess(UpdateResponse response) {
         super.onUpdateSuccess(response);
@@ -1139,7 +1140,7 @@ public class MainActivity extends BaseActivity {
                     // 下载最新安装包，下载完成后，提示安装
                     LogCat.e("需要升级。。。。。");
                     // 去下载当前的apk
-                    if(!TextUtils.isEmpty(updateInfo.fileUrl)){
+                    if (!TextUtils.isEmpty(updateInfo.fileUrl)) {
                         downloadAPKNew(updateInfo.fileUrl);
                     }
 
@@ -1178,51 +1179,52 @@ public class MainActivity extends BaseActivity {
     /**
      * 上报开始时间
      */
-    private void sendAPPStartTime(){
-        if(!TextUtils.isEmpty(DataUtils.getMacAddress(this)) && DataUtils.isNetworkConnected(this)){
-            String msg  ="{\"time\""+":}";
+    private void sendAPPStartTime() {
+        if (!TextUtils.isEmpty(DataUtils.getMacAddress(this)) && DataUtils.isNetworkConnected(this)) {
+            String msg = "{\"time\"" + ":}";
             ErrorHttpServer.doStatisticsHttp(this, Constant.APP_START_TIME, msg, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
-                    LogCat.e("MainActivity","上传开机时间成功");
+                    LogCat.e("MainActivity", "上传开机时间成功");
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
-                    LogCat.e("MainActivity","上传开机时间失败");
+                    LogCat.e("MainActivity", "上传开机时间失败");
                 }
             });
         }
     }
 
     /**
-     *  设置下载信息
+     * 设置下载信息
+     *
      * @param info
      */
-    public void setDownloadInfo(String info){
-        if(!TextUtils.isEmpty(info) && textDownloadInfo != null){
+    public void setDownloadInfo(String info) {
+        if (!TextUtils.isEmpty(info) && textDownloadInfo != null) {
             textDownloadInfo.setVisibility(View.VISIBLE);
             textDownloadInfo.setText(info);
-        }else{
-            if(textDownloadInfo != null){
+        } else {
+            if (textDownloadInfo != null) {
                 textDownloadInfo.setVisibility(View.GONE);
             }
         }
     }
 
     /**
-     *  设置下载速度
+     * 设置下载速度
+     *
      * @param info
      */
-    public void setSpeedInfo(String info){
-        if(!TextUtils.isEmpty(info) && textSpeedInfo != null){
-            textSpeedInfo.setVisibility(View.VISIBLE);
+    public void setSpeedInfo(String info) {
+        if (!TextUtils.isEmpty(info)) {
+            if (View.VISIBLE != textSpeedInfo.getVisibility()) {
+                textSpeedInfo.setVisibility(View.VISIBLE);
+            }
+            LogCat.e("net","show msg " + info);
             textSpeedInfo.setText(info);
-        }else{
-        if(textSpeedInfo != null){
-            textSpeedInfo.setVisibility(View.GONE);
         }
-    }
     }
 
 
