@@ -25,6 +25,8 @@ import com.gochinatv.ad.cmd.FreshCommend;
 import com.gochinatv.ad.cmd.ICommend;
 import com.gochinatv.ad.cmd.Invoker;
 import com.gochinatv.ad.cmd.OpenCommend;
+import com.gochinatv.ad.receiver.FirebaseMessageReceiver;
+import com.gochinatv.ad.tools.AlertUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
@@ -36,6 +38,7 @@ import com.gochinatv.ad.ui.view.AdWebView;
 import com.gochinatv.statistics.SendStatisticsLog;
 import com.gochinatv.statistics.server.ErrorHttpServer;
 import com.gochinatv.statistics.tools.Constant;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADDeviceDataResponse;
@@ -107,6 +110,8 @@ public class MainActivity extends BaseActivity {
     private int intervalTime = 4 * 60 * 60 * 1000;//默认4个小时;
     private Timer intervalTimer;//定时器
 
+    //firebase消息广播
+    private FirebaseMessageReceiver firebaseMessageReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,6 +165,8 @@ public class MainActivity extends BaseActivity {
 
         loadFragment(hasApkDownload, adDeviceDataResponse);
 
+        //得到firebase-token
+        refreshGetFirebaseToken();
 
         //上报开机时间
         sendAPPStartTime();
@@ -167,6 +174,7 @@ public class MainActivity extends BaseActivity {
         intervalUpdate();
 
     }
+
 
     /**
      * 每4隔小时请求升级和上报开机
@@ -188,6 +196,61 @@ public class MainActivity extends BaseActivity {
     }
 
 
+    /**
+     *  获取token的
+     */
+    private Runnable firebaseTokenRunnable = new Runnable() {
+        @Override
+        public void run() {
+            String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+            if(!TextUtils.isEmpty(refreshedToken)){
+                LogCat.e("service", "refreshedToken : "+ refreshedToken);
+                //上传refreshedToken
+                String deviceId = null;
+                if (adDeviceDataResponse != null) {
+                    deviceId = adDeviceDataResponse.code;
+                }
+                //doHttpUpdateUserInfo(MainActivity.this, deviceId);
+                doHttpUpdateToken(MainActivity.this, deviceId,refreshedToken);
+                if(rootLayout != null && firebaseTokenRunnable != null){
+                    rootLayout.removeCallbacks(firebaseTokenRunnable);
+                }
+            }else{
+                if(rootLayout != null && firebaseTokenRunnable != null){
+                    rootLayout.postDelayed(firebaseTokenRunnable,2000);
+                }
+            }
+
+        }
+    };
+
+
+    /**
+     * 获取firebase-token并上传服务器
+     */
+    private void refreshGetFirebaseToken(){
+        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        if(!TextUtils.isEmpty(refreshedToken)){
+            LogCat.e("service", "refreshedToken : "+ refreshedToken);
+            //上传refreshedToken
+            String deviceId = null;
+            if (adDeviceDataResponse != null) {
+                deviceId = adDeviceDataResponse.code;
+            }
+            //doHttpUpdateUserInfo(MainActivity.this, deviceId);
+            doHttpUpdateToken(MainActivity.this, deviceId,refreshedToken);
+        }else{
+            LogCat.e("service", "refreshedToken  = null");
+            if(rootLayout != null && firebaseTokenRunnable != null){
+                rootLayout.postDelayed(firebaseTokenRunnable,2000);
+            }
+        }
+
+    }
+
+
+
+
     // 清空fragment的状态
     private void cleanFragmentState(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
@@ -196,6 +259,31 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+
+
+    /**
+     * google-firebase推送
+     */
+    private void initFirebaseMessage(){
+        firebaseMessageReceiver =new FirebaseMessageReceiver();
+        IntentFilter intentFilter = new IntentFilter(Constants.FIREBASE_INTENT_FILTER);
+        registerReceiver(firebaseMessageReceiver,intentFilter);
+
+        firebaseMessageReceiver.setFirebaseMessageListener(new FirebaseMessageReceiver.FirebaseMessageListener() {
+            @Override
+            public void sendFirebaseMessage(String msg) {
+                if(!TextUtils.isEmpty(msg)){
+                    //DataUtils.saveToSDCard("\n" + "来自firebase的消息： "+ msg +" ---- "+ DataUtils.getFormatTime(System.currentTimeMillis()));
+                    AlertUtils.alert(MainActivity.this,"来自firebase的消息："+msg);
+                    LogCat.e("push", "commend -> json: " + msg);
+                    LogCat.e("Message", "google-firebase的消息: " + msg);
+                    dispatchCommend(msg);
+                }else{
+                    LogCat.e("push...........收到的命令为null");
+                }
+            }
+        });
+    }
 
 
     private static String pushToken;
@@ -372,6 +460,11 @@ public class MainActivity extends BaseActivity {
             intervalTimer.cancel();
         }
 
+        if(rootLayout != null && firebaseTokenRunnable != null){
+            rootLayout.removeCallbacks(firebaseTokenRunnable);
+        }
+
+
         super.onStop();
     }
 
@@ -382,6 +475,11 @@ public class MainActivity extends BaseActivity {
         //卸载广播
         if (networkBroadcastReceiver != null) {
             unregisterReceiver(networkBroadcastReceiver);
+        }
+
+        //卸载firebase广播
+        if(firebaseMessageReceiver != null){
+            unregisterReceiver(firebaseMessageReceiver);
         }
     }
 

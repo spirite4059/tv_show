@@ -86,7 +86,10 @@ public class Constants {
     public static boolean isPhone = false;
 
 
-
+    /**
+     * --------------------------firebase filter -------------------------------
+     */
+    public static String FIREBASE_INTENT_FILTER = "com.gochinatv.ad.firebase.intent.filter";
 
 
 //    public static final String [] METADATA_KEYS = {
