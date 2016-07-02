@@ -1622,9 +1622,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         downloadBuilder.append('\n');
         //下载完成的个数
         int size = 0;
-        if (cachePlayVideoLists != null) {
-            size = cachePlayVideoLists.size();
-            LogCat.e("net", "cachePlayVideoLists.size："+ cachePlayVideoLists.size());
+        if (playVideoLists != null) {
+            size = playVideoLists.size();
+            LogCat.e("net", "cachePlayVideoLists.size："+ playVideoLists.size());
+        }else{
+            if(cachePlayVideoLists != null){
+                size = cachePlayVideoLists.size();
+            }
         }
         downloadBuilder.append("completed video：" + size);
         setDownlaodInfo(downloadBuilder.toString());
