@@ -98,7 +98,7 @@ public class LoadingActivity extends BaseActivity {
 //        DataUtils.hideNavigationBar(this);
 
         // 删除升级安装包
-        deleteUpdateApk();
+//        deleteUpdateApk();
 
         postHandler = new Handler();
 

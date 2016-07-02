@@ -44,7 +44,7 @@ public class DLUtils implements InDLUtils {
     }
 
 
-    public void download(boolean isToday, String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
+    public void download(String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
         if(!TextUtils.isEmpty(downloadingPath) && downloadingPath.equals(path +fileName)){
             LogCat.e("video", "正在下载当前任务则不处理......");
             return;
@@ -74,7 +74,7 @@ public class DLUtils implements InDLUtils {
             downloadThread = null;
         }
 
-        downloadThread = new DownloadPrepareThread(context, isToday, downloadUrl, threadNum, apkFile, listener);
+        downloadThread = new DownloadPrepareThread(context, downloadUrl, threadNum, apkFile, listener);
 
         // 开启当前下载任务
         downloadThread.start();

@@ -25,10 +25,12 @@ import com.gochinatv.ad.cmd.FreshCommend;
 import com.gochinatv.ad.cmd.ICommend;
 import com.gochinatv.ad.cmd.Invoker;
 import com.gochinatv.ad.cmd.OpenCommend;
+import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.ad.receiver.FirebaseMessageReceiver;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
+import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
@@ -52,6 +54,7 @@ import com.tools.MacUtils;
 import com.umeng.analytics.MobclickAgent;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -1001,23 +1004,114 @@ public class MainActivity extends BaseActivity {
 
     //private int progressTest;
     private void downloadAPKNew(final String url) {
-        if (downLoadAPKUtils == null) {
-            downLoadAPKUtils = new DownLoadAPKUtils();
-        }
-
+//        if (downLoadAPKUtils == null) {
+//            downLoadAPKUtils = new DownLoadAPKUtils();
+//        }
+//
         final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
         if (adOneFragment != null) {
             //停止下载视频
             DLUtils.cancel();
         }
+//
+//        downLoadAPKUtils.downLoad(this, url);
+//        //下载失败监听
+//        downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
+//            @Override
+//            public void onDownLoadFinish(Exception e) {
+//                //通知AdOneFragment去下载视频
+//                LogCat.e("APKdownload", "下载apk出现错误: " + e.toString());
+//                if (reTryTimes < 5) {
+//                    LogCat.e("APKdownload", "下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
+//                    reTryTimes += 1;
+//                    //延迟2秒再去下载
+//                    rootLayout.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            downloadAPKNew(url);
+//                        }
+//                    }, 2000);
+//
+//                } else {
+//                    LogCat.e("APKdownload", "下载apk出现错误,重试5次不再重试 ");
+//                    if (adOneFragment != null) {
+//                        adOneFragment.startDownloadVideo();
+//                    }
+//                }
+//            }
+//        });
+//
+//        //下载进度监听
+//        downLoadAPKUtils.setOnDownLoadProgressListener(new DownLoadAPKUtils.OnDownLoadProgressListener() {
+//
+//            private int oldProgress;
+//            private final int K_SIZE = 1024 * 1024;
+//
+//            @Override
+//            public void onDownLoadProgress(int progress, long fileSize, String fileName) {
+//                showNetSpeed(progress);
+//            }
+//            private void showNetSpeed(int progress) {
+//                try {
+//                    if (oldProgress <= 0) {
+//                        oldProgress = progress;
+//                        return;
+//                    }
+//                    long current = progress - oldProgress;
+//                    String speed;
+//                    if (current >= 0 && current < 1024) {
+//                        speed = current + "B/s";
+//                    } else if (current >= 1024 && current < K_SIZE) {
+//                        speed = current / 1024 + "KB/s";
+//                    } else {
+//                        speed = current / K_SIZE + "MB/s";
+//                    }
+//                    LogCat.e("net_speed", "speed: " + speed);
+//                    if (current > 0) {
+//                        String msg = "wifi:on -" + speed + "-upgrading";
+//
+//                        textSpeedInfo.setText(msg);
+//                        //tvSpeed.setText(msg);
+////                        setSpeedInfo(msg);
+//                        // 下载设备网速
+//                    }
+//                    oldProgress = progress;
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//        });
+//
+//        // 下载成功监听
+//        downLoadAPKUtils.setOnDownLoadFinishListener(new DownLoadAPKUtils.OnDownLoadFinishListener() {
+//            @Override
+//            public void onDownLoadFinish(String fileName) {
+//                //新包下载完成得安装
+//                LogCat.e("APKdownload", "下载升级成功，开始正式升级.......");
+//                File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
+//                InstallUtils.installAuto(MainActivity.this, file, true);
+//            }
+//        });
 
-        downLoadAPKUtils.downLoad(this, url);
-        //下载失败监听
-        downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
+
+        DownloadUtils.downloadApk(this, url, new OnUpgradeStatusListener() {
+
+            private long oldProgress;
+            private final int K_SIZE = 1024 * 1024;
+
             @Override
-            public void onDownLoadFinish(Exception e) {
+            public void onDownloadFileSuccess(String filePath) {
+                //新包下载完成得安装
+                LogCat.e("APKdownload", "下载升级成功，开始正式升级.......");
+                File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
+                InstallUtils.installAuto(MainActivity.this, file, true);
+            }
+
+            @Override
+            public void onDownloadFileError(int errorCode, String errorMsg) {
                 //通知AdOneFragment去下载视频
-                LogCat.e("APKdownload", "下载apk出现错误: " + e.toString());
+                LogCat.e("APKdownload", "下载apk出现错误: " + errorMsg);
                 if (reTryTimes < 5) {
                     LogCat.e("APKdownload", "下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
                     reTryTimes += 1;
@@ -1036,20 +1130,13 @@ public class MainActivity extends BaseActivity {
                     }
                 }
             }
-        });
-
-        //下载进度监听
-        downLoadAPKUtils.setOnDownLoadProgressListener(new DownLoadAPKUtils.OnDownLoadProgressListener() {
-
-            private int oldProgress;
-            private final int K_SIZE = 1024 * 1024;
 
             @Override
-            public void onDownLoadProgress(int progress, long fileSize, String fileName) {
-                showNetSpeed(progress);
+            public void onDownloadProgress(long progress, long size) {
+                showNetSpeed(progress, size);
             }
-
-            private void showNetSpeed(int progress) {
+            String msg;
+            private void showNetSpeed(final long progress, final long fileLength) {
                 try {
                     if (oldProgress <= 0) {
                         oldProgress = progress;
@@ -1064,30 +1151,51 @@ public class MainActivity extends BaseActivity {
                     } else {
                         speed = current / K_SIZE + "MB/s";
                     }
-                    LogCat.e("net_speed", "speed: " + speed);
-                    if (current > 0) {
-                        String msg = "wifi:on -" + speed + "-upgrading";
 
-                        textSpeedInfo.setText(msg);
-                        //tvSpeed.setText(msg);
+                    if (current > 0) {
+                        msg = "wifi-on :" + speed + "-upgrading";
+                        LogCat.e("net_speed", "speed: " + speed);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textSpeedInfo.setText(msg);
+                                String progressStr = logProgress(progress, fileLength);
+                                LogCat.e("net_speed", "progressStr: " + progressStr);
+                                textDownloadInfo.setText("upgrading: " + progressStr);
+                            }
+                        });
+
+//                        tvSpeed.setText(msg);
 //                        setSpeedInfo(msg);
                         // 下载设备网速
                     }
+
+
+
+
+
                     oldProgress = progress;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        });
 
-        // 下载成功监听
-        downLoadAPKUtils.setOnDownLoadFinishListener(new DownLoadAPKUtils.OnDownLoadFinishListener() {
-            @Override
-            public void onDownLoadFinish(String fileName) {
-                //新包下载完成得安装
-                LogCat.e("APKdownload", "下载升级成功，开始正式升级.......");
-                File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-                InstallUtils.installAuto(MainActivity.this, file, true);
+            private String logProgress(long progress, long fileLength) {
+                if (fileLength == 0) {
+                    return "";
+                }
+                double size = (int) (progress / 1024);
+                String sizeStr;
+                int s = (int) (progress * 100 / fileLength);
+                if (size > 1000) {
+                    size = (progress / 1024) / 1024f;
+                    BigDecimal b = new BigDecimal(size);
+                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    sizeStr = String.valueOf(f1 + "MB，  ");
+                } else {
+                    sizeStr = String.valueOf((int) size + "KB，  ");
+                }
+                return (sizeStr + s + "%");
             }
         });
 
