@@ -118,7 +118,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private LayoutResponse layoutResponse;
 
     private TextView tvProgress;
-    //private TextView tvSpeed;
 
     private Handler handler;
     // 接口重复刷新时间
@@ -147,7 +146,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         videoView = (MeasureVideoView) rootView.findViewById(R.id.videoView);
         loading = (LinearLayout) rootView.findViewById(R.id.loading);
         tvProgress = (TextView) rootView.findViewById(R.id.tv_progress);
-        //tvSpeed = (TextView) rootView.findViewById(R.id.tv_internet_speeds);
     }
 
     @Override
@@ -164,10 +162,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             playPresetVideo();
             return;
         }
-        // 没有网络
-        if (!DataUtils.isNetworkConnected(getActivity())) {
-            showNetSpeed(false, false, 0);
-        }
+
 
         // 1.初始化本地缓存表
         LogCat.e("video", "获取本地缓存视频列表.......");
@@ -209,6 +204,43 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         videoStatusRunnable = new VideoStatusRunnable(getActivity(), videoView, getPlayingVideoInfo(), handler);
         // 开始视频的守护线程
         handler.postDelayed(videoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
+
+        // 没有网络
+        if (!DataUtils.isNetworkConnected(getActivity())) {
+            showNetSpeed(false, false, 0);
+            //显示完成视频数量
+            showCompletedNotNetwork(true);
+        }else{
+            //有网络
+        }
+    }
+
+    /**
+     * 当无网络时显示完成视频数量
+     * @param isStartUpNotNet -- 是否是启动时无网络
+     */
+    public void showCompletedNotNetwork(boolean isStartUpNotNet) {
+        if(!isAdded()){
+            return;
+        }
+        StringBuilder downloadBuilder = new StringBuilder();
+        //下载完成的个数
+        int size = 0;
+        if(isStartUpNotNet){
+            //启动时无网络
+            if (cachePlayVideoLists != null) {
+                size = cachePlayVideoLists.size();
+                LogCat.e("net", "cachePlayVideoLists.size："+ cachePlayVideoLists.size());
+            }
+        }else{
+            //app运行中无网络
+            if(playVideoLists != null){
+                size = playVideoLists.size();
+                LogCat.e("net", "playVideoLists.size："+ playVideoLists.size());
+            }
+        }
+        downloadBuilder.append("completed video：" + size);
+        setDownlaodInfo(downloadBuilder.toString());
     }
 
 
@@ -562,8 +594,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 @Override
                 public void run() {
                     if (!isHasNet) {
-                        //tvSpeed.setText("wifi:off");
-                        setSpeedInfo("wifi:off");
+                        setSpeedInfo("wifi-off:0kb/s");
                         return;
                     }
 
@@ -586,11 +617,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     if (current > 0) {
                         String msg = null;
                         if (isDownloadingAPK) {
-                           msg = "wifi:on -" + speed + "-upgrading";
+                           msg = "wifi-on:" + speed + "-upgrading";
                         } else {
-                            msg = "wifi:on-" + speed + "-downloading";
+                            msg = "wifi-on:" + speed + "-downloading";
                         }
-                        //tvSpeed.setText(msg);
                         setSpeedInfo(msg);
 
                     }
@@ -912,6 +942,28 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
     /**
+     * 所有视频下载完成，此时的下载信息
+     */
+    private void showDownloadMsgALLDownloadCompleted(){
+        if(!isAdded()){
+            return;
+        }
+        setSpeedInfo("wifi-on:0kb/s");
+        StringBuilder downloadBuilder = new StringBuilder();
+
+        downloadBuilder.append("Completed");
+        downloadBuilder.append('\n');
+        //下载完成的个数
+        int size = 0;
+        if (playVideoLists != null) {
+            size = playVideoLists.size();
+            LogCat.e("net", "downloadLists.size："+ playVideoLists.size());
+        }
+        downloadBuilder.append("completed video：" + size);
+        setDownlaodInfo(downloadBuilder.toString());
+    }
+
+    /**
      * 下载准备工作
      */
     private void prepareDownloading() {
@@ -924,8 +976,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            //tvSpeed.setVisibility(View.GONE);
-                            setSpeedInfo("wifi:on");
+                            //显示下载完成信息
+                            showDownloadMsgALLDownloadCompleted();
                         }
                     });
                 }
@@ -1289,6 +1341,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         LogCat.e("video", "正在检测是否联网。。。。。");
         if (isAdded()) {
             if (DataUtils.isNetworkConnected(getActivity())) {
+                //接口请求完成前的下载信息
+                showBeforeRequestCompleted();
                 // 先去请求服务器，查看视频列表
                 doHttpGetVideoList();
                 LogCat.e("video", "已经联网。。。。。");
@@ -1414,6 +1468,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     @Override
     public void doHttpRequest() {
         LogCat.e("net", "doHttpRequest..........");
+        //接口请求完成前的下载信息
+        showBeforeRequestCompleted();
         doHttpGetVideoList();
     }
 
@@ -1550,6 +1606,28 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             mainActivity.setDownloadInfo(info);
         }
 
+    }
+
+    /**
+     * 当有网络，但是接口没请求完成，显示下载信息
+     */
+    private void showBeforeRequestCompleted(){
+        if(!isAdded()){
+            return;
+        }
+        setSpeedInfo("wifi-on:0kb/s");
+        StringBuilder downloadBuilder = new StringBuilder();
+
+        downloadBuilder.append("Request video list ");
+        downloadBuilder.append('\n');
+        //下载完成的个数
+        int size = 0;
+        if (cachePlayVideoLists != null) {
+            size = cachePlayVideoLists.size();
+            LogCat.e("net", "cachePlayVideoLists.size："+ cachePlayVideoLists.size());
+        }
+        downloadBuilder.append("completed video：" + size);
+        setDownlaodInfo(downloadBuilder.toString());
     }
 
 
