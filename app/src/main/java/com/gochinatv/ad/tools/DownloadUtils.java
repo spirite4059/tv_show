@@ -1,10 +1,12 @@
 package com.gochinatv.ad.tools;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.download.DLUtils;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
+import com.gochinatv.db.AdDao;
 
 import java.math.BigDecimal;
 
@@ -22,6 +24,7 @@ import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_URL;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_WRITE;
 import static com.download.ErrorCodes.ERROR_THREAD_NUMBERS;
+import static com.gochinatv.ad.tools.VideoAdUtils.getTableName;
 
 /**
  * Created by fq_mbp on 16/3/17.
@@ -30,7 +33,7 @@ public class DownloadUtils {
 
     private static final int THREAD_NUMBER = 1;
 
-    public static void download(boolean isToday, Context context, String dir, String fileName, String fileUrl, final OnUpgradeStatusListener listener) {
+    public static void download(final boolean isToday, final Context context, String dir, final String fileName, String fileUrl, final OnUpgradeStatusListener listener) {
         if(context == null){
             return;
         }
@@ -46,7 +49,7 @@ public class DownloadUtils {
             return;
         }
 
-        DLUtils.init(context.getApplicationContext()).download(isToday, dir, fileName, fileUrl, THREAD_NUMBER, new OnDownloadStatusListener() {
+        DLUtils.init(context.getApplicationContext()).download(dir, fileName, fileUrl, THREAD_NUMBER, new OnDownloadStatusListener() {
 
             private long fileLength;
 
@@ -61,6 +64,15 @@ public class DownloadUtils {
             public void onPrepare(long fileSize) {
                 LogCat.e("video", "fileSize............. " + fileSize);
                 fileLength = fileSize;
+                // 修改文件大小
+                try {
+                    if (!TextUtils.isEmpty(fileName)) {
+                        AdDao.update(context, getTableName(isToday), fileName, AdDao.adVideoLength, String.valueOf(fileSize));
+                        com.download.tools.LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, getTableName(isToday), AdDao.adVideoName, fileName).adVideoLength);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             }
 
@@ -108,54 +120,68 @@ public class DownloadUtils {
 
             }
         });
+    }
 
-//        SingleDLUtils singleDLUtils = new SingleDLUtils();
-//        SingleDLUtils.init().download(path, fileName, fileUrl, new OnDownloadStatusListener() {
-//
-//            private long fileLength;
-//
-//            @Override
-//            public void onError(int errorCode, String errorMsg) {
-//                LogCat.e("video", "onDownloadFileError............. " + errorCode + ",  " + errorMsg);
-//                listener.onDownloadFileError(errorCode, errorMsg);
-//            }
-//
-//
-//            @Override
-//            public void onPrepare(long fileSize) {
-//                LogCat.e("video", "fileSize............. " + fileSize);
-//                fileLength = fileSize;
-//
-//            }
-//
-//            @Override
-//            public void onProgress(long progress) {
-//                if (fileLength == 0) {
-//                    return;
-//                }
+
+    public static void downloadApk(final Context context, String fileUrl, final OnUpgradeStatusListener listener) {
+        if(context == null){
+            return;
+        }
+        Context appContext = null;
+
+        try {
+            appContext = context.getApplicationContext();
+        }catch (Exception e){
+            e.printStackTrace();
+
+        }
+        if(appContext == null){
+            return;
+        }
+
+
+        DLUtils.init(context.getApplicationContext()).download(DataUtils.getApkDirectory(), Constants.FILE_APK_NAME, fileUrl, THREAD_NUMBER, new OnDownloadStatusListener() {
+
+            private long fileLength;
+
+            @Override
+            public void onError(int errorCode) {
+                LogCat.e("video", "onDownloadFileError............. " + errorCode + ",  " + getErrorMsg(errorCode));
+                listener.onDownloadFileError(errorCode, getErrorMsg(errorCode));
+            }
+
+
+            @Override
+            public void onPrepare(long fileSize) {
+                LogCat.e("video", "fileSize............. " + fileSize);
+                fileLength = fileSize;
+            }
+
+            @Override
+            public void onProgress(long progress) {
+                if (fileLength == 0) {
+                    return;
+                }
+                listener.onDownloadProgress(progress, fileLength);
 //                logProgress(progress);
-//
-//
-//            }
-//
-//            @Override
-//            public void onFinish(String filePath) {
-//                LogCat.e("video", "DownloadUtils -> onFinish......");
-//                listener.onDownloadFileSuccess(filePath);
-//            }
-//
-//            @Override
-//            public void onCancel() {
-//                LogCat.e("video", "onCancel............. ");
-//
-//
-//            }
-//
-//            @Override
-//            public void onDownloading(String fileName) {
-//                LogCat.e("video", "当前下载正在进行中............. " + fileName);
-//            }
-//
+            }
+
+            @Override
+            public void onFinish(String filePath) {
+                LogCat.e("video", "DownloadUtils -> onFinish......");
+                listener.onDownloadFileSuccess(filePath);
+            }
+
+            @Override
+            public void onCancel() {
+                LogCat.e("video", "onCancel............. ");
+            }
+
+            @Override
+            public void onDownloading(String fileName) {
+                LogCat.e("video", "当前下载正在进行中............. " + fileName);
+            }
+
 //            private void logProgress(long progress) {
 //                double size = (int) (progress / 1024);
 //                String sizeStr;
@@ -169,17 +195,11 @@ public class DownloadUtils {
 //                    sizeStr = String.valueOf((int) size + "KB，  ");
 //                }
 //                LogCat.e("video", "progress............. " + sizeStr + s + "%");
-//                listener.onDownloadProgress(sizeStr + s + "%");
 //            }
-//
-//        });
-
+        });
     }
 
 
-    public static void cancel(){
-//        SingleDLUtils.init().cancel();
-    }
 
     private static String getErrorMsg(int errorCode) {
         String errorMsg = null;

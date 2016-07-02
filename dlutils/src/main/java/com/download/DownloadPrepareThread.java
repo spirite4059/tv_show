@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
-import android.text.TextUtils;
 
 import com.download.db.DLDao;
 import com.download.db.DownloadInfo;
@@ -14,7 +13,6 @@ import com.download.tools.CacheVideoListThread;
 import com.download.tools.Constants;
 import com.download.tools.LogCat;
 import com.download.tools.ToolUtils;
-import com.gochinatv.db.AdDao;
 import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
@@ -40,14 +38,12 @@ public class DownloadPrepareThread extends Thread {
     private boolean isCancel;
     private static final int CONNECT_TIME_OUT = 60000;
     private DownloadThread[] threads;
-    private Context context;
-    private boolean isToday;
+     private Context context;
 
 
-    public DownloadPrepareThread(Context context, boolean isToday, String downloadUrl, int threadNum, File file, OnDownloadStatusListener listener) {
+    public DownloadPrepareThread(Context context, String downloadUrl, int threadNum, File file, OnDownloadStatusListener listener) {
         this.downloadUrl = downloadUrl;
         this.context = context;
-        this.isToday = isToday;
         this.threadNum = threadNum;
         this.file = file;
         this.listener = listener;
@@ -172,9 +168,6 @@ public class DownloadPrepareThread extends Thread {
             listener.onPrepare(fileSize);
         }
 
-        LogCat.e("video", "将文件大小写入数据库.......");
-        updateFileLength(fileSize);
-
 
         // 可用空间检查
         //获得SD卡空间的信息
@@ -217,9 +210,9 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-
         // 检查sql
         int size = threads.length;
+
         ArrayList<DownloadInfo> downloadInfos = DLDao.queryAll(context, ToolUtils.getFileName(file.getName()));
         // 线程数变了
         if (downloadInfos != null && downloadInfos.size() > 0) {
@@ -247,20 +240,16 @@ public class DownloadPrepareThread extends Thread {
             startThreadWithOutSql(url, fileSize, blockSize, size);
         }
 
-
         if (errorCode == ErrorCodes.ERROR_DOWNLOAD_EXCUTORS) {
             setErrorMsg(errorCode);
             return;
         }
 
-
         boolean isFinished = false;
-
 
         if (isCancel) {
             return;
         }
-
 
         int downloadSize = -2;
         try {
@@ -382,17 +371,6 @@ public class DownloadPrepareThread extends Thread {
         return false;
     }
 
-    private void updateFileLength(int fileSize) {
-        try {
-            String fileName = ToolUtils.getFileName(file.getName());
-            if (!TextUtils.isEmpty(fileName)) {
-                AdDao.update(context, getTableName(isToday), fileName, AdDao.adVideoLength, String.valueOf(fileSize));
-                LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, getTableName(isToday), AdDao.adVideoName, fileName).adVideoLength);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos, int fileSize) {
         for (int i = 0; i < size; i++) {
@@ -406,20 +384,9 @@ public class DownloadPrepareThread extends Thread {
         }
     }
 
-    private String getTableName(boolean isToday) {
-        String table = null;
-        if (isToday)
-            table = AdDao.DBBASE_TD_VIDEOS_TABLE_NAME;
-        else
-            table = AdDao.DBBASE_TM_VIDEOS_TABLE_NAME;
-        return table;
-    }
 
     private void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
         // 插入数据前，将所有的表清空
-        DLDao.delete(context);
-
-
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
             int threadId = i + 1;
@@ -438,18 +405,6 @@ public class DownloadPrepareThread extends Thread {
 
             boolean blockIsAdd = fileSize % threadNum == 0;
 
-//            int sizeBlock = i * (fileSize / threadNum);
-//            int startPos = sizeBlock;
-//            int endPos = 0;
-//            //设置最后一个结束点的位置
-//            if (i == threadNum - 1) {
-//                endPos = fileSize;
-//            } else {
-//                sizeBlock = (i + 1) * (fileSize / threadNum);
-//                endPos = sizeBlock;
-//            }
-//            LogCat.e("video", "start-end Position[" + i + "]: " + startPos + "-" + endPos);
-
 
             long startPos = blockSize * (threadId - 1);//开始位置
             long endPos = 0;
@@ -460,15 +415,7 @@ public class DownloadPrepareThread extends Thread {
             }
 
             downloadInfo.startPos = startPos;
-
-//            if(endPos > fileSize - 1){
-//                LogCat.e("video", "startThreadWithOutSql......endPos值不对 ，需要处理");
-//                downloadInfo.endPos = fileSize - 1;
-//            }else {
             downloadInfo.endPos = endPos;
-//            }
-
-
             LogCat.e("video", "startThreadWithOutSql......startPos: " + startPos);
             LogCat.e("video", "startThreadWithOutSql......endPos: " + endPos);
 
@@ -479,14 +426,14 @@ public class DownloadPrepareThread extends Thread {
             threads[i].start();
 
         }
-        ArrayList<DownloadInfo> downloadInfos1 = DLDao.queryAll(context);
-        for (DownloadInfo downloadInfo : downloadInfos1) {
-            LogCat.e("downloadInfo.tname......" + downloadInfo.tname);
-            LogCat.e("downloadInfo.turl......" + downloadInfo.turl);
-            LogCat.e("downloadInfo.startPos......" + downloadInfo.startPos);
-            LogCat.e("--------------------------");
-        }
-        LogCat.e("插入后的数据大小......" + DLDao.queryAll(context).size());
+//        ArrayList<DownloadInfo> downloadInfos1 = DLDao.queryAll(context);
+//        for (DownloadInfo downloadInfo : downloadInfos1) {
+//            LogCat.e("downloadInfo.tname......" + downloadInfo.tname);
+//            LogCat.e("downloadInfo.turl......" + downloadInfo.turl);
+//            LogCat.e("downloadInfo.startPos......" + downloadInfo.startPos);
+//            LogCat.e("--------------------------");
+//        }
+//        LogCat.e("插入后的数据大小......" + DLDao.queryAll(context).size());
     }
 
     private boolean deleteFailFile(int fileSize, int downloadSize) {
@@ -573,4 +520,12 @@ public class DownloadPrepareThread extends Thread {
     }
 
 
+    private OnSetBlockSizeListener onSetBlockSizeListener;
+    public interface OnSetBlockSizeListener{
+        ArrayList<DownloadInfo> onSetBlockSize(String fileName);
+    }
+
+    public void setOnSetBlockSizeListener(OnSetBlockSizeListener onSetBlockSizeListener) {
+        this.onSetBlockSizeListener = onSetBlockSizeListener;
+    }
 }

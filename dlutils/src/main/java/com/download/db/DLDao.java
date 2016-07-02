@@ -42,6 +42,15 @@ public class DLDao implements IDBConstants {
         // 先查看是否存在当前的视频记录
         if (database != null) {
             try {
+                // 查看当前数据的数量
+                ArrayList<DownloadInfo> downloadInfos = queryAll(database);
+                if(downloadInfos != null && downloadInfos.size() > 100){
+                    // 删除最久的一条记录
+                    delete(database, downloadInfos.get(0).tname);
+                }
+
+
+
                 database.beginTransaction();
 
                 ContentValues contentValues = new ContentValues();
@@ -150,6 +159,41 @@ public class DLDao implements IDBConstants {
             }
             if (cursor != null) {
                 cursor.close();
+            }
+        }
+        return arrayList;
+    }
+
+
+    private synchronized static ArrayList<DownloadInfo> queryAll(SQLiteDatabase database) {
+        Cursor cursor = null;
+        ArrayList<DownloadInfo> arrayList = null;
+        try {
+            database.beginTransaction();
+            cursor = database.rawQuery(SQL_QUERY_DOWNLOAD, null);
+            if (cursor != null) {
+                arrayList = new ArrayList<>(cursor.getCount());
+                while (cursor.moveToNext()) {
+                    DownloadInfo downloadInfo = new DownloadInfo();
+                    downloadInfo.tid = cursor.getInt(1);
+                    downloadInfo.tname = cursor.getString(2);
+                    downloadInfo.turl = cursor.getString(3);
+                    downloadInfo.tlength = cursor.getLong(4);
+                    downloadInfo.startPos = cursor.getLong(5);
+                    downloadInfo.endPos = cursor.getLong(6);
+                    arrayList.add(downloadInfo);
+                }
+            }
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+
+            if(database != null){
+                database.endTransaction();
             }
         }
         return arrayList;
@@ -290,6 +334,20 @@ public class DLDao implements IDBConstants {
         try {
             database.beginTransaction();
             database.delete(DBBASE_DOWNLOAD_TABLE_NAME, null, null);
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (database != null) {
+                database.endTransaction();
+            }
+        }
+    }
+
+    private static synchronized void delete(SQLiteDatabase database, String tname) {
+        try {
+            database.beginTransaction();
+            database.delete(DBBASE_DOWNLOAD_TABLE_NAME, tname + " = ?", new String[]{tname});
             database.setTransactionSuccessful();
         } catch (Exception e) {
             e.printStackTrace();

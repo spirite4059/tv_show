@@ -122,6 +122,8 @@ public class ToolUtils {
             if(!TextUtils.isEmpty(sourceName) && sourceName.contains(Constants.FILE_DOWNLOAD_EXTENSION)){
                 int index = sourceName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
                 fileName = sourceName.substring(0, index);
+            }else {
+                fileName = sourceName;
             }
         }catch (Exception e){
             e.printStackTrace();
