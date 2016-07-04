@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -109,6 +110,8 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //保持屏幕不变黑
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // 情况fragment的状态，保证getActivity不为null
         cleanFragmentState(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -129,6 +132,7 @@ public class MainActivity extends BaseActivity {
     boolean isDoGetDevice;
 
     private void init() {
+
 
         registerNetworkReceiver();
 
@@ -922,11 +926,12 @@ public class MainActivity extends BaseActivity {
 //            downLoadAPKUtils = new DownLoadAPKUtils();
 //        }
 //
-        final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-        if (adOneFragment != null) {
-            //停止下载视频
-            DLUtils.cancel();
-        }
+//
+//        if (adOneFragment != null) {
+//            //停止下载视频
+//
+//        }
+        DLUtils.cancel();
 //
 //        downLoadAPKUtils.downLoad(this, url);
 //        //下载失败监听
@@ -1039,6 +1044,7 @@ public class MainActivity extends BaseActivity {
 
                 } else {
                     LogCat.e("APKdownload", "下载apk出现错误,重试5次不再重试 ");
+                    final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
                     if (adOneFragment != null) {
                         adOneFragment.startDownloadVideo();
                     }

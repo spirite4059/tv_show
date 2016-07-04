@@ -334,7 +334,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             return;
         }
 
-        if (response == null || response.current == null || response.current.size() == 0) {
+        if (response.current == null || response.current.size() == 0) {
             // 默认继续播放之前的缓存文件
             // 显示开发下载模式，主要是为了显示日志
             rollPoling();
@@ -352,10 +352,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         // 去除重复
         LogCat.e("video", "去除今日播放列表重复的视频.......");
-        ArrayList<AdDetailResponse> currentVideoList = getDistinctVideoList(response.current);
+        ArrayList<AdDetailResponse> currentVideoList = getDistinctList(response.current);
 
         LogCat.e("video", "去除明日播放列表重复的视频.......");
-        ArrayList<AdDetailResponse> nextVideoList = getDistinctVideoList(response.next);
+        ArrayList<AdDetailResponse> nextVideoList = null;
+        if(response.next != null){
+            nextVideoList = getDistinctList(response.next);
+        }
+
+
 
         // 2.匹配今天要下载的视频
         LogCat.e("video", "根据今日播放列表，获取下载列表......");
@@ -460,19 +465,36 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //        throw new NullPointerException("错误日志上传测试..............");
     }
 
+    private ArrayList<AdDetailResponse> getDistinctList(ArrayList<AdDetailResponse> responses) {
+        ArrayList<AdDetailResponse> videoList;
+        if(responses != null){
+            try {
+                videoList = getDistinctVideoList(responses);
+            }catch (Exception e){
+                e.printStackTrace();
+                videoList = new ArrayList<>();
+            }
+        }else {
+            videoList = new ArrayList<>();
+        }
+        return videoList;
+    }
+
     // 轮询接口
     private void rollPoling() {
         LogCat.e("video", "++++++++++++++++++++++++++++++++++++++++++该刷新接口了******.");
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                LogCat.e("video", "该刷新接口了******.");
-                if (isAdded() && getActivity() != null) {
-                    doHttpGetVideoList();
-                }
+        if(handler != null){
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    LogCat.e("video", "该刷新接口了******.");
+                    if (isAdded() && getActivity() != null) {
+                        doHttpGetVideoList();
+                    }
 
-            }
-        }, pollInterval);
+                }
+            }, pollInterval);
+        }
     }
 
 
@@ -499,7 +521,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 boolean isHasVideo = false;
                 for (int i = 0; i < length; i++) {
                     AdDetailResponse currentVideo = videoList.get(i);
-                    if (currentVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
+                    if (currentVideo != null && !TextUtils.isEmpty(currentVideo.adVideoName) && currentVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
                         isHasVideo = true;
                         break;
                     }
