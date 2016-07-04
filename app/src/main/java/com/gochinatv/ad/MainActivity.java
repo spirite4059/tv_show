@@ -107,6 +107,9 @@ public class MainActivity extends BaseActivity {
     //firebase消息广播
     private FirebaseMessageReceiver firebaseMessageReceiver;
 
+    //是否中途app由无网络变为有网络
+    //private boolean isReloadFlag = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -814,6 +817,8 @@ public class MainActivity extends BaseActivity {
                             adOneFragment.showCompletedNotNetwork(false);
                         }else{
                             LogCat.e("net","跳过刷新了11111111111111111");
+                            //显示正在请求接口
+                            adOneFragment.showBeforeRequestCompleted();
                         }
                     }
 
@@ -829,6 +834,8 @@ public class MainActivity extends BaseActivity {
                                 isInitNetState = false;
                             }else {
                                 LogCat.e("net","跳过刷新了222222222222");
+                                //显示正在请求接口
+                                adOneFragment.showBeforeRequestCompleted();
                             }
                         }
                     }
@@ -838,21 +845,16 @@ public class MainActivity extends BaseActivity {
             private void showNetStatus(boolean hasNetwork) {
                 //loading没有请求成功
                 if (hasNetwork) {
-                    //当有网络时执行
-                    reLoadHttpRequest();
                     //请求升级接口
                     doHttpUpdate(MainActivity.this);
-
                     textSpeedInfo.setText("wifi-on:0kb/s");
                 } else {
                     // 显示当前的网络状态
                     textSpeedInfo.setText("wifi-off:0kb/s");
                     LogCat.e("net", "networkChange    off..............");
-                    final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                    if (adOneFragment != null) {
-                        //停止下载视频
-                        DLUtils.cancel();
-                    }
+                    //停止下载视频和apk
+                    DLUtils.cancel();
+
                 }
             }
         });
@@ -1131,6 +1133,9 @@ public class MainActivity extends BaseActivity {
         if (response.resultForApk == null) {
             if ("3".equals(response.status)) {
                 LogCat.e("没有升级包，不需要更新");
+
+                //没有升级，请求其他接口
+                reLoadHttpRequest();
             } else {
                 LogCat.e("升级数据出错，无法正常升级2。。。。。");
                 doError("\"3\".equals(response.status) = false");
@@ -1171,6 +1176,8 @@ public class MainActivity extends BaseActivity {
                     // 不升级,加载布局
                     LogCat.e("无需升级。。。。。");
                     // 5.清空所有升级包，为了节省空间
+                    //没有升级，请求其他接口
+                    reLoadHttpRequest();
                 }
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
@@ -1192,6 +1199,8 @@ public class MainActivity extends BaseActivity {
             if (retryUpgradeTimes >= 3) {
                 retryUpgradeTimes = 0;
                 LogCat.e("升级接口已连续请求3次，不在请求");
+                //没有升级，请求其他接口
+                reLoadHttpRequest();
             } else {
                 LogCat.e("进行第 " + retryUpgradeTimes + " 次重试请求。。。。。。。");
                 doHttpUpdate(MainActivity.this);

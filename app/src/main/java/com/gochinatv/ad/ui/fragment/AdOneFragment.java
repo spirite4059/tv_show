@@ -1634,7 +1634,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     /**
      * 当有网络，但是接口没请求完成，显示下载信息
      */
-    private void showBeforeRequestCompleted(){
+    public void showBeforeRequestCompleted(){
         if(!isAdded()){
             return;
         }
