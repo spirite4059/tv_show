@@ -452,12 +452,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             LogCat.e("video", "需要下载的视频..." + adDetailResponse.adVideoName);
         }
 
-        prepareDownloading();
+
 
         // 显示开发下载模式，主要是为了显示日志
         showLogMsg(0, 0);
         LogCat.e("video", "++++++++++++++++++++++++++++++++++++++++++++++++");
-
+        prepareDownloading();
 
         rollPoling();
 
@@ -970,6 +970,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         if(!isAdded()){
             return;
         }
+        LogCat.e("net","所有的视频都下载完成了，显示下载完成信息--Completed");
         setSpeedInfo("wifi-on:0kb/s");
         StringBuilder downloadBuilder = new StringBuilder();
 
