@@ -136,6 +136,12 @@ public class MainActivity extends BaseActivity {
 
     private void init() {
 
+        if(DataUtils.isNetworkConnected(this)){
+            textSpeedInfo.setText("wifi-on:0kb/s");
+
+        }else{
+
+        }
 
         registerNetworkReceiver();
 
@@ -799,47 +805,37 @@ public class MainActivity extends BaseActivity {
                 if (isFinishing()) {
                     return;
                 }
+                //屏蔽第一次网络改变监听
+                if (isInitNetState) {
+                    isInitNetState = false;
+                    LogCat.e("net","屏蔽第一次registerNetworkReceiver");
+                    return;
+                }
 
-                if (isDoGetDevice) {
-                    isDoGetDevice = true;
-                    //loading页面接口请求
-                    if (isInitNetState) {
-                        isInitNetState = false;
-                        LogCat.e("net","屏蔽第一次registerNetworkReceiver");
-                        return;
-                    }
-                    showNetStatus(hasNetwork);
-                    //无网络，改变下载信息
-                    if(!hasNetwork){
-                         AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                        if(adOneFragment != null){
-                            LogCat.e("net","无网络改变下载信息11111111111111111");
-                            adOneFragment.showCompletedNotNetwork(false);
-                        }else{
-                            LogCat.e("net","跳过刷新了11111111111111111");
-                            //显示正在请求接口
-                            adOneFragment.showBeforeRequestCompleted();
+                AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
+                if(adOneFragment != null){
+                    if(hasNetwork){
+                        //有网络
+                        adOneFragment.showBeforeRequestCompleted();
+                        //从新加载webview
+                        if(adWebView != null){
+                            LogCat.e("BridgeWebView","网络重新连接，URL重新加载");
+                            adWebView.reload();
                         }
-                    }
 
-                } else {
-                    showNetStatus(hasNetwork);
-                    //需要屏蔽第一次,从第二次开始改变下载信息
-                    if(!hasNetwork){
-                        final AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
-                        if (adOneFragment != null) {
-                            if(!isInitNetState){
-                                LogCat.e("net","无网络改变下载信息222222222222");
-                                adOneFragment.showCompletedNotNetwork(false);
-                                isInitNetState = false;
-                            }else {
-                                LogCat.e("net","跳过刷新了222222222222");
-                                //显示正在请求接口
-                                adOneFragment.showBeforeRequestCompleted();
-                            }
+                    }else{
+                        //无网络
+                        adOneFragment.showCompletedNotNetwork(false);
+                        //隐藏webview
+                        if(adWebView != null){
+                            LogCat.e("BridgeWebView","网络断开，隐藏webview");
+                            adWebView.setVisibility(View.GONE);
                         }
                     }
                 }
+
+                showNetStatus(hasNetwork);
+
             }
 
             private void showNetStatus(boolean hasNetwork) {
@@ -854,7 +850,6 @@ public class MainActivity extends BaseActivity {
                     LogCat.e("net", "networkChange    off..............");
                     //停止下载视频和apk
                     DLUtils.cancel();
-
                 }
             }
         });
