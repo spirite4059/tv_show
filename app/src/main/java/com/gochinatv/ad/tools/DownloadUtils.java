@@ -33,7 +33,7 @@ public class DownloadUtils {
 
     private static final int THREAD_NUMBER = 1;
 
-    public static void download(final boolean isToday, final Context context, String dir, final String fileName, String fileUrl, final OnUpgradeStatusListener listener) {
+    public static void download(final boolean isToday, final Context context, String dir, final String fileName, final String fileUrl, final OnUpgradeStatusListener listener) {
         if(context == null){
             return;
         }
@@ -66,9 +66,10 @@ public class DownloadUtils {
                 fileLength = fileSize;
                 // 修改文件大小
                 try {
-                    if (!TextUtils.isEmpty(fileName)) {
-                        AdDao.update(context, getTableName(isToday), fileName, AdDao.adVideoLength, String.valueOf(fileSize));
-                        com.download.tools.LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, getTableName(isToday), AdDao.adVideoName, fileName).adVideoLength);
+                    if (!TextUtils.isEmpty(fileName) && fileSize != 0) {
+                        String fileRealName = getFileName(fileName);
+                        AdDao.update(context, getTableName(isToday), fileRealName, AdDao.adVideoLength, String.valueOf(fileSize));
+                        com.download.tools.LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, getTableName(isToday), AdDao.adVideoName, fileRealName).adVideoLength);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -253,6 +254,21 @@ public class DownloadUtils {
 
 
         return errorMsg;
+    }
+
+    private static String getFileName(String sourceName){
+        String fileName = null;
+        try {
+            if(!TextUtils.isEmpty(sourceName) && sourceName.contains(com.download.tools.Constants.FILE_DOWNLOAD_EXTENSION)){
+                int index = sourceName.lastIndexOf(com.download.tools.Constants.FILE_DOWNLOAD_EXTENSION);
+                fileName = sourceName.substring(0, index);
+            }else {
+                fileName = sourceName;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return fileName;
     }
 
 

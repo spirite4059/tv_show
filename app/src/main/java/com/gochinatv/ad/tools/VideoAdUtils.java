@@ -16,6 +16,7 @@ import com.okhtttp.response.AdDetailResponse;
 import com.okhtttp.response.ErrorResponse;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 /**
@@ -38,13 +39,13 @@ public class VideoAdUtils {
         // 对于要下载的数据，加入数据表
         AdDao.insertAll(context, tableName, downloadVideos);
 
-        ArrayList<AdDetailResponse> sqlList = AdDao.queryAll(context, tableName);
-        if (sqlList != null) {
-            LogCat.e("video", "查询下插入后的个数： " + sqlList.size());
-            for (AdDetailResponse adDetailResponse : sqlList) {
-                LogCat.e("video", "数据表video： " + adDetailResponse.adVideoName + ", length: " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
-            }
-        }
+//        ArrayList<AdDetailResponse> sqlList = AdDao.queryAll(context, tableName);
+//        if (sqlList != null) {
+//            LogCat.e("video", "查询下插入后的个数： " + sqlList.size());
+//            for (AdDetailResponse adDetailResponse : sqlList) {
+//                LogCat.e("video", "数据表video： " + adDetailResponse.adVideoName + ", length: " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
+//            }
+//        }
 
     }
 
@@ -70,8 +71,39 @@ public class VideoAdUtils {
         if (fileVideo.exists() && fileVideo.isDirectory()) {
             localVideos.addAll(getLocalList(context, fileVideo));
         }
+        LogCat.e("video", "验证文件完整性前,视频的个数......."+ localVideos.size());
+        // 验证文件完整性
+        checkFileLength(context, true, localVideos);
+
+        checkFileLength(context, false, localVideos);
+        LogCat.e("video", "验证文件完整性后,视频的个数......."+ localVideos.size());
         return localVideos;
     }
+
+
+    private static void checkFileLength(Context context, boolean isToday, ArrayList<AdDetailResponse> videoList){
+        try {
+            ArrayList<AdDetailResponse> cacheList = VideoAdUtils.getCacheList(context, isToday);
+            if(cacheList == null || cacheList.size() == 0){
+                return;
+            }
+            for(int i = videoList.size() - 1; i >=0; i--){
+                AdDetailResponse video = videoList.get(i);
+                for(AdDetailResponse cacheVideo : cacheList){
+                    if(!TextUtils.isEmpty(cacheVideo.adVideoName) && cacheVideo.adVideoName.equals(video.adVideoName)){
+                        if(cacheVideo.adVideoLength != video.adVideoLength){
+                            videoList.remove(video);
+                            break;
+                        }
+                    }
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
 
     /**
      * 返回当前的本地video视频列表信息集合
@@ -82,6 +114,7 @@ public class VideoAdUtils {
     private static ArrayList<AdDetailResponse> getLocalList(Context context, File videoFiles) {
         ArrayList<AdDetailResponse> adDetailResponses = new ArrayList<>();
         File[] files = videoFiles.listFiles();
+        final int HEADER_FILE_LENGTH = 1024 * 1024;
         for (File file : files) {
             if (file.isFile()) {
                 String name = file.getName();
@@ -96,13 +129,12 @@ public class VideoAdUtils {
                 }
 
                 // 文件下载失败
-                final int HEADER_FILE_LENGTH = 1024 * 1024 * 1;
                 if (file.length() < HEADER_FILE_LENGTH) {
                     DeleteFileUtils.getInstance().deleteFile(file.getAbsolutePath());
                     continue;
                 }
-                AdDetailResponse videoAdBean = new AdDetailResponse();
 
+                AdDetailResponse videoAdBean = new AdDetailResponse();
                 videoAdBean.adVideoName = name;
                 videoAdBean.videoPath = file.getAbsolutePath();
                 videoAdBean.adVideoLength = file.length();
@@ -143,16 +175,16 @@ public class VideoAdUtils {
      * 根据本地缓存视频列表和明日播放列，得出当前的视频播放列表
      *
      * @param localVideoList
-     * @param cacheTomorrowList
      * @return
      */
-    public static ArrayList<AdDetailResponse> getPlayVideoList(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTomorrowList) {
+    public static ArrayList<AdDetailResponse> getPlayVideoList(Context context, ArrayList<AdDetailResponse> localVideoList) {
         ArrayList<AdDetailResponse> cachePlayVideos = new ArrayList<>();
         int localLength = localVideoList.size();
         if (localLength < 2) {
             // 此时无需匹对列表，直接将预置片放入缓存播放列表
             LogCat.e("video", "如果本地缓存视频文件不足2个，直接播放预置片");
         } else {
+            ArrayList<AdDetailResponse> cacheTomorrowList = VideoAdUtils.getCacheList(context, false);
             // 匹对列表
             LogCat.e("video", "开始根据明日表查找可以播放的视频");
             for (AdDetailResponse localVideo : localVideoList) {
@@ -165,13 +197,33 @@ public class VideoAdUtils {
                     }
                 }
             }
-            // 匹配后结果不满足2个，仍然要播放预告片
+            // 匹配后结果不满足2个，继续检查昨天的播放列表
+            if (cachePlayVideos.size() < 2) {
+                ArrayList<AdDetailResponse> cacheYeastodayList = VideoAdUtils.getCacheList(context, true);
+                // 检测前天的视频是否可以播放
+                for (AdDetailResponse localVideo : localVideoList) {
+                    for (AdDetailResponse cacheVideo : cacheYeastodayList) {
+                        if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
+                            cacheVideo.videoPath = localVideo.videoPath;
+                            LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
+                            cachePlayVideos.add(cacheVideo);
+                            break;
+                        }
+                    }
+                }
+            }
+            // 如果还是少于2个,就将缓存列表键入到播放列表中
             if (cachePlayVideos.size() < 2) {
                 cachePlayVideos.addAll(localVideoList);
             }
         }
+
         return cachePlayVideos;
     }
+
+
+
+
 
 
     /**
@@ -379,15 +431,7 @@ public class VideoAdUtils {
         // 计算离开的时候总时长
         try {
             long hour = time / (60 * 60 * 1000);
-            String hourStr = String.valueOf(hour);
-            if (hour < 10) {
-                hourStr = "0" + hourStr;
-            }
             long min = ((time / (60 * 1000)) - hour * 60);
-            String minStr = String.valueOf(min);
-            if (hour < 10) {
-                minStr = "0" + minStr;
-            }
             long second = (time / 1000 - hour * 60 * 60 - min * 60);
             String secondStr = String.valueOf(second);
             if (hour < 10) {
@@ -435,6 +479,63 @@ public class VideoAdUtils {
         }
     }
 
+
+    public static ArrayList<AdDetailResponse> getDistinctList(ArrayList<AdDetailResponse> responses) {
+        ArrayList<AdDetailResponse> videoList;
+        if(responses != null){
+            try {
+                videoList = getDistinctVideoList(responses);
+            }catch (Exception e){
+                e.printStackTrace();
+                videoList = new ArrayList<>();
+            }
+        }else {
+            videoList = new ArrayList<>();
+        }
+        return videoList;
+    }
+
+
+    private static ArrayList<AdDetailResponse> getDistinctVideoList(ArrayList<AdDetailResponse> videos) {
+        ArrayList<AdDetailResponse> videoList = new ArrayList<>();
+        for (AdDetailResponse adDetailResponse : videos) {
+            int length = videoList.size();
+            if (length == 0) {
+                videoList.add(adDetailResponse);
+            } else {
+                boolean isHasVideo = false;
+                for (int i = 0; i < length; i++) {
+                    AdDetailResponse currentVideo = videoList.get(i);
+                    if (currentVideo != null && !TextUtils.isEmpty(currentVideo.adVideoName) && currentVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
+                        isHasVideo = true;
+                        break;
+                    }
+                }
+                if (!isHasVideo) {
+                    videoList.add(adDetailResponse);
+                }
+            }
+        }
+        return videoList;
+    }
+
+    public static String logProgress(long progress, long fileLength) {
+        if (fileLength == 0) {
+            return "";
+        }
+        double size = (int) (progress / 1024);
+        String sizeStr;
+        int s = (int) (progress * 100 / fileLength);
+        if (size > 1000) {
+            size = (progress / 1024) / 1024f;
+            BigDecimal b = new BigDecimal(size);
+            double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+            sizeStr = String.valueOf(f1 + "MB，  ");
+        } else {
+            sizeStr = String.valueOf((int) size + "KB，  ");
+        }
+        return (sizeStr + s + "%");
+    }
 
 
 

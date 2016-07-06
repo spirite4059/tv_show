@@ -87,8 +87,6 @@ public class VideoStatusRunnable implements Runnable {
     }
 
     private void rePlayView() {
-
-
         if (videoView != null) {
             try {
                 videoView.stopPlayback();
