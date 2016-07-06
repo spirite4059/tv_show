@@ -69,6 +69,10 @@
         <meta-data
             android:name="UMENG_MESSAGE_SECRET"
             android:value="5eb3c4eb651ff25c517b01fd229a33d0" />
+
+        <meta-data
+            android:name="UMENG_CHANNEL"
+            android:value="${UMENG_CHANNEL_VALUE}" />
         <!-- <activity -->
         <!-- android:name=".MainTestActivity" -->
         <!-- android:screenOrientation="landscape" > -->
