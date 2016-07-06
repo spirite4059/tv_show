@@ -35,15 +35,12 @@ import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.gochinatv.ad.ui.view.AdWebView;
 import com.gochinatv.statistics.SendStatisticsLog;
-import com.gochinatv.statistics.server.ErrorHttpServer;
-import com.gochinatv.statistics.tools.Constant;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.okhtttp.OkHttpCallBack;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.AdVideoListResponse;
 import com.okhtttp.response.CommendResponse;
-import com.okhtttp.response.ErrorResponse;
 import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.response.UpdateResponse;
@@ -174,8 +171,6 @@ public class MainActivity extends BaseActivity {
         //得到firebase-token
         refreshGetFirebaseToken();
 
-        //上报开机时间
-        sendAPPStartTime();
 
         intervalUpdate();
 
@@ -201,7 +196,6 @@ public class MainActivity extends BaseActivity {
                 //升级接口
                 doHttpUpdate(MainActivity.this);
                 //上报开机时间
-                sendAPPStartTime();
                 SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
             }
         }, intervalTime, intervalTime);
@@ -1206,22 +1200,22 @@ public class MainActivity extends BaseActivity {
     /**
      * 上报开始时间
      */
-    private void sendAPPStartTime() {
-        if (!TextUtils.isEmpty(DataUtils.getMacAddress(this)) && DataUtils.isNetworkConnected(this)) {
-            String msg = "{\"time\"" + ":}";
-            ErrorHttpServer.doStatisticsHttp(this, Constant.APP_START_TIME, msg, new OkHttpCallBack<ErrorResponse>() {
-                @Override
-                public void onSuccess(String url, ErrorResponse response) {
-                    LogCat.e("MainActivity", "上传开机时间成功");
-                }
-
-                @Override
-                public void onError(String url, String errorMsg) {
-                    LogCat.e("MainActivity", "上传开机时间失败");
-                }
-            });
-        }
-    }
+//    private void sendAPPStartTime() {
+//        if (!TextUtils.isEmpty(DataUtils.getMacAddress(this)) && DataUtils.isNetworkConnected(this)) {
+//            String msg = "{\"time\"" + ":}";
+//            ErrorHttpServer.doStatisticsHttp(this, Constant.APP_START_TIME, msg, new OkHttpCallBack<ErrorResponse>() {
+//                @Override
+//                public void onSuccess(String url, ErrorResponse response) {
+//                    LogCat.e("MainActivity", "上传开机时间成功");
+//                }
+//
+//                @Override
+//                public void onError(String url, String errorMsg) {
+//                    LogCat.e("MainActivity", "上传开机时间失败");
+//                }
+//            });
+//        }
+//    }
 
     /**
      * 设置下载信息
