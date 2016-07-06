@@ -8,6 +8,9 @@ public class ErrorMsgRequest {
     public String mac;
     public String msg;
     public int type;
+    public int versionCode;
+    public String versionName;
+    public int sdk;
 
 
 }

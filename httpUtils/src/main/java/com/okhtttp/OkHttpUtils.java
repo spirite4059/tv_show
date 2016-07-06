@@ -1,6 +1,7 @@
 package com.okhtttp;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -242,6 +243,9 @@ public class OkHttpUtils {
                 .addFormDataPart("mac", MacUtils.getMacAddress(context))
                 .addFormDataPart("duration", String.valueOf(duration))
                 .addFormDataPart("name", String.valueOf(id))
+                .addFormDataPart("sdk", String.valueOf(Build.VERSION.SDK_INT))
+                .addFormDataPart("versionCode", String.valueOf(MacUtils.getAppVersionCode(context)))
+                .addFormDataPart("versionName", MacUtils.getVersionName(context))
                 .build();
 
         Request request = new Request.Builder()

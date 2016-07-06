@@ -2,6 +2,7 @@ package com.gochinatv.statistics.server;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.text.TextUtils;
 
 import com.gochinatv.statistics.response.ErrorContent;
@@ -79,6 +80,9 @@ public class ErrorHttpServer {
             ErrorMsgRequest errorMsgRequest = new ErrorMsgRequest();
             errorMsgRequest.mac = MacUtils.getMacAddress(context);
             errorMsgRequest.type = type;
+            errorMsgRequest.sdk = Build.VERSION.SDK_INT;
+            errorMsgRequest.versionCode = DataUtils.getAppVersionCode(context);
+            errorMsgRequest.versionName = DataUtils.getVersionName(context);
             errorMsgRequest.msg = errorMsg;
 
             OkHttpUtils.getInstance().doHttpPost(HTTP_URL_GET_VIDEO_LIST, errorMsgRequest, listener);
