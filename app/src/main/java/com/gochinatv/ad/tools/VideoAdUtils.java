@@ -29,12 +29,14 @@ public class VideoAdUtils {
     /**
      * 更新数据表的所有数据
      */
-    public static synchronized void updateSqlVideoList(Context context, boolean isToday, ArrayList<AdDetailResponse> downloadVideos, ArrayList<AdDetailResponse> deleteVideos) {
+    public static synchronized void updateSqlVideoList(Context context, boolean isToday, ArrayList<AdDetailResponse> downloadVideos) {
         LogCat.e("video", "更新数据库.........");
 
         // 删除所有删除列表的video
         String tableName = getTableName(isToday);
-        AdDao.deleteAll(context, tableName, deleteVideos);
+
+        AdDao.deleteAll(context, tableName);
+//        AdDao.deleteAll(context, tableName, deleteVideos);
         // 对于已经存在的数据，不做修改
         // 对于要下载的数据，加入数据表
         AdDao.insertAll(context, tableName, downloadVideos);
@@ -73,36 +75,67 @@ public class VideoAdUtils {
         }
         LogCat.e("video", "验证文件完整性前,视频的个数......."+ localVideos.size());
         // 验证文件完整性
-        checkFileLength(context, true, localVideos);
-
-        checkFileLength(context, false, localVideos);
+        // 从今明两天缓存列表中获取不存在的视频,将其删除
+        // 获取今天缓存列表
+        ArrayList<AdDetailResponse> cacheTodayList = VideoAdUtils.getCacheList(context, true);
+        // 根据今日列表检查缓存文件完整性,并得到要删除的文件
+        ArrayList<AdDetailResponse> deleteVideo = checkFileLength(context, cacheTodayList, localVideos);
+        // 获取明天缓存列表
+        ArrayList<AdDetailResponse> cacheTomorrowList = VideoAdUtils.getCacheList(context, false);
+        // 从删除列表中提出明天要用到的视频
+        removeItemFromList(deleteVideo, cacheTomorrowList);
+        // 根据明日列表来剔除今日要用到的视频
+        ArrayList<AdDetailResponse> deleteVideo1 = checkFileLength(context, cacheTomorrowList, localVideos);
+        // 从删除列表中提出明天要用到的视频
+        removeItemFromList(deleteVideo1, cacheTodayList);
+        // 去除重复
+        ArrayList<AdDetailResponse> finalVideos = dealWithDeleteVideos(deleteVideo, deleteVideo1);
+        removeItemFromList(localVideos, finalVideos);
         LogCat.e("video", "验证文件完整性后,视频的个数......."+ localVideos.size());
         return localVideos;
     }
 
-
-    private static void checkFileLength(Context context, boolean isToday, ArrayList<AdDetailResponse> videoList){
-        try {
-            ArrayList<AdDetailResponse> cacheList = VideoAdUtils.getCacheList(context, isToday);
-            if(cacheList == null || cacheList.size() == 0){
-                return;
-            }
-            for(int i = videoList.size() - 1; i >=0; i--){
-                AdDetailResponse video = videoList.get(i);
-                for(AdDetailResponse cacheVideo : cacheList){
-                    if(!TextUtils.isEmpty(cacheVideo.adVideoName) && cacheVideo.adVideoName.equals(video.adVideoName)){
-                        if(cacheVideo.adVideoLength != video.adVideoLength){
-                            videoList.remove(video);
+    /**
+     * 检测localVideoList列表文件完整性
+     * 根据今明两日的文件列表检查localVideoList列表文件的完整性
+     *
+     */
+    public static ArrayList<AdDetailResponse> checkFileLength(Context context, ArrayList<AdDetailResponse> cacheVideoList, ArrayList<AdDetailResponse> localVideoList) {
+        ArrayList<AdDetailResponse> deleteVideos = new ArrayList<>();
+        if (cacheVideoList != null && cacheVideoList.size() != 0) {
+//            LogCat.e("video", "检测到播放列表, 开始检测文件完整性......");
+            for (int i = 0; i < localVideoList.size(); i++) {
+                AdDetailResponse localVideo = localVideoList.get(i);
+                boolean isHasCache = false;
+                for (AdDetailResponse cacheVideo : cacheVideoList) {
+                    if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
+                        isHasCache = true;
+                        if (cacheVideo.adVideoLength != 0 && cacheVideo.adVideoLength != localVideo.adVideoLength) {
+                            // 如果文件正在下载，则忽略
+                            boolean isDownloading = DLDao.queryByName(context, localVideo.adVideoName);
+                            if (isDownloading) {
+                                LogCat.e("video", "当前文件正在下载中，不做额外处理.......");
+                            } else {
+                                deleteVideos.add(cacheVideo);
+                                LogCat.e("video", "由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
+                            }
                             break;
                         }
                     }
                 }
+                if(!isHasCache){
+                    deleteVideos.add(localVideo);
+//                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以将.........." + localVideo.adVideoName + " 文件加入删除列表");
+                }
             }
-        }catch (Exception e){
-            e.printStackTrace();
+        } else {
+            for (int i = 0; i < localVideoList.size(); i++) {
+                AdDetailResponse localVideo = localVideoList.get(i);
+                deleteVideos.add(localVideo);
+            }
         }
+        return deleteVideos;
     }
-
 
 
     /**
@@ -150,13 +183,11 @@ public class VideoAdUtils {
 
     public static void updateVideoPath(boolean isToday, Context context, String fileName, String path) {
         String tableName = getTableName(isToday);
-
-
         AdDao.update(context, tableName, fileName, AdDao.videoPath, path);
-        AdDetailResponse adDetailResponse = AdDao.queryDetail(context, tableName, AdDao.adVideoName, fileName);
-        if (adDetailResponse != null) {
-            LogCat.e("video", "查询修改后的大小： " + adDetailResponse.videoPath);
-        }
+//        AdDetailResponse adDetailResponse = AdDao.queryDetail(context, tableName, AdDao.adVideoName, fileName);
+//        if (adDetailResponse != null) {
+//            LogCat.e("video", "查询修改后的大小： " + adDetailResponse.videoPath);
+//        }
     }
 
 
@@ -166,8 +197,7 @@ public class VideoAdUtils {
      * @return
      */
     public static synchronized ArrayList<AdDetailResponse> getCacheList(Context context, boolean isToday) {
-        ArrayList<AdDetailResponse> cacheTomorrowList = AdDao.queryAll(context, getTableName(isToday));
-        return cacheTomorrowList;
+        return AdDao.queryAll(context, getTableName(isToday));
     }
 
 
@@ -184,33 +214,37 @@ public class VideoAdUtils {
             // 此时无需匹对列表，直接将预置片放入缓存播放列表
             LogCat.e("video", "如果本地缓存视频文件不足2个，直接播放预置片");
         } else {
-            ArrayList<AdDetailResponse> cacheTomorrowList = VideoAdUtils.getCacheList(context, false);
+//            ArrayList<AdDetailResponse> cacheTomorrowList = VideoAdUtils.getCacheList(context, false);
             // 匹对列表
             LogCat.e("video", "开始根据明日表查找可以播放的视频");
-            for (AdDetailResponse localVideo : localVideoList) {
-                for (AdDetailResponse cacheVideo : cacheTomorrowList) {
-                    if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
-                        cacheVideo.videoPath = localVideo.videoPath;
-                        LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
-                        cachePlayVideos.add(cacheVideo);
-                        break;
-                    }
-                }
-            }
+            cachePlayVideos.addAll(getIntersectionList(localVideoList, VideoAdUtils.getCacheList(context, false)));
+
+//            for (AdDetailResponse localVideo : localVideoList) {
+//                for (AdDetailResponse cacheVideo : cacheTomorrowList) {
+//                    if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
+//                        cacheVideo.videoPath = localVideo.videoPath;
+//                        LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
+//                        cachePlayVideos.add(cacheVideo);
+//                        break;
+//                    }
+//                }
+//            }
             // 匹配后结果不满足2个，继续检查昨天的播放列表
             if (cachePlayVideos.size() < 2) {
-                ArrayList<AdDetailResponse> cacheYeastodayList = VideoAdUtils.getCacheList(context, true);
+//                ArrayList<AdDetailResponse> cacheYeastodayList = VideoAdUtils.getCacheList(context, true);
                 // 检测前天的视频是否可以播放
-                for (AdDetailResponse localVideo : localVideoList) {
-                    for (AdDetailResponse cacheVideo : cacheYeastodayList) {
-                        if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
-                            cacheVideo.videoPath = localVideo.videoPath;
-                            LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
-                            cachePlayVideos.add(cacheVideo);
-                            break;
-                        }
-                    }
-                }
+                cachePlayVideos.addAll(getIntersectionList(localVideoList, VideoAdUtils.getCacheList(context, true)));
+
+//                for (AdDetailResponse localVideo : localVideoList) {
+//                    for (AdDetailResponse cacheVideo : cacheYeastodayList) {
+//                        if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
+//                            cacheVideo.videoPath = localVideo.videoPath;
+//                            LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
+//                            cachePlayVideos.add(cacheVideo);
+//                            break;
+//                        }
+//                    }
+//                }
             }
             // 如果还是少于2个,就将缓存列表键入到播放列表中
             if (cachePlayVideos.size() < 2) {
@@ -229,50 +263,56 @@ public class VideoAdUtils {
     /**
      * 提出重复下载的视频 最终获得明日下载列表
      */
-    public static ArrayList<AdDetailResponse> reconnectedPrepare(ArrayList<AdDetailResponse> downloadLists, ArrayList<AdDetailResponse> prepareDownloadLists) {
-        ArrayList<AdDetailResponse> tomorrowList = new ArrayList<>();
-        int downloadsSize = downloadLists.size();
-        for (int i = 0; i < prepareDownloadLists.size(); i++) {
-            AdDetailResponse prepareVideo = prepareDownloadLists.get(i);
-            for (int j = 0; j < downloadsSize; j++) {
-                AdDetailResponse downloadVideo = downloadLists.get(j);
-                if (!TextUtils.isEmpty(prepareVideo.adVideoName) && prepareVideo.adVideoName.equals(downloadVideo.adVideoName)) {
-                    prepareDownloadLists.remove(i);
-                    LogCat.e("video", "剔除重复下载的视频：" + prepareVideo.adVideoName);
-                    --i;
-                    break;
-                }
-            }
-        }
+    public static void reconnectedPrepare(ArrayList<AdDetailResponse> downloadLists, ArrayList<AdDetailResponse> prepareDownloadLists) {
+//        ArrayList<AdDetailResponse> tomorrowList = new ArrayList<>();
+//        int downloadsSize = downloadLists.size();
+
+        removeItemFromList(prepareDownloadLists, downloadLists);
+
+
+//        for (int i = 0; i < prepareDownloadLists.size(); i++) {
+//            AdDetailResponse prepareVideo = prepareDownloadLists.get(i);
+//            for (int j = 0; j < downloadsSize; j++) {
+//                AdDetailResponse downloadVideo = downloadLists.get(j);
+//                if (!TextUtils.isEmpty(prepareVideo.adVideoName) && prepareVideo.adVideoName.equals(downloadVideo.adVideoName)) {
+//                    prepareDownloadLists.remove(i);
+//                    LogCat.e("video", "剔除重复下载的视频：" + prepareVideo.adVideoName);
+//                    --i;
+//                    break;
+//                }
+//            }
+//        }
         LogCat.e("video", "------------------------------");
         for (AdDetailResponse adDetailResponse : prepareDownloadLists) {
             LogCat.e("video", "视频：" + adDetailResponse.adVideoName);
         }
         LogCat.e("video", "------------------------------");
-        tomorrowList.addAll(prepareDownloadLists);
-        return tomorrowList;
-
+//        tomorrowList.addAll(prepareDownloadLists);
+//        return tomorrowList;
+        return;
     }
 
     public static ArrayList<AdDetailResponse> dealWithDeleteVideos(ArrayList<AdDetailResponse> todayVideos, ArrayList<AdDetailResponse> tomorrowVideos) {
         ArrayList<AdDetailResponse> deleteVideos = new ArrayList<>();
         deleteVideos.addAll(todayVideos);
-        int tmSize = tomorrowVideos.size();
-        int deleteSize = todayVideos.size();
-        for (int i = 0; i < tmSize; i++) {
-            AdDetailResponse tomorrowVideo = tomorrowVideos.get(i);
-            boolean isContains = false;
-            for (int j = 0; j < deleteSize; j++) {
-                AdDetailResponse todayVideo = todayVideos.get(j);
-                if (!TextUtils.isEmpty(tomorrowVideo.adVideoName) && tomorrowVideo.adVideoName.equals(todayVideo.adVideoName)) {
-                    isContains = true;
-                    break;
-                }
-            }
-            if(!isContains){
-                deleteVideos.add(tomorrowVideo);
-            }
-        }
+
+        deleteVideos.addAll(getDifferenceSetList(deleteVideos, tomorrowVideos));
+//        int tmSize = tomorrowVideos.size();
+//        int deleteSize = todayVideos.size();
+//        for (int i = 0; i < tmSize; i++) {
+//            AdDetailResponse tomorrowVideo = tomorrowVideos.get(i);
+//            boolean isContains = false;
+//            for (int j = 0; j < deleteSize; j++) {
+//                AdDetailResponse todayVideo = todayVideos.get(j);
+//                if (!TextUtils.isEmpty(tomorrowVideo.adVideoName) && tomorrowVideo.adVideoName.equals(todayVideo.adVideoName)) {
+//                    isContains = true;
+//                    break;
+//                }
+//            }
+//            if(!isContains){
+//                deleteVideos.add(tomorrowVideo);
+//            }
+//        }
 
         return deleteVideos;
 
@@ -306,22 +346,24 @@ public class VideoAdUtils {
      */
     public static ArrayList<AdDetailResponse> getDownloadList(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> todayVideoList) {
         ArrayList<AdDetailResponse> downloadList = new ArrayList<>();
+        downloadList.addAll(getDifferenceSetList(todayVideoList, localVideoList));
         // 今天播放列表的视频不在本地缓存列表中，说明当前视频需要下载
-        boolean isNeedDl;
-        for (AdDetailResponse todayResponse : todayVideoList) {
-            isNeedDl = true;
-            for (AdDetailResponse localVideoResponse : localVideoList) {
-                // 如果当前视频在本地缓存中，改视频不需要下载，反之下载
-                if (!TextUtils.isEmpty(todayResponse.adVideoName) && todayResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
-                    isNeedDl = false;
-                    break;
-                }
-            }
-            if (isNeedDl) {
-                downloadList.add(todayResponse);
-                LogCat.e("video", "需下载的视频：" + todayResponse.adVideoName + ", " + todayResponse.adVideoId);
-            }
-        }
+
+//        boolean isNeedDl;
+//        for (AdDetailResponse todayResponse : todayVideoList) {
+//            isNeedDl = true;
+//            for (AdDetailResponse localVideoResponse : localVideoList) {
+//                // 如果当前视频在本地缓存中，改视频不需要下载，反之下载
+//                if (!TextUtils.isEmpty(todayResponse.adVideoName) && todayResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
+//                    isNeedDl = false;
+//                    break;
+//                }
+//            }
+//            if (isNeedDl) {
+//                downloadList.add(todayResponse);
+//                LogCat.e("video", "需下载的视频：" + todayResponse.adVideoName + ", " + todayResponse.adVideoId);
+//            }
+//        }
         return downloadList;
     }
 
@@ -359,67 +401,26 @@ public class VideoAdUtils {
     public static ArrayList<AdDetailResponse> getDeleteList(ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> todayVideoList) {
         // 删除文件为在本地缓存视频列表，而不在今日播放列表的内容
         ArrayList<AdDetailResponse> deleteList = new ArrayList<>();
-        boolean isNeedDel;
-        for (AdDetailResponse localVideoResponse : localVideoList) {
-            isNeedDel = true;
-            for (AdDetailResponse todayResponse : todayVideoList) {
-                // 今天播放列表的视频不在本地缓存列表中，说明当前视频需要下载
-                if (!TextUtils.isEmpty(todayResponse.adVideoName) && todayResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
-                    isNeedDel = false;
-                    break;
-                }
-            }
-            if (isNeedDel) {
-                LogCat.e("video", "需要删除的视频：" + localVideoResponse.adVideoName);
-                deleteList.add(localVideoResponse);
-            }
-        }
+        deleteList.addAll(getDifferenceSetList(localVideoList, todayVideoList));
+//        boolean isNeedDel;
+//        for (AdDetailResponse localVideoResponse : localVideoList) {
+//            isNeedDel = true;
+//            for (AdDetailResponse todayResponse : todayVideoList) {
+//                // 今天播放列表的视频不在本地缓存列表中，说明当前视频需要下载
+//                if (!TextUtils.isEmpty(todayResponse.adVideoName) && todayResponse.adVideoName.equals(localVideoResponse.adVideoName)) {
+//                    isNeedDel = false;
+//                    break;
+//                }
+//            }
+//            if (isNeedDel) {
+//                LogCat.e("video", "需要删除的视频：" + localVideoResponse.adVideoName);
+//                deleteList.add(localVideoResponse);
+//            }
+//        }
         return deleteList;
     }
 
-    /**
-     * 检测localVideoList列表文件完整性
-     * 根据今明两日的文件列表检查localVideoList列表文件的完整性
-     *
-     * @param cacheTodayList
-     */
-    public static ArrayList<AdDetailResponse> checkFileLength(Context context, ArrayList<AdDetailResponse> localVideoList, ArrayList<AdDetailResponse> cacheTodayList) {
-        ArrayList<AdDetailResponse> deleteVideos = new ArrayList<>();
-        if (cacheTodayList != null && cacheTodayList.size() != 0) {
-            LogCat.e("video", "检测到播放列表, 开始检测文件完整性......");
-            for (int i = 0; i < localVideoList.size(); i++) {
-                AdDetailResponse localVideo = localVideoList.get(i);
-                boolean isHasCache = false;
-                for (AdDetailResponse cacheVideo : cacheTodayList) {
-                    if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
-                        isHasCache = true;
-                        if (cacheVideo.adVideoLength != 0 && cacheVideo.adVideoLength != localVideo.adVideoLength) {
-                            // 如果文件正在下载，则忽略
-                            boolean isDownloading = DLDao.queryByName(context, localVideo.adVideoName);
-                            if (isDownloading) {
-                                LogCat.e("video", "当前文件正在下载中，不做额外处理.......");
-                            } else {
-                                deleteVideos.add(cacheVideo);
-                                LogCat.e("video", "由于文件不完整，需要删除的文件是......." + localVideo.adVideoName);
-                            }
-                            break;
-                        }
-                    }
-                }
-                if(!isHasCache){
-                    deleteVideos.add(localVideo);
-                    LogCat.e("video", "由于当前文件不在cache表中，无法正确验证完整性，所以将.........." + localVideo.adVideoName + " 文件加入删除列表");
-                }
-            }
-        } else {
 
-            for (int i = 0; i < localVideoList.size(); i++) {
-                AdDetailResponse localVideo = localVideoList.get(i);
-                deleteVideos.add(localVideo);
-            }
-        }
-        return deleteVideos;
-    }
 
     public static void recordStartTime(Context context) {
         SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(context);
@@ -538,7 +539,52 @@ public class VideoAdUtils {
     }
 
 
+    // 去除交集
+    public static void removeItemFromList(ArrayList<AdDetailResponse> sourceList, ArrayList<AdDetailResponse> otherList){
+        for (AdDetailResponse adDetailResponse : otherList) {
+            for (int i = sourceList.size() - 1; i >= 0; i--) {
+                AdDetailResponse deleteVideo = sourceList.get(i);
+                if (deleteVideo != null && !TextUtils.isEmpty(deleteVideo.adVideoName) && deleteVideo.adVideoName.equals(adDetailResponse.adVideoName)) {
+                    // 当前视频需要使用，从删除列表删除
+                    sourceList.remove(i);
+                }
+            }
+        }
+    }
 
+    // 求交集
+    public static ArrayList<AdDetailResponse> getIntersectionList(ArrayList<AdDetailResponse> sourceList, ArrayList<AdDetailResponse> otherList){
+        ArrayList<AdDetailResponse> targetList = new ArrayList<>();
+        for (AdDetailResponse localVideo : sourceList) {
+            for (AdDetailResponse cacheVideo : otherList) {
+                if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
+                    cacheVideo.videoPath = localVideo.videoPath;
+                    LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
+                    targetList.add(cacheVideo);
+                    break;
+                }
+            }
+        }
+        return targetList;
+    }
+
+    // 求差集
+    public static ArrayList<AdDetailResponse> getDifferenceSetList(ArrayList<AdDetailResponse> sourceList, ArrayList<AdDetailResponse> otherList){
+        ArrayList<AdDetailResponse> targetList = new ArrayList<>();
+        for (AdDetailResponse tomorrowVideo : sourceList) {
+            boolean isContains = false;
+            for (AdDetailResponse todayVideo : otherList) {
+                if (!TextUtils.isEmpty(tomorrowVideo.adVideoName) && tomorrowVideo.adVideoName.equals(todayVideo.adVideoName)) {
+                    isContains = true;
+                    break;
+                }
+            }
+            if(!isContains){
+                targetList.add(tomorrowVideo);
+            }
+        }
+        return targetList;
+    }
 
 
 }

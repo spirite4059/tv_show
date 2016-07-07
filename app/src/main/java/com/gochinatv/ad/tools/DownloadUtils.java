@@ -31,7 +31,7 @@ import static com.gochinatv.ad.tools.VideoAdUtils.getTableName;
  */
 public class DownloadUtils {
 
-    private static final int THREAD_NUMBER = 1;
+    private static final int THREAD_NUMBER = 2;
 
     public static void download(final boolean isToday, final Context context, String dir, final String fileName, final String fileUrl, final OnUpgradeStatusListener listener) {
         if(context == null){
@@ -101,7 +101,7 @@ public class DownloadUtils {
 
             @Override
             public void onDownloading(String fileName) {
-                LogCat.e("video", "当前下载正在进行中............. " + fileName);
+//                LogCat.e("video", "当前下载正在进行中............. " + fileName);
             }
 
             private void logProgress(long progress) {
