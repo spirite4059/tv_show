@@ -29,8 +29,6 @@ import com.squareup.picasso.Picasso;
 import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by zfy on 2016/3/16.
@@ -45,21 +43,19 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
 
 
     //请求接口
-    private int getWebADTime = 14400000;//请求接口的间隔
     private ArrayList<ADTwoOtherDataResponse> dataResponses;//广告数据集
     private int taotalSize;//广告总个数
     private int cycleTextTime = 5000;//每隔多长去滚动，默认：10 （秒）
     //是否是第一次网络请求
-    private boolean isFirstDoHttp = true;
+    //private boolean isFirstDoHttp = true;
     //请求文字广告接口的定时器
-    //private int getTextADTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
-    private Timer getTextADTimer;
+    //private Timer getTextADTimer;
 
     private boolean isCycleState = false;//滚动的状态
 
     private ArrayList<BaseSliderView> sliderViewList;
 
-    private boolean isStartSliderView;//是否启动过slider
+    //private boolean isStartSliderView;//是否启动过slider
 
 //    private DisplayImageOptions options;
 //    private ImageLoader imageLoader;
@@ -141,10 +137,10 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
             mDemoSlider.stopAutoCycle();
         }
 
-        if (getTextADTimer != null) {
-            getTextADTimer.cancel();
-            getTextADTimer = null;
-        }
+//        if (getTextADTimer != null) {
+//            getTextADTimer.cancel();
+//            getTextADTimer = null;
+//        }
 
     }
 
@@ -215,18 +211,18 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
                 }
 
 
-                if (isFirstDoHttp) {
-                    if (getTextADTimer == null) {
-                        getTextADTimer = new Timer();
-                        getTextADTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                doGetTextAD();
-                            }
-                        }, httpIntervalTime, httpIntervalTime);
-                    }
-                }
-                isFirstDoHttp = false;
+//                if (isFirstDoHttp) {
+//                    if (getTextADTimer == null) {
+//                        getTextADTimer = new Timer();
+//                        getTextADTimer.schedule(new TimerTask() {
+//                            @Override
+//                            public void run() {
+//                                doGetTextAD();
+//                            }
+//                        }, httpIntervalTime, httpIntervalTime);
+//                    }
+//                }
+//                isFirstDoHttp = false;
 
 
             }
@@ -324,34 +320,6 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
         }
     }
 
-
-//    public LayoutResponse getLayoutResponse() {
-//        return layoutResponse;
-//    }
-//
-//    /**
-//     * 设置布局参数
-//     *
-//     * @param layoutResponse
-//     */
-//    public void setLayoutResponse(LayoutResponse layoutResponse) {
-//        this.layoutResponse = layoutResponse;
-//    }
-
-
-//    public int getGetWebADTime() {
-//        return getWebADTime;
-//    }
-//
-//    /**
-//     * 设置间隔时间
-//     *
-//     * @param getWebADTime
-//     */
-//    public void setGetWebADTime(int getWebADTime) {
-//        this.getWebADTime = getWebADTime;
-//        LogCat.e("ADTwoFragment","请求接口时间的间隔 getTextADTime:  " + getTextADTime );
-//    }
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {

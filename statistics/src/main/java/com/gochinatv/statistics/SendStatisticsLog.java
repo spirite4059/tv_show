@@ -28,6 +28,7 @@ public class SendStatisticsLog {
      * 上传激活日志
      */
     public static void sendInitializeLog(Context context){
+        DataUtils.saveToSDCard('\n'+" sendInitializeLog %%%%%%  "+ DataUtils.getFormatTime(System.currentTimeMillis()));
         Map<String,String> map = new HashMap<>();
         map.put("mac", MacUtils.getMacAddress(context));
         map.put("versionName", DataUtils.getVersionName(context));

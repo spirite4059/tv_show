@@ -982,7 +982,7 @@ public class DataUtils {
 	public static void saveToSDCard(String content){
 		OutputStream out = null;
 		try {
-			File file = new File(Environment.getExternalStorageDirectory(), "TESTDOWNLOAD.txt");
+			File file = new File(Environment.getExternalStorageDirectory(), "upStartTime.txt");
 			if(!file.exists()){
 				file.createNewFile();
 			}
@@ -994,6 +994,29 @@ public class DataUtils {
 		}
 
 	}
+
+	/**
+	 * 向sdcard中写入文件
+	 * @param
+	 * @param content 文件内容
+	 */
+	public static void saveToSDCardHDMI(String content){
+		OutputStream out = null;
+		try {
+			File file = new File(Environment.getExternalStorageDirectory(), "hdmi.txt");
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			out = new FileOutputStream(file,true);
+			out.write(content.getBytes());
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+
 
 
 }

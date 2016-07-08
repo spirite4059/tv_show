@@ -23,8 +23,6 @@ import com.okhtttp.service.ADHttpService;
 import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by zfy on 2016/3/16.
@@ -49,15 +47,14 @@ public class ADFourFragment extends BaseFragment {
 
 
     //请求文字广告接口的定时器
-    //private int getTextADTime = 14400000;//每隔多长去请求接口，默认：4 （小时）== 14400000 毫秒
-    private Timer getTextADTimer;
+    //private Timer getTextADTimer;
 
 
     //布局参数
     //private LayoutResponse layoutResponse;
 
     //是否是第一次网络请求
-    private boolean isFirstDoHttp = true;
+    //private boolean isFirstDoHttp = true;
 
 
 
@@ -149,10 +146,10 @@ public class ADFourFragment extends BaseFragment {
             isCycleState = false;
         }
 
-        if(getTextADTimer != null){
-            getTextADTimer.cancel();
-            getTextADTimer = null;
-        }
+//        if(getTextADTimer != null){
+//            getTextADTimer.cancel();
+//            getTextADTimer = null;
+//        }
 
         if(autoTextView != null){
             autoTextView.stopScroll();
@@ -266,18 +263,18 @@ public class ADFourFragment extends BaseFragment {
                     }
                 }
 
-                if(isFirstDoHttp){
-                    if(getTextADTimer == null){
-                        getTextADTimer = new Timer();
-                        getTextADTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                doGetTextAD();
-                            }
-                        },httpIntervalTime,httpIntervalTime);
-                    }
-                }
-                isFirstDoHttp = false;
+//                if(isFirstDoHttp){
+//                    if(getTextADTimer == null){
+//                        getTextADTimer = new Timer();
+//                        getTextADTimer.schedule(new TimerTask() {
+//                            @Override
+//                            public void run() {
+//                                doGetTextAD();
+//                            }
+//                        },httpIntervalTime,httpIntervalTime);
+//                    }
+//                }
+//                isFirstDoHttp = false;
 
             }
 

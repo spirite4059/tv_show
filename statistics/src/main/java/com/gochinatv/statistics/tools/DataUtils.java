@@ -11,10 +11,16 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Environment;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 
 @SuppressLint({"NewApi", "SimpleDateFormat", "DefaultLocale"})
@@ -220,4 +226,48 @@ public class DataUtils {
 //	}
 
 
+    /**
+     * 向sdcard中写入文件
+     * @param
+     * @param content 文件内容
+     */
+    public static void saveToSDCard(String content){
+        OutputStream out = null;
+        try {
+            File file = new File(Environment.getExternalStorageDirectory(), "upStartTime.txt");
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            out = new FileOutputStream(file,true);
+            out.write(content.getBytes());
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+
+    public static String getFormatTime(long time){
+        if(time <= 0){
+            return "";
+        }
+        String timeFormat = getFormatTime(time, "yyyy-MM-dd hh:mm:ss");
+        return timeFormat;
+    }
+
+    public static String getFormatTime(long time, String format){
+        if(time <= 0){
+            return "";
+        }
+        String timeFormat = "";
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat(format);
+            timeFormat = sdf.format(new Date(time));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return timeFormat;
+    }
 }

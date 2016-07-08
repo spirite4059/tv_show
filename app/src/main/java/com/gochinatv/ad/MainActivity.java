@@ -187,9 +187,13 @@ public class MainActivity extends BaseActivity {
      * 每4隔小时请求升级和上报开机
      */
     private void intervalUpdate() {
+        if(isFinishing()){
+            return;
+        }
         if (intervalTimer == null) {
             intervalTimer = new Timer();
         }
+
         intervalTimer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -197,8 +201,35 @@ public class MainActivity extends BaseActivity {
                 doHttpUpdate(MainActivity.this);
                 //上报开机时间
                 SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
+                fragmentDoHttpRequest();
             }
         }, intervalTime, intervalTime);
+    }
+
+
+    /**
+     * 各个fragment的4个小时后的重新请求接口
+     */
+    private void fragmentDoHttpRequest(){
+        FragmentManager fm = getFragmentManager();
+        for(int i= 1;i<5;i++){
+            if(i == 3){
+                continue;
+            }
+            if(i == 1){
+                LogCat.e("MainActivity", "baseFragment :  "+ i);
+                AdOneFragment adOneFragment = (AdOneFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                if(adOneFragment != null){
+                    adOneFragment.httpRequest(false);
+                }
+            }else{
+                LogCat.e("MainActivity", "baseFragment :  "+ i);
+                BaseFragment baseFragment = (BaseFragment) fm.findFragmentByTag(Constants.FRAGMENT_TAG_PRE + i);
+                if(baseFragment != null){
+                    baseFragment.doHttpRequest();
+                }
+            }
+        }
     }
 
 
@@ -281,7 +312,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void sendFirebaseMessage(String msg) {
                 if(!TextUtils.isEmpty(msg)){
-                    DataUtils.saveToSDCard("\n" + "来自firebase的消息： "+ msg +" ---- "+ DataUtils.getFormatTime(System.currentTimeMillis()));
+                    //DataUtils.saveToSDCard("\n" + "来自firebase的消息： "+ msg +" ---- "+ DataUtils.getFormatTime(System.currentTimeMillis()));
                     LogCat.e("push", "commend -> json: " + msg);
                     LogCat.e("Message", "google-firebase的消息: " + msg);
                     dispatchCommend(msg);

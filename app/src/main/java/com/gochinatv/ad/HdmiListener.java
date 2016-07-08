@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.gochinatv.ad.tools.AlertUtils;
+import com.gochinatv.ad.tools.DataUtils;
 import com.tools.LogCat;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class HdmiListener extends BroadcastReceiver {
                 com.gochinatv.ad.tools.LogCat.e("hdmi", "runningActivity : " + runningProgress);
                 AlertUtils.alert(ctxt, "runningActivity : " + runningProgress);
                 if(!"com.gochinatv.ad".equals(runningProgress)){
+                    DataUtils.saveToSDCardHDMI('\n'+ " app start &&&&&&&&&&&&  " + DataUtils.getFormatTime(System.currentTimeMillis()));
                     LogCat.e("hdmi", "重启app");
                     AlertUtils.alert(ctxt, "重启app ");
                     Intent restartIntent = new Intent(ctxt, LoadingActivity.class);
@@ -47,6 +49,7 @@ public class HdmiListener extends BroadcastReceiver {
                 for (ActivityManager.RunningAppProcessInfo running : appList1) {
                     System.out.println(running.processName);
                     if("com.gochinatv.ad".equals(running.processName)){
+                        DataUtils.saveToSDCardHDMI('\n'+ " app killed &&&&&&&&&&&&  " + DataUtils.getFormatTime(System.currentTimeMillis()));
                         LogCat.e("hdmi", "找到正在执行的app " + running.processName + ", 并关闭app");
                         android.os.Process.killProcess(running.pid);
                         break;

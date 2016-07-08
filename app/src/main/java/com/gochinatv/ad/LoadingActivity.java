@@ -106,11 +106,14 @@ public class LoadingActivity extends BaseActivity {
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
-            DataUtils.startAppServer(this);
+            //DataUtils.startAppServer(this);
         }
 
         // 请求网络
         doHttp();
+
+        //测试是否重启
+        DataUtils.saveToSDCardHDMI('\n'+ " LoadingActivity: app start  " + DataUtils.getFormatTime(System.currentTimeMillis()));
     }
 
     @Override
