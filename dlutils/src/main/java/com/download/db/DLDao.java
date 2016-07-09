@@ -286,7 +286,7 @@ public class DLDao implements IDBConstants {
     }
 
 
-    private static synchronized void delete(SQLiteDatabase database) {
+    public static synchronized void delete(SQLiteDatabase database) {
         try {
             database.beginTransaction();
             database.delete(DBBASE_DOWNLOAD_TABLE_NAME, null, null);
@@ -348,11 +348,10 @@ public class DLDao implements IDBConstants {
 
 
     public static synchronized boolean updateOut(SQLiteDatabase database, int tid, long endPos) {
-        if (database == null) {
-            return false;
-        }
-        boolean flag = false;
+
         database.beginTransaction();
+        boolean flag = false;
+//        database.execSQL("update " + DBBASE_DOWNLOAD_TABLE_NAME + " set " + startPos + " = " + endPos + " where " +  DLDao.tid + " = " + tid);
         ContentValues updatedValues = new ContentValues();
         updatedValues.put(DLDao.startPos, endPos);
         int temp = database.update(DBBASE_DOWNLOAD_TABLE_NAME, updatedValues, DLDao.tid + " = ?", new String[]{String.valueOf(tid)});

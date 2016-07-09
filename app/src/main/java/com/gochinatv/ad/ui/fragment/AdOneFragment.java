@@ -869,13 +869,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    @Override
-    public void onStop() {
-        LogCat.e("video", "onStop...................");
-        release();
-        super.onStop();
-
-    }
+//    @Override
+//    public void onStop() {
+//        LogCat.e("video", "onStop...................");
+//        release();
+//        super.onStop();
+//
+//    }
 
 
     @Override

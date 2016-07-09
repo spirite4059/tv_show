@@ -325,9 +325,17 @@ public class MainActivity extends BaseActivity {
 //    }
 
 
+
+
+
     @Override
-    protected void onStop() {
+    protected void onDestroy() {
+        super.onDestroy();
         DLUtils.cancel();
+        //卸载广播
+        if (networkBroadcastReceiver != null) {
+            unregisterReceiver(networkBroadcastReceiver);
+        }
         if (downLoadAPKUtils != null) {
             downLoadAPKUtils.stopDownLoad();
         }
@@ -338,17 +346,6 @@ public class MainActivity extends BaseActivity {
             mPushAgent.disable();
         }
 
-        super.onStop();
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        //卸载广播
-        if (networkBroadcastReceiver != null) {
-            unregisterReceiver(networkBroadcastReceiver);
-        }
     }
 
     /**

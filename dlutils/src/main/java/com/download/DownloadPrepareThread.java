@@ -2,6 +2,7 @@ package com.download;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -263,8 +264,9 @@ public class DownloadPrepareThread extends Thread {
 
 
         int downloadSize = -2;
+        long startPosition;
+        SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
         try {
-
             while (!isFinished) {
                 isFinished = true;
                 int downloadedAllSize = threadNum;
@@ -273,7 +275,15 @@ public class DownloadPrepareThread extends Thread {
                 for (DownloadThread downloadThread : threads) {
                     if (downloadThread != null) {
                         if (isCancel) {
+                            LogCat.e("video", "停止线程threadId: " + downloadThread.threadId);
                             downloadThread.cancel();
+//                            try {
+//                                startPosition = downloadThread.startPos + downloadSize - 1;
+//                                DLDao.updateOut(sqLiteDatabase, downloadThread.threadId, startPosition);
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                                errorCode = ErrorCodes.ERROR_DB_UPDATE;
+//                            }
                             continue;
                         }
 
@@ -284,11 +294,20 @@ public class DownloadPrepareThread extends Thread {
                             isThreadError = true;
                             break;
                         } else {
+
                             if (!downloadThread.isCompleted()) {
                                 isFinished = false;
                                 downloadedAllSize += downloadThread.getDownloadLength();
                             } else {
                                 downloadedAllSize += downloadThread.getDownloadLength();
+                            }
+
+                            try {
+                                startPosition = downloadThread.getStartPos() + downloadThread.getDownloadLength() - 1;
+                                DLDao.updateOut(sqLiteDatabase, downloadThread.threadId, startPosition);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                errorCode = ErrorCodes.ERROR_DB_UPDATE;
                             }
                         }
                     }
@@ -337,6 +356,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
         // 此时是正常结束，无论是否正常下载成功，都要删除数据库记录
+        DLDao.delete(sqLiteDatabase);
         DLDao.delete(context);
         // 完成所有的下载了
         if (isFinished) {
@@ -346,7 +366,6 @@ public class DownloadPrepareThread extends Thread {
                 LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
                 // 删除当前记录
-
             }
         } else {
             LogCat.e("video", "文件下载尚未完成......");
