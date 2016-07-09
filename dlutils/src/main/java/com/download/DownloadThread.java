@@ -1,9 +1,7 @@
 package com.download;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 
-import com.download.db.DLDao;
 import com.download.db.DownloadInfo;
 import com.download.tools.LogCat;
 import com.download.tools.ToolUtils;
@@ -29,7 +27,7 @@ public class DownloadThread extends Thread {
     /** 文件下载路径 */
     private URL downloadUrl;
     /** 当前下载线程ID */
-    private int threadId;
+    public int threadId;
     /** 线程下载数据长度 */
     private int blockSize;
     private boolean isCancel;
@@ -75,7 +73,7 @@ public class DownloadThread extends Thread {
         }
         endPos = blockSize * threadId - 1;//结束位置
         LogCat.e("current thread " + threadId  + "startPos......." + startPos);
-        LogCat.e("current thread " + threadId  + "endPos........" +  endPos);
+        LogCat.e("current thread " + threadId  + "endPos........ " +  endPos);
         // 如果线程已经下载完成就不去在做操作
         if(downloadLength != 0 && downloadLength == endPos){
             isCompleted = true;
@@ -180,7 +178,7 @@ public class DownloadThread extends Thread {
 
         int downloadSize = 0;
 
-        SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
+//        SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
         // TODO 打开数据库
 
         while (len != -1 && !isCancel) {
@@ -201,15 +199,15 @@ public class DownloadThread extends Thread {
             downloadLength += len;
 
             downloadSize += len;
-            try {
-                long startPosition = startPos + downloadSize - 1;
-                DLDao.updateOut(sqLiteDatabase, threadId, startPosition);
-            }catch (Exception e){
-                e.printStackTrace();
-                errorCode = ErrorCodes.ERROR_DB_UPDATE;
-            }
+//            try {
+//                long startPosition = startPos + downloadSize - 1;
+//                DLDao.updateOut(sqLiteDatabase, threadId, startPosition);
+//            }catch (Exception e){
+//                e.printStackTrace();
+//                errorCode = ErrorCodes.ERROR_DB_UPDATE;
+//            }
 
-
+//            startPos += downloadSize - 1;
 
             if(downloadLength > blockSize){
                 LogCat.e("video" , "downloadLength > blockSize，下载已经完成.....");
@@ -242,7 +240,7 @@ public class DownloadThread extends Thread {
 
         }
         // 关闭数据库
-        DLDao.closeDB(sqLiteDatabase);
+//        DLDao.closeDB(sqLiteDatabase);
 
         if (bis != null) {
             try {
@@ -270,8 +268,8 @@ public class DownloadThread extends Thread {
             LogCat.e("current thread " + threadId  + "尚未完成下载任务。。。。。。" + downloadLength);
         }
         long startPosition = startPos + downloadSize - 1;
-        LogCat.e("current thread " + threadId  + "startPos......." + startPosition);
-        LogCat.e("current thread " + threadId  + "endPos........" +  endPos);
+        LogCat.e("current thread " + threadId  + "   startPos......." + startPosition);
+        LogCat.e("current thread " + threadId  + "   endPos........ " +  endPos);
         // TODO 关闭数据库
 
     }
@@ -297,6 +295,10 @@ public class DownloadThread extends Thread {
     }
     public void cancel(){
         isCancel = true;
+    }
+
+    public long getStartPos(){
+        return blockSize * (threadId - 1);//开始位置
     }
 
 }
