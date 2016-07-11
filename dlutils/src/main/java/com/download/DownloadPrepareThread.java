@@ -266,13 +266,6 @@ public class DownloadPrepareThread extends Thread {
                         if (isCancel) {
                             LogCat.e("video", "停止线程threadId: " + downloadThread.threadId);
                             downloadThread.cancel();
-//                            try {
-//                                startPosition = downloadThread.startPos + downloadSize - 1;
-//                                DLDao.updateOut(sqLiteDatabase, downloadThread.threadId, startPosition);
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                                errorCode = ErrorCodes.ERROR_DB_UPDATE;
-//                            }
                             continue;
                         }
 
@@ -423,15 +416,23 @@ public class DownloadPrepareThread extends Thread {
             downloadInfo.tlength = fileSize;
 
             boolean blockIsAdd = fileSize % threadNum == 0;
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 2.2.3
             long startPos = blockSize * (threadId - 1);//开始位置
-            long endPos = 0;
-            if (blockIsAdd) {
+            long endPos;
+            if(i == size - 1){
+                if (blockIsAdd) {
+                    endPos = blockSize * threadId - 1;//结束位置
+                } else {
+                    endPos = blockSize * threadId - 2;//结束位置
+                }
+            }else {
                 endPos = blockSize * threadId - 1;//结束位置
-            } else {
-                endPos = blockSize * threadId - 2;//结束位置
             }
+
 
             downloadInfo.startPos = startPos;
             downloadInfo.endPos = endPos;

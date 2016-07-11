@@ -31,7 +31,7 @@ import static com.gochinatv.ad.tools.VideoAdUtils.getTableName;
  */
 public class DownloadUtils {
 
-    private static final int THREAD_NUMBER = 2;
+    private static final int THREAD_NUMBER = 1;
 
     public static void download(final boolean isToday, final Context context, String dir, final String fileName, final String fileUrl, final OnUpgradeStatusListener listener) {
         if(context == null){
