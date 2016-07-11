@@ -391,7 +391,7 @@ public class DownloadPrepareThread extends Thread {
     }
 
 
-    private void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos, int fileSize) {
+    private synchronized void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos, int fileSize) {
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
             int threadId = i + 1;
@@ -404,7 +404,7 @@ public class DownloadPrepareThread extends Thread {
     }
 
 
-    private void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
+    private synchronized void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
         // 插入数据前，将所有的表清空
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分

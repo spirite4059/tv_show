@@ -164,7 +164,7 @@ public class DownloadThread extends Thread {
         }
         int len = 0;
         try {
-            len = bis.read(buffer, 0, BUFFER_IN_SIZE);
+            len = bis.read(buffer);
             LogCat.e("每次读取玩后返回的len.........."+ len);
         } catch (IOException e) {
             e.printStackTrace();
@@ -198,7 +198,7 @@ public class DownloadThread extends Thread {
 
             downloadLength += len;
 
-            downloadSize += len;
+//            downloadSize += len;
 //            try {
 //                long startPosition = startPos + downloadSize - 1;
 //                DLDao.updateOut(sqLiteDatabase, threadId, startPosition);
@@ -227,7 +227,7 @@ public class DownloadThread extends Thread {
 //            }
 
             try {
-                len = bis.read(buffer, 0, BUFFER_IN_SIZE);
+                len = bis.read(buffer);
             } catch (IOException e) {
                 e.printStackTrace();
                 errorCode = ErrorCodes.ERROR_DOWNLOADING_READ;
