@@ -277,13 +277,6 @@ public class DownloadPrepareThread extends Thread {
                         if (isCancel) {
                             LogCat.e("video", "停止线程threadId: " + downloadThread.threadId);
                             downloadThread.cancel();
-//                            try {
-//                                startPosition = downloadThread.startPos + downloadSize - 1;
-//                                DLDao.updateOut(sqLiteDatabase, downloadThread.threadId, startPosition);
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                                errorCode = ErrorCodes.ERROR_DB_UPDATE;
-//                            }
                             continue;
                         }
 
@@ -456,27 +449,18 @@ public class DownloadPrepareThread extends Thread {
             downloadInfo.tlength = fileSize;
 
             boolean blockIsAdd = fileSize % threadNum == 0;
-
-//            int sizeBlock = i * (fileSize / threadNum);
-//            int startPos = sizeBlock;
-//            int endPos = 0;
-//            //设置最后一个结束点的位置
-//            if (i == threadNum - 1) {
-//                endPos = fileSize;
-//            } else {
-//                sizeBlock = (i + 1) * (fileSize / threadNum);
-//                endPos = sizeBlock;
-//            }
-//            LogCat.e("video", "start-end Position[" + i + "]: " + startPos + "-" + endPos);
-
-
             long startPos = blockSize * (threadId - 1);//开始位置
-            long endPos = 0;
-            if (blockIsAdd) {
+            long endPos;
+            if(i == size - 1){
+                if (blockIsAdd) {
+                    endPos = blockSize * threadId - 1;//结束位置
+                } else {
+                    endPos = blockSize * threadId - 2;//结束位置
+                }
+            }else {
                 endPos = blockSize * threadId - 1;//结束位置
-            } else {
-                endPos = blockSize * threadId - 2;//结束位置
             }
+
 
             downloadInfo.startPos = startPos;
 
@@ -498,14 +482,14 @@ public class DownloadPrepareThread extends Thread {
             threads[i].start();
 
         }
-        ArrayList<DownloadInfo> downloadInfos1 = DLDao.queryAll(context);
-        for (DownloadInfo downloadInfo : downloadInfos1) {
-            LogCat.e("downloadInfo.tname......" + downloadInfo.tname);
-            LogCat.e("downloadInfo.turl......" + downloadInfo.turl);
-            LogCat.e("downloadInfo.startPos......" + downloadInfo.startPos);
-            LogCat.e("--------------------------");
-        }
-        LogCat.e("插入后的数据大小......" + DLDao.queryAll(context).size());
+//        ArrayList<DownloadInfo> downloadInfos1 = DLDao.queryAll(context);
+//        for (DownloadInfo downloadInfo : downloadInfos1) {
+//            LogCat.e("downloadInfo.tname......" + downloadInfo.tname);
+//            LogCat.e("downloadInfo.turl......" + downloadInfo.turl);
+//            LogCat.e("downloadInfo.startPos......" + downloadInfo.startPos);
+//            LogCat.e("--------------------------");
+//        }
+//        LogCat.e("插入后的数据大小......" + DLDao.queryAll(context).size());
     }
 
     private boolean deleteFailFile(int fileSize, int downloadSize) {
