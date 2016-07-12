@@ -171,7 +171,7 @@ public class MainActivity extends BaseActivity {
         //得到firebase-token
         refreshGetFirebaseToken();
 
-
+        //每4个小时上报开机时间和升级请求
         intervalUpdate();
 
 //        if (DataUtils.isNetworkConnected(this)) {
@@ -203,7 +203,7 @@ public class MainActivity extends BaseActivity {
                 SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
                 fragmentDoHttpRequest();
             }
-        }, intervalTime, intervalTime);
+        }, intervalTime, intervalTime);//intervalTime
     }
 
 
@@ -447,6 +447,14 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void onStop() {
+        super.onStop();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
         DLUtils.cancel();
         if (downLoadAPKUtils != null) {
             downLoadAPKUtils.stopDownLoad();
@@ -464,14 +472,6 @@ public class MainActivity extends BaseActivity {
             rootLayout.removeCallbacks(firebaseTokenRunnable);
         }
 
-
-        super.onStop();
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
         //卸载广播
         if (networkBroadcastReceiver != null) {
             unregisterReceiver(networkBroadcastReceiver);

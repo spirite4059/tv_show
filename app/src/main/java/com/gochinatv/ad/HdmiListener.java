@@ -7,7 +7,7 @@ import android.content.Intent;
 
 import com.gochinatv.ad.tools.AlertUtils;
 import com.gochinatv.ad.tools.DataUtils;
-import com.tools.LogCat;
+import com.gochinatv.ad.tools.LogCat;
 
 import java.util.List;
 
