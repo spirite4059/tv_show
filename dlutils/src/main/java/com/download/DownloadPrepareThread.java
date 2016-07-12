@@ -416,11 +416,6 @@ public class DownloadPrepareThread extends Thread {
             downloadInfo.tlength = fileSize;
 
             boolean blockIsAdd = fileSize % threadNum == 0;
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 2.2.3
             long startPos = blockSize * (threadId - 1);//开始位置
             long endPos;
             if(i == size - 1){
