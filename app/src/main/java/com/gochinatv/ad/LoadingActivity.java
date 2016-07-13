@@ -113,7 +113,7 @@ public class LoadingActivity extends BaseActivity {
         doHttp();
 
         //测试是否重启
-        DataUtils.saveToSDCardHDMI('\n'+ " LoadingActivity: app start  " + DataUtils.getFormatTime(System.currentTimeMillis()));
+        //DataUtils.saveToSDCardHDMI('\n'+ " LoadingActivity: app start  " + DataUtils.getFormatTime(System.currentTimeMillis()));
     }
 
     @Override
