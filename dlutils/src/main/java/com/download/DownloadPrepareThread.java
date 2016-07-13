@@ -2,6 +2,7 @@ package com.download;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -252,8 +253,9 @@ public class DownloadPrepareThread extends Thread {
         }
 
         int downloadSize = -2;
+        long startPosition;
+        SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
         try {
-
             while (!isFinished) {
                 isFinished = true;
                 int downloadedAllSize = threadNum;
@@ -262,6 +264,7 @@ public class DownloadPrepareThread extends Thread {
                 for (DownloadThread downloadThread : threads) {
                     if (downloadThread != null) {
                         if (isCancel) {
+                            LogCat.e("video", "停止线程threadId: " + downloadThread.threadId);
                             downloadThread.cancel();
                             continue;
                         }
@@ -273,11 +276,20 @@ public class DownloadPrepareThread extends Thread {
                             isThreadError = true;
                             break;
                         } else {
+
                             if (!downloadThread.isCompleted()) {
                                 isFinished = false;
                                 downloadedAllSize += downloadThread.getDownloadLength();
                             } else {
                                 downloadedAllSize += downloadThread.getDownloadLength();
+                            }
+
+                            try {
+                                startPosition = downloadThread.getStartPos() + downloadThread.getDownloadLength() - 1;
+                                DLDao.updateOut(sqLiteDatabase, downloadThread.threadId, startPosition);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                errorCode = ErrorCodes.ERROR_DB_UPDATE;
                             }
                         }
                     }
@@ -326,6 +338,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
         // 此时是正常结束，无论是否正常下载成功，都要删除数据库记录
+        DLDao.delete(sqLiteDatabase);
         DLDao.delete(context);
         // 完成所有的下载了
         if (isFinished) {
@@ -335,7 +348,6 @@ public class DownloadPrepareThread extends Thread {
                 LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
                 // 删除当前记录
-
             }
         } else {
             LogCat.e("video", "文件下载尚未完成......");
@@ -372,7 +384,7 @@ public class DownloadPrepareThread extends Thread {
     }
 
 
-    private void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos, int fileSize) {
+    private synchronized void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos, int fileSize) {
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
             int threadId = i + 1;
@@ -385,7 +397,7 @@ public class DownloadPrepareThread extends Thread {
     }
 
 
-    private void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
+    private synchronized void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
         // 插入数据前，将所有的表清空
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
@@ -404,15 +416,18 @@ public class DownloadPrepareThread extends Thread {
             downloadInfo.tlength = fileSize;
 
             boolean blockIsAdd = fileSize % threadNum == 0;
-
-
             long startPos = blockSize * (threadId - 1);//开始位置
-            long endPos = 0;
-            if (blockIsAdd) {
+            long endPos;
+            if(i == size - 1){
+                if (blockIsAdd) {
+                    endPos = blockSize * threadId - 1;//结束位置
+                } else {
+                    endPos = blockSize * threadId - 2;//结束位置
+                }
+            }else {
                 endPos = blockSize * threadId - 1;//结束位置
-            } else {
-                endPos = blockSize * threadId - 2;//结束位置
             }
+
 
             downloadInfo.startPos = startPos;
             downloadInfo.endPos = endPos;

@@ -352,13 +352,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             nextVideoList = getDistinctList(response.next);
         }
 
-
-
         // 2.匹配今天要下载的视频
         LogCat.e("video", "根据今日播放列表，获取下载列表......");
         downloadLists = VideoAdUtils.getDownloadList(localVideoList, currentVideoList);
         LogCat.e("video", "------------------------------");
-
 
         // 3.匹配要删除的视频
         LogCat.e("video", "根据今日播放列表，获取删除列表......");
@@ -372,7 +369,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         // 更新今日数据表
         LogCat.e("video", "根据今日下载列表和今日删除列表，更新sql表.......");
-        VideoAdUtils.updateSqlVideoList(getActivity(), true, downloadLists, deleteLists);
+        VideoAdUtils.updateSqlVideoList(getActivity(), true, currentVideoList);
 
         if (response.next != null && response.next.size() != 0 && nextVideoList != null) {
             // 根据明日列表 来剔除在今日删除列表 中需要用到的视频
@@ -388,8 +385,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 }
             }
             LogCat.e("video", "最终今日删除列表大小------------------------------" + deleteLists.size());
-
-
             // 5.匹配明天要下载的视频
             LogCat.e("video", "根据明日播放列表，获取下载列表......");
             prepareDownloadLists = VideoAdUtils.getDownloadList(localVideoList, nextVideoList);
@@ -399,7 +394,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
             // 更新sql表
             LogCat.e("video", "根据明日需要下载的视频列表和明日的删除列表，更新sql表......");
-            VideoAdUtils.updateSqlVideoList(getActivity(), false, prepareDownloadLists, deleteListTomorrow);
+            VideoAdUtils.updateSqlVideoList(getActivity(), false, nextVideoList);
 
 
             LogCat.e("video", "根据今日列表来 剔除在 明日删除列表 中需要用到的视频.......");
@@ -869,13 +864,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    @Override
-    public void onStop() {
-        LogCat.e("video", "onStop...................");
-        release();
-        super.onStop();
-
-    }
+//    @Override
+//    public void onStop() {
+//        LogCat.e("video", "onStop...................");
+//        release();
+//        super.onStop();
+//
+//    }
 
 
     @Override

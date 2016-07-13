@@ -4,7 +4,6 @@
     android:layout_width="@dimen/d_1064dp"
     android:layout_height="@dimen/d_598dp"
     android:layout_marginTop="@dimen/d_60dp"
-    android:background="@android:color/black"
     tools:context="com.gochinatv.ad.MainActivity">
 
     <com.gochinatv.ad.video.MeasureVideoView

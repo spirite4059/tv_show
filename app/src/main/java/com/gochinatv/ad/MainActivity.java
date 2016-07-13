@@ -456,6 +456,10 @@ public class MainActivity extends BaseActivity {
         super.onDestroy();
 
         DLUtils.cancel();
+        //卸载广播
+        if (networkBroadcastReceiver != null) {
+            unregisterReceiver(networkBroadcastReceiver);
+        }
         if (downLoadAPKUtils != null) {
             downLoadAPKUtils.stopDownLoad();
         }
@@ -470,11 +474,6 @@ public class MainActivity extends BaseActivity {
 
         if(rootLayout != null && firebaseTokenRunnable != null){
             rootLayout.removeCallbacks(firebaseTokenRunnable);
-        }
-
-        //卸载广播
-        if (networkBroadcastReceiver != null) {
-            unregisterReceiver(networkBroadcastReceiver);
         }
 
         //卸载firebase广播

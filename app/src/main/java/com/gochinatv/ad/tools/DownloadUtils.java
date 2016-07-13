@@ -101,7 +101,7 @@ public class DownloadUtils {
 
             @Override
             public void onDownloading(String fileName) {
-                LogCat.e("video", "当前下载正在进行中............. " + fileName);
+//                LogCat.e("video", "当前下载正在进行中............. " + fileName);
             }
 
             private void logProgress(long progress) {
