@@ -94,7 +94,15 @@ public class CmdReceiver {
                 fragment.doHttpRequest();
             }
         }
+    }
 
+
+    public void refreshWeb(){
+        LogCat.e("push", "执行关闭命令.........");
+        AdWebView adWebView = (AdWebView) activity.findViewById(R.id.ad_web);
+        if(adWebView != null){
+            adWebView.loadUrl();
+        }
 
 
 
