@@ -254,8 +254,10 @@ public class MainActivity extends BaseActivity {
                 }
             }else{
                 if(rootLayout != null && firebaseTokenRunnable != null){
-                    LogCat.e("service", "再次获取refreshedToken！！！");
-                    rootLayout.postDelayed(firebaseTokenRunnable,2000);
+                    if(DataUtils.isNetworkConnected(MainActivity.this)){
+                        LogCat.e("service", "再次获取refreshedToken！！！");
+                        rootLayout.postDelayed(firebaseTokenRunnable,2000);
+                    }
                 }else{
                     LogCat.e("service", "再次获取refreshedToken失败2222222");
                 }
@@ -279,8 +281,10 @@ public class MainActivity extends BaseActivity {
         }else{
             LogCat.e("service", "refreshedToken  = null");
             if(rootLayout != null && firebaseTokenRunnable != null){
-                LogCat.e("service", "再次获取refreshedToken！！！");
-                rootLayout.postDelayed(firebaseTokenRunnable,2000);
+                if(DataUtils.isNetworkConnected(MainActivity.this)){
+                    LogCat.e("service", "再次获取refreshedToken！！！");
+                    rootLayout.postDelayed(firebaseTokenRunnable,2000);
+                }
             }else{
                 LogCat.e("service", "再次获取refreshedToken失败1111111111");
             }
