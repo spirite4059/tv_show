@@ -13,7 +13,7 @@ android {
         applicationId "com.gochinatv.ad"
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 15
+        versionCode 14
         versionName "2.2.2"
         // dex突破65535的限制
         multiDexEnabled true
@@ -76,7 +76,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.0.1'
     compile project(path: ':library')
     compile project(':jsBridge')
-    compile 'com.google.firebase:firebase-messaging:9.0.2'
+    compile 'com.google.firebase:firebase-messaging:9.2.1'
 }
 
 apply plugin: 'com.google.gms.google-services'
