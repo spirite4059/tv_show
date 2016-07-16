@@ -23,6 +23,7 @@ import com.gochinatv.ad.cmd.FreshCommend;
 import com.gochinatv.ad.cmd.ICommend;
 import com.gochinatv.ad.cmd.Invoker;
 import com.gochinatv.ad.cmd.OpenCommend;
+import com.gochinatv.ad.cmd.RefreshWebCommend;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.ad.receiver.FirebaseMessageReceiver;
 import com.gochinatv.ad.tools.Constants;
@@ -378,6 +379,8 @@ public class MainActivity extends BaseActivity {
                 invoker.setCommend(new CloseCommend(cmdResponse.getAd(), receiver));
             } else if (ICommend.COMMEND_FRESH.equals(cmd)) {
                 invoker.setCommend(new FreshCommend(cmdResponse.getAd(), receiver));
+            } else if (ICommend.COMMEND_FRESH_WEB.equals(cmd)) {
+                invoker.setCommend(new RefreshWebCommend(receiver));
             }
             invoker.execute();
         }

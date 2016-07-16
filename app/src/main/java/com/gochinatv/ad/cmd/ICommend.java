@@ -8,7 +8,7 @@ public interface ICommend {
     String COMMEND_OPEN = "open";
     String COMMEND_CLOSE = "close";
     String COMMEND_FRESH = "fresh";
-
+    String COMMEND_FRESH_WEB = "refresh_web";
     void execute();
 
 }
