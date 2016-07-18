@@ -4,6 +4,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.interfaces.OnWifiConnectListener;
 import com.gochinatv.ad.tools.AlertUtils;
+import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.WifiAutoConnectManager;
 
@@ -40,6 +43,7 @@ public class WifiDialog extends Dialog {
     WifiAutoConnectManager.WifiCipherType security;
     ArrayList<WifiInfos> wifoResults;
     private String wifiName;
+    private Handler handler;
 
     public WifiDialog(Context context, WifiAutoConnectManager wifiAutoConnectManager, ArrayList<ScanResult> wifiList) {
         super(context, R.style.wifiDialog);
@@ -53,6 +57,8 @@ public class WifiDialog extends Dialog {
         initView();
         init();
         bindEvent();
+
+
     }
 
 
@@ -67,9 +73,6 @@ public class WifiDialog extends Dialog {
     public void init() {
         // 获取扫描的wifi列表
         wifoResults = new ArrayList<>();
-        WifiInfos wifis = new WifiInfos();
-        wifoResults.add(0, wifis);
-        wifis.ssid = "请选择wifi";
         if (wifiList != null && wifiList.size() != 0) {
             for (ScanResult scanResult : wifiList) {
                 WifiInfos wifi = new WifiInfos();
@@ -139,12 +142,27 @@ public class WifiDialog extends Dialog {
                             public void run() {
                                 if (!isConnect) {
                                     AlertUtils.alert(getContext(), "热点链接失败,请重试!");
-                                    spinner.setSelection(0);
                                     etPwd.setText("");
 
                                 } else {
                                     AlertUtils.alert(getContext(), "正在链接热点!");
                                     dismiss();
+                                    if(handler == null){
+                                        handler = new Handler(Looper.getMainLooper());
+                                    }
+
+                                    handler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if(!DataUtils.isNetworkConnected(getContext())){
+                                                // 5秒后仍然没有网络,就继续显示dialog
+                                                AlertUtils.alert(getContext(), "热点链接失败,请重试!");
+                                                etPwd.setText("");
+                                                show();
+                                            }
+                                        }
+                                    }, 15000);
+
                                 }
 
                             }
@@ -212,11 +230,6 @@ public class WifiDialog extends Dialog {
         public View getView(int i, View view, ViewGroup viewGroup) {
             if (view == null) {
                 view = LayoutInflater.from(getContext()).inflate(R.layout.item_wifi, null);
-            }
-            if(i == 0){
-                view.setClickable(true);
-            }else {
-                view.setClickable(false);
             }
             WifiInfos wifiInfos = wifoResults.get(i);
             ((TextView) view).setText(wifiInfos.ssid);

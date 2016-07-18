@@ -185,15 +185,6 @@ public class MainActivity extends BaseActivity {
         intervalUpdate();
 
 
-
-//        // 如果wifi关闭,就打开wifi
-//        if(!wifiAutoConnectManager.wifiManager.isWifiEnabled()){
-//            wifiAutoConnectManager.wifiManager.setWifiEnabled(true);
-//        }
-
-
-
-
         // wifi没有打开或者没有信号,显示wifi引导页面
         showWifiDialog();
 
@@ -885,7 +876,7 @@ public class MainActivity extends BaseActivity {
                 if (isFinishing()) {
                     return;
                 }
-
+                LogCat.e("net","networkChange..............");
                 //屏蔽第一次网络改变监听
                 if (isInitNetState) {
                     isInitNetState = false;

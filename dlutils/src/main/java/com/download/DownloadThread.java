@@ -28,8 +28,6 @@ public class DownloadThread extends Thread {
     private URL downloadUrl;
     /** 当前下载线程ID */
     public int threadId;
-    /** 线程下载数据长度 */
-    private int blockSize;
     private boolean isCancel;
     private int errorCode;
     /** 缓冲流 */
@@ -44,36 +42,36 @@ public class DownloadThread extends Thread {
     private long endPos;
     private DownloadInfo downloadInfo;
     private String fileName;
+    private long fileSize;
     /**
      *
      * @param downloadUrl:文件下载地址
      * @param file:文件保存路径
-     * @param blockSize:下载数据长度
      * @param threadId:线程ID
      */
 
-    public DownloadThread(Context context, URL downloadUrl, File file, int blockSize,
-                              int threadId, DownloadInfo downloadInfo) {
+    public DownloadThread(Context context, URL downloadUrl, File file,
+                              int threadId, DownloadInfo downloadInfo, long fileSize) {
         this.downloadUrl = downloadUrl;
         this.file = file;
         this.threadId = threadId;
-        this.blockSize = blockSize;
         this.context = context;
         this.downloadInfo = downloadInfo;
+        this.fileSize = fileSize;
     }
     @Override
     public void run() {
         if(downloadInfo != null){
             startPos = downloadInfo.startPos;
-            downloadLength = startPos - blockSize * (threadId - 1);
+            downloadLength = startPos;
             LogCat.e("video", "已经下载的大小............" + downloadLength);
         } else {
-            startPos = blockSize * (threadId - 1);//开始位置
+            startPos = 0;//开始位置
             downloadLength = 0;
         }
-        endPos = blockSize * threadId - 1;//结束位置
-        LogCat.e("current thread " + threadId  + "startPos......." + startPos);
-        LogCat.e("current thread " + threadId  + "endPos........ " +  endPos);
+        endPos = fileSize - 1;//结束位置
+        LogCat.e("current thread " + threadId  + " startPos......." + startPos);
+        LogCat.e("current thread " + threadId  + " endPos........ " +  endPos);
         // 如果线程已经下载完成就不去在做操作
         if(downloadLength != 0 && downloadLength == endPos){
             isCompleted = true;
@@ -85,7 +83,7 @@ public class DownloadThread extends Thread {
             LogCat.e("current thread " + threadId  + "downloadLength: " + downloadLength);
             LogCat.e("current thread " + threadId  + ": startPos == endPos，终止下载......");
             isCompleted = true;
-            downloadLength = endPos - blockSize * (threadId - 1);
+            downloadLength = endPos;
             return;
         }
 
@@ -176,11 +174,9 @@ public class DownloadThread extends Thread {
             return;
         }
 
-        int downloadSize = 0;
 
 //        SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
         // TODO 打开数据库
-
         while (len != -1 && !isCancel) {
             try {
                 raf.write(buffer, 0, len);
@@ -209,7 +205,7 @@ public class DownloadThread extends Thread {
 
 //            startPos += downloadSize - 1;
 
-            if(downloadLength > blockSize){
+            if(downloadLength > fileSize - 1){
                 LogCat.e("video" , "downloadLength > blockSize，下载已经完成.....");
                 break;
             }
@@ -240,7 +236,6 @@ public class DownloadThread extends Thread {
 
         }
         // 关闭数据库
-//        DLDao.closeDB(sqLiteDatabase);
 
         if (bis != null) {
             try {
@@ -267,7 +262,7 @@ public class DownloadThread extends Thread {
         }else {
             LogCat.e("current thread " + threadId  + "尚未完成下载任务。。。。。。" + downloadLength);
         }
-        long startPosition = startPos + downloadSize - 1;
+        long startPosition = startPos + downloadLength - 1;
         LogCat.e("current thread " + threadId  + "   startPos......." + startPosition);
         LogCat.e("current thread " + threadId  + "   endPos........ " +  endPos);
         // TODO 关闭数据库
@@ -298,7 +293,7 @@ public class DownloadThread extends Thread {
     }
 
     public long getStartPos(){
-        return blockSize * (threadId - 1);//开始位置
+        return startPos;//开始位置
     }
 
 }

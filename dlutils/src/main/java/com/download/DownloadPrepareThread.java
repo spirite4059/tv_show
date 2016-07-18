@@ -182,9 +182,6 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
         // 计算每条线程下载的数据长度
-        int blockSize = (fileSize % threadNum) == 0 ? (fileSize / threadNum) : (fileSize / threadNum + 1);
-        LogCat.e("video", "blockSize: " + blockSize);
-
         if (isCancel) {
             return;
         }
@@ -221,24 +218,24 @@ public class DownloadPrepareThread extends Thread {
             if (downloadInfos.size() != size) {
                 LogCat.e("video", "线程数发生变化，删除记录，重新下载......");
                 DLDao.delete(context);
-                startThreadWithOutSql(url, fileSize, blockSize, size);
+                startThreadWithOutSql(url, fileSize, size);
             } else if (file.length() == 0) {
                 LogCat.e("video", "可能数据表还在，但是文件已经删除了......");
                 DLDao.delete(context);
-                startThreadWithOutSql(url, fileSize, blockSize, size);
+                startThreadWithOutSql(url, fileSize, size);
             } else {
                 if (file != null && file.exists()) {
                     LogCat.e("video", "从数据库中回复下载......");
-                    startThreadWithSql(url, blockSize, size, downloadInfos, fileSize);
+                    startThreadWithSql(url, size, downloadInfos, fileSize);
                 } else {
                     LogCat.e("video", "有记录信息，但是文件遭到破坏，从开开始下载......");
                     DLDao.delete(context);
-                    startThreadWithOutSql(url, fileSize, blockSize, size);
+                    startThreadWithOutSql(url, fileSize, size);
                 }
             }
         } else {
             LogCat.e("video", "没有当前下载信息，从头开始下载......");
-            startThreadWithOutSql(url, fileSize, blockSize, size);
+            startThreadWithOutSql(url, fileSize, size);
         }
 
         if (errorCode == ErrorCodes.ERROR_DOWNLOAD_EXCUTORS) {
@@ -252,7 +249,7 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        int downloadSize = -2;
+        int downloadSize = -1;
         long startPosition;
         SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
         try {
@@ -384,20 +381,20 @@ public class DownloadPrepareThread extends Thread {
     }
 
 
-    private synchronized void startThreadWithSql(URL url, int blockSize, int size, ArrayList<DownloadInfo> downloadInfos, int fileSize) {
+    private synchronized void startThreadWithSql(URL url, int size, ArrayList<DownloadInfo> downloadInfos, long fileSize) {
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
             int threadId = i + 1;
             DownloadInfo downloadInfo = downloadInfos.get(i);
             LogCat.e("video", "记录位置的startPos: " + downloadInfo.startPos);
             LogCat.e("video", "记录位置的endPos: " + downloadInfo.endPos);
-            threads[i] = new DownloadThread(context, url, file, blockSize, threadId, downloadInfo);
+            threads[i] = new DownloadThread(context, url, file, threadId, downloadInfo, fileSize);
             threads[i].start();
         }
     }
 
 
-    private synchronized void startThreadWithOutSql(URL url, int fileSize, int blockSize, int size) {
+    private synchronized void startThreadWithOutSql(URL url, long fileSize, int size) {
         // 插入数据前，将所有的表清空
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
@@ -415,20 +412,8 @@ public class DownloadPrepareThread extends Thread {
 
             downloadInfo.tlength = fileSize;
 
-            boolean blockIsAdd = fileSize % threadNum == 0;
-            long startPos = blockSize * (threadId - 1);//开始位置
-            long endPos;
-            if(i == size - 1){
-                if (blockIsAdd) {
-                    endPos = blockSize * threadId - 1;//结束位置
-                } else {
-                    endPos = blockSize * threadId - 2;//结束位置
-                }
-            }else {
-                endPos = blockSize * threadId - 1;//结束位置
-            }
-
-
+            long startPos = 0;//开始位置
+            long endPos = fileSize - 1;
             downloadInfo.startPos = startPos;
             downloadInfo.endPos = endPos;
             LogCat.e("video", "startThreadWithOutSql......startPos: " + startPos);
@@ -437,7 +422,7 @@ public class DownloadPrepareThread extends Thread {
             LogCat.e("将当前的下载加入数据表......");
             DLDao.insert(context, downloadInfo);
 
-            threads[i] = new DownloadThread(context, url, file, blockSize, threadId, null);
+            threads[i] = new DownloadThread(context, url, file, threadId, null, fileSize);
             threads[i].start();
 
         }

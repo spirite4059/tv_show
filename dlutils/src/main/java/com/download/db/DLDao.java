@@ -42,12 +42,8 @@ public class DLDao implements IDBConstants {
         // 先查看是否存在当前的视频记录
         if (database != null) {
             try {
-                // 查看当前数据的数量
-                ArrayList<DownloadInfo> downloadInfos = queryAll(database);
-                if(downloadInfos != null && downloadInfos.size() > 100){
-                    // 删除最久的一条记录
-                    delete(database, downloadInfos.get(0).tname);
-                }
+                // 删除之前的记录
+                delete(database);
 
 
 
@@ -344,19 +340,19 @@ public class DLDao implements IDBConstants {
         }
     }
 
-    private static synchronized void delete(SQLiteDatabase database, String tname) {
-        try {
-            database.beginTransaction();
-            database.delete(DBBASE_DOWNLOAD_TABLE_NAME, tname + " = ?", new String[]{tname});
-            database.setTransactionSuccessful();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (database != null) {
-                database.endTransaction();
-            }
-        }
-    }
+//    private static synchronized void delete(SQLiteDatabase database, String tname) {
+//        try {
+//            database.beginTransaction();
+//            database.delete(DBBASE_DOWNLOAD_TABLE_NAME, tname + " = ?", new String[]{tname});
+//            database.setTransactionSuccessful();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (database != null) {
+//                database.endTransaction();
+//            }
+//        }
+//    }
 
 
     public static synchronized boolean delete(Context context) {
@@ -384,25 +380,6 @@ public class DLDao implements IDBConstants {
         return flag;
     }
 
-    public static synchronized boolean delete(SQLiteDatabase database, int tid) {
-        boolean flag = false;
-        try {
-            database.beginTransaction();
-            int temp = database.delete(DBBASE_DOWNLOAD_TABLE_NAME, tid + " = ?", new String[]{String.valueOf(tid)});
-            if (temp == 0) {
-                flag = true;
-            }
-            database.setTransactionSuccessful();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (database != null) {
-                database.endTransaction();
-            }
-
-        }
-        return flag;
-    }
 
 
     public static synchronized boolean updateOut(SQLiteDatabase database, int tid, long endPos) {
