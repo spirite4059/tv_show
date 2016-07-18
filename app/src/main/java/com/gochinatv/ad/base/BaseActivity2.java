@@ -15,8 +15,8 @@
 //import com.gochinatv.ad.tools.DataUtils;
 //import com.gochinatv.ad.tools.LogCat;
 //import com.gochinatv.ad.tools.SharedPreference;
-//import com.gochinatv.ad.ui.dialog.DialogLoading;
-//import com.gochinatv.ad.ui.dialog.DialogUtils;
+//import com.gochinatv.ad.ui.dialog_wifi.DialogLoading;
+//import com.gochinatv.ad.ui.dialog_wifi.DialogUtils;
 //import com.okhtttp.OkHttpUtils;
 //import com.okhtttp.response.AdDetailResponse;
 //import com.tools.HttpUrls;

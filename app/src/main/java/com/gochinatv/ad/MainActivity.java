@@ -2,13 +2,17 @@ package com.gochinatv.ad;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
@@ -33,6 +37,8 @@ import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
+import com.gochinatv.ad.tools.WifiAutoConnectManager;
+import com.gochinatv.ad.ui.dialog.WifiDialog;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.gochinatv.ad.ui.view.AdWebView;
 import com.gochinatv.statistics.SendStatisticsLog;
@@ -107,6 +113,9 @@ public class MainActivity extends BaseActivity {
 
     //是否中途app由无网络变为有网络
     //private boolean isReloadFlag = false;
+    WifiReceiver receiverWifi;
+    WifiAutoConnectManager wifiAutoConnectManager;
+    boolean isHasRegisterWifiReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,12 +140,12 @@ public class MainActivity extends BaseActivity {
     }
 
     boolean isDoGetDevice;
+    WifiDialog dialog;
 
     private void init() {
 
         if(DataUtils.isNetworkConnected(this)){
             textSpeedInfo.setText("wifi-on:0kb/s");
-
         }else{
 
         }
@@ -175,12 +184,48 @@ public class MainActivity extends BaseActivity {
         //每4个小时上报开机时间和升级请求
         intervalUpdate();
 
+
+
+//        // 如果wifi关闭,就打开wifi
+//        if(!wifiAutoConnectManager.wifiManager.isWifiEnabled()){
+//            wifiAutoConnectManager.wifiManager.setWifiEnabled(true);
+//        }
+
+
+
+
+        // wifi没有打开或者没有信号,显示wifi引导页面
+        showWifiDialog();
+
 //        if (DataUtils.isNetworkConnected(this)) {
 //            textSpeedInfo.setText("wifi-on");
 //        } else {
 //            LogCat.e("net", "off..............");
 //            textSpeedInfo.setText("wifi-off:0kb/s");
 //        }
+
+
+
+    }
+
+    private void showWifiDialog() {
+        if(!DataUtils.isNetworkConnected(this)){
+            if(wifiAutoConnectManager == null){
+                wifiAutoConnectManager = new WifiAutoConnectManager(this);
+            }
+
+            if(!wifiAutoConnectManager.wifiManager.isWifiEnabled()){
+                wifiAutoConnectManager.wifiManager.setWifiEnabled(true);
+            }
+
+
+            wifiAutoConnectManager.wifiManager.startScan();
+            if(receiverWifi == null){
+                receiverWifi = new WifiReceiver();
+            }
+            isHasRegisterWifiReceiver = true;
+            registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        }
     }
 
 
@@ -482,6 +527,10 @@ public class MainActivity extends BaseActivity {
         //卸载firebase广播
         if(firebaseMessageReceiver != null){
             unregisterReceiver(firebaseMessageReceiver);
+        }
+
+        if(receiverWifi != null && isHasRegisterWifiReceiver){
+            unregisterReceiver(receiverWifi);
         }
     }
 
@@ -832,6 +881,7 @@ public class MainActivity extends BaseActivity {
                 if (isFinishing()) {
                     return;
                 }
+
                 //屏蔽第一次网络改变监听
                 if (isInitNetState) {
                     isInitNetState = false;
@@ -839,9 +889,21 @@ public class MainActivity extends BaseActivity {
                     return;
                 }
 
+                if(hasNetwork){
+                    if(dialog != null && dialog.isShowing()){
+                        dialog.dismiss();
+                        if(receiverWifi != null && isHasRegisterWifiReceiver){
+                            unregisterReceiver(receiverWifi);
+                        }
+                    }
+                }else {
+                    showWifiDialog();
+                }
+
                 AdOneFragment adOneFragment = (AdOneFragment) getFragmentManager().findFragmentByTag(FRAGMENT_TAG_AD_ONE);
                 if(adOneFragment != null){
                     if(hasNetwork){
+
                         //有网络
                         adOneFragment.showBeforeRequestCompleted();
                         //从新加载webview
@@ -1304,6 +1366,39 @@ public class MainActivity extends BaseActivity {
                 LogCat.e("push", "上传信息失败...........");
             }
         });
+    }
+
+
+
+
+    class WifiReceiver extends BroadcastReceiver {
+
+
+
+        public void onReceive(Context c, Intent intent) {
+            Log.e("TAG", "onReceive..........");
+
+//            ArrayList<WifiInfos> wifiInfoses = new ArrayList<>();
+//            for (int i = 0; i < wifiList.size(); i++) {
+//                ScanResult scanResult = wifiList.get(i);
+//                Log.e("TAG", "wifi_name: " + scanResult.SSID + " 加密: " + scanResult.capabilities + "  ");
+//            }
+
+            unregisterReceiver(receiverWifi);
+            Log.e("TAG", ".........................");
+//            String wifiProperty = "当前连接Wifi信息如下："+wifiInfo.getSSID()+'\n'+
+//                    "ip:"     +     FormatString(dhcpInfo.ipAddress)   +'\n'+
+//                    "mask:"   +     FormatString(dhcpInfo.netmask)     +'\n'+
+//                    "netgate:"+     FormatString(dhcpInfo.gateway)     +'\n'+
+//                    "dns:"    +     FormatString(dhcpInfo.dns1)  ;
+//            Log.e("TAG", wifiProperty);
+//            Log.e("TAG", sb.toString());
+            isHasRegisterWifiReceiver = false;
+            dialog = new WifiDialog(MainActivity.this, wifiAutoConnectManager, (ArrayList<ScanResult>) wifiAutoConnectManager.wifiManager.getScanResults());
+            dialog.show();
+
+        }
+
     }
 
 }

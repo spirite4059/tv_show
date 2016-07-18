@@ -1,7 +1,9 @@
 package com.gochinatv.ad;
 
+import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -92,28 +94,22 @@ public class LoadingActivity extends BaseActivity {
         setContentView(R.layout.activity_loading);
         loadingView = (LinearLayout) findViewById(R.id.loading);
 
-//        /**
-//         * 隐藏NavigationBar
-//         */
-//        DataUtils.hideNavigationBar(this);
-
-        // 删除升级安装包
-//        deleteUpdateApk();
-
         postHandler = new Handler();
 
+        WifiManager wifiManager = (WifiManager) getSystemService(Service.WIFI_SERVICE);
+        // 如果wifi关闭,就打开wifi
+        if(!wifiManager.isWifiEnabled()){
+            wifiManager.setWifiEnabled(true);
+        }
         /**
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
-            //DataUtils.startAppServer(this);
+            DataUtils.startAppServer(this);
         }
 
         // 请求网络
         doHttp();
-
-        //测试是否重启
-        //DataUtils.saveToSDCardHDMI('\n'+ " LoadingActivity: app start  " + DataUtils.getFormatTime(System.currentTimeMillis()));
     }
 
     @Override

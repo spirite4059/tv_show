@@ -1,12 +1,12 @@
 package com.gochinatv.ad.base;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import com.gochinatv.ad.tools.Constants;
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Created by fq_mbp on 16/5/28.
  */
-public class BaseActivity extends Activity{
+public class BaseActivity extends AppCompatActivity {
 
 //    @Override
 //    protected void onCreate(Bundle savedInstanceState) {

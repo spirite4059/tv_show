@@ -476,8 +476,8 @@ public class MeasureVideoView extends SurfaceView implements MediaPlayerControl 
                 }
             }
             /*
-             * Otherwise, pop up an error dialog so the user knows that
-			 * something bad has happened. Only try and pop up the dialog if
+             * Otherwise, pop up an error dialog_wifi so the user knows that
+			 * something bad has happened. Only try and pop up the dialog_wifi if
 			 * we're attached to a window. When we're going away and no longer
 			 * have a window, don't bother showing the user an error.
 			 */
@@ -497,7 +497,7 @@ public class MeasureVideoView extends SurfaceView implements MediaPlayerControl 
 				 * .setPositiveButton
 				 * (com.android.internal.R.string.VideoView_error_button, new
 				 * DialogInterface.OnClickListener() { public void
-				 * onClick(DialogInterface dialog, int whichButton) { If we get
+				 * onClick(DialogInterface dialog_wifi, int whichButton) { If we get
 				 * here, there is no onDownloadFileError listener, so at least inform them
 				 * that the video is over. if (mOnCompletionListener != null) {
 				 * mOnCompletionListener.onCompletion(mMediaPlayer); } } })

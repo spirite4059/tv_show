@@ -1,10 +1,14 @@
 package com.gochinatv.ad.tools;
 
+import android.app.Service;
+import android.content.Context;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiConfiguration.AuthAlgorithm;
 import android.net.wifi.WifiManager;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.gochinatv.ad.interfaces.OnWifiConnectListener;
 
 import java.util.List;
 
@@ -16,7 +20,7 @@ public class WifiAutoConnectManager {
 
     private static final String TAG = WifiAutoConnectManager.class.getSimpleName();
 
-    WifiManager wifiManager;
+    public WifiManager wifiManager;
 
     // 定义几种加密方式，一种是WEP，一种是WPA，还有没有密码的情况
     public enum WifiCipherType {
@@ -24,13 +28,21 @@ public class WifiAutoConnectManager {
     }
 
     // 构造函数
-    public WifiAutoConnectManager(WifiManager wifiManager) {
-        this.wifiManager = wifiManager;
+    public WifiAutoConnectManager(Context context) {
+        this.wifiManager = (WifiManager) context.getSystemService(Service.WIFI_SERVICE);
     }
 
+
+
+
     // 提供一个外部接口，传入要连接的无线网
-    public void connect(String ssid, String password, WifiCipherType type) {
-        Thread thread = new Thread(new ConnectRunnable(ssid, password, type));
+    public void connect(String ssid, String password, WifiCipherType type, OnWifiConnectListener onWifiConnectListener) {
+        Thread thread = new Thread(new ConnectRunnable(ssid, password, type, onWifiConnectListener));
+        thread.start();
+    }
+
+    public void open() {
+        Thread thread = new Thread(new OpenRunnable());
         thread.start();
     }
 
@@ -106,10 +118,13 @@ public class WifiAutoConnectManager {
 
         private WifiCipherType type;
 
-        public ConnectRunnable(String ssid, String password, WifiCipherType type) {
+        private OnWifiConnectListener onWifiConnectListener;
+
+        public ConnectRunnable(String ssid, String password, WifiCipherType type, OnWifiConnectListener onWifiConnectListener) {
             this.ssid = ssid;
             this.password = password;
             this.type = type;
+            this.onWifiConnectListener = onWifiConnectListener;
         }
 
         @Override
@@ -141,9 +156,59 @@ public class WifiAutoConnectManager {
 
             int netID = wifiManager.addNetwork(wifiConfig);
             boolean enabled = wifiManager.enableNetwork(netID, true);
-            Log.d(TAG, "enableNetwork status enable=" + enabled);
+            LogCat.e("wifi", "enableNetwork status enable=" + enabled);
             boolean connected = wifiManager.reconnect();
-            Log.d(TAG, "enableNetwork connected=" + connected);
+            if(connected && enabled){
+                wifiManager.saveConfiguration();
+            }
+            if(onWifiConnectListener != null){
+                LogCat.e("wifi", "onWifiConnectListener != null");
+                boolean status = connected && enabled;
+                onWifiConnectListener.onWifiConnect(status);
+            }else {
+                LogCat.e("wifi", "onWifiConnectListener = null");
+            }
+            LogCat.e("wifi", "enableNetwork connected=" + connected);
+        }
+    }
+
+    class OpenRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            // 打开wifi
+            openWifi();
+            while (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
+                try {
+                    // 为了避免程序一直while循环，让它睡个100毫秒检测……
+                    Thread.sleep(100);
+                } catch (InterruptedException ie) {
+                    ie.printStackTrace();
+                }
+            }
+
+            // 得到配置好的网络连接
+            List<WifiConfiguration> wifiConfigList = wifiManager.getConfiguredNetworks();
+            if(wifiConfigList != null){
+                LogCat.e("wifi", "已经配置过的wifi: " + wifiConfigList.size());
+                for (WifiConfiguration wifiConfiguration : wifiConfigList) {
+                    //配置过的SSID
+                    String configSSid = wifiConfiguration.SSID;
+                    configSSid = configSSid.replace("\"", "");
+                    //当前连接SSID
+//                    Log.e("hefeng", "当前网络：" + configSSid + " 加密方式: " + getSecurity(wifiConfiguration));
+                    //比较networkId，防止配置网络保存相同的SSID
+//                    if(ssid.equals(configSSid)){
+//                        security = getSecurity(wifiConfiguration);
+//                        break;
+//                    }
+                }
+            }else {
+                LogCat.e("wifi", "没有配置好的wifi");
+            }
+
+
+
         }
     }
 
@@ -168,5 +233,8 @@ public class WifiAutoConnectManager {
 
         return true;
     }
+
+
+
 
 }

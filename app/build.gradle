@@ -6,13 +6,13 @@ def releaseTime() {
 
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
 
     defaultConfig {
         applicationId "com.gochinatv.ad"
-        minSdkVersion 17
-        targetSdkVersion 23
+        minSdkVersion 19
+        targetSdkVersion 24
         versionCode 15
         versionName "2.2.2"
         // dex突破65535的限制
@@ -72,11 +72,13 @@ dependencies {
     compile project(':db')
     compile 'com.umeng.analytics:analytics:latest.integration'
     compile project(':statistics')
-    compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.jakewharton:butterknife:8.0.1'
     compile project(path: ':library')
     compile project(':jsBridge')
     compile 'com.google.firebase:firebase-messaging:9.0.2'
+    compile 'com.android.support:design:24.0.0'
+    compile 'com.android.support:appcompat-v7:24.0.0'
+    compile 'com.android.support:support-v4:24.0.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

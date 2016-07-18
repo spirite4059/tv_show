@@ -8,7 +8,7 @@ import android.content.Context;
 public class DialogUtils {
 
     /**
-     * loading dialog
+     * loading dialog_wifi
      */
     public static DialogLoading showLoading(Context context) {
         if (context == null)
