@@ -21,6 +21,7 @@ import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_SIZE;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_URL;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_WRITE;
 import static com.download.ErrorCodes.ERROR_THREAD_NUMBERS;
@@ -246,6 +247,9 @@ public class DownloadUtils {
                 break;
             case ERROR_DB_UPDATE:
                 errorMsg = "error：数据库更新下载内容时出错";
+                break;
+            case ERROR_DOWNLOAD_SDCARD_SPACE:
+                errorMsg = "error：磁盘空间不足";
                 break;
             default:
                 errorMsg = "error：未知的异常";
