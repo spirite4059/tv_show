@@ -116,6 +116,9 @@ public class MainActivity extends BaseActivity {
     WifiReceiver receiverWifi;
     WifiAutoConnectManager wifiAutoConnectManager;
     boolean isHasRegisterWifiReceiver;
+    //网络是否连接
+    private boolean isNetConnect;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,8 +149,9 @@ public class MainActivity extends BaseActivity {
 
         if(DataUtils.isNetworkConnected(this)){
             textSpeedInfo.setText("wifi-on:0kb/s");
+            isNetConnect = true;
         }else{
-
+            isNetConnect = false;
         }
 
         registerNetworkReceiver();
@@ -537,6 +541,8 @@ public class MainActivity extends BaseActivity {
         if(receiverWifi != null && isHasRegisterWifiReceiver){
             unregisterReceiver(receiverWifi);
         }
+
+        cancelDialogTimer();
     }
 
     /**
@@ -895,6 +901,7 @@ public class MainActivity extends BaseActivity {
                 }
 
                 if(hasNetwork){
+                    isNetConnect = true;
                     if(dialog != null && dialog.isShowing()){
                         dialog.dismiss();
                         if(receiverWifi != null && isHasRegisterWifiReceiver){
@@ -902,6 +909,7 @@ public class MainActivity extends BaseActivity {
                         }
                     }
                 }else {
+                    isNetConnect = false;
                     showWifiDialog();
                 }
 
@@ -1164,7 +1172,7 @@ public class MainActivity extends BaseActivity {
                         speed = current / K_SIZE + "MB/s";
                     }
 
-                    if (current > 0) {
+                    if (current >= 0) {
                         msg = "wifi-on :" + speed + "-upgrading";
                         LogCat.e("net_speed", "speed: " + speed);
                         runOnUiThread(new Runnable() {
@@ -1401,10 +1409,44 @@ public class MainActivity extends BaseActivity {
 //            Log.e("TAG", sb.toString());
             isHasRegisterWifiReceiver = false;
             dialog = new WifiDialog(MainActivity.this, wifiAutoConnectManager, (ArrayList<ScanResult>) wifiAutoConnectManager.wifiManager.getScanResults());
-            dialog.show();
-
+            if(!isNetConnect){
+                //没有联网是才show
+                dialog.show();
+                hideDialog();
+            }
         }
 
     }
+
+    /**
+     * 30s后隐藏wifi-dialog
+     */
+    private Timer dialogTimer;//
+    private void hideDialog(){
+        if(dialogTimer == null){
+            dialogTimer = new Timer();
+        }
+        dialogTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if(dialog != null && dialog.isShowing()){
+                    dialog.dismiss();
+                }
+            }
+        },30*1000);
+    }
+
+
+    /**
+     * 取消dialog的timer
+     */
+    private void cancelDialogTimer(){
+        if(dialogTimer != null){
+            dialogTimer.cancel();
+        }
+
+    }
+
+
 
 }

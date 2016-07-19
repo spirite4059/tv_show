@@ -576,7 +576,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                         speed = current / K_SIZE + "MB/s";
                     }
                     LogCat.e("net_speed", "speed: " + speed);
-                    if (current > 0) {
+                    if (current >= 0) {
                         String msg = null;
                         if (isDownloadingAPK) {
                             msg = "wifi-on:" + speed + "-upgrading";
