@@ -194,23 +194,10 @@ public class DownloadThread extends Thread {
 
             downloadLength += len;
 
-//            downloadSize += len;
-//            try {
-//                long startPosition = startPos + downloadSize - 1;
-//                DLDao.updateOut(sqLiteDatabase, threadId, startPosition);
-//            }catch (Exception e){
-//                e.printStackTrace();
-//                errorCode = ErrorCodes.ERROR_DB_UPDATE;
-//            }
-
-//            startPos += downloadSize - 1;
-
             if(downloadLength > fileSize - 1){
                 LogCat.e("video" , "downloadLength > blockSize，下载已经完成.....");
                 break;
             }
-
-
 
             if(errorCode == ErrorCodes.ERROR_DB_UPDATE){
                 // 彻底放弃当前下载

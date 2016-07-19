@@ -337,9 +337,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
 
 
-        // 更新本地缓存视频列表，将新下载的视频添加入本地列表
-        LogCat.e("video", "获取本地缓存视频列表.......");
-        localVideoList = VideoAdUtils.getLocalVideoList(getActivity());
+
 
         // 创建排播列表，并添加数据
         orderVideoList = new ArrayList<>();
@@ -349,11 +347,22 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         LogCat.e("video", "去除今日播放列表重复的视频.......");
         ArrayList<AdDetailResponse> currentVideoList = getDistinctList(response.current);
 
+        // 更新今日数据表
+        LogCat.e("video", "根据今日下载列表和今日删除列表，更新sql表.......");
+        VideoAdUtils.updateSqlVideoList(getActivity(), true, currentVideoList);
+
         LogCat.e("video", "去除明日播放列表重复的视频.......");
         ArrayList<AdDetailResponse> nextVideoList = null;
         if (response.next != null) {
             nextVideoList = getDistinctList(response.next);
+            // 更新sql表
+            LogCat.e("video", "根据明日需要下载的视频列表和明日的删除列表，更新sql表......");
+            VideoAdUtils.updateSqlVideoList(getActivity(), false, nextVideoList);
         }
+
+        // 更新本地缓存视频列表，将新下载的视频添加入本地列表
+        LogCat.e("video", "获取本地缓存视频列表.......");
+        localVideoList = VideoAdUtils.getLocalVideoList(getActivity(), currentVideoList, nextVideoList);
 
         // 2.匹配今天要下载的视频
         LogCat.e("video", "根据今日播放列表，获取下载列表......");
@@ -370,9 +379,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         playVideoLists = VideoAdUtils.getTodayPlayVideoList(localVideoList, currentVideoList);
         LogCat.e("video", "------------------------------");
 
-        // 更新今日数据表
-        LogCat.e("video", "根据今日下载列表和今日删除列表，更新sql表.......");
-        VideoAdUtils.updateSqlVideoList(getActivity(), true, currentVideoList);
+
 
         if (response.next != null && response.next.size() != 0 && nextVideoList != null) {
             // 根据明日列表 来剔除在今日删除列表 中需要用到的视频
@@ -395,9 +402,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             // 得到明日列表需要删除的文件
             ArrayList<AdDetailResponse> deleteListTomorrow = VideoAdUtils.getDeleteList(localVideoList, nextVideoList);
 
-            // 更新sql表
-            LogCat.e("video", "根据明日需要下载的视频列表和明日的删除列表，更新sql表......");
-            VideoAdUtils.updateSqlVideoList(getActivity(), false, nextVideoList);
+
 
 
             LogCat.e("video", "根据今日列表来 剔除在 明日删除列表 中需要用到的视频.......");

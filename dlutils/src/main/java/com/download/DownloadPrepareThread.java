@@ -18,6 +18,7 @@ import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -107,6 +108,7 @@ public class DownloadPrepareThread extends Thread {
 
 
         HttpURLConnection connection = getHttpURLConnection(url);
+
         // 如果是请求文件体的conn出错，要继续访问3边，无需重新进行操作
         if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
             setErrorMsg(ErrorCodes.ERROR_DOWNLOAD_CONN);
@@ -145,6 +147,13 @@ public class DownloadPrepareThread extends Thread {
         if (isCancel) {
             return;
         }
+        String md5 = null;
+        try {
+            md5 = getHttpResponseHeader(connection);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
 
         // 读取下载文件总大小
         int fileSize = connection.getContentLength();
@@ -341,6 +350,16 @@ public class DownloadPrepareThread extends Thread {
         if (isFinished) {
             LogCat.e("video", "文件下载完成......fileSize: " + fileSize);
             LogCat.e("video", "文件下载完成......downloadSize: " + downloadSize);
+
+//            String fileMd5 = null;
+//            try {
+//                fileMd5 = new MD5Utils().getFileMD5String(file);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+            LogCat.e("download1", "head md5: " + md5);
+//            LogCat.e("download1", "file md5: " + fileMd5);
+
             if (deleteFailFile(fileSize, downloadSize)) {
                 LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
@@ -467,11 +486,26 @@ public class DownloadPrepareThread extends Thread {
             System.setProperty("sun.net.client.defaultConnectTimeout", String.valueOf(CONNECT_TIME_OUT));
             System.setProperty("sun.net.client.defaultReadTimeout", String.valueOf(CONNECT_TIME_OUT));
             connection.connect();
+
         } catch (IOException e) {
             e.printStackTrace();
             errorCode = ErrorCodes.ERROR_DOWNLOAD_CONN;
         }
         return connection;
+    }
+
+
+    private String getHttpResponseHeader(
+            HttpURLConnection http) throws UnsupportedEncodingException {
+        for (int i = 0;; i++) {
+            String mine = http.getHeaderField(i);
+            if (mine == null)
+                break;
+            if("Etag".equals(http.getHeaderFieldKey(i))){
+                return mine;
+            }
+        }
+        return null;
     }
 
 
