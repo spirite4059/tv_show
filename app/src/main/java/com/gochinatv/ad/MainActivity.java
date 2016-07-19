@@ -239,6 +239,7 @@ public class MainActivity extends BaseActivity {
                 //上报开机时间
                 SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
                 fragmentDoHttpRequest();
+                refreshGetFirebaseToken();//获取tooken
             }
         }, intervalTime, intervalTime);//intervalTime
     }
@@ -273,9 +274,11 @@ public class MainActivity extends BaseActivity {
     /**
      *  获取token的
      */
+    private int tokenTimes;
     private Runnable firebaseTokenRunnable = new Runnable() {
         @Override
         public void run() {
+            tokenTimes++;
             String refreshedToken = FirebaseInstanceId.getInstance().getToken();
             if(!TextUtils.isEmpty(refreshedToken)){
                 LogCat.e("service", "refreshedToken : "+ refreshedToken);
@@ -289,14 +292,20 @@ public class MainActivity extends BaseActivity {
                     rootLayout.removeCallbacks(firebaseTokenRunnable);
                 }
             }else{
-                if(rootLayout != null && firebaseTokenRunnable != null){
-                    if(DataUtils.isNetworkConnected(MainActivity.this)){
-                        LogCat.e("service", "再次获取refreshedToken！！！");
-                        rootLayout.postDelayed(firebaseTokenRunnable,2000);
+                //当请求20次后不再请求
+                if(tokenTimes <20){
+                    if(rootLayout != null && firebaseTokenRunnable != null){
+                        if(DataUtils.isNetworkConnected(MainActivity.this)){
+                            LogCat.e("service", "再次获取refreshedToken！！！");
+                            rootLayout.postDelayed(firebaseTokenRunnable,5000);
+                        }
+                    }else{
+                        LogCat.e("service", "再次获取refreshedToken失败2222222");
                     }
                 }else{
-                    LogCat.e("service", "再次获取refreshedToken失败2222222");
+                    LogCat.e("service", "refreshedToken，当请求20次后不再请求");
                 }
+
             }
         }
     };
@@ -305,6 +314,7 @@ public class MainActivity extends BaseActivity {
      * 获取firebase-token并上传服务器
      */
     private void refreshGetFirebaseToken(){
+        tokenTimes = 0;
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         if(!TextUtils.isEmpty(refreshedToken)){
             LogCat.e("service", "refreshedToken : "+ refreshedToken);
@@ -319,7 +329,7 @@ public class MainActivity extends BaseActivity {
             if(rootLayout != null && firebaseTokenRunnable != null){
                 if(DataUtils.isNetworkConnected(MainActivity.this)){
                     LogCat.e("service", "再次获取refreshedToken！！！");
-                    rootLayout.postDelayed(firebaseTokenRunnable,2000);
+                    rootLayout.postDelayed(firebaseTokenRunnable,5000);
                 }
             }else{
                 LogCat.e("service", "再次获取refreshedToken失败1111111111");
@@ -925,6 +935,7 @@ public class MainActivity extends BaseActivity {
             private void showNetStatus(boolean hasNetwork) {
                 //loading没有请求成功
                 if (hasNetwork) {
+                    refreshGetFirebaseToken();//获取tooken
                     //请求升级接口
                     doHttpUpdate(MainActivity.this);
                     textSpeedInfo.setText("wifi-on:0kb/s");
