@@ -98,6 +98,7 @@ public class VideoAdUtils {
         if(finalVideos != null && finalVideos.size() > 0){
             for(AdDetailResponse adDetailResponse : finalVideos){
                 DeleteFileUtils.getInstance().deleteFile(adDetailResponse.adVideoName);
+                LogCat.e("video", "当前视频在今明两天都不用,立即删除" + adDetailResponse.adVideoName);
             }
         }
         removeItemFromList(localVideos, finalVideos);
