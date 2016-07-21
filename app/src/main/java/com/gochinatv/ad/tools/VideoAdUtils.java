@@ -78,18 +78,28 @@ public class VideoAdUtils {
         // 从今明两天缓存列表中获取不存在的视频,将其删除
         // 获取今天缓存列表
         ArrayList<AdDetailResponse> cacheTodayList = VideoAdUtils.getCacheList(context, true);
-        // 根据今日列表检查缓存文件完整性,并得到要删除的文件
-        ArrayList<AdDetailResponse> deleteVideo = checkFileLength(context, cacheTodayList, localVideos);
         // 获取明天缓存列表
         ArrayList<AdDetailResponse> cacheTomorrowList = VideoAdUtils.getCacheList(context, false);
+
+        // 根据今日列表检查缓存文件完整性,并得到要删除的文件
+        ArrayList<AdDetailResponse> deleteVideo = checkFileLength(context, cacheTodayList, localVideos);
         // 从删除列表中提出明天要用到的视频
         removeItemFromList(deleteVideo, cacheTomorrowList);
+
         // 根据明日列表来剔除今日要用到的视频
         ArrayList<AdDetailResponse> deleteVideo1 = checkFileLength(context, cacheTomorrowList, localVideos);
         // 从删除列表中提出明天要用到的视频
         removeItemFromList(deleteVideo1, cacheTodayList);
-        // 去除重复
+
+        // 去除重复,获取最终的删除列表
         ArrayList<AdDetailResponse> finalVideos = dealWithDeleteVideos(deleteVideo, deleteVideo1);
+
+        // 删除文件
+        if(finalVideos != null && finalVideos.size() > 0){
+            for(AdDetailResponse adDetailResponse : finalVideos){
+                DeleteFileUtils.getInstance().deleteFile(adDetailResponse.adVideoName);
+            }
+        }
         removeItemFromList(localVideos, finalVideos);
         LogCat.e("video", "验证文件完整性后,视频的个数......." + localVideos.size());
         return localVideos;

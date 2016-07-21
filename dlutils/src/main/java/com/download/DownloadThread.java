@@ -36,7 +36,7 @@ public class DownloadThread extends Thread {
     private  RandomAccessFile raf;
     private static final int CONNECT_TIME_OUT = 60000;
     private static final int READ_TIME_OUT = 60000;
-    private static final int BUFFER_IN_SIZE = 2048;
+    private static final int BUFFER_IN_SIZE = 4096;
     private Context context;
     private long startPos;
     private long endPos;
@@ -176,7 +176,6 @@ public class DownloadThread extends Thread {
 
 
 //        SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
-        // TODO 打开数据库
         while (len != -1 && !isCancel) {
             try {
                 raf.write(buffer, 0, len);
