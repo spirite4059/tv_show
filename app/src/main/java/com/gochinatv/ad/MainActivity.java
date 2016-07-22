@@ -11,6 +11,7 @@ import android.net.ConnectivityManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -542,7 +543,7 @@ public class MainActivity extends BaseActivity {
             unregisterReceiver(receiverWifi);
         }
 
-        cancelDialogTimer();
+        cancelDialogCountTimer();
     }
 
     /**
@@ -903,6 +904,11 @@ public class MainActivity extends BaseActivity {
                 if(hasNetwork){
                     isNetConnect = true;
                     if(dialog != null && dialog.isShowing()){
+                        /**
+                         * 隐藏NavigationBar
+                         */
+                        DataUtils.hideNavigationBar(MainActivity.this);
+                        cancelDialogCountTimer();
                         dialog.dismiss();
                         if(receiverWifi != null && isHasRegisterWifiReceiver){
                             unregisterReceiver(receiverWifi);
@@ -1412,37 +1418,70 @@ public class MainActivity extends BaseActivity {
             if(!isNetConnect){
                 //没有联网是才show
                 dialog.show();
-                hideDialog();
+                startDialogCountTimer();
             }
         }
 
     }
 
+
     /**
-     * 30s后隐藏wifi-dialog
+     * 定时器
      */
-    private Timer dialogTimer;//
+    private  DialogCountDownTimer dialogCountDownTimer;
+    class DialogCountDownTimer extends CountDownTimer{
+
+
+        public DialogCountDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+        @Override
+        public void onTick(long l) {
+            if(dialog != null){
+                dialog.showCountTime(String.valueOf(l/1000));
+            }
+        }
+
+        @Override
+        public void onFinish() {
+            //倒计时完成，隐藏dialog
+            hideDialog();
+        }
+    }
+
+
+    /**
+     * 开始定时器
+     */
+    public void startDialogCountTimer(){
+        if(dialogCountDownTimer == null){
+            dialogCountDownTimer = new DialogCountDownTimer(30*1000,1000);
+        }
+        dialogCountDownTimer.start();
+    }
+
+
+
+    /**
+     * 隐藏dialog
+     */
     private void hideDialog(){
-        if(dialogTimer == null){
-            dialogTimer = new Timer();
+        if(dialog != null && dialog.isShowing()){
+            /**
+             * 隐藏NavigationBar
+             */
+            DataUtils.hideNavigationBar(this);
+            dialog.dismiss();
         }
-        dialogTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if(dialog != null && dialog.isShowing()){
-                    dialog.dismiss();
-                }
-            }
-        },30*1000);
     }
 
-
     /**
-     * 取消dialog的timer
+     * 取消定时器
      */
-    private void cancelDialogTimer(){
-        if(dialogTimer != null){
-            dialogTimer.cancel();
+    public void cancelDialogCountTimer(){
+        if(dialogCountDownTimer != null){
+            dialogCountDownTimer.cancel();
         }
 
     }

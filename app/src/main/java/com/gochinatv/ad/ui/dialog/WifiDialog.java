@@ -1,12 +1,17 @@
 package com.gochinatv.ad.ui.dialog;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.Selection;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +19,13 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.gochinatv.ad.MainActivity;
 import com.gochinatv.ad.R;
 import com.gochinatv.ad.interfaces.OnWifiConnectListener;
 import com.gochinatv.ad.tools.AlertUtils;
@@ -32,8 +40,10 @@ import java.util.ArrayList;
  * Created by zfy on 2015/11/19.
  */
 public class WifiDialog extends Dialog {
-
-
+    private MainActivity mainActivity;
+    private Context context;
+    private CheckBox checkBox;
+    private TextView tvCountTime;//显示30s秒倒计时
     private EditText etPwd;
     private Button btnConnect;
     private Button btnCancel;
@@ -47,6 +57,8 @@ public class WifiDialog extends Dialog {
 
     public WifiDialog(Context context, WifiAutoConnectManager wifiAutoConnectManager, ArrayList<ScanResult> wifiList) {
         super(context, R.style.wifiDialog);
+        mainActivity = (MainActivity) context;
+        this.context = context;
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.dialog_wifi);
         setCanceledOnTouchOutside(false);
@@ -67,6 +79,8 @@ public class WifiDialog extends Dialog {
         btnConnect = (Button) findViewById(R.id.btn_connect);
         btnCancel = (Button) findViewById(R.id.btn_cancel);
         spinner = (Spinner) findViewById(R.id.spinner);
+        tvCountTime = (TextView) findViewById(R.id.tv_count_time);
+        checkBox = (CheckBox) findViewById(R.id.checkbox);
     }
 
 
@@ -146,6 +160,10 @@ public class WifiDialog extends Dialog {
 
                                 } else {
                                     AlertUtils.alert(getContext(), "正在链接热点!");
+                                    /**
+                                     * 隐藏NavigationBar
+                                     */
+                                    DataUtils.hideNavigationBar((Activity) context);
                                     dismiss();
                                     if(handler == null){
                                         handler = new Handler(Looper.getMainLooper());
@@ -178,9 +196,63 @@ public class WifiDialog extends Dialog {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                /**
+                 * 隐藏NavigationBar
+                 */
+                DataUtils.hideNavigationBar((Activity) context);
                 dismiss();
             }
         });
+
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(etPwd != null){
+                    if(b){
+                        //显示密码
+                        etPwd.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                    }else{
+                        //隐藏密码
+                        etPwd.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    }
+
+                    //下面两行代码实现: 输入框光标一直在输入文本后面
+                    Editable etable = etPwd.getText();
+                    Selection.setSelection(etable, etable.length());
+                }
+            }
+        });
+
+        etPwd.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if( mainActivity != null){
+                    if(charSequence.length() > 0){
+                        //停止倒计时
+                        mainActivity.cancelDialogCountTimer();
+                        tvCountTime.setText("30s");
+                    }else{
+                        //开始倒计时
+                        mainActivity.startDialogCountTimer();
+                    }
+                }else{
+                    LogCat.e("WifiDialog", "mainActivity == null........");
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+
 
     }
 
@@ -237,6 +309,23 @@ public class WifiDialog extends Dialog {
         }
 
     }
+
+
+    /**
+     * 显示30s倒计时
+     */
+    public void showCountTime(String time){
+        if(tvCountTime != null){
+            tvCountTime.setText(time+"s");
+        }
+
+    }
+
+
+
+
+
+
 
 }
 
