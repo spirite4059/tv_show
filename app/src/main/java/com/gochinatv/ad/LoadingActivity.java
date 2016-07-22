@@ -92,6 +92,12 @@ public class LoadingActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
+
+        /**
+         * 隐藏NavigationBar
+         */
+        DataUtils.hideNavigationBar(LoadingActivity.this);
+
         loadingView = (LinearLayout) findViewById(R.id.loading);
 
         postHandler = new Handler();
