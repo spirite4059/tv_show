@@ -3,7 +3,6 @@ package com.gochinatv.ad.ui.fragment;
 import android.app.FragmentTransaction;
 import android.media.MediaPlayer;
 import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -191,10 +190,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         startScreenShot();
 
         //  开启轮询接口
-        handler = new Handler(Looper.getMainLooper());
-        videoStatusRunnable = new VideoStatusRunnable(getActivity(), videoView, playingVideoInfo, handler);
-        // 开始视频的守护线程
-        handler.postDelayed(videoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
+//        handler = new Handler(Looper.getMainLooper());
+//        videoStatusRunnable = new VideoStatusRunnable(getActivity(), videoView, playingVideoInfo, handler);
+//        // 开始视频的守护线程
+//        handler.postDelayed(videoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
 
         // 没有网络
         if (!DataUtils.isNetworkConnected(getActivity())) {

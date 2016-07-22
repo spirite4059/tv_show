@@ -68,12 +68,7 @@ public class VideoAdUtils {
      * @return
      */
     public static ArrayList<AdDetailResponse> getLocalVideoList(Context context) {
-        ArrayList<AdDetailResponse> localVideos = new ArrayList<>();
-        File fileVideo = new File(DataUtils.getVideoDirectory());
-        if (fileVideo.exists() && fileVideo.isDirectory()) {
-            localVideos.addAll(getLocalList(context, fileVideo));
-        }
-        LogCat.e("video", "验证文件完整性前,视频的个数......." + localVideos.size());
+
         // 验证文件完整性
         // 从今明两天缓存列表中获取不存在的视频,将其删除
         // 获取今天缓存列表
@@ -81,17 +76,32 @@ public class VideoAdUtils {
         // 获取明天缓存列表
         ArrayList<AdDetailResponse> cacheTomorrowList = VideoAdUtils.getCacheList(context, false);
 
+        return getLocalVideoList(context, cacheTodayList, cacheTomorrowList);
+    }
+
+
+    public static ArrayList<AdDetailResponse> getLocalVideoList(Context context, ArrayList<AdDetailResponse> todayList, ArrayList<AdDetailResponse> tomorrowList) {
+        ArrayList<AdDetailResponse> localVideos = new ArrayList<>();
+        File fileVideo = new File(DataUtils.getVideoDirectory());
+        if (fileVideo.exists() && fileVideo.isDirectory()) {
+            localVideos.addAll(getLocalList(context, fileVideo));
+        }
+        // 删除不再需要的视频
+        deleteOutDownloadVideo(context, todayList, tomorrowList);
+
+        LogCat.e("video", "验证文件完整性前,视频的个数......." + localVideos.size());
+        // 验证文件完整性
+        // 从今明两天缓存列表中获取不存在的视频,将其删除
         // 根据今日列表检查缓存文件完整性,并得到要删除的文件
-        ArrayList<AdDetailResponse> deleteVideo = checkFileLength(context, cacheTodayList, localVideos);
+        ArrayList<AdDetailResponse> deleteVideo = checkFileLength(context, todayList, localVideos);
+        // 获取明天缓存列表
         // 从删除列表中提出明天要用到的视频
-        removeItemFromList(deleteVideo, cacheTomorrowList);
-
+        removeItemFromList(deleteVideo, tomorrowList);
         // 根据明日列表来剔除今日要用到的视频
-        ArrayList<AdDetailResponse> deleteVideo1 = checkFileLength(context, cacheTomorrowList, localVideos);
+        ArrayList<AdDetailResponse> deleteVideo1 = checkFileLength(context, tomorrowList, localVideos);
         // 从删除列表中提出明天要用到的视频
-        removeItemFromList(deleteVideo1, cacheTodayList);
-
-        // 去除重复,获取最终的删除列表
+        removeItemFromList(deleteVideo1, todayList);
+        // 去除重复
         ArrayList<AdDetailResponse> finalVideos = dealWithDeleteVideos(deleteVideo, deleteVideo1);
 
         // 删除文件
@@ -101,38 +111,7 @@ public class VideoAdUtils {
                 LogCat.e("video", "当前视频在今明两天都不用,立即删除" + adDetailResponse.adVideoName);
             }
         }
-        removeItemFromList(localVideos, finalVideos);
-        LogCat.e("video", "验证文件完整性后,视频的个数......." + localVideos.size());
-        return localVideos;
-    }
-
-
-    public static ArrayList<AdDetailResponse> getLocalVideoList(Context context, ArrayList<AdDetailResponse> todayList, ArrayList<AdDetailResponse> tomorrowList) {
-        // 删除过期下载视频
-        deleteOutDownloadVideo(context, todayList, tomorrowList);
-
-        ArrayList<AdDetailResponse> localVideos = new ArrayList<>();
-        File fileVideo = new File(DataUtils.getVideoDirectory());
-        if (fileVideo.exists() && fileVideo.isDirectory()) {
-            localVideos.addAll(getLocalList(context, fileVideo));
-        }
-        LogCat.e("video", "验证文件完整性前,视频的个数......." + localVideos.size());
-        // 验证文件完整性
-        // 从今明两天缓存列表中获取不存在的视频,将其删除
-        // 获取今天缓存列表
-        ArrayList<AdDetailResponse> cacheTodayList = VideoAdUtils.getCacheList(context, true);
-        // 根据今日列表检查缓存文件完整性,并得到要删除的文件
-        ArrayList<AdDetailResponse> deleteVideo = checkFileLength(context, cacheTodayList, localVideos);
-        // 获取明天缓存列表
-        ArrayList<AdDetailResponse> cacheTomorrowList = VideoAdUtils.getCacheList(context, false);
-        // 从删除列表中提出明天要用到的视频
-        removeItemFromList(deleteVideo, cacheTomorrowList);
-        // 根据明日列表来剔除今日要用到的视频
-        ArrayList<AdDetailResponse> deleteVideo1 = checkFileLength(context, cacheTomorrowList, localVideos);
-        // 从删除列表中提出明天要用到的视频
-        removeItemFromList(deleteVideo1, cacheTodayList);
-        // 去除重复
-        ArrayList<AdDetailResponse> finalVideos = dealWithDeleteVideos(deleteVideo, deleteVideo1);
+        // 从本地视频表中删除需要删除的视频
         removeItemFromList(localVideos, finalVideos);
         LogCat.e("video", "验证文件完整性后,视频的个数......." + localVideos.size());
         return localVideos;
@@ -275,37 +254,14 @@ public class VideoAdUtils {
             // 此时无需匹对列表，直接将预置片放入缓存播放列表
             LogCat.e("video", "如果本地缓存视频文件不足2个，直接播放预置片");
         } else {
-//            ArrayList<AdDetailResponse> cacheTomorrowList = VideoAdUtils.getCacheList(context, false);
             // 匹对列表
             LogCat.e("video", "开始根据明日表查找可以播放的视频");
             cachePlayVideos.addAll(getIntersectionList(localVideoList, VideoAdUtils.getCacheList(context, false)));
 
-//            for (AdDetailResponse localVideo : localVideoList) {
-//                for (AdDetailResponse cacheVideo : cacheTomorrowList) {
-//                    if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
-//                        cacheVideo.videoPath = localVideo.videoPath;
-//                        LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
-//                        cachePlayVideos.add(cacheVideo);
-//                        break;
-//                    }
-//                }
-//            }
             // 匹配后结果不满足2个，继续检查昨天的播放列表
             if (cachePlayVideos.size() < 2) {
-//                ArrayList<AdDetailResponse> cacheYeastodayList = VideoAdUtils.getCacheList(context, true);
                 // 检测前天的视频是否可以播放
                 cachePlayVideos.addAll(getIntersectionList(localVideoList, VideoAdUtils.getCacheList(context, true)));
-
-//                for (AdDetailResponse localVideo : localVideoList) {
-//                    for (AdDetailResponse cacheVideo : cacheYeastodayList) {
-//                        if (!TextUtils.isEmpty(localVideo.adVideoName) && localVideo.adVideoName.equals(cacheVideo.adVideoName)) {
-//                            cacheVideo.videoPath = localVideo.videoPath;
-//                            LogCat.e("video", "缓存视频：" + cacheVideo.adVideoName);
-//                            cachePlayVideos.add(cacheVideo);
-//                            break;
-//                        }
-//                    }
-//                }
             }
             // 如果还是少于2个,就将缓存列表键入到播放列表中
             if (cachePlayVideos.size() < 2) {
