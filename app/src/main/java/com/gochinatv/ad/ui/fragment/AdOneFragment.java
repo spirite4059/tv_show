@@ -43,6 +43,7 @@ import com.okhtttp.response.ErrorResponse;
 import com.okhtttp.response.LayoutResponse;
 import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.VideoHttpService;
+import com.retrofit.download.RetrofitDLUtils;
 import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
@@ -320,7 +321,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         if (!isAdded()) {
             return;
         }
-        LogCat.e("video", "url: " + url);
+        LogCat.e("video", "turl: " + url);
         if (response == null) {
             // 默认继续播放之前的缓存文件
             // 显示开发下载模式，主要是为了显示日志
@@ -898,6 +899,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         }
 
+        RetrofitDLUtils.getInstance().cancel();
+
 //        if (downloadingVideoResponse != null) {
 //            DeleteFileUtils.getInstance().deleteFile(downloadingVideoResponse.videoPath);
 //        }
@@ -1419,12 +1422,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 //            String msg = "{\"time\"" + ":}";
 //            ErrorHttpServer.doStatisticsHttp(getActivity(), Constant.APP_START_TIME, msg, new OkHttpCallBack<ErrorResponse>() {
 //                @Override
-//                public void onSuccess(String url, ErrorResponse response) {
+//                public void onSuccess(String turl, ErrorResponse response) {
 //                    LogCat.e("MainActivity", "上传开机时间成功");
 //                }
 //
 //                @Override
-//                public void onError(String url, String errorMsg) {
+//                public void onError(String turl, String errorMsg) {
 //                    LogCat.e("MainActivity", "上传开机时间失败");
 //                }
 //            });

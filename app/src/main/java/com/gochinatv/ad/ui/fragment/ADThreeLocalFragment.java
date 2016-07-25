@@ -148,7 +148,7 @@ public class ADThreeLocalFragment extends BaseFragment {
                 if (!isAdded()) {
                     return;
                 }
-                LogCat.e("ADThreeLocalFragment", " 广告三 url " + url);
+                LogCat.e("ADThreeLocalFragment", " 广告三 turl " + url);
                 if (response == null || !(response instanceof AdThreeDataResponse)) {
                     //再次请求
                     initData();

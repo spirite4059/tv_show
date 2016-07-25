@@ -154,7 +154,7 @@
 //        String firstVideoPath = null;
 //        if ((file.exists() && file.isDirectory())) {
 //            File[] files = file.listFiles();
-//            if (files.length == 0) {
+//            if (files.tlength == 0) {
 //            } else {
 //                for (File fileItem : files) {
 //                    if (fileItem.isFile()) {
@@ -286,8 +286,8 @@
 //            // 删除所有的需要删除的视频文件
 //            deleteFiles(deleteVideoTable);
 //        }
-//        int length = playVideoTable.size();
-//        if (length == 0) {
+//        int tlength = playVideoTable.size();
+//        if (tlength == 0) {
 //            LogCat.e("当前播放列表仍然没有视频内容，继续播放预置片。。。");
 //            playVideo(getRawVideoUri());
 //        } else {
@@ -299,7 +299,7 @@
 //
 //            playVideoPosition++;
 //
-//            if (playVideoPosition >= length) {
+//            if (playVideoPosition >= tlength) {
 //
 //                playVideoPosition = 0;
 //
@@ -315,7 +315,7 @@
 //
 //
 //    @Override
-//    protected void onSuccessFul(VideoDetailListResponse response, String url) {
+//    protected void onSuccessFul(VideoDetailListResponse response, String turl) {
 //        LogCat.e("onSuccessFul....");
 //        if (isFinishing()) {
 //            return;
@@ -350,7 +350,7 @@
 //
 //        downloadVideoTable.addAll(adDetailResponses);
 //
-//        int length = adDetailResponses.size();
+//        int tlength = adDetailResponses.size();
 //
 //        // 判断是否有本地缓存视频
 //        int localVideosSize = localVideoTable.size();
@@ -398,7 +398,7 @@
 //                AdDetailResponse adDetailResponse = localVideoTable.get(i);
 //                boolean isServerUse = false;
 //                // 检测服务器还用到的视频
-//                for (int j = 0; j < length; j++) {
+//                for (int j = 0; j < tlength; j++) {
 //                    AdDetailResponse playVideoResponse = adDetailResponses.get(j);
 //                    if (adDetailResponse.adVideoName.equals(playVideoResponse.adVideoName)) {
 //                        playVideoResponse.videoPath = adDetailResponse.videoPath;
@@ -443,7 +443,7 @@
 //    }
 //
 //    @Override
-//    protected void onFailed(String errorMsg, String url) {
+//    protected void onFailed(String errorMsg, String turl) {
 //        // 开始计时，时间间隔5小时
 //        if (timer == null) {
 //            timer = new Timer();
@@ -468,13 +468,13 @@
 //
 //
 //    @Override
-//    protected void getVideoCdnPath(String url) {
+//    protected void getVideoCdnPath(String turl) {
 //        if (isFinishing()) {
 //            return;
 //        }
-//        LogCat.e("获取到当前视频的下载地址。。。。。。。。" + url);
+//        LogCat.e("获取到当前视频的下载地址。。。。。。。。" + turl);
 //        // 一个视频一个视频的下载
-//        download(url);
+//        download(turl);
 //    }
 //
 //    @Override
@@ -530,16 +530,16 @@
 //
 //    private int retryDownloadTimes;
 //
-//    private void download(final String url) {
+//    private void download(final String turl) {
 //        LogCat.e("开始下载。。。。");
 //
 //        // okDownload(adVideoUrl);
 //        // 每次开始前都取消其他下载，保证只有一个下载
 //        dlUtils.cancel(this);
 //
-////        dlUtils.download(saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION, url, 1, new OnDownloadStatusListener() {
+////        dlUtils.download(saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION, turl, 1, new OnDownloadStatusListener() {
 ////
-////            private long fileLength;
+////            private long tlength;
 ////
 ////            @Override
 ////            public void onError(int errorCode, String errorMsg) {
@@ -554,7 +554,7 @@
 ////                            if (retryDownloadTimes < 3) {
 ////                                retryDownloadTimes++;
 ////                                LogCat.e("继续重试3次下载，此时是第" + retryDownloadTimes + "次尝试。。。。");
-////                                download(url);
+////                                download(turl);
 ////                            } else {
 ////                                retryDownloadTimes = 0;
 ////                                LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
@@ -571,7 +571,7 @@
 ////                        @Override
 ////                        public void run() {
 ////                            LogCat.e("5秒后继续尝试，如此循环。。。。");
-////                            download(url);
+////                            download(turl);
 ////
 ////                        }
 ////                    }, 5000);
@@ -582,12 +582,12 @@
 ////            @Override
 ////            public void onPrepare(long fileSize) {
 ////                LogCat.e("fileSize............. " + fileSize);
-////                fileLength = fileSize;
+////                tlength = fileSize;
 ////            }
 ////
 ////            @Override
 ////            public void onProgress(long progress) {
-////                if (fileLength == 0) {
+////                if (tlength == 0) {
 ////                    return;
 ////                }
 ////                logProgress(progress);
@@ -623,7 +623,7 @@
 ////            private void logProgress(long progress){
 ////                double size = (int) (progress / 1024);
 ////                String sizeStr;
-////                int s = (int) (progress * 100 / fileLength);
+////                int s = (int) (progress * 100 / tlength);
 ////                if (size > 1000) {
 ////                    size = (progress / 1024) / 1024f;
 ////                    BigDecimal b = new BigDecimal(size);
@@ -638,11 +638,11 @@
 //    }
 //
 //
-//    private void okDownload(final String url) {
+//    private void okDownload(final String turl) {
 //        LogCat.e("okDownload开始下载。。。。");
-//        OkHttpUtils.getInstance().doFileDownload(url, saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION, new com.okhtttp.OnDownloadStatusListener() {
+//        OkHttpUtils.getInstance().doFileDownload(turl, saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION, new com.okhtttp.OnDownloadStatusListener() {
 //
-//            private long fileLength;
+//            private long tlength;
 //
 //            @Override
 //            public void onError(int errorCode, String errorMsg) {
@@ -652,12 +652,12 @@
 //            @Override
 //            public void onPrepare(long fileSize) {
 //                LogCat.e("fileSize............. " + fileSize);
-//                fileLength = fileSize;
+//                tlength = fileSize;
 //            }
 //
 //            @Override
 //            public void onProgress(long progress) {
-//                if (fileLength == 0) {
+//                if (tlength == 0) {
 //                    return;
 //                }
 //                logProgress(progress);
@@ -676,7 +676,7 @@
 //            private void logProgress(long progress) {
 //                double size = (int) (progress / 1024);
 //                String sizeStr;
-//                int s = (int) (progress * 100 / fileLength);
+//                int s = (int) (progress * 100 / tlength);
 //                if (size > 1000) {
 //                    size = (progress / 1024) / 1024f;
 //                    BigDecimal b = new BigDecimal(size);
@@ -695,7 +695,7 @@
 //        LogCat.e("开始下载升级安装包。。。。");
 //        dlUtils.download(saveDir + "chinaRestaurant", downloadResponse.adVideoName, updateInfo.fileUrl, 1, new OnDownloadStatusListener() {
 //
-//            private long fileLength;
+//            private long tlength;
 //
 //            @Override
 //            public void onError(int errorCode, String errorMsg) {
@@ -722,13 +722,13 @@
 //            @Override
 //            public void onPrepare(long fileSize) {
 //                LogCat.e("fileSize............. " + fileSize);
-//                fileLength = fileSize;
+//                tlength = fileSize;
 //
 //            }
 //
 //            @Override
 //            public void onProgress(long progress) {
-//                if (fileLength == 0) {
+//                if (tlength == 0) {
 //                    return;
 //                }
 //                logProgress(progress);
@@ -758,7 +758,7 @@
 //            private void logProgress(long progress) {
 //                double size = (int) (progress / 1024);
 //                String sizeStr;
-//                int s = (int) (progress * 100 / fileLength);
+//                int s = (int) (progress * 100 / tlength);
 //                if (size > 1000) {
 //                    size = (progress / 1024) / 1024f;
 //                    BigDecimal b = new BigDecimal(size);
@@ -795,9 +795,9 @@
 //
 //
 //    // 播放视频
-//    private void playVideo(String url) {
-//        if (!TextUtils.isEmpty(url) && videoView != null) {
-//            videoView.setVideoPath(url);
+//    private void playVideo(String turl) {
+//        if (!TextUtils.isEmpty(turl) && videoView != null) {
+//            videoView.setVideoPath(turl);
 //        }
 //    }
 //

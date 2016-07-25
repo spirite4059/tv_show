@@ -1,1 +1,1 @@
-include ':app', ':httpUtils', ':dlutils', ':db', ':statistics', ':library',  ':jsBridge'
+include ':app', ':httpUtils', ':dlutils', ':db', ':statistics', ':library', ':jsBridge', ':retrofitUtils'

@@ -64,12 +64,12 @@
 //
 //
 //    @Override
-//    protected void onSuccessFul(VideoDetailListResponse response, String url) {
+//    protected void onSuccessFul(VideoDetailListResponse response, String turl) {
 //
 //    }
 //
 //    @Override
-//    protected void onFailed(String errorMsg, String url) {
+//    protected void onFailed(String errorMsg, String turl) {
 //
 //    }
 //

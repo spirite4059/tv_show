@@ -447,7 +447,7 @@ public class DownloadPrepareThread extends Thread {
         }
 //        ArrayList<DownloadInfo> downloadInfos1 = DLDao.queryAll(context);
 //        for (DownloadInfo downloadInfo : downloadInfos1) {
-//            LogCat.e("downloadInfo.tname......" + downloadInfo.tname);
+//            LogCat.e("downloadInfo.fileName......" + downloadInfo.fileName);
 //            LogCat.e("downloadInfo.turl......" + downloadInfo.turl);
 //            LogCat.e("downloadInfo.startPos......" + downloadInfo.startPos);
 //            LogCat.e("--------------------------");

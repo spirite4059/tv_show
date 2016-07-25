@@ -122,6 +122,21 @@ public class DownloadUtils {
 
             }
         });
+
+
+//        RetrofitDLUtils.getInstance().download(context, dir, fileName, fileUrl, new DownloadStatusListener() {
+//            @Override
+//            public void onProgress(long progress, long total, boolean done) {
+//
+//            }
+//
+//            @Override
+//            public void onError(String msg) {
+//
+//            }
+//        });
+
+
     }
 
 
@@ -187,7 +202,7 @@ public class DownloadUtils {
 //            private void logProgress(long progress) {
 //                double size = (int) (progress / 1024);
 //                String sizeStr;
-//                int s = (int) (progress * 100 / fileLength);
+//                int s = (int) (progress * 100 / tlength);
 //                if (size > 1000) {
 //                    size = (progress / 1024) / 1024f;
 //                    BigDecimal b = new BigDecimal(size);

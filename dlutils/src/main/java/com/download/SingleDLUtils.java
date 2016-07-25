@@ -137,9 +137,9 @@
 //        }
 //
 //        // 获取url
-//        URL url = null;
+//        URL turl = null;
 //        try {
-//            url = new URL(downloadUrl);
+//            turl = new URL(downloadUrl);
 //        } catch (MalformedURLException e) {
 //            e.printStackTrace();
 //            errorCode = ErrorCodes.ERROR_DOWNLOAD_URL;
@@ -147,7 +147,7 @@
 //        if (isCancel) {
 //            return;
 //        }
-//        if (url == null || errorCode != 0) {
+//        if (turl == null || errorCode != 0) {
 //            listener.onError(ErrorCodes.ERROR_DOWNLOAD_URL, getErrorMsg(ErrorCodes.ERROR_DOWNLOAD_URL));
 //            return;
 //        }
@@ -157,7 +157,7 @@
 //        }
 //
 //
-//        HttpURLConnection connection = getHttpURLConnection(url);
+//        HttpURLConnection connection = getHttpURLConnection(turl);
 //        // 如果是请求文件体的conn出错，要继续访问3边，无需重新进行操作
 //        if (connection == null || errorCode == ErrorCodes.ERROR_DOWNLOAD_CONN) {
 //            listener.onError(ErrorCodes.ERROR_DOWNLOAD_CONN, getErrorMsg(ErrorCodes.ERROR_DOWNLOAD_CONN));
@@ -391,10 +391,10 @@
 //    }
 //
 //
-//    private HttpURLConnection getHttpURLConnection(URL url) {
+//    private HttpURLConnection getHttpURLConnection(URL turl) {
 //        HttpURLConnection connection = null;
 //        try {
-//            connection = (HttpURLConnection) url.openConnection();
+//            connection = (HttpURLConnection) turl.openConnection();
 //            connection.setConnectTimeout(CONNECT_TIME_OUT);
 //            connection.setRequestMethod("GET");
 //            connection.setRequestProperty("Accept", "image/gif, image/jpeg, image/pjpeg, image/pjpeg, application/x-shockwave-flash, application/xaml+xml, application/vnd.ms-xpsdocument, application/x-ms-xbap, application/x-ms-application, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/msword, */*");
