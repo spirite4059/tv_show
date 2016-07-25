@@ -58,6 +58,9 @@ android {
         ctTest {}
         RKM {}
         RKMtest {}
+        zhaoge {}
+        zhaogetest {}
+
     }
 
     productFlavors.all { flavor ->
