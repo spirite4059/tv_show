@@ -26,7 +26,6 @@ public class DownloadFileThread extends Thread {
     private String filePath;
     private ProgressHandler progressHandler;
     private InputStream is;
-    private boolean isCancel;
     private static final int BUFFER_IN_SIZE = 4096;
 
 
@@ -43,15 +42,13 @@ public class DownloadFileThread extends Thread {
     public void run() {
         super.run();
         File file = createFile();
-
+        Log.e("retrofit_dl", "fileName......" + fileName);
         if(file == null || !file.exists()){
             sendErrorMsg("本地文件创建失败");
             return;
         }
 
         BufferedInputStream bis = new BufferedInputStream(is);
-
-        byte[] buffer = new byte[BUFFER_IN_SIZE];
 
         RandomAccessFile raf = null;
         boolean isRandomError = false;
@@ -77,6 +74,7 @@ public class DownloadFileThread extends Thread {
 
         int len = 0;
         boolean isReadError = false;
+        byte[] buffer = new byte[BUFFER_IN_SIZE];
         try {
             len = bis.read(buffer);
         } catch (IOException e) {
@@ -90,7 +88,7 @@ public class DownloadFileThread extends Thread {
         }
         boolean isWriteError = false;
         long downloadLength = 0;
-        while (len != -1 && !isCancel) {
+        while (len != -1) {
             try {
                 raf.write(buffer, 0, len);
             } catch (Exception e) {
@@ -132,6 +130,15 @@ public class DownloadFileThread extends Thread {
                 e.printStackTrace();
             }
         }
+
+        Log.e("retrofit_dl", "当前线程已经下载....." + downloadLength);
+
+        if(RetrofitDLUtils.getInstance().isCancel()){
+            Log.e("retrofit_dl", "主动停止了下载......");
+            sendCancelMsg();
+            return;
+        }
+
         if(isReadError || isWriteError){
             Log.e("retrofit_dl", "下载过程出错,停止下载......");
             if(isReadError){
@@ -142,10 +149,6 @@ public class DownloadFileThread extends Thread {
         }else {
             Log.e("retrofit_dl", "文件下载完成......");
         }
-
-        Log.e("retrofit_dl", "当前线程已经下载....." + downloadLength);
-
-
     }
 
     private File createFile() {
@@ -164,10 +167,10 @@ public class DownloadFileThread extends Thread {
         progressHandler.sendMessage(msg);
     }
 
-
-    public void cancel(){
-        isCancel = true;
+    private void sendCancelMsg() {
+        progressHandler.sendMessage(progressHandler.obtainMessage(4));
     }
+
 
 
 }

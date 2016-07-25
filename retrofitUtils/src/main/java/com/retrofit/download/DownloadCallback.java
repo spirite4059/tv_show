@@ -69,10 +69,12 @@ public class DownloadCallback implements Callback<ResponseBody> {
 
     private synchronized void insertDlInfo(Response<ResponseBody> response) {
         if(query(context) == null){
+            Log.e("retrofit_dl", "没有下载记录,开始插入sql.......");
             DownloadInfo downloadInfo = new DownloadInfo();
             downloadInfo.tname = fileName;
             long fileLength = Long.parseLong(String.valueOf(response.headers().get("Content-Length")));
             Log.e("retrofit_dl", "文件大小: " + fileLength);
+            Log.e("retrofit_dl", "文件名称: " + fileName);
             downloadInfo.tlength = fileLength;
             downloadInfo.tid = 0;
             downloadInfo.startPos = 0;
@@ -82,7 +84,7 @@ public class DownloadCallback implements Callback<ResponseBody> {
 
             DownloadInfo downloadInfos = DLDao.query(context);
             if(downloadInfos != null){
-
+                Log.e("retrofit_dl", "查询插入表后的数据: " + downloadInfos.tname);
             }
         }
     }

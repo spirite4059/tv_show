@@ -107,6 +107,7 @@ public class Tools {
         String range = null;
         DownloadInfo downloadInfo = DLDao.query(context);
         if (downloadInfo != null) {
+
             if (downloadInfo.tname.equals(fileName)) {  // 下载文件跟sql表是一个文件
                 // 有数据记录,继续查找文件, 如果文件不存在或者文件大小不等于已经下载的文件大小,都要重新下载
                 File file = new File(filePath + File.separator + fileName + ".mp4");
@@ -123,6 +124,7 @@ public class Tools {
                 } else {
                     // 删除记录
                     // 文件出错, 重新下载
+                    Log.e("retrofit_dl", "下载文件不存在,删除文件sql记录.....");
                     DLDao.delete(context);
                 }
             } else { // 如果不是一个文件,直接删除文件和记录
@@ -135,6 +137,7 @@ public class Tools {
                 }
             }
         } else {
+            Log.e("retrofit_dl", "没有下载记录.....");
             // 以防万一,删除记录
             DLDao.delete(context);
         }

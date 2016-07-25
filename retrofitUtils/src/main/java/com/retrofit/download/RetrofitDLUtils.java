@@ -20,12 +20,9 @@ import static com.retrofit.tools.Tools.getRealPath;
 public class RetrofitDLUtils {
 
     private Call<ResponseBody> call;
-    private ProgressHandler progressHandler;
     private String downloadingUrl;
-    private DownloadCallback downloadCallback;
 
     private RetrofitDLUtils(){
-        init();
     }
 
     public static RetrofitDLUtils getInstance(){
@@ -39,13 +36,10 @@ public class RetrofitDLUtils {
         private static RetrofitDLUtils instance = new RetrofitDLUtils();
     }
 
-    private void init(){
-
-
-    }
 
 
     public void download(Context context, String filePath, String fileName, String url, DownloadStatusListener listener){
+        isCancel = false;
         if (!Tools.isExistSDCard()) {
             listener.onError("sdcard不可用");
             return;
@@ -65,8 +59,8 @@ public class RetrofitDLUtils {
             return;
         }
 
-        fileName = "甘肃行still";
-        url = "http://video.ottcloud.tv/publicspace/videos/dst/cp/71812_20160718160001/71812.mp4";
+
+        Log.e("retrofit_dl", "正在下载的文件......." + fileName);
 
         ProgressHandler progressHandler = new ProgressHandler(Looper.getMainLooper(), context, listener);
 
@@ -90,12 +84,16 @@ public class RetrofitDLUtils {
         call.enqueue(new DownloadCallback(context, filePath, fileName, url, progressHandler));
     }
 
-
-
+    public boolean isCancel(){
+        return isCancel;
+    }
+    private boolean isCancel;
     public void cancel(){
         if(call != null && !call.isCanceled()){
             call.cancel();
             call = null;
+            isCancel = true;
         }
+        downloadingUrl = null;
     }
 }

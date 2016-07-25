@@ -1,7 +1,6 @@
 package com.retrofit.download;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,7 +16,6 @@ import com.retrofit.download.db.DLDao;
 public class ProgressHandler extends Handler{
 
     private DownloadStatusListener listener;
-    private SQLiteDatabase sqLiteDatabase;
     private Context context;
 
     public ProgressHandler(Looper looper, Context context, DownloadStatusListener listener) {
@@ -43,26 +41,24 @@ public class ProgressHandler extends Handler{
 
                 // 更新数据库
                 if(context != null){
-                    if(sqLiteDatabase == null){
-                        sqLiteDatabase = DLDao.getConnection(context);
-                    }
-                    DLDao.updateOut(sqLiteDatabase, 0, progress);
+                    DLDao.update(context, 0, progress);
                 }
 
                 break;
             case 1: // 下载完成
                 Log.e("retrofit_dl", "下载完成......");
-                DLDao.closeDB(sqLiteDatabase);
 
                 break;
             case 2: // 下载异常
-
+                Log.e("retrofit_dl", "下载出现异常......");
                 break;
             case 3: // 磁盘空间不足
                 // 停止下载
                 RetrofitDLUtils.getInstance().cancel();
 
-
+                break;
+            case 4: // 取消下载
+                Log.e("retrofit_dl", "取消下载......");
                 break;
         }
 

@@ -40,7 +40,7 @@ public class DownloadPrepareThread extends Thread {
     private boolean isCancel;
     private static final int CONNECT_TIME_OUT = 60000;
     private DownloadThread[] threads;
-     private Context context;
+    private Context context;
 
 
     public DownloadPrepareThread(Context context, String downloadUrl, int threadNum, File file, OnDownloadStatusListener listener) {
@@ -186,10 +186,6 @@ public class DownloadPrepareThread extends Thread {
 
         LogCat.e("video", "fileSize: " + fileSize);
 
-
-        if (isCancel) {
-            return;
-        }
         // 计算每条线程下载的数据长度
         if (isCancel) {
             return;
@@ -226,11 +222,9 @@ public class DownloadPrepareThread extends Thread {
             LogCat.e("video", "有当前记录的存储信息......");
             if (downloadInfos.size() != size) {
                 LogCat.e("video", "线程数发生变化，删除记录，重新下载......");
-                DLDao.delete(context);
                 startThreadWithOutSql(url, fileSize, size);
             } else if (file.length() == 0) {
                 LogCat.e("video", "可能数据表还在，但是文件已经删除了......");
-                DLDao.delete(context);
                 startThreadWithOutSql(url, fileSize, size);
             } else {
                 if (file != null && file.exists()) {
@@ -238,7 +232,6 @@ public class DownloadPrepareThread extends Thread {
                     startThreadWithSql(url, size, downloadInfos, fileSize);
                 } else {
                     LogCat.e("video", "有记录信息，但是文件遭到破坏，从开开始下载......");
-                    DLDao.delete(context);
                     startThreadWithOutSql(url, fileSize, size);
                 }
             }
@@ -272,6 +265,8 @@ public class DownloadPrepareThread extends Thread {
                         if (isCancel) {
                             LogCat.e("video", "停止线程threadId: " + downloadThread.threadId);
                             downloadThread.cancel();
+
+                            updateDlProgress(sqLiteDatabase, downloadThread);
                             continue;
                         }
 
@@ -282,7 +277,6 @@ public class DownloadPrepareThread extends Thread {
                             isThreadError = true;
                             break;
                         } else {
-
                             if (!downloadThread.isCompleted()) {
                                 isFinished = false;
                                 downloadedAllSize += downloadThread.getDownloadLength();
@@ -290,19 +284,12 @@ public class DownloadPrepareThread extends Thread {
                                 downloadedAllSize += downloadThread.getDownloadLength();
                             }
 
-                            try {
-                                startPosition = downloadThread.getStartPos() + downloadThread.getDownloadLength() - 1;
-                                DLDao.updateOut(sqLiteDatabase, downloadThread.threadId, startPosition);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                errorCode = ErrorCodes.ERROR_DB_UPDATE;
-                            }
+                            updateDlProgress(sqLiteDatabase, downloadThread);
                         }
                     }
                 }
 
                 downloadSize = downloadedAllSize;
-
                 // 是否有子线程出错或者取消下载
                 if (isThreadError || isCancel) {
                     isFinished = false;
@@ -310,7 +297,6 @@ public class DownloadPrepareThread extends Thread {
                         LogCat.e("video", "下载线程出错......");
                     } else {
                         LogCat.e("video", "主动取消了下载......");
-
                     }
                     break;
                 }
@@ -321,8 +307,6 @@ public class DownloadPrepareThread extends Thread {
                 } catch (Exception e) {
 
                 }
-
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -333,14 +317,12 @@ public class DownloadPrepareThread extends Thread {
         if (isCancel) {
             LogCat.e("video", "主动停止下载........");
             setCancel();
-//            deleteFailFile(fileSize, downloadSize);
             return;
         }
         // 当下载过程出错
         if (errorCode != 0) {
             LogCat.e("video", "下载过程出错，主动停止下载........");
             setErrorMsg(errorCode);
-//            deleteFailFile(fileSize, downloadSize);
             return;
         }
         // 此时是正常结束，无论是否正常下载成功，都要删除数据库记录
@@ -364,6 +346,9 @@ public class DownloadPrepareThread extends Thread {
                 LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
                 // 删除当前记录
+            } else {
+                LogCat.e("video", "文件下载大小出错......");
+                setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
             }
         } else {
             LogCat.e("video", "文件下载尚未完成......");
@@ -371,6 +356,17 @@ public class DownloadPrepareThread extends Thread {
         }
 
 
+    }
+
+    private void updateDlProgress(SQLiteDatabase sqLiteDatabase, DownloadThread downloadThread) {
+        long startPosition;
+        try {
+            startPosition = downloadThread.getDownloadLength();
+            DLDao.updateOut(sqLiteDatabase, downloadThread.threadId, startPosition);
+        } catch (Exception e) {
+            e.printStackTrace();
+            errorCode = ErrorCodes.ERROR_DB_UPDATE;
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -414,6 +410,7 @@ public class DownloadPrepareThread extends Thread {
 
 
     private synchronized void startThreadWithOutSql(URL url, long fileSize, int size) {
+        DLDao.delete(context);
         // 插入数据前，将所有的表清空
         for (int i = 0; i < size; i++) {
             // 启动线程，分别下载每个线程需要下载的部分
@@ -460,13 +457,13 @@ public class DownloadPrepareThread extends Thread {
             LogCat.e("video", "文件下载大小出错......删除出错的文件");
             if (file.delete()) {
                 LogCat.e("video", "文件下载大小出错......删除成功");
-
             } else {
                 LogCat.e("video", "文件下载大小出错......删除出错");
+
             }
             return false;
-        }
-        return true;
+        } else
+            return true;
     }
 
     private HttpURLConnection getHttpURLConnection(URL url) {
@@ -497,11 +494,11 @@ public class DownloadPrepareThread extends Thread {
 
     private String getHttpResponseHeader(
             HttpURLConnection http) throws UnsupportedEncodingException {
-        for (int i = 0;; i++) {
+        for (int i = 0; ; i++) {
             String mine = http.getHeaderField(i);
             if (mine == null)
                 break;
-            if("Etag".equals(http.getHeaderFieldKey(i))){
+            if ("Etag".equals(http.getHeaderFieldKey(i))) {
                 return mine;
             }
         }
@@ -555,7 +552,8 @@ public class DownloadPrepareThread extends Thread {
 
 
     private OnSetBlockSizeListener onSetBlockSizeListener;
-    public interface OnSetBlockSizeListener{
+
+    public interface OnSetBlockSizeListener {
         ArrayList<DownloadInfo> onSetBlockSize(String fileName);
     }
 

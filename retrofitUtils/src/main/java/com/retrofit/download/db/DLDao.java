@@ -282,7 +282,7 @@ public class DLDao implements IDBConstants {
     }
 
 
-    public static synchronized boolean update(Context context, String turl, long endPos) {
+    public static synchronized boolean update(Context context, int id, long endPos) {
         SQLiteDatabase database = null;
         boolean flag = false;
         try {
@@ -295,7 +295,7 @@ public class DLDao implements IDBConstants {
                 database.beginTransaction();
                 ContentValues updatedValues = new ContentValues();
                 updatedValues.put(DLDao.endPos, endPos);
-                int temp = database.update(DBBASE_DOWNLOAD_TABLE_NAME, updatedValues, turl + " = ?", new String[]{turl});
+                int temp = database.update(DBBASE_DOWNLOAD_TABLE_NAME, updatedValues, tid + " = ?", new String[]{String.valueOf(id)});
                 if (temp == 0) {
                     flag = true;
                 }
