@@ -244,7 +244,7 @@ public class DLDao implements IDBConstants {
 //                while (cursor.moveToNext()) {
 //                    DownloadInfo downloadInfo = new DownloadInfo();
 //                    downloadInfo.tid = cursor.getInt(1);
-//                    downloadInfo.tname = cursor.getString(2);
+//                    downloadInfo.fileName = cursor.getString(2);
 //                    downloadInfo.turl = cursor.getString(3);
 //                    downloadInfo.tlength = cursor.getLong(4);
 //                    downloadInfo.startPos = cursor.getLong(5);
@@ -306,7 +306,7 @@ public class DLDao implements IDBConstants {
                 database.beginTransaction();
                 ContentValues updatedValues = new ContentValues();
                 updatedValues.put(DLDao.endPos, endPos);
-                int temp = database.update(DBBASE_DOWNLOAD_TABLE_NAME, updatedValues, turl + " = ?", new String[]{url});
+                int temp = database.update(DBBASE_DOWNLOAD_TABLE_NAME, updatedValues, IDBConstants.turl + " = ?", new String[]{url});
                 if (temp == 0) {
                     flag = true;
                 }
@@ -340,10 +340,10 @@ public class DLDao implements IDBConstants {
         }
     }
 
-//    private static synchronized void delete(SQLiteDatabase database, String tname) {
+//    private static synchronized void delete(SQLiteDatabase database, String fileName) {
 //        try {
 //            database.beginTransaction();
-//            database.delete(DBBASE_DOWNLOAD_TABLE_NAME, tname + " = ?", new String[]{tname});
+//            database.delete(DBBASE_DOWNLOAD_TABLE_NAME, fileName + " = ?", new String[]{fileName});
 //            database.setTransactionSuccessful();
 //        } catch (Exception e) {
 //            e.printStackTrace();

@@ -527,8 +527,8 @@
 //            LogCat.e("添加一次视频播放" + videoAdBean.adVideoName);
 //
 //            // 播放缓存列表文件
-//            int length = localVideoList.size();
-//            if (playVideoIndex >= length) {
+//            int tlength = localVideoList.size();
+//            if (playVideoIndex >= tlength) {
 //                playVideoIndex = 0;
 //            }
 //            AdDetailResponse adDetailResponse = localVideoList.get(playVideoIndex);
@@ -562,8 +562,8 @@
 //            LogCat.e("添加一次视频播放" + videoAdBean.adVideoName);
 //
 //            // 播放缓存列表文件
-//            int length = playVideoLists.size();
-//            if (playVideoIndex >= length) {
+//            int tlength = playVideoLists.size();
+//            if (playVideoIndex >= tlength) {
 //                playVideoIndex = 0;
 //            }
 //            AdDetailResponse adDetailResponse = playVideoLists.get(playVideoIndex);

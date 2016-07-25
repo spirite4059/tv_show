@@ -8,15 +8,15 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
 
     private boolean isTest = true;
 
-//    protected abstract void onGetVideoListSuccessful(VideoDetailListResponse response, String url);
+//    protected abstract void onGetVideoListSuccessful(VideoDetailListResponse response, String turl);
 
-//    protected abstract void onGetVideoListFailed(String errorMsg, String url);
+//    protected abstract void onGetVideoListFailed(String errorMsg, String turl);
 
     protected abstract void onGetVideoPathSuccessful(String path);
 
     protected abstract void onGetVideoPathFailed(String path);
 
-//    protected abstract void onGetVideoListSuccess(AdVideoListResponse response, String url);
+//    protected abstract void onGetVideoListSuccess(AdVideoListResponse response, String turl);
 
 
 
@@ -34,19 +34,19 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
 //        map.put("videoType", "1");
 //        map.put("serialType", "1");
 //
-//        String url = isTest ? HttpUrls.URL_VIDEO_LIST_TEST : HttpUrls.URL_VIDEO_LIST;
+//        String turl = isTest ? HttpUrls.URL_VIDEO_LIST_TEST : HttpUrls.URL_VIDEO_LIST;
 //
-//        OkHttpUtils.getInstance().doHttpGet(url, map, new OkHttpCallBack<VideoDetailListResponse>() {
+//        OkHttpUtils.getInstance().doHttpGet(turl, map, new OkHttpCallBack<VideoDetailListResponse>() {
 //            @Override
-//            public void onSuccess(String url, VideoDetailListResponse response) {
-//                LogCat.e("onSuccess........" + url);
-//                onGetVideoListSuccessful(response, url);
+//            public void onSuccess(String turl, VideoDetailListResponse response) {
+//                LogCat.e("onSuccess........" + turl);
+//                onGetVideoListSuccessful(response, turl);
 //            }
 //
 //            @Override
-//            public void onError(String url, String errorMsg) {
+//            public void onError(String turl, String errorMsg) {
 //                LogCat.e("onDownloadFileError........");
-//                onGetVideoListFailed(errorMsg, url);
+//                onGetVideoListFailed(errorMsg, turl);
 //            }
 //        });
 //    }
@@ -58,45 +58,45 @@ public abstract class VideoHttpBaseFragment extends BaseFragment {
 
 //    protected void doHttpGetCdnPath(final String vid) {
 //        LogCat.e("获取cdn的真是地址。。。。。。。" + vid);
-//        Map<String, String> url = new HashMap();
-//        url.put("url", HttpUrls.SECURITY_CHAIN_URL + vid);
+//        Map<String, String> turl = new HashMap();
+//        turl.put("turl", HttpUrls.SECURITY_CHAIN_URL + vid);
 //
-//        OkHttpUtils.getInstance().doHttpGet(HttpUrls.HTTP_URL_CDN_PATH, url, new OkHttpCallBack<CdnPathResponse>() {
+//        OkHttpUtils.getInstance().doHttpGet(HttpUrls.HTTP_URL_CDN_PATH, turl, new OkHttpCallBack<CdnPathResponse>() {
 //            @Override
-//            public void onSuccess(String url, CdnPathResponse response) {
+//            public void onSuccess(String turl, CdnPathResponse response) {
 //                if (!isAdded()) {
 //                    return;
 //                }
-//                LogCat.e("onSuccess。。。。。。。" + url);
+//                LogCat.e("onSuccess。。。。。。。" + turl);
 //                if (response == null || !(response instanceof CdnPathResponse)) {
 //                    LogCat.e("cdn地址请求成功 数据错误1。。。。。。。");
-//                    onGetVideoPathFailed(url);
+//                    onGetVideoPathFailed(turl);
 //                    return;
 //                }
 //                if (response.data == null) {
 //                    LogCat.e("cdn地址请求成功 数据错误2。。。。。。。");
-//                    onGetVideoPathFailed(url);
+//                    onGetVideoPathFailed(turl);
 //                    return;
 //                }
 //
 //
-//                if (TextUtils.isEmpty(response.data.url)) {
+//                if (TextUtils.isEmpty(response.data.turl)) {
 //                    LogCat.e("cdn地址为空。。。。。。。");
-//                    onGetVideoPathFailed(url);
+//                    onGetVideoPathFailed(turl);
 //                    return;
 //                }
 //
-//                onGetVideoPathSuccessful(response.data.url);
+//                onGetVideoPathSuccessful(response.data.turl);
 //
 //            }
 //
 //            @Override
-//            public void onError(String url, String errorMsg) {
+//            public void onError(String turl, String errorMsg) {
 //                if (!isAdded()) {
 //                    return;
 //                }
-//                LogCat.e("cdn地址获取失败。。。。。。。" + url);
-//                onGetVideoPathFailed(url);
+//                LogCat.e("cdn地址获取失败。。。。。。。" + turl);
+//                onGetVideoPathFailed(turl);
 //            }
 //        });
 //

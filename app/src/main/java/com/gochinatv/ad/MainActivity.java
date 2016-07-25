@@ -1039,7 +1039,7 @@ public class MainActivity extends BaseActivity {
 //        }
         DLUtils.cancel();
 //
-//        downLoadAPKUtils.downLoad(this, url);
+//        downLoadAPKUtils.downLoad(this, turl);
 //        //下载失败监听
 //        downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
 //            @Override
@@ -1053,7 +1053,7 @@ public class MainActivity extends BaseActivity {
 //                    rootLayout.postDelayed(new Runnable() {
 //                        @Override
 //                        public void run() {
-//                            downloadAPKNew(url);
+//                            downloadAPKNew(turl);
 //                        }
 //                    }, 2000);
 //
@@ -1320,12 +1320,12 @@ public class MainActivity extends BaseActivity {
 //            String msg = "{\"time\"" + ":}";
 //            ErrorHttpServer.doStatisticsHttp(this, Constant.APP_START_TIME, msg, new OkHttpCallBack<ErrorResponse>() {
 //                @Override
-//                public void onSuccess(String url, ErrorResponse response) {
+//                public void onSuccess(String turl, ErrorResponse response) {
 //                    LogCat.e("MainActivity", "上传开机时间成功");
 //                }
 //
 //                @Override
-//                public void onError(String url, String errorMsg) {
+//                public void onError(String turl, String errorMsg) {
 //                    LogCat.e("MainActivity", "上传开机时间失败");
 //                }
 //            });

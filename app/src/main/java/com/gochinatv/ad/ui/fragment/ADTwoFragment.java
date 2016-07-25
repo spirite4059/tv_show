@@ -160,7 +160,7 @@ public class ADTwoFragment extends BaseFragment implements BaseSliderView.OnSlid
                 if (!isAdded()) {
                     return;
                 }
-                LogCat.e("ADTwoFragment"," 广告二 url " + url);
+                LogCat.e("ADTwoFragment"," 广告二 turl " + url);
                 if (response == null || !(response instanceof ADTwoOtherResponse)) {
                     LogCat.e("ADTwoFragment", "请求文字接口失败");
                     doError();

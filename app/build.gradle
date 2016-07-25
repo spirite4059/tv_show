@@ -79,6 +79,7 @@ dependencies {
     compile 'com.android.support:design:24.0.0'
     compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'com.android.support:support-v4:24.0.0'
+    compile project(':retrofitUtils')
 }
 
 apply plugin: 'com.google.gms.google-services'

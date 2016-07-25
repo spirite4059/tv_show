@@ -146,7 +146,7 @@ public class BaseActivity extends AppCompatActivity {
         ADHttpService.doHttpGetDeviceInfo(context, new OkHttpCallBack<ADDeviceDataResponse>() {
             @Override
             public void onSuccess(String url, ADDeviceDataResponse response) {
-                LogCat.e("doGetDeviceInfo url:  " + url);
+                LogCat.e("doGetDeviceInfo turl:  " + url);
                 if (isFinishing()) {
                     return;
                 }

@@ -204,7 +204,7 @@ public class ADFourFragment extends BaseFragment {
                 if(!isAdded()){
                     return;
                 }
-                LogCat.e("ADFourFragment"," 广告四 url " + url);
+                LogCat.e("ADFourFragment"," 广告四 turl " + url);
                 if (response == null || !(response instanceof ADFourResponse)) {
                     LogCat.e("ADFourFragment","请求文字接口失败");
                     doError();

@@ -45,7 +45,7 @@ public class VideoAdUtils {
 //        if (sqlList != null) {
 //            LogCat.e("video", "查询下插入后的个数： " + sqlList.size());
 //            for (AdDetailResponse adDetailResponse : sqlList) {
-//                LogCat.e("video", "数据表video： " + adDetailResponse.adVideoName + ", length: " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
+//                LogCat.e("video", "数据表video： " + adDetailResponse.adVideoName + ", tlength: " + adDetailResponse.adVideoLength + ", " + adDetailResponse.videoPath);
 //            }
 //        }
 

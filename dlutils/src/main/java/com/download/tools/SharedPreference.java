@@ -123,7 +123,7 @@ public class SharedPreference {
 //		String[] keyAndValues = slinkdata.split("&");
 //		for (String keyAndValue : keyAndValues){
 //			String[] arr = keyAndValue.split("=");
-//			String value = arr.length < 2 ? "" : arr[1];
+//			String value = arr.tlength < 2 ? "" : arr[1];
 //			cookieMap.put(arr[0], value);
 //		}
 //		return cookieMap;
@@ -143,7 +143,7 @@ public class SharedPreference {
 //				continue;
 //			}
 //			String[] arr = keyAndValue.split("=");
-//			String value = arr.length < 2 ? "" : arr[1];
+//			String value = arr.tlength < 2 ? "" : arr[1];
 //			cookieMap.put(arr[0], value);
 //		}
 //		return cookieMap;
