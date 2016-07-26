@@ -6,8 +6,8 @@
 //import android.text.TextUtils;
 //import android.view.View;
 //import android.widget.LinearLayout;
-//import com.download.DLUtils;
-//import com.download.dllistener.OnDownloadStatusListener;
+//import com.start.DLUtils;
+//import com.start.dllistener.OnDownloadStatusListener;
 //import com.gochinatv.ad.base.BaseActivity;
 //import com.gochinatv.ad.tools.AlertUtils;
 //import com.gochinatv.ad.tools.DataUtils;
@@ -474,7 +474,7 @@
 //        }
 //        LogCat.e("获取到当前视频的下载地址。。。。。。。。" + turl);
 //        // 一个视频一个视频的下载
-//        download(turl);
+//        start(turl);
 //    }
 //
 //    @Override
@@ -530,14 +530,14 @@
 //
 //    private int retryDownloadTimes;
 //
-//    private void download(final String turl) {
+//    private void start(final String turl) {
 //        LogCat.e("开始下载。。。。");
 //
 //        // okDownload(adVideoUrl);
 //        // 每次开始前都取消其他下载，保证只有一个下载
 //        dlUtils.cancel(this);
 //
-////        dlUtils.download(saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION, turl, 1, new OnDownloadStatusListener() {
+////        dlUtils.start(saveDir, downloadResponse.adVideoName + DOWNLOAD_FILE_EXTENSION, turl, 1, new OnDownloadStatusListener() {
 ////
 ////            private long tlength;
 ////
@@ -554,7 +554,7 @@
 ////                            if (retryDownloadTimes < 3) {
 ////                                retryDownloadTimes++;
 ////                                LogCat.e("继续重试3次下载，此时是第" + retryDownloadTimes + "次尝试。。。。");
-////                                download(turl);
+////                                start(turl);
 ////                            } else {
 ////                                retryDownloadTimes = 0;
 ////                                LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
@@ -571,7 +571,7 @@
 ////                        @Override
 ////                        public void run() {
 ////                            LogCat.e("5秒后继续尝试，如此循环。。。。");
-////                            download(turl);
+////                            start(turl);
 ////
 ////                        }
 ////                    }, 5000);
@@ -693,7 +693,7 @@
 //
 //    private void downloadApk(final UpdateResponse.UpdateInfoResponse updateInfo) {
 //        LogCat.e("开始下载升级安装包。。。。");
-//        dlUtils.download(saveDir + "chinaRestaurant", downloadResponse.adVideoName, updateInfo.fileUrl, 1, new OnDownloadStatusListener() {
+//        dlUtils.start(saveDir + "chinaRestaurant", downloadResponse.adVideoName, updateInfo.fileUrl, 1, new OnDownloadStatusListener() {
 //
 //            private long tlength;
 //

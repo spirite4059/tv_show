@@ -7,7 +7,7 @@
 //import android.view.ViewGroup;
 //import android.widget.LinearLayout;
 //
-//import com.download.ErrorCodes;
+//import com.start.ErrorCodes;
 //import com.gochinatv.ad.R;
 //import com.gochinatv.ad.base.VideoHttpBaseFragment;
 //import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
@@ -217,7 +217,7 @@
 ////    protected void onUpgradeSuccessful(UpdateResponse.UpdateInfoResponse updateInfo) {
 ////        this.updateInfo = updateInfo;
 ////        isDownloadVideo = false;
-////        DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, this);
+////        DownloadUtils.start(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, this);
 ////
 ////    }
 //
@@ -343,7 +343,7 @@
 //        this.videoUrl = url;
 //        retryGetVIdeoListTimes = 0;
 //        LogCat.e("获取到当前视频的下载地址。。。。。。。。" + url);
-//        download(url);
+//        start(url);
 //
 //    }
 //
@@ -424,7 +424,7 @@
 //                    if (retryGetVIdeoListTimes < 3) {
 //                        retryGetVIdeoListTimes++;
 //                        LogCat.e("继续重试3次下载，此时是第" + retryGetVIdeoListTimes + "次尝试。。。。");
-//                        download(videoUrl);
+//                        start(videoUrl);
 //                    } else {
 //                        retryGetVIdeoListTimes = 0;
 //                        LogCat.e("将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
@@ -441,7 +441,7 @@
 //                @Override
 //                public void run() {
 //                    LogCat.e("5秒后继续尝试，如此循环。。。。");
-//                    download(videoUrl);
+//                    start(videoUrl);
 //
 //                }
 //            }, 5000);
@@ -480,7 +480,7 @@
 //                public void run() {
 //                    LogCat.e("5秒后继续尝试，如此循环。。。。");
 //                    isDownloadVideo = false;
-//                    DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, VideoPlayFragment.this);
+//                    DownloadUtils.start(getActivity(), Constants.FILE_DIRECTORY_APK, Constants.FILE_APK_NAME, updateInfo.fileUrl, VideoPlayFragment.this);
 //                }
 //            }, 5000);
 //
@@ -510,10 +510,10 @@
 //        }
 //    }
 //
-//    private void download(String url) {
+//    private void start(String url) {
 //        isDownloadVideo = true;
 //        // 一个视频一个视频的下载
-//        DownloadUtils.download(getActivity(), Constants.FILE_DIRECTORY_VIDEO, downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
+//        DownloadUtils.start(getActivity(), Constants.FILE_DIRECTORY_VIDEO, downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
 //    }
 //
 //

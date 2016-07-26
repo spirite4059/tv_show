@@ -126,7 +126,7 @@ public class DownloadUtils {
         });
 
 
-//        RetrofitDLUtils.getInstance().download(context, dir, fileName, fileUrl, new DownloadStatusListener() {
+//        RetrofitDLUtils.getInstance().start(context, dir, fileName, fileUrl, new DownloadStatusListener() {
 //            @Override
 //            public void onProgress(long progress, long total, boolean done) {
 //

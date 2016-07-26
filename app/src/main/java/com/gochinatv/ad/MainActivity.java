@@ -576,7 +576,7 @@ public class MainActivity extends BaseActivity {
      * 之前的下载apk方法
      */
 //    private void downloadAPKOld() {
-//        DownloadUtils.download(true, getApplication(), DataUtils.getApkDirectory(), Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
+//        DownloadUtils.start(true, getApplication(), DataUtils.getApkDirectory(), Constants.FILE_APK_NAME, updateInfo.fileUrl, new OnUpgradeStatusListener() {
 //            @Override
 //            public void onDownloadFileSuccess(String filePath) {
 //                //新包下载完成得安装
