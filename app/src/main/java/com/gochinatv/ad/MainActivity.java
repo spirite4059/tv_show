@@ -243,7 +243,7 @@ public class MainActivity extends BaseActivity {
                 doHttpUpdate(MainActivity.this);
                 //上报开机时间
                 SendStatisticsLog.sendInitializeLog(MainActivity.this);//提交激活日志
-                fragmentDoHttpRequest();
+                //fragmentDoHttpRequest();
                 refreshGetFirebaseToken();//获取tooken
             }
         }, intervalTime, intervalTime);//intervalTime
