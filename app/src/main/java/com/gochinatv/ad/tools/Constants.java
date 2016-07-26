@@ -43,6 +43,7 @@ public class Constants {
 
     public static final String FILE_DOWNLOAD_EXTENSION = ".mp4";
     public static final String FILE_APK_NAME = "VegoPlus.apk";
+    public static final String FILE_APK_NAME_SIMPAL = "VegoPlus";
     public static final String FILE_LOG_NAME = "catch_log";
     public static final String FILE_DIRECTORY_LOG = "logCat";
 

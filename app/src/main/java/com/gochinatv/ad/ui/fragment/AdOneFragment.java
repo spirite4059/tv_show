@@ -45,6 +45,7 @@ import com.okhtttp.service.VideoHttpService;
 import com.retrofit.download.RetrofitDLUtils;
 import com.umeng.analytics.MobclickAgent;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -536,7 +537,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
     private long oldProgress;
-    private final int K_SIZE = 1024 * 1024;
+    private final int K_SIZE = 1048576;
 
     @Override
     public void onDownloadProgress(final long progress, final long fileLength) {
@@ -551,6 +552,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         if (getActivity() != null) {
 
             getActivity().runOnUiThread(new Runnable() {
+
+                NumberFormat numberFormat;
+
                 @Override
                 public void run() {
                     if (!isHasNet) {
@@ -568,7 +572,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     } else if (current >= 1024 && current < K_SIZE) {
                         speed = current / 1024 + "KB/s";
                     } else {
-                        speed = current / K_SIZE + "MB/s";
+                        if(numberFormat == null){
+                            numberFormat = NumberFormat.getNumberInstance();
+                        }
+                        numberFormat.setMaximumFractionDigits(2);
+                        speed = numberFormat.format(current / 1048576f) + "MB/s";
                     }
                     LogCat.e("net_speed", "speed: " + speed);
                     if (current >= 0) {

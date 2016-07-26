@@ -121,6 +121,10 @@ public class VideoAdUtils {
         ArrayList<DownloadInfo> downloadInfos = DLDao.queryAll(context);
         if (downloadInfos != null && downloadInfos.size() != 0) {
             String downloadName = downloadInfos.get(0).tname;
+            // 正在做下载
+            if(Constants.FILE_APK_NAME_SIMPAL.equals(downloadName)){
+                return;
+            }
             // 遍历新的视频列表,如果不在需要下载了,就删除该文件
             boolean isToday = getIntersectionResult(downloadName, todayList);
             if(!isToday){

@@ -327,6 +327,7 @@ public class DLDao implements IDBConstants {
 
 
     public static synchronized void delete(SQLiteDatabase database) {
+        LogCat.e("video", "DLDao------delete........");
         try {
             database.beginTransaction();
             database.delete(DBBASE_DOWNLOAD_TABLE_NAME, null, null);

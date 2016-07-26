@@ -119,9 +119,8 @@ public class ToolUtils {
     public static String getFileName(String sourceName){
         String fileName = null;
         try {
-            if(!TextUtils.isEmpty(sourceName) && sourceName.contains(Constants.FILE_DOWNLOAD_EXTENSION)){
-                int index = sourceName.lastIndexOf(Constants.FILE_DOWNLOAD_EXTENSION);
-                fileName = sourceName.substring(0, index);
+            if(!TextUtils.isEmpty(sourceName) && sourceName.contains(".")){
+                fileName = sourceName.split("\\.")[0];
             }else {
                 fileName = sourceName;
             }

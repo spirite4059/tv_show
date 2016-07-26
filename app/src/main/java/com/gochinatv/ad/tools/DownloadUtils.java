@@ -8,7 +8,7 @@ import com.download.dllistener.OnDownloadStatusListener;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.db.AdDao;
 
-import java.math.BigDecimal;
+import java.text.NumberFormat;
 
 import static com.download.ErrorCodes.ERROR_DB_UPDATE;
 import static com.download.ErrorCodes.ERROR_DOWNLOADING_READ;
@@ -104,16 +104,18 @@ public class DownloadUtils {
             public void onDownloading(String fileName) {
 //                LogCat.e("video", "当前下载正在进行中............. " + fileName);
             }
-
+            NumberFormat numberFormat;
             private void logProgress(long progress) {
-                double size = (int) (progress / 1024);
+                float size =  progress / 1024f;
                 String sizeStr;
                 int s = (int) (progress * 100 / fileLength);
-                if (size > 1000) {
-                    size = (progress / 1024) / 1024f;
-                    BigDecimal b = new BigDecimal(size);
-                    double f1 = b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
-                    sizeStr = String.valueOf(f1 + "MB，  ");
+                if (size > 1024) {
+                    size = progress / 1048576f;
+                    if(numberFormat == null){
+                        numberFormat = NumberFormat.getNumberInstance();
+                    }
+                    numberFormat.setMaximumFractionDigits(2);
+                    sizeStr = String.valueOf(numberFormat.format(size) + "MB，  ");
                 } else {
                     sizeStr = String.valueOf((int) size + "KB，  ");
                 }
