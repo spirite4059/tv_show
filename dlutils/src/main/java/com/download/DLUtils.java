@@ -68,7 +68,7 @@ public class DLUtils implements InDLUtils {
         // 获取SD卡路径
         File apkFile = createFile(path, fileName);
 
-        LogCat.e("video", "download file  path:" + apkFile.getAbsolutePath());
+        LogCat.e("video", "start file  path:" + apkFile.getAbsolutePath());
         if(downloadThread != null){
             downloadThread.cancelDownload();
             downloadThread = null;
