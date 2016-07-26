@@ -312,7 +312,7 @@ public class DownloadPrepareThread extends Thread {
             e.printStackTrace();
             errorCode = ErrorCodes.ERROR_DOWNLOAD_UNKNOWN;
         }
-        DLUtils.clearDownloadStatus();
+        DLUtils.init().clearDownloadStatus();
         // 主动取消下载
         if (isCancel) {
             LogCat.e("video", "主动停止下载........");
@@ -513,7 +513,7 @@ public class DownloadPrepareThread extends Thread {
     }
 
     private void setErrorMsg(int errorCode) {
-        DLUtils.clearDownloadStatus();
+        DLUtils.init().clearDownloadStatus();
         if (listener != null) {
             listener.onError(errorCode);
         }

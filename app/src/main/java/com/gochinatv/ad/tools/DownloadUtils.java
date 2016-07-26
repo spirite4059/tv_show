@@ -50,7 +50,7 @@ public class DownloadUtils {
             return;
         }
 
-        DLUtils.init(context.getApplicationContext()).download(dir, fileName, fileUrl, THREAD_NUMBER, new OnDownloadStatusListener() {
+        DLUtils.init().download(context, dir, fileName, fileUrl, THREAD_NUMBER, new OnDownloadStatusListener() {
 
             private long fileLength;
 
@@ -159,7 +159,7 @@ public class DownloadUtils {
         }
 
 
-        DLUtils.init(context.getApplicationContext()).download(DataUtils.getApkDirectory(), Constants.FILE_APK_NAME, fileUrl, THREAD_NUMBER, new OnDownloadStatusListener() {
+        DLUtils.init().download(context, DataUtils.getApkDirectory(), Constants.FILE_APK_NAME, fileUrl, THREAD_NUMBER, new OnDownloadStatusListener() {
 
             private long fileLength;
 

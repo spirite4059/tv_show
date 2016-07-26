@@ -883,7 +883,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      */
     private void release() {
 
-        DLUtils.cancel();
+        DLUtils.init().cancel();
 
         if (screenShotService != null) {
             screenShotService.shutdownNow();

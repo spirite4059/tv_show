@@ -513,7 +513,7 @@ public class MainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        DLUtils.cancel();
+        DLUtils.init().cancel();
         //卸载广播
         if (networkBroadcastReceiver != null) {
             unregisterReceiver(networkBroadcastReceiver);
@@ -958,7 +958,7 @@ public class MainActivity extends BaseActivity {
                     textSpeedInfo.setText("wifi-off:0kb/s");
                     LogCat.e("net", "networkChange    off..............");
                     //停止下载视频和apk
-                    DLUtils.cancel();
+                    DLUtils.init().cancel();
                 }
             }
         });
@@ -1037,7 +1037,7 @@ public class MainActivity extends BaseActivity {
 //            //停止下载视频
 //
 //        }
-        DLUtils.cancel();
+        DLUtils.init().cancel();
 //
 //        downLoadAPKUtils.downLoad(this, turl);
 //        //下载失败监听

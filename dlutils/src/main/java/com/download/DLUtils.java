@@ -19,24 +19,21 @@ public class DLUtils implements InDLUtils {
 
     private static DLUtils instance;
 
-    private static DownloadPrepareThread downloadThread;
+    private DownloadPrepareThread downloadThread;
 
-    private static String downloadingPath;
+    private String downloadingPath;
 
-    private static Context context;
-
-    private DLUtils(Context context) {
-        this.context = context;
+    private DLUtils() {
         downloadingPath = null;
     }
 
 
-    public static DLUtils init(Context context) {
+    public static DLUtils init() {
         if(instance == null){
             synchronized (DLUtils.class){
                 if(instance == null){
                     LogCat.e("video", "DLUtils初始化...........");
-                    instance = new DLUtils(context);
+                    instance = new DLUtils();
                 }
             }
         }
@@ -44,7 +41,7 @@ public class DLUtils implements InDLUtils {
     }
 
 
-    public void download(String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
+    public void download(Context context, String path, String fileName, String downloadUrl, int threadNum, OnDownloadStatusListener listener) {
         if(!TextUtils.isEmpty(downloadingPath) && downloadingPath.equals(path +fileName)){
             LogCat.e("video", "正在下载当前任务则不处理......");
             return;
@@ -103,7 +100,7 @@ public class DLUtils implements InDLUtils {
 
 
 
-    protected static void clearDownloadStatus(){
+    protected void clearDownloadStatus(){
         downloadingPath = null;
     }
 
@@ -121,7 +118,7 @@ public class DLUtils implements InDLUtils {
     }
 
 
-    public static void cancel() {
+    public void cancel() {
         if (downloadThread != null) {
             downloadThread.cancelDownload();
         }
