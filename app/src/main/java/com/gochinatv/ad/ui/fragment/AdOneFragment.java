@@ -3,6 +3,7 @@ package com.gochinatv.ad.ui.fragment;
 import android.app.FragmentTransaction;
 import android.media.MediaPlayer;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.download.DLUtils;
 import com.download.ErrorCodes;
 import com.download.db.DLDao;
@@ -21,6 +21,7 @@ import com.gochinatv.ad.base.BaseFragment;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.ad.screenshot.ScreenShotUtils;
 import com.gochinatv.ad.thread.DeleteFileUtils;
+import com.gochinatv.ad.thread.VideoStatusRunnable;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
@@ -132,7 +133,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private long startDownloadTime;//开始下载时间
     //private long endDownloadTime;//开始下载时间
-
+    private VideoStatusRunnable videoStatusRunnable;
 
     @Override
     protected View initLayout(LayoutInflater inflater, ViewGroup container) {
@@ -186,6 +187,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         // 7.开启上传截图
         startScreenShot();
+
+        //  开启轮询接口
+        handler = new Handler(Looper.getMainLooper());
+        videoStatusRunnable = new VideoStatusRunnable(getActivity(), videoView, playingVideoInfo, handler);
+        // 开始视频的守护线程
+        handler.postDelayed(videoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
 
         // 没有网络
         if (!DataUtils.isNetworkConnected(getActivity())) {
@@ -254,10 +261,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 if (isDetached()) {
                     return true;
                 }
+                LogCat.e("video", "视频播放出错......");
                 if (what != 1) {
                     return true;
                 }
-                LogCat.e("video", "视频播放出错......");
                 videoView.stopPlayback();
 
                 videoView.postDelayed(new Runnable() {
@@ -890,6 +897,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             screenShotService = null;
         }
 
+        if(handler != null && videoStatusRunnable != null){
+            handler.removeCallbacks(videoStatusRunnable);
+        }
+
         RetrofitDLUtils.getInstance().cancel();
 
     }
@@ -1299,6 +1310,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private void playVideo(String videoPath) {
         if (!TextUtils.isEmpty(videoPath) && videoView != null) {
             videoView.setVideoPath(videoPath);
+//            videoPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/video/test.mp4";
+//            videoView.setVideoPath(videoPath);
         }
     }
 

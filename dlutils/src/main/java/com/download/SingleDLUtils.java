@@ -6,12 +6,12 @@
 //import android.os.StatFs;
 //import android.text.TextUtils;
 //
-//import com.download.dllistener.InDLUtils;
-//import com.download.dllistener.OnDownloadStatusListener;
-//import com.download.tools.CacheVideoListThread;
-//import com.download.tools.Constants;
-//import com.download.tools.LogCat;
-//import com.download.tools.ToolUtils;
+//import com.start.dllistener.InDLUtils;
+//import com.start.dllistener.OnDownloadStatusListener;
+//import com.start.tools.CacheVideoListThread;
+//import com.start.tools.Constants;
+//import com.start.tools.LogCat;
+//import com.start.tools.ToolUtils;
 //import com.httputils.http.response.AdDetailResponse;
 //
 //import java.io.BufferedInputStream;
@@ -24,21 +24,21 @@
 //import java.net.URL;
 //import java.util.ArrayList;
 //
-//import static com.download.ErrorCodes.ERROR_DOWNLOADING_READ;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_CONN;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_EXCUTORS;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_NULL;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_SIZE;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_URL;
-//import static com.download.ErrorCodes.ERROR_DOWNLOAD_WRITE;
-//import static com.download.ErrorCodes.ERROR_THREAD_NUMBERS;
-//import static com.download.ErrorCodes.HTTP_OK;
-//import static com.download.ErrorCodes.HTTP_PARTIAL;
+//import static com.start.ErrorCodes.ERROR_DOWNLOADING_READ;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_CONN;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_EXCUTORS;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_FILE_NULL;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_FILE_SIZE;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_RANDOM;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_URL;
+//import static com.start.ErrorCodes.ERROR_DOWNLOAD_WRITE;
+//import static com.start.ErrorCodes.ERROR_THREAD_NUMBERS;
+//import static com.start.ErrorCodes.HTTP_OK;
+//import static com.start.ErrorCodes.HTTP_PARTIAL;
 //
 ///**
 // * Created by fq_mbp on 16/4/14.
@@ -66,9 +66,9 @@
 //        return DLUtilsHolder.instance;
 //    }
 //
-//    public void download(String path, String fileName, String downloadUrl, OnDownloadStatusListener listener){
+//    public void start(String path, String fileName, String downloadUrl, OnDownloadStatusListener listener){
 //        // 优先检测sdcard是否可用
-//        LogCat.e("SingleDLUtils   ->   download ............");
+//        LogCat.e("SingleDLUtils   ->   start ............");
 //        if (!ToolUtils.isExistSDCard()) {
 //            listener.onError(ErrorCodes.ERROR_DOWNLOAD_SDCARD_USESLESS, getErrorMsg(ErrorCodes.ERROR_DOWNLOAD_SDCARD_USESLESS));
 //            return;
@@ -112,7 +112,7 @@
 //
 //    private boolean initDownloadFile(String path, String fileName) {
 //        file = ToolUtils.createFile(path, fileName);
-//        LogCat.e("download file  path:" + file.getAbsolutePath());
+//        LogCat.e("start file  path:" + file.getAbsolutePath());
 //        if (file == null) {
 //            return true;
 //        }
