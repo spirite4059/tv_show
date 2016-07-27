@@ -4,13 +4,13 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.download.DLUtils;
+import com.download.ErrorCodes;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.db.AdDao;
 
 import java.text.NumberFormat;
 
-import static com.download.ErrorCodes.ERROR_DB_UPDATE;
 import static com.download.ErrorCodes.ERROR_DOWNLOADING_READ;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_BUFFER_IN;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_CONN;
@@ -19,6 +19,7 @@ import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_LOCAL;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_NULL;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_SIZE;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_NO_INSTREAM;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_RANDOM_SEEK;
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE;
@@ -262,12 +263,16 @@ public class DownloadUtils {
             case ERROR_DOWNLOAD_EXCUTORS:
                 errorMsg = "error：线程池出错";
                 break;
-            case ERROR_DB_UPDATE:
+            case ErrorCodes.ERROR_DB_UPDATE:
                 errorMsg = "error：数据库更新下载内容时出错";
                 break;
             case ERROR_DOWNLOAD_SDCARD_SPACE:
                 errorMsg = "error：磁盘空间不足";
                 break;
+            case ERROR_DOWNLOAD_NO_INSTREAM:
+                errorMsg = "error：长时间没有下载,就主动报错";
+                break;
+
             default:
                 errorMsg = "error：未知的异常";
                 break;

@@ -104,6 +104,11 @@ public final class ErrorCodes {
     public static final int ERROR_DOWNLOAD_INIT_INFO = 1019;
 
     /**
+     *  长时间没有下载,就主动报错
+     */
+    public static final int ERROR_DOWNLOAD_NO_INSTREAM = 1031;
+
+    /**
      *  线程池出错
      */
     public static final int ERROR_DB_UPDATE = 1020;

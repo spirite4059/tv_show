@@ -29,6 +29,7 @@ import java.security.DigestException;
 import java.util.ArrayList;
 
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_NO_INSTREAM;
 import static com.download.ErrorCodes.HTTP_OK;
 import static com.download.ErrorCodes.HTTP_PARTIAL;
 
@@ -256,8 +257,11 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        int downloadSize = -1;
+        long downloadSize = -1;
+        long oldDownloadSize = -1;
+        int times = 0;
         SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
+
         try {
             while (!isFinished) {
                 isFinished = true;
@@ -294,6 +298,18 @@ public class DownloadPrepareThread extends Thread {
                 }
 
                 downloadSize = downloadedAllSize;
+                if(oldDownloadSize == downloadSize){
+                    if(times < 60){
+                        times++;
+                    }else {
+                        times = 0;
+                        isThreadError = ERROR_DOWNLOAD_NO_INSTREAM;
+                    }
+                }else {
+                    times = 0;
+                    oldDownloadSize = downloadSize;
+                }
+
                 // 是否有子线程出错或者取消下载
                 if (isThreadError || isCancel) {
                     isFinished = false;
@@ -353,7 +369,7 @@ public class DownloadPrepareThread extends Thread {
      * @param downloadSize
      */
 
-    private void checksumFile(String md5, int fileSize, int downloadSize) {
+    private void checksumFile(String md5, int fileSize, long downloadSize) {
         LogCat.e("download1", "head md5: " + md5);
         try {
             // 版本大于19,通过Etag验证
@@ -369,7 +385,7 @@ public class DownloadPrepareThread extends Thread {
         }
     }
 
-    private void fileSizeCheckSum(int fileSize, int downloadSize) {
+    private void fileSizeCheckSum(long fileSize, long downloadSize) {
         if (deleteFailFile(fileSize, downloadSize)) {
             LogCat.e("video", "文件完整下载......");
             setFinish(file.getAbsolutePath());
@@ -491,7 +507,7 @@ public class DownloadPrepareThread extends Thread {
 //        LogCat.e("插入后的数据大小......" + DLDao.queryAll(context).size());
     }
 
-    private boolean deleteFailFile(int fileSize, int downloadSize) {
+    private boolean deleteFailFile(long fileSize, long downloadSize) {
         if (file != null && downloadSize != fileSize) {
             LogCat.e("video", "文件下载大小出错......删除出错的文件");
             if (file.delete()) {
