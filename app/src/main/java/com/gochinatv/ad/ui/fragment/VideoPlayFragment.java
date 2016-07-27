@@ -699,7 +699,7 @@
 //     * @return
 //     */
 //    private String getRawVideoUri() {
-////        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
+////        return DataUtils.getRawVideoUri(getActivity(), R.raw.video);
 //        return "";
 //    }
 //

@@ -1321,12 +1321,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      * @return
      */
     private String getRawVideoUri() {
-        return DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
+        return DataUtils.getRawVideoUri(getActivity(), R.raw.video);
     }
 
     private AdDetailResponse getRawVideoInfo() {
         AdDetailResponse adDetailResponse = new AdDetailResponse();
-        adDetailResponse.videoPath = DataUtils.getRawVideoUri(getActivity(), R.raw.video_test);
+        adDetailResponse.videoPath = DataUtils.getRawVideoUri(getActivity(), R.raw.video);
         adDetailResponse.adVideoName = Constants.PRESET_PIECE;
         return adDetailResponse;
     }
