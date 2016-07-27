@@ -67,17 +67,7 @@ public class SendStatisticsLog {
             upgradeLogRequest.interfaceError = list;
             upgradeLogRequest.isNeedUpdate = null;
             upgradeLogRequest.isGetUpdateInfo = null;
-            UpgradeServerLog.doPostHttpUpgradeLog((Activity)context,"upgrade",upgradeLogRequest, new OkHttpCallBack<ErrorMsgRequest>() {
-                @Override
-                public void onSuccess(String url, ErrorMsgRequest response) {
-                    LogCat.e("statistics","提交升级接口失败的日志成功!!!!!!!!!");
-                }
-
-                @Override
-                public void onError(String url, String errorMsg) {
-                    LogCat.e("statistics","提交升级接口失败的日志失败**********");
-                }
-            });
+            UpgradeServerLog.doPostHttpUpgradeLog((Activity)context,"upgrade",upgradeLogRequest);
         }
 
 //        //接口成功
@@ -125,17 +115,7 @@ public class SendStatisticsLog {
             upgradeLogRequest.isNeedUpdate = null;
             upgradeLogRequest.isGetUpdateInfo = null;
 
-            UpgradeServerLog.doPostHttpUpgradeLog((Activity)context,"layout",upgradeLogRequest, new OkHttpCallBack<ErrorMsgRequest>() {
-                @Override
-                public void onSuccess(String url, ErrorMsgRequest response) {
-                    LogCat.e("statistics","提交布局日志成功!!!!!!!!!");
-                }
-
-                @Override
-                public void onError(String url, String errorMsg) {
-                    LogCat.e("statistics","提交布局日志失败**********");
-                }
-            });
+            UpgradeServerLog.doPostHttpUpgradeLog((Activity)context,"layout",upgradeLogRequest);
 
 
 
@@ -162,17 +142,7 @@ public class SendStatisticsLog {
             upgradeLogRequest.interfaceError = null;
             upgradeLogRequest.isNeedUpdate = "1";
             upgradeLogRequest.isGetUpdateInfo = "1";
-            UpgradeServerLog.doPostHttpUpgradeLog((Activity)context,"APKDownload",upgradeLogRequest, new OkHttpCallBack<ErrorMsgRequest>() {
-                @Override
-                public void onSuccess(String url, ErrorMsgRequest response) {
-                    LogCat.e("statistics","提交升级日志成功!!!!!!!!!");
-                }
-
-                @Override
-                public void onError(String url, String errorMsg) {
-                    LogCat.e("statistics","提交升级日志失败**********");
-                }
-            });
+            UpgradeServerLog.doPostHttpUpgradeLog((Activity)context,"APKDownload",upgradeLogRequest);
         }
 
     }

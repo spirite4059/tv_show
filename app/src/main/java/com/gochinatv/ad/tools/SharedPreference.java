@@ -41,23 +41,23 @@ public class SharedPreference {
 	public void saveDate(String key,long value){
 		if(sp == null)
 		   sp = context.getSharedPreferences(VEGO_SHAREDPREFERENCE,Context.MODE_PRIVATE);
-		Editor editor = sp.edit();  
-		editor.putLong(key, value);  
+		Editor editor = sp.edit();
+		editor.putLong(key, value);
 		editor.commit();
 	}
-	
+
 	/**
 	 *  保存数据
 	 * @return
-	 */ 
+	 */
 	public void saveDate(String key,boolean value){
-		
+
 		if(sp == null)
 			 sp = context.getSharedPreferences(VEGO_SHAREDPREFERENCE, Context.MODE_PRIVATE);
-	    Editor editor = sp.edit();    
-		editor.putBoolean(key, value);  
+	    Editor editor = sp.edit();
+		editor.putBoolean(key, value);
 		editor.commit();
-	} 
+	}
 	
 	/**
 	 *  取出数据

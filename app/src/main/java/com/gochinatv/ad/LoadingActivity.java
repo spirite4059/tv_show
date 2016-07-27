@@ -2,7 +2,6 @@ package com.gochinatv.ad;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,8 +19,6 @@ import com.gochinatv.statistics.request.RetryErrorRequest;
 import com.gochinatv.statistics.request.UpgradeLogRequest;
 import com.gochinatv.statistics.server.UpgradeServerLog;
 import com.gochinatv.statistics.tools.Constant;
-import com.okhtttp.OkHttpCallBack;
-import com.okhtttp.request.ErrorMsgRequest;
 import com.okhtttp.response.ADDeviceDataResponse;
 import com.okhtttp.response.UpdateResponse;
 
@@ -87,27 +84,24 @@ public class LoadingActivity extends BaseActivity {
 
     private Handler postHandler;
     private int reTryPostTimes;
+    private RetryRunnable postRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
+        loadingView = (LinearLayout) findViewById(R.id.loading);
 
         /**
          * 隐藏NavigationBar
          */
         DataUtils.hideNavigationBar(LoadingActivity.this);
 
-        loadingView = (LinearLayout) findViewById(R.id.loading);
+        // 打开wifi
+        openWifi();
 
-        postHandler = new Handler();
-
-        WifiManager wifiManager = (WifiManager) getSystemService(Service.WIFI_SERVICE);
-        // 如果wifi关闭,就打开wifi
-        if(!wifiManager.isWifiEnabled()){
-            wifiManager.setWifiEnabled(true);
-        }
         /**
+         * 打开安装未知应用设置
          * 如果要启动测试，需要注释此段代码，否则无法正常启动
          */
         if (!Constants.isTest) {
@@ -118,6 +112,8 @@ public class LoadingActivity extends BaseActivity {
         doHttp();
     }
 
+
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -126,35 +122,14 @@ public class LoadingActivity extends BaseActivity {
         }
     }
 
-
-    private void deleteUpdateApk() {
-        DeleteFileUtils.getInstance().deleteFile(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-    }
-
-    private Runnable postRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if(DataUtils.isNetworkConnected(LoadingActivity.this)){
-                doHttpUpdate(LoadingActivity.this);
-                doGetDeviceInfo(LoadingActivity.this);
-                SendStatisticsLog.sendInitializeLog(LoadingActivity.this);//提交激活日志
-            }else{
-                if(reTryPostTimes>= 4){
-                    postHandler.removeCallbacks(postRunnable);
-                    LogCat.e("已进行了4次重试，不再重试，直接进入main");
-                    goToMainActivity();
-
-                }else{
-                    reTryPostTimes++;
-                    LogCat.e("没有网络进行第："+reTryPostTimes +" 次重试");
-                    if(postHandler != null && postRunnable != null){
-                        postHandler.postDelayed(postRunnable,6000);
-                    }
-                }
-
-            }
+    // 打开wifi
+    private void openWifi() {
+        WifiManager wifiManager = (WifiManager) getSystemService(Service.WIFI_SERVICE);
+        // 如果wifi关闭,就打开wifi
+        if(!wifiManager.isWifiEnabled()){
+            wifiManager.setWifiEnabled(true);
         }
-    };
+    }
 
     private void doHttp() {
         if (DataUtils.isNetworkConnected(this)) {
@@ -164,20 +139,20 @@ public class LoadingActivity extends BaseActivity {
             SendStatisticsLog.sendInitializeLog(this);//提交激活日志
         } else {
             LogCat.e("net", "没有联网。。。。。。。。。。");
-
-            if(postHandler != null && postRunnable != null){
-                postHandler.postDelayed(postRunnable,6000);
-            }
-
-//            // 进入main
-//            loadingView.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    //跳转到MainActivity
-//                    goToMainActivity();
-//                }
-//            }, 2000);
+            retryHttp();
         }
+    }
+
+
+    // 重新尝试请求http
+    private void retryHttp() {
+        if(postHandler == null){
+            postHandler = new Handler();
+        }
+        if(postRunnable == null){
+            postRunnable = new RetryRunnable();
+        }
+        postHandler.postDelayed(postRunnable,6000);
     }
 
     /**
@@ -191,7 +166,6 @@ public class LoadingActivity extends BaseActivity {
                 intent.putExtra("apkUrl", updateInfo.fileUrl);
             }
         }
-
         intent.putExtra("isDoGetDevice", false);
         startActivity(intent);
         finish();
@@ -222,63 +196,43 @@ public class LoadingActivity extends BaseActivity {
     @Override
     protected void onUpdateSuccess(UpdateResponse response) {
         super.onUpdateSuccess(response);
-        if (response.resultForApk == null) {
-            if ("3".equals(response.status)) {
-                isUpgradeSucceed = true;
-                isGetUpdateInfo = 1;//接口请求成功
-                //loadFragment(false);
-                loadFragmentTwo(isHasUpgrade);
-                LogCat.e("没有升级包，不需要更新");
-            } else {
-                LogCat.e("升级数据出错，无法正常升级2。。。。。");
-                doError("\"3\".equals(response.status) = false");
-            }
+        if (checkUpdateInfo(response))
             return;
-        }
 
-        if (!"1".equals(response.status)) {
-            LogCat.e("升级接口的status == 0。。。。。");
-            doError("升级接口的status == 0");
-            return;
-        }
+        // 重置retry标签
         reTryTimes = 0;
         updateInfo = response.resultForApk;
         isGetUpdateInfo = 1;//接口请求成功
         // 获取当前最新版本号
         if (!TextUtils.isEmpty(updateInfo.versionCode)) {
-            double netVersonCode = Integer.parseInt(updateInfo.versionCode);
+            // 获取本地和服务器的app版本
+            int netVersionCode = 0;
+            int appVersion = 0;
             try {
-                LogCat.e("当前的app版本：" + DataUtils.getAppVersion(this));
-            } catch (PackageManager.NameNotFoundException e) {
+                netVersionCode = Integer.parseInt(updateInfo.versionCode);
+                appVersion = DataUtils.getAppVersion(this);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            LogCat.e("当前的最新版本：" + netVersonCode);
-
+            LogCat.e("当前的最新版本：" + netVersionCode);
+            LogCat.e("本地的版本：" + appVersion);
             // 检测是否要升级
             try {
                 //升级接口成功
                 isUpgradeSucceed = true;
-                if (DataUtils.getAppVersion(this) < netVersonCode) { // 升级
-                    // 升级
-                    // 下载最新安装包，下载完成后，提示安装
+                if (appVersion < netVersionCode) { // 升级
                     LogCat.e("需要升级。。。。。");
-                    // 去下载当前的apk
                     isHasUpgrade = true;
-                    //downloadAPKNew();
-                    // 加载布局.但是不让AdOneFragment，下载视频
-                    //loadFragment(true);
-                    loadFragmentTwo(isHasUpgrade);
                 } else {
                     // 不升级,加载布局
                     LogCat.e("无需升级。。。。。");
-                    // 5.清空所有升级包，为了节省空间
-                    LogCat.e("清空升级apk.....");
-                    //loadFragment(false);
-                    loadFragmentTwo(isHasUpgrade);
+                    // 删除旧的安装文件
+                    DeleteFileUtils.getInstance().deleteFile(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                 }
-            } catch (PackageManager.NameNotFoundException e) {
+                // 加载布局.但是不让AdOneFragment，下载视频
+                loadFragmentTwo(isHasUpgrade);
+            } catch (Exception e) {
                 e.printStackTrace();
-                LogCat.e("判断升级过程中出错。。。。。");
                 doError("判断升级过程中出错" + e.getLocalizedMessage());
             }
         } else {
@@ -287,6 +241,34 @@ public class LoadingActivity extends BaseActivity {
             doError("升级版本为null");
         }
 
+    }
+
+    private boolean checkUpdateInfo(UpdateResponse response) {
+        if(response == null){
+            LogCat.e("升级数据出错，无法正常升级2。。。。。");
+            doError("\"3\".equals(response.status) = false");
+            return true;
+        }
+
+        if (response.resultForApk == null) {
+            if ("3".equals(response.status)) {
+                isUpgradeSucceed = true;
+                isGetUpdateInfo = 1;//接口请求成功
+                loadFragmentTwo(isHasUpgrade);
+                LogCat.e("没有升级包，不需要更新");
+            } else {
+                LogCat.e("升级数据出错，无法正常升级2。。。。。");
+                doError("\"3\".equals(response.status) = false");
+            }
+            return true;
+        }
+
+        if (!"1".equals(response.status)) {
+            LogCat.e("升级接口的status == 0。。。。。");
+            doError("升级接口的status == 0");
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -313,12 +295,18 @@ public class LoadingActivity extends BaseActivity {
             }
 
             //存储错误日志
-            upgradeLogList = new ArrayList<RetryErrorRequest>();
-            RetryErrorRequest request = new RetryErrorRequest();
-            request.retry = String.valueOf(reTryTimes);
-            request.errorMsg = errorMsg;
-            upgradeLogList.add(request);
+            saveUpgradeErrorReport(errorMsg);
         }
+    }
+
+    private void saveUpgradeErrorReport(String errorMsg) {
+        if(upgradeLogList == null){
+            upgradeLogList = new ArrayList<>();
+        }
+        RetryErrorRequest request = new RetryErrorRequest();
+        request.retry = String.valueOf(reTryTimes);
+        request.errorMsg = errorMsg;
+        upgradeLogList.add(request);
     }
 
 
@@ -360,12 +348,18 @@ public class LoadingActivity extends BaseActivity {
                 LogCat.e("进行第 " + reTryTimesTwo + " 次重试请求。。。。。。。");
                 doGetDeviceInfo(this);
             }
-            layoutLogList = new ArrayList<RetryErrorRequest>();
-            RetryErrorRequest request = new RetryErrorRequest();
-            request.retry = String.valueOf(reTryTimesTwo);
-            request.errorMsg = errorMsg;
-            layoutLogList.add(request);
+            saveLayoutErrorReport(errorMsg);
         }
+    }
+
+    private void saveLayoutErrorReport(String errorMsg) {
+        if(layoutLogList == null){
+            layoutLogList = new ArrayList<>();
+        }
+        RetryErrorRequest request = new RetryErrorRequest();
+        request.retry = String.valueOf(reTryTimesTwo);
+        request.errorMsg = errorMsg;
+        layoutLogList.add(request);
     }
 
     /**
@@ -382,62 +376,52 @@ public class LoadingActivity extends BaseActivity {
      * 升级接口日志
      */
     private void sendUpgradeLog(){
-        UpgradeLogRequest request = new UpgradeLogRequest();
-        request.mac = DataUtils.getMacAddress(this);
-        request.versionCode = String.valueOf(DataUtils.getAppVersionCode(this));
-        request.versionName = DataUtils.getVersionName(this);
-        request.sdk = String.valueOf(DataUtils.getSystemSDKVersion());
-        if(isHasUpgrade){
-            request.isNeedUpdate ="1";
-        }else{
-            request.isNeedUpdate ="0";
-        }
+        UpgradeLogRequest request = UpgradeLogRequest.getInitInstance(this);
+        request.isNeedUpdate = isHasUpgrade ? "1" : "0";
         request.isGetUpdateInfo = String.valueOf(isGetUpdateInfo);
         if(layoutLogList != null && layoutLogList.size()>0){
             request.interfaceError = layoutLogList;
         }
-        UpgradeServerLog.doPostHttpUpgradeLog(this, Constant.LOG_TYPE_UPGRADE, request, new OkHttpCallBack<ErrorMsgRequest>() {
-            @Override
-            public void onSuccess(String url, ErrorMsgRequest response) {
-                LogCat.e("升级接口日志上传成功");
-            }
-
-            @Override
-            public void onError(String url, String errorMsg) {
-                LogCat.e("升级接口日志上传失败");
-            }
-        });
+        UpgradeServerLog.doPostHttpUpgradeLog(this, Constant.LOG_TYPE_UPGRADE, request);
     }
 
     /**
      * 设备信息接口日志
      */
     private void sendLayoutLog(){
-        UpgradeLogRequest request = new UpgradeLogRequest();
-        request.mac = DataUtils.getMacAddress(this);
-        request.versionCode = String.valueOf(DataUtils.getAppVersionCode(this));
-        request.versionName = DataUtils.getVersionName(this);
-        request.sdk = String.valueOf(DataUtils.getSystemSDKVersion());
-//        if(isHasUpgrade){
-//            request.isNeedUpdate ="1";
-//        }else{
-//            request.isNeedUpdate ="0";
-//        }
+        UpgradeLogRequest request = UpgradeLogRequest.getInitInstance(this);
         request.isGetUpdateInfo = String.valueOf(isGetLayoutInfo);
         if(upgradeLogList != null && upgradeLogList.size()>0){
             request.interfaceError = upgradeLogList;
         }
-        UpgradeServerLog.doPostHttpUpgradeLog(this, Constant.LOG_TYPE_LAYOUT, request, new OkHttpCallBack<ErrorMsgRequest>() {
-            @Override
-            public void onSuccess(String url, ErrorMsgRequest response) {
-                LogCat.e("设备信息接口日志上传成功");
-            }
+        UpgradeServerLog.doPostHttpUpgradeLog(this, Constant.LOG_TYPE_LAYOUT, request);
+    }
 
-            @Override
-            public void onError(String url, String errorMsg) {
-                LogCat.e("设备信息接口日志上传失败");
+
+    private class RetryRunnable implements Runnable{
+
+        @Override
+        public void run() {
+            if(DataUtils.isNetworkConnected(LoadingActivity.this)){
+                doHttpUpdate(LoadingActivity.this);
+                doGetDeviceInfo(LoadingActivity.this);
+                SendStatisticsLog.sendInitializeLog(LoadingActivity.this);//提交激活日志
+            }else{
+                if(reTryPostTimes>= 4){
+                    postHandler.removeCallbacks(postRunnable);
+                    LogCat.e("已进行了4次重试，不再重试，直接进入main");
+                    goToMainActivity();
+
+                }else{
+                    reTryPostTimes++;
+                    LogCat.e("没有网络进行第："+reTryPostTimes +" 次重试");
+                    if(postHandler != null && postRunnable != null){
+                        postHandler.postDelayed(postRunnable,6000);
+                    }
+                }
+
             }
-        });
+        }
     }
 
 

@@ -171,12 +171,11 @@ public class DataUtils {
 	 * @return
 	 * @throws NameNotFoundException
 	 */
-	public static double getAppVersion(Context context) throws NameNotFoundException {
+	public static int getAppVersion(Context context) throws NameNotFoundException {
 		PackageManager packageManager = context.getPackageManager();
 		// getPackageName()是你当前类的包名，0代表是获取版本信息
 		PackageInfo packInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
-		int version = packInfo.versionCode;
-		return version;
+		return packInfo.versionCode;
 	}
 
 	/**
