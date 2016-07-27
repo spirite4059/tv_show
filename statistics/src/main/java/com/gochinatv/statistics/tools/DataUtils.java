@@ -187,6 +187,22 @@ public class DataUtils {
         return osVersion;
     }
 
+    public static String getMacAddress(Context context) {
+        String macAddress = null;
+        switch (checkNetStatus(context)) {
+            case 1: // 有线
+                macAddress = getLocalEthernetMacAddress();
+                break;
+            case 2: // 有线
+                macAddress = getWifiMacAddr(context);
+                break;
+            default:
+                break;
+        }
+        return macAddress;
+    }
+
+
 
     //获取是否存在NavigationBar
     public static boolean checkDeviceHasNavigationBar(Context context) {

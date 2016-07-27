@@ -252,7 +252,6 @@ public class DownloadPrepareThread extends Thread {
         }
 
         int downloadSize = -1;
-        long startPosition;
         SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
         try {
             while (!isFinished) {

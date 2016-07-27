@@ -31,6 +31,7 @@ import com.gochinatv.ad.cmd.OpenCommend;
 import com.gochinatv.ad.cmd.RefreshWebCommend;
 import com.gochinatv.ad.interfaces.OnUpgradeStatusListener;
 import com.gochinatv.ad.receiver.FirebaseMessageReceiver;
+import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownLoadAPKUtils;
@@ -1028,97 +1029,7 @@ public class MainActivity extends BaseActivity {
 
     //private int progressTest;
     private void downloadAPKNew(final String url) {
-//        if (downLoadAPKUtils == null) {
-//            downLoadAPKUtils = new DownLoadAPKUtils();
-//        }
-//
-//
-//        if (adOneFragment != null) {
-//            //停止下载视频
-//
-//        }
         DLUtils.init().cancel();
-//
-//        downLoadAPKUtils.downLoad(this, turl);
-//        //下载失败监听
-//        downLoadAPKUtils.setOnDownLoadErrorListener(new DownLoadAPKUtils.OnDownLoadErrorListener() {
-//            @Override
-//            public void onDownLoadFinish(Exception e) {
-//                //通知AdOneFragment去下载视频
-//                LogCat.e("APKdownload", "下载apk出现错误: " + e.toString());
-//                if (reTryTimes < 5) {
-//                    LogCat.e("APKdownload", "下载apk文件失败，进行第 " + reTryTimes + " 次尝试,........");
-//                    reTryTimes += 1;
-//                    //延迟2秒再去下载
-//                    rootLayout.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            downloadAPKNew(turl);
-//                        }
-//                    }, 2000);
-//
-//                } else {
-//                    LogCat.e("APKdownload", "下载apk出现错误,重试5次不再重试 ");
-//                    if (adOneFragment != null) {
-//                        adOneFragment.startDownloadVideo();
-//                    }
-//                }
-//            }
-//        });
-//
-//        //下载进度监听
-//        downLoadAPKUtils.setOnDownLoadProgressListener(new DownLoadAPKUtils.OnDownLoadProgressListener() {
-//
-//            private int oldProgress;
-//            private final int K_SIZE = 1024 * 1024;
-//
-//            @Override
-//            public void onDownLoadProgress(int progress, long fileSize, String fileName) {
-//                showNetSpeed(progress);
-//            }
-//            private void showNetSpeed(int progress) {
-//                try {
-//                    if (oldProgress <= 0) {
-//                        oldProgress = progress;
-//                        return;
-//                    }
-//                    long current = progress - oldProgress;
-//                    String speed;
-//                    if (current >= 0 && current < 1024) {
-//                        speed = current + "B/s";
-//                    } else if (current >= 1024 && current < K_SIZE) {
-//                        speed = current / 1024 + "KB/s";
-//                    } else {
-//                        speed = current / K_SIZE + "MB/s";
-//                    }
-//                    LogCat.e("net_speed", "speed: " + speed);
-//                    if (current > 0) {
-//                        String msg = "wifi:on -" + speed + "-upgrading";
-//
-//                        textSpeedInfo.setText(msg);
-//                        //tvSpeed.setText(msg);
-////                        setSpeedInfo(msg);
-//                        // 下载设备网速
-//                    }
-//                    oldProgress = progress;
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//        });
-//
-//        // 下载成功监听
-//        downLoadAPKUtils.setOnDownLoadFinishListener(new DownLoadAPKUtils.OnDownLoadFinishListener() {
-//            @Override
-//            public void onDownLoadFinish(String fileName) {
-//                //新包下载完成得安装
-//                LogCat.e("APKdownload", "下载升级成功，开始正式升级.......");
-//                File file = new File(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
-//                InstallUtils.installAuto(MainActivity.this, file, true);
-//            }
-//        });
-
 
         DownloadUtils.downloadApk(this, url, new OnUpgradeStatusListener() {
 
@@ -1282,6 +1193,8 @@ public class MainActivity extends BaseActivity {
                     // 5.清空所有升级包，为了节省空间
                     //没有升级，请求其他接口
                     reLoadHttpRequest();
+                    // 删除旧的安装文件
+                    DeleteFileUtils.getInstance().deleteFile(DataUtils.getApkDirectory() + Constants.FILE_APK_NAME);
                 }
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
