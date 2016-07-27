@@ -6,14 +6,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.text.TextUtils;
 
 import com.download.db.DLDao;
 import com.download.db.DownloadInfo;
 import com.download.dllistener.OnDownloadStatusListener;
 import com.download.tools.CacheVideoListThread;
 import com.download.tools.Constants;
+import com.download.tools.Etag;
 import com.download.tools.LogCat;
 import com.download.tools.ToolUtils;
+import com.google.common.io.Files;
 import com.okhtttp.response.AdDetailResponse;
 
 import java.io.File;
@@ -22,9 +25,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.DigestException;
 import java.util.ArrayList;
 
 import static com.download.ErrorCodes.ERROR_DOWNLOAD_FILE_UNKNOWN;
+import static com.download.ErrorCodes.ERROR_DOWNLOAD_NO_INSTREAM;
 import static com.download.ErrorCodes.HTTP_OK;
 import static com.download.ErrorCodes.HTTP_PARTIAL;
 
@@ -51,6 +56,7 @@ public class DownloadPrepareThread extends Thread {
         this.listener = listener;
         errorCode = 0;
     }
+
 
 
     @Override
@@ -251,8 +257,11 @@ public class DownloadPrepareThread extends Thread {
             return;
         }
 
-        int downloadSize = -1;
+        long downloadSize = -1;
+        long oldDownloadSize = -1;
+        int times = 0;
         SQLiteDatabase sqLiteDatabase = DLDao.getConnection(context);
+
         try {
             while (!isFinished) {
                 isFinished = true;
@@ -289,6 +298,18 @@ public class DownloadPrepareThread extends Thread {
                 }
 
                 downloadSize = downloadedAllSize;
+                if(oldDownloadSize == downloadSize){
+                    if(times < 60){
+                        times++;
+                    }else {
+                        times = 0;
+                        isThreadError = ERROR_DOWNLOAD_NO_INSTREAM;
+                    }
+                }else {
+                    times = 0;
+                    oldDownloadSize = downloadSize;
+                }
+
                 // 是否有子线程出错或者取消下载
                 if (isThreadError || isCancel) {
                     isFinished = false;
@@ -331,30 +352,65 @@ public class DownloadPrepareThread extends Thread {
         if (isFinished) {
             LogCat.e("video", "文件下载完成......fileSize: " + fileSize);
             LogCat.e("video", "文件下载完成......downloadSize: " + downloadSize);
-
-//            String fileMd5 = null;
-//            try {
-//                fileMd5 = new MD5Utils().getFileMD5String(file);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-            LogCat.e("download1", "head md5: " + md5);
-//            LogCat.e("download1", "file md5: " + fileMd5);
-
-            if (deleteFailFile(fileSize, downloadSize)) {
-                LogCat.e("video", "文件完整下载......");
-                setFinish(file.getAbsolutePath());
-                // 删除当前记录
-            } else {
-                LogCat.e("video", "文件下载大小出错......");
-                setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
-            }
+            checksumFile(md5, fileSize, downloadSize);
         } else {
             LogCat.e("video", "文件下载尚未完成......");
             setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
         }
 
 
+    }
+
+
+    /**
+     * 验证文件完整性
+     * @param md5
+     * @param fileSize
+     * @param downloadSize
+     */
+
+    private void checksumFile(String md5, int fileSize, long downloadSize) {
+        LogCat.e("download1", "head md5: " + md5);
+        try {
+            // 版本大于19,通过Etag验证
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                etagCheckSum(md5);
+            } else { // 小于19.通过文件大小验证
+                fileSizeCheckSum(fileSize, downloadSize);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogCat.e("video", "文件下载尚未完成......");
+            setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+        }
+    }
+
+    private void fileSizeCheckSum(long fileSize, long downloadSize) {
+        if (deleteFailFile(fileSize, downloadSize)) {
+            LogCat.e("video", "文件完整下载......");
+            setFinish(file.getAbsolutePath());
+            // 删除当前记录
+        } else {
+            LogCat.e("video", "文件下载大小出错......");
+            setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void etagCheckSum(String md5) throws IOException, DigestException {
+        Etag etag = Etag.compute(Files.asByteSource(file));
+        if (etag != null) {
+            String fileMd5 = etag.asString();
+            LogCat.e("download1", "file md5: " + fileMd5);
+            boolean isFileSuccess = !TextUtils.isEmpty(fileMd5) && fileMd5.equals(md5);
+            if (isFileSuccess) {
+                LogCat.e("video", "文件完整下载......");
+                setFinish(file.getAbsolutePath());
+            } else {
+                LogCat.e("video", "文件下载大小出错......");
+                setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+            }
+        }
     }
 
     private void updateDlProgress(SQLiteDatabase sqLiteDatabase, DownloadThread downloadThread) {
@@ -451,7 +507,7 @@ public class DownloadPrepareThread extends Thread {
 //        LogCat.e("插入后的数据大小......" + DLDao.queryAll(context).size());
     }
 
-    private boolean deleteFailFile(int fileSize, int downloadSize) {
+    private boolean deleteFailFile(long fileSize, long downloadSize) {
         if (file != null && downloadSize != fileSize) {
             LogCat.e("video", "文件下载大小出错......删除出错的文件");
             if (file.delete()) {

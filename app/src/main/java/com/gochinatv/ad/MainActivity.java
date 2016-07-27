@@ -194,15 +194,6 @@ public class MainActivity extends BaseActivity {
         // wifi没有打开或者没有信号,显示wifi引导页面
         showWifiDialog();
 
-//        if (DataUtils.isNetworkConnected(this)) {
-//            textSpeedInfo.setText("wifi-on");
-//        } else {
-//            LogCat.e("net", "off..............");
-//            textSpeedInfo.setText("wifi-off:0kb/s");
-//        }
-
-
-
     }
 
     private void showWifiDialog() {
