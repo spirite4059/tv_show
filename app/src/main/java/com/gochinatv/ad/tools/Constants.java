@@ -73,7 +73,7 @@ public class Constants {
     /**
      * --------------------------是否是测试-------------------------------
      */
-    public static boolean isTest = true;
+    public static boolean isTest = false;
 
     /**
      * --------------------------是否是3号位测试-------------------------------
@@ -91,6 +91,11 @@ public class Constants {
      * --------------------------firebase filter -------------------------------
      */
     public static String FIREBASE_INTENT_FILTER = "com.gochinatv.ad.firebase.intent.filter";
+
+    /**
+     * 静默升级标识
+     */
+    public static String SILENCE_UPGRADE_FLAG = "isClientInstall";
 
 
 //    public static final String [] METADATA_KEYS = {

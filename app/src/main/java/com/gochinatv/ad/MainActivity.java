@@ -1167,18 +1167,19 @@ public class MainActivity extends BaseActivity {
         UpdateResponse.UpdateInfoResponse updateInfo = response.resultForApk;
         // 获取当前最新版本号
         if (!TextUtils.isEmpty(updateInfo.versionCode)) {
-            double netVersonCode = Integer.parseInt(updateInfo.versionCode);
+            int netVersionCode = 0;
             try {
+                netVersionCode = Integer.parseInt(updateInfo.versionCode);
                 LogCat.e("当前的app版本：" + DataUtils.getAppVersion(this));
             } catch (PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
-            LogCat.e("当前的最新版本：" + netVersonCode);
+            LogCat.e("当前的最新版本：" + netVersionCode);
 
             // 检测是否要升级
             try {
                 //升级接口成功
-                if (DataUtils.getAppVersion(this) < netVersonCode) { // 升级
+                if (DataUtils.getAppVersion(this) < netVersionCode) { // 升级
                     // 升级
                     // 下载最新安装包，下载完成后，提示安装
                     LogCat.e("需要升级。。。。。");
