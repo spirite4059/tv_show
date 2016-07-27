@@ -555,6 +555,10 @@ public class DownloadPrepareThread extends Thread {
             if (mine == null)
                 break;
             if ("Etag".equals(http.getHeaderFieldKey(i))) {
+
+                if(!TextUtils.isEmpty(mine) && mine.contains("\"")){
+                    mine = mine.replace("\"", "");
+                }
                 return mine;
             }
         }
