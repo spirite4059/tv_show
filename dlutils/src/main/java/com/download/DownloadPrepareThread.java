@@ -303,7 +303,8 @@ public class DownloadPrepareThread extends Thread {
                         times++;
                     }else {
                         times = 0;
-                        isThreadError = ERROR_DOWNLOAD_NO_INSTREAM;
+                        errorCode = ERROR_DOWNLOAD_NO_INSTREAM;
+                        isThreadError = true;
                     }
                 }else {
                     times = 0;
