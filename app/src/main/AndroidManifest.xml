@@ -34,7 +34,7 @@
             android:name=".MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="landscape"
-            android:launchMode="sin"
+            android:launchMode="singleTask"
             >
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN" />-->
