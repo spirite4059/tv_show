@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.gochinatv.ad.video.MeasureVideoView;
 import com.okhtttp.response.AdDetailResponse;
 
@@ -16,14 +17,14 @@ public class VideoStatusRunnable implements Runnable {
     private MeasureVideoView videoView;
     private AdDetailResponse playingVideoInfo;
     private Handler handler;
-    private Context context;
+    private AdOneFragment context;
     private long oldVideoPosition;
     private int videoId;
     private long errorPlayTime;
     private int errorPlayTimes;
     private final int TIME_CHECK_VIDEO_DURATION = 1000 * 2 * 60;
 
-    public VideoStatusRunnable(Context context, MeasureVideoView videoView, AdDetailResponse playingVideoInfo, Handler handler ){
+    public VideoStatusRunnable(AdOneFragment context, MeasureVideoView videoView, AdDetailResponse playingVideoInfo, Handler handler){
         this.videoView = videoView;
         this.context = context;
         this.playingVideoInfo = playingVideoInfo;
@@ -89,17 +90,7 @@ public class VideoStatusRunnable implements Runnable {
     private void rePlayView() {
         if (videoView != null) {
             try {
-                videoView.stopPlayback();
-                videoView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (playingVideoInfo != null) {
-                            if(videoView != null){
-                                videoView.setVideoPath(playingVideoInfo.videoPath);
-                            }
-                        }
-                    }
-                }, 3000);
+                context.fixErrorVideo();
             } catch (Exception e) {
                 e.printStackTrace();
                 rePlayError();
@@ -115,7 +106,7 @@ public class VideoStatusRunnable implements Runnable {
 //            AlertUtils.alert(getActivity(), "app出错了，第 " + errorPlayTimes +" 次");
         // 超过2次出现错误，并且在30分钟之内，就重启设备
         if(errorPlayTimes >= 2 && errorPlayTime <= 1800000){
-            PowerManager pManager=(PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            PowerManager pManager=(PowerManager) context.getActivity().getSystemService(Context.POWER_SERVICE);
             pManager.reboot("");
             return;
         }

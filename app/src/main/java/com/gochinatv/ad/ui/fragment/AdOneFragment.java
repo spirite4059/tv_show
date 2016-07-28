@@ -190,7 +190,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
         //  开启轮询接口
         handler = new Handler(Looper.getMainLooper());
-        videoStatusRunnable = new VideoStatusRunnable(getActivity(), videoView, playingVideoInfo, handler);
+        videoStatusRunnable = new VideoStatusRunnable(this, videoView, playingVideoInfo, handler);
         // 开始视频的守护线程
         handler.postDelayed(videoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
 
@@ -265,16 +265,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 if (what != 1) {
                     return true;
                 }
-                videoView.stopPlayback();
-
-                videoView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        fixVideoError();
-                        LogCat.e("video", "开始播放下一个视频......");
-                        playNext(true);
-                    }
-                }, 2000);
+                fixErrorVideo();
                 return true;
             }
         });
@@ -291,6 +282,22 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 playNext(false);
             }
         });
+    }
+
+    /**
+     * 修复错误视频
+     */
+    public void fixErrorVideo() {
+        videoView.stopPlayback();
+
+        videoView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                fixVideoError();
+                LogCat.e("video", "开始播放下一个视频......");
+                playNext(true);
+            }
+        }, 2000);
     }
 
 

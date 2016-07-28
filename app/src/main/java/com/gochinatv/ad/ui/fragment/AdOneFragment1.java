@@ -191,7 +191,7 @@ public class AdOneFragment1 extends BaseFragment implements OnUpgradeStatusListe
 
         //  开启轮询接口
         handler = new Handler(Looper.getMainLooper());
-        videoStatusRunnable = new VideoStatusRunnable(getActivity(), videoView, playingVideoInfo, handler);
+//        videoStatusRunnable = new VideoStatusRunnable(thfanz s, videoView, playingVideoInfo, handler);
         // 开始视频的守护线程
         handler.postDelayed(videoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
 

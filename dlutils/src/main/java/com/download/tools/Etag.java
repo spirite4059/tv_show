@@ -158,13 +158,40 @@ public final class Etag {
 
 
     @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    public static Etag compute(final ByteSource byteSource)
+    public static Etag computeVideo(final ByteSource byteSource)
             throws IOException, DigestException {
         final List<byte[]> md5s = new ArrayList<>();
         try (final InputStream inputStream = byteSource.openBufferedStream()) {
             while (true) {
                 if (inputStream.available() > 0) {
                     final byte[] md5 = computeMd5(inputStream, 5242880);
+                    md5s.add(md5);
+                } else {
+                    break;
+                }
+            }
+        }
+        if (md5s.size() == 1) {
+            return new Etag(md5s.get(0), null);
+        } else {
+            final byte[] md5concatenation = new byte[md5s.size() * 16];
+            for (int i = 0; i < md5s.size(); i++) {
+                final byte[] md5 = md5s.get(i);
+                System.arraycopy(md5, 0, md5concatenation, i * 16, 16);
+            }
+            final byte[] finalMd5 = DigestUtils.md5(md5concatenation);
+            return new Etag(finalMd5, md5s.size());
+        }
+    }
+
+    @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public static Etag computeApk(final ByteSource byteSource)
+            throws IOException, DigestException {
+        final List<byte[]> md5s = new ArrayList<>();
+        try (final InputStream inputStream = byteSource.openBufferedStream()) {
+            while (true) {
+                if (inputStream.available() > 0) {
+                    final byte[] md5 = computeMd5(inputStream, 67108864);
                     md5s.add(md5);
                 } else {
                     break;

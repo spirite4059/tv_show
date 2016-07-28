@@ -353,12 +353,11 @@ public class DownloadPrepareThread extends Thread {
         if (isFinished) {
             LogCat.e("video", "文件下载完成......fileSize: " + fileSize);
             LogCat.e("video", "文件下载完成......downloadSize: " + downloadSize);
-            checksumFile(md5, fileSize, downloadSize);
+            checksumFile(file, md5, fileSize, downloadSize);
         } else {
             LogCat.e("video", "文件下载尚未完成......");
             setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
         }
-
 
     }
 
@@ -370,12 +369,14 @@ public class DownloadPrepareThread extends Thread {
      * @param downloadSize
      */
 
-    private void checksumFile(String md5, int fileSize, long downloadSize) {
+    private void checksumFile(File file, String md5, long fileSize, long downloadSize) {
         LogCat.e("download1", "head md5: " + md5);
         try {
             // 版本大于19,通过Etag验证
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                etagCheckSum(md5);
+
+
+                etagCheckSum(file, md5, fileSize, downloadSize);
             } else { // 小于19.通过文件大小验证
                 fileSizeCheckSum(fileSize, downloadSize);
             }
@@ -398,8 +399,17 @@ public class DownloadPrepareThread extends Thread {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    private void etagCheckSum(String md5) throws IOException, DigestException {
-        Etag etag = Etag.compute(Files.asByteSource(file));
+    private void etagCheckSum(File file, String md5, long fileSize, long downloadSize) throws IOException, DigestException {
+        Etag etag = null;
+        if(file != null){
+            String fileTag = file.getName().split("\\.")[1];
+            if("mp4".equals(fileTag)){
+                etag = Etag.computeVideo(Files.asByteSource(file));
+            }else {
+                etag = Etag.computeApk(Files.asByteSource(file));
+            }
+        }
+
         if (etag != null) {
             String fileMd5 = etag.asString();
             LogCat.e("download1", "file md5: " + fileMd5);
@@ -411,6 +421,8 @@ public class DownloadPrepareThread extends Thread {
                 LogCat.e("video", "文件下载大小出错......");
                 setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
             }
+        }else {
+            fileSizeCheckSum(fileSize, downloadSize);
         }
     }
 
@@ -554,7 +566,11 @@ public class DownloadPrepareThread extends Thread {
             String mine = http.getHeaderField(i);
             if (mine == null)
                 break;
-            if ("Etag".equals(http.getHeaderFieldKey(i))) {
+            String headValue = http.getHeaderFieldKey(i);
+            if(!TextUtils.isEmpty(headValue)){
+                headValue = headValue.toLowerCase();
+            }
+            if ("etag".equals(headValue)) {
 
                 if(!TextUtils.isEmpty(mine) && mine.contains("\"")){
                     mine = mine.replace("\"", "");

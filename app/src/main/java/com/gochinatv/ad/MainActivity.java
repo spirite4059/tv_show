@@ -148,7 +148,6 @@ public class MainActivity extends BaseActivity {
     WifiDialog dialog;
 
     private void init() {
-
         if(DataUtils.isNetworkConnected(this)){
             textSpeedInfo.setText("wifi-on:0kb/s");
             isNetConnect = true;
@@ -193,6 +192,12 @@ public class MainActivity extends BaseActivity {
 
         // wifi没有打开或者没有信号,显示wifi引导页面
         showWifiDialog();
+
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
 
     }
 
