@@ -2,8 +2,9 @@ package com.gochinatv.ad.ui.fragment;
 
 import android.app.FragmentTransaction;
 import android.media.MediaPlayer;
+import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.Message;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ import com.gochinatv.ad.tools.Constants;
 import com.gochinatv.ad.tools.DataUtils;
 import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.LogCat;
+import com.gochinatv.ad.tools.LogMsgUtils;
 import com.gochinatv.ad.tools.SharedPreference;
 import com.gochinatv.ad.tools.UmengUtils;
 import com.gochinatv.ad.tools.VideoAdUtils;
@@ -39,14 +41,12 @@ import com.okhtttp.service.VideoHttpService;
 import com.retrofit.download.RetrofitDLUtils;
 import com.umeng.analytics.MobclickAgent;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static com.gochinatv.ad.tools.VideoAdUtils.getDistinctList;
-import static com.gochinatv.ad.tools.VideoAdUtils.logProgress;
 import static com.gochinatv.ad.tools.VideoAdUtils.sendDeleteVideo;
 import static com.gochinatv.ad.tools.VideoAdUtils.sendVideoDownloadTime;
 import static com.gochinatv.ad.tools.VideoAdUtils.sendVideoPlayTimes;
@@ -116,7 +116,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private TextView tvProgress;
 
-    private Handler handler;
+    private MyHandler handler;
     // 接口重复刷新时间
     private long pollInterval = 4 * 60 * 60 * 1000;//默认4个小时
 
@@ -154,7 +154,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             playPresetVideo();
             return;
         }
-
+        //  开启轮询接口
+        handler = new MyHandler();
         // 1.初始化本地缓存表
         LogCat.e("video", "获取本地缓存视频列表.......");
         localVideoList = VideoAdUtils.getLocalVideoList(getActivity());
@@ -182,8 +183,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         // 7.开启上传截图
         startScreenShot();
 
-        //  开启轮询接口
-        handler = new Handler(Looper.getMainLooper());
+
         videoStatusRunnable = new VideoStatusRunnable(this, videoView, playingVideoInfo, handler);
         // 开始视频的守护线程
         handler.postDelayed(videoStatusRunnable, TIME_CHECK_VIDEO_DURATION);
@@ -205,31 +205,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         if (!isAdded()) {
             return;
         }
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    StringBuilder downloadBuilder = new StringBuilder();
-                    //下载完成的个数
-                    int size = 0;
-                    if (isStartUpNotNet) {
-                        //启动时无网络
-                        if (cachePlayVideoLists != null) {
-                            size = cachePlayVideoLists.size();
-                            LogCat.e("net", "cachePlayVideoLists.size：" + cachePlayVideoLists.size());
-                        }
-                    } else {
-                        //app运行中无网络
-                        if (playVideoLists != null) {
-                            size = playVideoLists.size();
-                            LogCat.e("net", "playVideoLists.size：" + playVideoLists.size());
-                        }
-                    }
-                    downloadBuilder.append("completed video：" + size);
-                    setDownloadInfo(downloadBuilder.toString());
-                }
-            });
-        }
+        Message msg = handler.obtainMessage(5);
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("isStartUpNotNet", isStartUpNotNet);
+        msg.setData(bundle);
+        handler.sendMessage(msg);
     }
 
 
@@ -544,9 +524,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    private long oldProgress;
-    private final int K_SIZE = 1048576;
-
     @Override
     public void onDownloadProgress(final long progress, final long fileLength) {
         showLogMsg(progress, fileLength);
@@ -554,53 +531,16 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
 
-    String speed;
+
 
     public void showNetSpeed(final boolean isHasNet, final boolean isDownloadingAPK, final long progress) {
-        if (getActivity() != null) {
-
-            getActivity().runOnUiThread(new Runnable() {
-
-                NumberFormat numberFormat;
-
-                @Override
-                public void run() {
-                    if (!isHasNet) {
-                        setSpeedInfo("wifi-off:0kb/s");
-                        return;
-                    }
-                    if (oldProgress <= 0) {
-                        oldProgress = progress;
-                        return;
-                    }
-                    long current = progress - oldProgress;
-
-                    if (current >= 0 && current < 1024) {
-                        speed = current + "B/s";
-                    } else if (current >= 1024 && current < K_SIZE) {
-                        speed = current / 1024 + "KB/s";
-                    } else {
-                        if(numberFormat == null){
-                            numberFormat = NumberFormat.getNumberInstance();
-                        }
-                        numberFormat.setMaximumFractionDigits(2);
-                        speed = numberFormat.format(current / 1048576f) + "MB/s";
-                    }
-                    LogCat.e("net_speed", "speed: " + speed);
-                    if (current >= 0) {
-                        String msg = null;
-                        if (isDownloadingAPK) {
-                            msg = "wifi-on:" + speed + "-upgrading";
-                        } else {
-                            msg = "wifi-on:" + speed + "-downloading";
-                        }
-                        setSpeedInfo(msg);
-
-                    }
-                    oldProgress = progress;
-                }
-            });
-        }
+        Message msg = handler.obtainMessage(4);
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("isHasNet", isHasNet);
+        bundle.putBoolean("isDownloadingAPK", isDownloadingAPK);
+        bundle.putLong("progress", progress);
+        msg.setData(bundle);
+        handler.sendMessage(msg);
     }
 
     private void downVideoError() {
@@ -608,33 +548,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             return;
         }
         // 出错就放弃当前下载任务，继续下载下一个任务，并将当前任务放到最后一个，如果已经是最后一个，再重试2边
-        final int size = downloadLists.size();
-        videoView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isDetached()) {
-                    return;
-                }
-                if (retryTimes < MAX_RETRY_TIMES) {
-                    LogCat.e("video", "继续重试3次下载，此时是第" + (retryTimes + 1) + "次尝试。。。。");
-                    download(videoUrl);
-                    retryTimes++;
-                } else {
-                    retryTimes = 0;
-                    // 删除下载的记录
-                    DownloadUtils.deleteErrorDl(getActivity());
-                    // 删除下载的文件
-                    DeleteFileUtils.getInstance().deleteFile(downloadingVideoResponse.videoPath);
-                    // 准备下载下一个
-                    LogCat.e("video", "将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
-                    downloadLists.add(size, downloadingVideoResponse);
-                    downloadLists.remove(0);
-                    prepareDownloading();
-
-                }
-            }
-        }, TIME_RETRY_DURATION);
-
+        handler.sendEmptyMessageDelayed(3, TIME_RETRY_DURATION);
     }
 
 
@@ -841,16 +755,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
     }
 
-
-//    @Override
-//    public void onStop() {
-//        LogCat.e("video", "onStop...................");
-//        release();
-//        super.onStop();
-//
-//    }
-
-
     @Override
     public void onDestroy() {
         release();
@@ -862,7 +766,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      * 释放资源
      */
     private void release() {
-
         DLUtils.init().cancel();
 
         if (screenShotService != null) {
@@ -878,36 +781,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     }
 
-    /**
-     * 所有视频下载完成，此时的下载信息
-     */
-    private void showDownloadMsgALLDownloadCompleted() {
-        if (!isAdded()) {
-            return;
-        }
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    LogCat.e("net", "所有的视频都下载完成了，显示下载完成信息--Completed");
-                    setSpeedInfo("wifi-on:0kb/s");
-                    StringBuilder downloadBuilder = new StringBuilder();
 
-                    downloadBuilder.append("Completed");
-                    downloadBuilder.append('\n');
-                    //下载完成的个数
-                    int size = 0;
-                    if (playVideoLists != null) {
-                        size = playVideoLists.size();
-                        LogCat.e("net", "downloadLists.size：" + playVideoLists.size());
-                    }
-                    downloadBuilder.append("completed video：" + size);
-                    setDownloadInfo(downloadBuilder.toString());
-                }
-            });
-        }
-
-    }
 
     /**
      * 下载准备工作
@@ -919,8 +793,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 downloadingVideoResponse = null;
                 isDownloadPrepare = false;
                 // 显示下载完成信息
-                showDownloadMsgALLDownloadCompleted();
                 cachePlayVideoLists.clear();
+                // 更新日志
+                handler.sendEmptyMessage(2);
+
             } else {
                 LogCat.e("video", "当日的下载列表下载完成，继续下载明日与播放的视频列表");
                 if (downloadLists != null) {
@@ -984,88 +860,12 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
     private void showLogMsg(final long progress, final long fileLength) {
-
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        showDownLoadMsg();
-                        showTestMsg();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                // 显示下载信息
-                void showDownLoadMsg() {
-                    if (!isDetached()) {
-                        StringBuilder downloadBuilder = new StringBuilder();
-                        //当前正在下载
-                        if (downloadingVideoResponse != null) {
-                            downloadBuilder.append("downloading：vid_");
-                            downloadBuilder.append(downloadingVideoResponse.adVideoId + ", size: ");
-
-                        }
-                        //当前下载进度
-                        downloadBuilder.append(logProgress(progress, fileLength));
-                        if (downloadingVideoResponse != null) {
-                            downloadBuilder.append('\n');
-                        }
-                        //下载完成的个数
-                        if (playVideoLists != null) {
-                            int size = playVideoLists.size();
-                            downloadBuilder.append("completed video：" + size);
-                        }
-                        setDownloadInfo(downloadBuilder.toString());
-
-                    }
-                }
-
-                // 显示测试信息
-                void showTestMsg() {
-                    if (Constants.isTest && !isDetached()) {
-                        // 当前下载视频
-                        // 当前已下载视频的个数
-                        StringBuilder logBuilder = new StringBuilder();
-                        if (playingVideoInfo != null) {
-                            logBuilder.append("正在播放：" + playingVideoInfo.adVideoName);
-                        }
-
-                        logBuilder.append('\n');
-                        logBuilder.append("当前正在下载：");
-                        if (downloadingVideoResponse != null) {
-                            logBuilder.append(downloadingVideoResponse.adVideoName);
-                        }
-                        logBuilder.append('\n');
-                        logBuilder.append("当前下载进度：");
-                        logBuilder.append(logProgress(progress, fileLength));
-                        logBuilder.append('\n');
-
-                        logBuilder.append("已下载视频列表：" + '\n');
-                        if (playVideoLists != null) {
-                            int size = playVideoLists.size();
-                            for (int i = 0; i < size; i++) {
-                                AdDetailResponse adDetailResponse = playVideoLists.get(i);
-                                logBuilder.append("        ");
-                                logBuilder.append(adDetailResponse.adVideoName);
-                                if (i < size - 1) {
-                                    logBuilder.append('\n');
-                                }
-                            }
-                            if (tvProgress.getVisibility() != View.VISIBLE) {
-                                tvProgress.setVisibility(View.VISIBLE);
-                                tvProgress.bringToFront();
-
-                            }
-                            tvProgress.setText(logBuilder.toString());
-                        }
-
-                    }
-                }
-
-            });
-        }
+        Message msg = handler.obtainMessage(1);
+        Bundle bundle = new Bundle();
+        bundle.putLong("progress", progress);
+        bundle.putLong("fileLength", fileLength);
+        msg.setData(bundle);
+        handler.sendMessage(msg);
 
     }
 
@@ -1079,7 +879,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         if (layoutResponse == null) {
             layoutResponse = new LayoutResponse();
         }
-        layoutResponse.setAdOneLayout(rootView, DataUtils.getDisplayMetricsWidth(getActivity()));
+        layoutResponse.setAdOneLayout(rootView, DataUtils.getDisplayMetricsWidth(getActivity()), DataUtils.getDisplayMetricsHeight(getActivity()));
     }
 
     private void playNext(boolean isVideoError) {
@@ -1390,7 +1190,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
      * @param speed
      */
     private void setSpeedInfo(String speed) {
-
         if (getActivity() != null) {
             ((MainActivity) getActivity()).setSpeedInfo(speed);
         }
@@ -1416,31 +1215,76 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         if (!isAdded()) {
             return;
         }
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    setSpeedInfo("wifi-on:0kb/s");
-                    StringBuilder downloadBuilder = new StringBuilder();
+        handler.sendEmptyMessage(0);
 
-                    downloadBuilder.append("Request video list ");
-                    downloadBuilder.append('\n');
-                    //下载完成的个数
-                    int size = 0;
-                    if (playVideoLists != null) {
-                        size = playVideoLists.size();
-                        LogCat.e("net", "cachePlayVideoLists.size：" + playVideoLists.size());
-                    } else {
-                        if (cachePlayVideoLists != null) {
-                            size = cachePlayVideoLists.size();
-                        }
-                    }
-                    downloadBuilder.append("completed video：" + size);
-                    setDownloadInfo(downloadBuilder.toString());
-                }
-            });
-        }
 
     }
 
+
+    String speed;
+    private class MyHandler extends Handler{
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 0:
+                    setSpeedInfo("wifi-on:0kb/s");
+                    setDownloadInfo(LogMsgUtils.getInstance().getVideoList(playVideoLists, cachePlayVideoLists));
+                    break;
+                case 1:
+                    Bundle bundle = msg.getData();
+                    long progress = bundle.getLong("progress");
+                    long fileSize = bundle.getLong("fileLength");
+                    // 显示log日志
+                    if(Constants.isTest){
+                        if (tvProgress.getVisibility() != View.VISIBLE) {
+                            tvProgress.setVisibility(View.VISIBLE);
+                            tvProgress.bringToFront();
+                        }
+                        tvProgress.setText(LogMsgUtils.getInstance().showTestMsg(playingVideoInfo, downloadingVideoResponse, progress, fileSize, playVideoLists));
+                    }
+
+                    // 显示下载信息
+                    setDownloadInfo(LogMsgUtils.getInstance().showDownLoadMsg(downloadingVideoResponse, progress, fileSize, playVideoLists));
+                    break;
+                case 2:
+                    LogCat.e("net", "所有的视频都下载完成了，显示下载完成信息--Completed");
+                    setSpeedInfo("wifi-on:0kb/s");
+                    setDownloadInfo(LogMsgUtils.getInstance().showDownloadMsgALLDownloadCompleted(playVideoLists));
+                    break;
+
+                case 3:
+                    if (isDetached()) {
+                        return;
+                    }
+                    if (retryTimes < MAX_RETRY_TIMES) {
+                        LogCat.e("video", "继续重试3次下载，此时是第" + (retryTimes + 1) + "次尝试。。。。");
+                        download(videoUrl);
+                        retryTimes++;
+                    } else {
+                        retryTimes = 0;
+                        // 删除下载的记录
+                        DownloadUtils.deleteErrorDl(getActivity());
+                        // 删除下载的文件
+                        DeleteFileUtils.getInstance().deleteFile(downloadingVideoResponse.videoPath);
+                        // 准备下载下一个
+                        LogCat.e("video", "将当前下载失败的视频放到最后一个，继续下载后续的视频。。。。");
+                        downloadLists.add(downloadLists.size(), downloadingVideoResponse);
+                        downloadLists.remove(0);
+                        prepareDownloading();
+                    }
+                    break;
+                case 4:
+                    Bundle bundleNet = msg.getData();
+                    speed = LogMsgUtils.getInstance().getNetSpeed(bundleNet.getBoolean("isHasNet"), bundleNet.getLong("progress"), bundleNet.getBoolean("isDownloadingAPK"));
+                    setSpeedInfo(speed);
+                    break;
+                case 5:
+                    Bundle bundleNoNet = msg.getData();
+                    setDownloadInfo(LogMsgUtils.getInstance().getNoNetMsg(bundleNoNet.getBoolean("isStartUpNotNet"), playVideoLists, cachePlayVideoLists));
+                    break;
+            }
+        }
+    }
 }
