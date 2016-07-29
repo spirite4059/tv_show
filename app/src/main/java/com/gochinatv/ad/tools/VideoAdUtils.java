@@ -8,7 +8,9 @@ import com.download.db.DownloadInfo;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.db.AdDao;
 import com.gochinatv.statistics.request.DeleteVideoRequest;
+import com.gochinatv.statistics.request.VideoDownloadError;
 import com.gochinatv.statistics.request.VideoDownloadInfoRequest;
+import com.gochinatv.statistics.request.VideoPlayError;
 import com.gochinatv.statistics.request.VideoSendRequest;
 import com.gochinatv.statistics.server.ErrorHttpServer;
 import com.gochinatv.statistics.tools.Constant;
@@ -666,6 +668,70 @@ public class VideoAdUtils {
                 @Override
                 public void onError(String url, String errorMsg) {
                     LogCat.e("MainActivity", "上传删除视频失败");
+                }
+            });
+        }
+    }
+
+
+    /**
+     * 上传播放器播放错误
+     */
+    public static void sendPlayVideoError(Context context,int what,int extra,AdDetailResponse playingVideoInfo){
+        if(context != null){
+            VideoPlayError videoPlayError = new VideoPlayError();
+            videoPlayError.errorWhat = what;
+            videoPlayError.errorExtra  = extra;
+            if(playingVideoInfo != null){
+                videoPlayError.videoId = playingVideoInfo.adVideoId;
+                if(playingVideoInfo.adVideoName != null){
+                    videoPlayError.videoName = playingVideoInfo.adVideoName;
+                }else{
+                    videoPlayError.videoName = "null";
+                }
+            }else{
+                //此时取不到播放的视频
+                videoPlayError.videoId = -1;
+                videoPlayError.videoName = "null";
+            }
+            String json = MacUtils.getJsonStringByEntity(videoPlayError);
+            ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_PLAY_ERROR, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity", "上传播放错误成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity", "上传播放错误失败");
+                }
+            });
+
+        }
+    }
+
+    /**
+     * 上报视频下载错误
+     */
+    public static void sendVideoDownloadError(Context context,int errorCode,String errorMsg,AdDetailResponse downloadingVideoResponse){
+        if(context != null){
+            VideoDownloadError videoDownloadError = new VideoDownloadError();
+            videoDownloadError.errorCode = errorCode;
+            videoDownloadError.errorMsg = errorMsg;
+            videoDownloadError.videoId  = downloadingVideoResponse.adVideoId;
+            if(downloadingVideoResponse.adVideoName != null){
+                videoDownloadError.videoName = downloadingVideoResponse.adVideoName;
+            }
+            String json = MacUtils.getJsonStringByEntity(videoDownloadError);
+            ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_DOWNLOAD_ERROR, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity", "上传下载错误成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity", "上传下载错误失败");
                 }
             });
         }
