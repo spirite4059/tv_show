@@ -27,6 +27,8 @@ public class Constant {
     public static final  int VIDEO_PLAY_TIMES = 103;
     //视频删除反馈
     public static final  int VIDEO_DELETE = 104;
-
-
+    //播放器播放错误
+    public static final  int VIDEO_PLAY_ERROR = 105;
+    //视频下载错误
+    public static final  int VIDEO_DOWNLOAD_ERROR = 106;
 }

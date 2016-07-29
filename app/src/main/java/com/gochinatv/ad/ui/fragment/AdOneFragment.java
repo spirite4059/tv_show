@@ -255,6 +255,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 if (isDetached()) {
                     return true;
                 }
+                //上报播放错误
+                VideoAdUtils.sendPlayVideoError(getActivity(),what,extra,playingVideoInfo);
                 LogCat.e("video", "视频播放出错......");
                 if (what != 1) {
                     return true;
@@ -536,6 +538,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     @Override
     public void onDownloadFileError(int errorCode, String errorMsg) {
+        if(downloadingVideoResponse != null){
+            //上报下载失败
+            VideoAdUtils.sendVideoDownloadError(getActivity(),errorCode,errorMsg,downloadingVideoResponse);
+        }
+
         if (errorCode == ErrorCodes.ERROR_DOWNLOAD_SDCARD_SPACE) { // 如果是空间不足的错误，就不在进行下载
             // TODO 上报情况
         } else {
@@ -1442,5 +1449,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
 
     }
+
 
 }
