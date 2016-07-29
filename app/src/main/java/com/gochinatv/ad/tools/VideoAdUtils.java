@@ -8,6 +8,7 @@ import com.download.db.DownloadInfo;
 import com.gochinatv.ad.thread.DeleteFileUtils;
 import com.gochinatv.db.AdDao;
 import com.gochinatv.statistics.request.DeleteVideoRequest;
+import com.gochinatv.statistics.request.VideoDownloadInfoRequest;
 import com.gochinatv.statistics.request.VideoSendRequest;
 import com.gochinatv.statistics.server.ErrorHttpServer;
 import com.gochinatv.statistics.tools.Constant;
@@ -462,39 +463,7 @@ public class VideoAdUtils {
     }
 
 
-    /**
-     * 上报删除视频
-     */
-    private static void sendDeleteVideos(Context context, ArrayList<AdDetailResponse> deleteLists) {
-        if (!TextUtils.isEmpty(DataUtils.getMacAddress(context)) && DataUtils.isNetworkConnected(context)) {
-            if (deleteLists == null || deleteLists.size() == 0) {
-                return;
-            }
 
-            DeleteVideoRequest deleteVideoRequest = new DeleteVideoRequest();
-            ArrayList<VideoSendRequest> deleteList = new ArrayList<>();
-            for (AdDetailResponse delete : deleteLists) {
-                VideoSendRequest infoRequest = new VideoSendRequest();
-                infoRequest.videoId = delete.adVideoId;
-                infoRequest.videoName = delete.adVideoName;
-                deleteList.add(infoRequest);
-                LogCat.e("MainActivity", "需要删除的视频：" + delete.adVideoName);
-            }
-            deleteVideoRequest.deleteData = deleteList;
-            String json = MacUtils.getJsonStringByEntity(deleteVideoRequest);
-            ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_DELETE, json, new OkHttpCallBack<ErrorResponse>() {
-                @Override
-                public void onSuccess(String url, ErrorResponse response) {
-                    LogCat.e("MainActivity", "上传删除视频成功");
-                }
-
-                @Override
-                public void onError(String url, String errorMsg) {
-                    LogCat.e("MainActivity", "上传删除视频失败");
-                }
-            });
-        }
-    }
 
 
     public static ArrayList<AdDetailResponse> getDistinctList(ArrayList<AdDetailResponse> responses) {
@@ -614,6 +583,92 @@ public class VideoAdUtils {
             }
         }
         return targetList;
+    }
+
+
+
+    /**
+     * 上报文件下载时长
+     */
+    public static void sendVideoDownloadTime(Context context, int id, String name, long time) {
+        if (!TextUtils.isEmpty(DataUtils.getMacAddress(context)) && DataUtils.isNetworkConnected(context)) {
+
+            VideoDownloadInfoRequest infoRequest = new VideoDownloadInfoRequest();
+            infoRequest.videoId = id;
+            infoRequest.videoName = name;
+            infoRequest.downloadTime = time;
+            String json = MacUtils.getJsonStringByEntity(infoRequest);
+            ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_DOWNLOAD_TIME, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity", "上传视频下载时长成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity", "上传视频下载时长失败");
+                }
+            });
+        }
+    }
+
+
+    /**
+     * 上报播放次数
+     */
+    public static void sendVideoPlayTimes(Context context, int id, String name) {
+        if (!TextUtils.isEmpty(DataUtils.getMacAddress(context)) && DataUtils.isNetworkConnected(context)) {
+
+            VideoSendRequest infoRequest = new VideoSendRequest();
+            infoRequest.videoId = id;
+            infoRequest.videoName = name;
+            String json = MacUtils.getJsonStringByEntity(infoRequest);
+            ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_PLAY_TIMES, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity", "上传视频播放次数成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity", "上传视频播放次数失败");
+                }
+            });
+        }
+    }
+
+
+    /**
+     * 上报删除视频
+     */
+    public static void sendDeleteVideo(Context context, ArrayList<AdDetailResponse> deleteLists) {
+        if (!TextUtils.isEmpty(DataUtils.getMacAddress(context)) && DataUtils.isNetworkConnected(context)) {
+            if (deleteLists == null || deleteLists.size() == 0) {
+                return;
+            }
+            DeleteVideoRequest deleteVideoRequest = new DeleteVideoRequest();
+            ArrayList<VideoSendRequest> deleteList = new ArrayList<>();
+            for (AdDetailResponse delete : deleteLists) {
+                VideoSendRequest infoRequest = new VideoSendRequest();
+                infoRequest.videoId = delete.adVideoId;
+                infoRequest.videoName = delete.adVideoName;
+                deleteList.add(infoRequest);
+                LogCat.e("MainActivity", "需要删除的视频：" + delete.adVideoName);
+            }
+            deleteVideoRequest.deleteData = deleteList;
+            String json = MacUtils.getJsonStringByEntity(deleteVideoRequest);
+            ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_DELETE, json, new OkHttpCallBack<ErrorResponse>() {
+                @Override
+                public void onSuccess(String url, ErrorResponse response) {
+                    LogCat.e("MainActivity", "上传删除视频成功");
+                }
+
+                @Override
+                public void onError(String url, String errorMsg) {
+                    LogCat.e("MainActivity", "上传删除视频失败");
+                }
+            });
+        }
     }
 
 

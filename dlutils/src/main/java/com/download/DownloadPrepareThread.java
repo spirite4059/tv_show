@@ -374,8 +374,6 @@ public class DownloadPrepareThread extends Thread {
         try {
             // 版本大于19,通过Etag验证
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-
-
                 etagCheckSum(file, md5, fileSize, downloadSize);
             } else { // 小于19.通过文件大小验证
                 fileSizeCheckSum(fileSize, downloadSize);
