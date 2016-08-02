@@ -592,23 +592,33 @@ public class VideoAdUtils {
     /**
      * 上报文件下载时长
      */
-    public static void sendVideoDownloadTime(Context context, int id, String name, long time) {
+    private static int downloadTimeRetry = 0;
+    public static void sendVideoDownloadTime(final Context context, final int id, final String name, final long time) {
         if (!TextUtils.isEmpty(DataUtils.getMacAddress(context)) && DataUtils.isNetworkConnected(context)) {
-
+            downloadTimeRetry ++;
             VideoDownloadInfoRequest infoRequest = new VideoDownloadInfoRequest();
             infoRequest.videoId = id;
             infoRequest.videoName = name;
             infoRequest.downloadTime = time;
             String json = MacUtils.getJsonStringByEntity(infoRequest);
+            LogCat.e("MainActivity", "下载视频的用时："+ json);
             ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_DOWNLOAD_TIME, json, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
                     LogCat.e("MainActivity", "上传视频下载时长成功");
+                    downloadTimeRetry = 0;
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
                     LogCat.e("MainActivity", "上传视频下载时长失败");
+                    if(downloadTimeRetry<4){
+                        sendVideoDownloadTime(context,id,name,time);
+                        LogCat.e("MainActivity", "sendVideoDownloadTime,再次尝试 "+ downloadTimeRetry);
+                    }else{
+                        LogCat.e("MainActivity", "sendVideoDownloadTime,尝试超过3次，不再尝试");
+                    }
+
                 }
             });
         }
@@ -618,22 +628,32 @@ public class VideoAdUtils {
     /**
      * 上报播放次数
      */
-    public static void sendVideoPlayTimes(Context context, int id, String name) {
+    private static int playTimesRetry = 0;
+    public static void sendVideoPlayTimes(final Context context, final int id, final String name) {
         if (!TextUtils.isEmpty(DataUtils.getMacAddress(context)) && DataUtils.isNetworkConnected(context)) {
-
+            playTimesRetry++;
             VideoSendRequest infoRequest = new VideoSendRequest();
             infoRequest.videoId = id;
             infoRequest.videoName = name;
             String json = MacUtils.getJsonStringByEntity(infoRequest);
+            LogCat.e("MainActivity", "播放的视频："+ json);
             ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_PLAY_TIMES, json, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
                     LogCat.e("MainActivity", "上传视频播放次数成功");
+                    playTimesRetry = 0;
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
                     LogCat.e("MainActivity", "上传视频播放次数失败");
+                    if(playTimesRetry < 4){
+                        sendVideoPlayTimes(context,id,name);
+                        LogCat.e("MainActivity", "sendVideoPlayTimes,再次尝试 "+ playTimesRetry);
+                    }else {
+                        LogCat.e("MainActivity", "sendVideoPlayTimes,尝试超过3次，不再尝试");
+                    }
+
                 }
             });
         }
@@ -643,11 +663,13 @@ public class VideoAdUtils {
     /**
      * 上报删除视频
      */
-    public static void sendDeleteVideo(Context context, ArrayList<AdDetailResponse> deleteLists) {
+    private static int deleteVideoRetry = 0;
+    public static void sendDeleteVideo(final Context context, final ArrayList<AdDetailResponse> deleteLists) {
         if (!TextUtils.isEmpty(DataUtils.getMacAddress(context)) && DataUtils.isNetworkConnected(context)) {
             if (deleteLists == null || deleteLists.size() == 0) {
                 return;
             }
+            deleteVideoRetry++;
             DeleteVideoRequest deleteVideoRequest = new DeleteVideoRequest();
             ArrayList<VideoSendRequest> deleteList = new ArrayList<>();
             for (AdDetailResponse delete : deleteLists) {
@@ -663,11 +685,19 @@ public class VideoAdUtils {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
                     LogCat.e("MainActivity", "上传删除视频成功");
+                    deleteVideoRetry = 0;
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
                     LogCat.e("MainActivity", "上传删除视频失败");
+                    if(deleteVideoRetry < 4){
+                        sendDeleteVideo(context,deleteLists);
+                        LogCat.e("MainActivity", "sendDeleteVideo,再次尝试 "+ deleteVideoRetry);
+
+                    }else{
+                        LogCat.e("MainActivity", "sendDeleteVideo,尝试超过3次，不再尝试");
+                    }
                 }
             });
         }
@@ -677,8 +707,10 @@ public class VideoAdUtils {
     /**
      * 上传播放器播放错误
      */
-    public static void sendPlayVideoError(Context context,int what,int extra,AdDetailResponse playingVideoInfo){
+    private static int playErrorRetry = 0;
+    public static void sendPlayVideoError(final Context context, final int what, final int extra, final AdDetailResponse playingVideoInfo){
         if(context != null){
+            playErrorRetry ++;
             VideoPlayError videoPlayError = new VideoPlayError();
             videoPlayError.errorWhat = what;
             videoPlayError.errorExtra  = extra;
@@ -695,15 +727,23 @@ public class VideoAdUtils {
                 videoPlayError.videoName = "null";
             }
             String json = MacUtils.getJsonStringByEntity(videoPlayError);
+            LogCat.e("MainActivity", "播放错误的视频："+ json);
             ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_PLAY_ERROR, json, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
                     LogCat.e("MainActivity", "上传播放错误成功");
+                    playErrorRetry = 0;
                 }
 
                 @Override
                 public void onError(String url, String errorMsg) {
                     LogCat.e("MainActivity", "上传播放错误失败");
+                    if(playErrorRetry < 4){
+                        sendPlayVideoError(context,what,extra,playingVideoInfo);
+                        LogCat.e("MainActivity", "sendPlayVideoError,再次尝试 "+ playErrorRetry);
+                    }else{
+                        LogCat.e("MainActivity", "sendPlayVideoError,尝试超过3次，不再尝试");
+                    }
                 }
             });
 
@@ -713,8 +753,10 @@ public class VideoAdUtils {
     /**
      * 上报视频下载错误
      */
-    public static void sendVideoDownloadError(Context context,int errorCode,String errorMsg,AdDetailResponse downloadingVideoResponse){
+    private static int downloadErrorRetry = 0;
+    public static void sendVideoDownloadError(final Context context, final int errorCode, final String errorMsg, final AdDetailResponse downloadingVideoResponse){
         if(context != null){
+            downloadErrorRetry ++;
             VideoDownloadError videoDownloadError = new VideoDownloadError();
             videoDownloadError.errorCode = errorCode;
             videoDownloadError.errorMsg = errorMsg;
@@ -723,15 +765,23 @@ public class VideoAdUtils {
                 videoDownloadError.videoName = downloadingVideoResponse.adVideoName;
             }
             String json = MacUtils.getJsonStringByEntity(videoDownloadError);
+            LogCat.e("MainActivity", "下载错误的视频："+ json);
             ErrorHttpServer.doStatisticsHttp(context, Constant.VIDEO_DOWNLOAD_ERROR, json, new OkHttpCallBack<ErrorResponse>() {
                 @Override
                 public void onSuccess(String url, ErrorResponse response) {
                     LogCat.e("MainActivity", "上传下载错误成功");
+                    downloadErrorRetry = 0;
                 }
 
                 @Override
-                public void onError(String url, String errorMsg) {
+                public void onError(String url, String esg) {
                     LogCat.e("MainActivity", "上传下载错误失败");
+                    if(downloadErrorRetry < 4){
+                        LogCat.e("MainActivity", "sendVideoDownloadError,再次尝试 "+ downloadErrorRetry);
+                        sendVideoDownloadError(context,errorCode,errorMsg,downloadingVideoResponse);
+                    }else{
+                        LogCat.e("MainActivity", "sendVideoDownloadError,尝试超过3次，不再尝试");
+                    }
                 }
             });
         }
