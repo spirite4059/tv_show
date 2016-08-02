@@ -98,7 +98,7 @@ public class LoadingActivity extends BaseActivity {
         DataUtils.hideNavigationBar(LoadingActivity.this);
 
         // 打开wifi
-        openWifi();
+        //openWifi();
 
         /**
          * 打开安装未知应用设置

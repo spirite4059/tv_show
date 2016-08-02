@@ -8,12 +8,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
@@ -39,8 +36,6 @@ import com.gochinatv.ad.tools.DownloadUtils;
 import com.gochinatv.ad.tools.InstallUtils;
 import com.gochinatv.ad.tools.LogCat;
 import com.gochinatv.ad.tools.SharedPreference;
-import com.gochinatv.ad.tools.WifiAutoConnectManager;
-import com.gochinatv.ad.ui.dialog.WifiDialog;
 import com.gochinatv.ad.ui.fragment.AdOneFragment;
 import com.gochinatv.ad.ui.view.AdWebView;
 import com.gochinatv.statistics.SendStatisticsLog;
@@ -115,8 +110,8 @@ public class MainActivity extends BaseActivity {
 
     //是否中途app由无网络变为有网络
     //private boolean isReloadFlag = false;
-    WifiReceiver receiverWifi;
-    WifiAutoConnectManager wifiAutoConnectManager;
+    //WifiReceiver receiverWifi;
+    //WifiAutoConnectManager wifiAutoConnectManager;
     boolean isHasRegisterWifiReceiver;
     //网络是否连接
     private boolean isNetConnect;
@@ -145,7 +140,7 @@ public class MainActivity extends BaseActivity {
     }
 
     boolean isDoGetDevice;
-    WifiDialog dialog;
+    //WifiDialog dialog;
 
     private void init() {
         if(DataUtils.isNetworkConnected(this)){
@@ -191,7 +186,7 @@ public class MainActivity extends BaseActivity {
 
 
         // wifi没有打开或者没有信号,显示wifi引导页面
-        showWifiDialog();
+        //showWifiDialog();
 
     }
 
@@ -202,23 +197,23 @@ public class MainActivity extends BaseActivity {
     }
 
     private void showWifiDialog() {
-        if(!DataUtils.isNetworkConnected(this)){
-            if(wifiAutoConnectManager == null){
-                wifiAutoConnectManager = new WifiAutoConnectManager(this);
-            }
-
-            if(!wifiAutoConnectManager.wifiManager.isWifiEnabled()){
-                wifiAutoConnectManager.wifiManager.setWifiEnabled(true);
-            }
-
-
-            wifiAutoConnectManager.wifiManager.startScan();
-            if(receiverWifi == null){
-                receiverWifi = new WifiReceiver();
-            }
-            isHasRegisterWifiReceiver = true;
-            registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        }
+//        if(!DataUtils.isNetworkConnected(this)){
+//            if(wifiAutoConnectManager == null){
+//                wifiAutoConnectManager = new WifiAutoConnectManager(this);
+//            }
+//
+//            if(!wifiAutoConnectManager.wifiManager.isWifiEnabled()){
+//                wifiAutoConnectManager.wifiManager.setWifiEnabled(true);
+//            }
+//
+//
+//            wifiAutoConnectManager.wifiManager.startScan();
+//            if(receiverWifi == null){
+//                receiverWifi = new WifiReceiver();
+//            }
+//            isHasRegisterWifiReceiver = true;
+//            registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+//        }
     }
 
 
@@ -536,11 +531,11 @@ public class MainActivity extends BaseActivity {
             unregisterReceiver(firebaseMessageReceiver);
         }
 
-        if(receiverWifi != null && isHasRegisterWifiReceiver){
-            unregisterReceiver(receiverWifi);
-        }
+//        if(receiverWifi != null && isHasRegisterWifiReceiver){
+//            unregisterReceiver(receiverWifi);
+//        }
 
-        cancelDialogCountTimer();
+        //cancelDialogCountTimer();
     }
 
     /**
@@ -900,17 +895,17 @@ public class MainActivity extends BaseActivity {
 
                 if(hasNetwork){
                     isNetConnect = true;
-                    if(dialog != null && dialog.isShowing()){
-                        /**
-                         * 隐藏NavigationBar
-                         */
-                        DataUtils.hideNavigationBar(MainActivity.this);
-                        cancelDialogCountTimer();
-                        dialog.dismiss();
-                        if(receiverWifi != null && isHasRegisterWifiReceiver){
-                            unregisterReceiver(receiverWifi);
-                        }
-                    }
+//                    if(dialog != null && dialog.isShowing()){
+//                        /**
+//                         * 隐藏NavigationBar
+//                         */
+//                        DataUtils.hideNavigationBar(MainActivity.this);
+//                        cancelDialogCountTimer();
+//                        dialog.dismiss();
+//                        if(receiverWifi != null && isHasRegisterWifiReceiver){
+//                            unregisterReceiver(receiverWifi);
+//                        }
+//                    }
                 }else {
                     isNetConnect = false;
                     showWifiDialog();
@@ -1306,30 +1301,30 @@ public class MainActivity extends BaseActivity {
 
 
         public void onReceive(Context c, Intent intent) {
-            Log.e("TAG", "onReceive..........");
-
-//            ArrayList<WifiInfos> wifiInfoses = new ArrayList<>();
-//            for (int i = 0; i < wifiList.size(); i++) {
-//                ScanResult scanResult = wifiList.get(i);
-//                Log.e("TAG", "wifi_name: " + scanResult.SSID + " 加密: " + scanResult.capabilities + "  ");
+//            Log.e("TAG", "onReceive..........");
+//
+////            ArrayList<WifiInfos> wifiInfoses = new ArrayList<>();
+////            for (int i = 0; i < wifiList.size(); i++) {
+////                ScanResult scanResult = wifiList.get(i);
+////                Log.e("TAG", "wifi_name: " + scanResult.SSID + " 加密: " + scanResult.capabilities + "  ");
+////            }
+//
+//            unregisterReceiver(receiverWifi);
+//            Log.e("TAG", ".........................");
+////            String wifiProperty = "当前连接Wifi信息如下："+wifiInfo.getSSID()+'\n'+
+////                    "ip:"     +     FormatString(dhcpInfo.ipAddress)   +'\n'+
+////                    "mask:"   +     FormatString(dhcpInfo.netmask)     +'\n'+
+////                    "netgate:"+     FormatString(dhcpInfo.gateway)     +'\n'+
+////                    "dns:"    +     FormatString(dhcpInfo.dns1)  ;
+////            Log.e("TAG", wifiProperty);
+////            Log.e("TAG", sb.toString());
+//            isHasRegisterWifiReceiver = false;
+//            dialog = new WifiDialog(MainActivity.this, wifiAutoConnectManager, (ArrayList<ScanResult>) wifiAutoConnectManager.wifiManager.getScanResults());
+//            if(!isNetConnect){
+//                //没有联网是才show
+//                dialog.show();
+//                startDialogCountTimer();
 //            }
-
-            unregisterReceiver(receiverWifi);
-            Log.e("TAG", ".........................");
-//            String wifiProperty = "当前连接Wifi信息如下："+wifiInfo.getSSID()+'\n'+
-//                    "ip:"     +     FormatString(dhcpInfo.ipAddress)   +'\n'+
-//                    "mask:"   +     FormatString(dhcpInfo.netmask)     +'\n'+
-//                    "netgate:"+     FormatString(dhcpInfo.gateway)     +'\n'+
-//                    "dns:"    +     FormatString(dhcpInfo.dns1)  ;
-//            Log.e("TAG", wifiProperty);
-//            Log.e("TAG", sb.toString());
-            isHasRegisterWifiReceiver = false;
-            dialog = new WifiDialog(MainActivity.this, wifiAutoConnectManager, (ArrayList<ScanResult>) wifiAutoConnectManager.wifiManager.getScanResults());
-            if(!isNetConnect){
-                //没有联网是才show
-                dialog.show();
-                startDialogCountTimer();
-            }
         }
 
     }
@@ -1348,9 +1343,9 @@ public class MainActivity extends BaseActivity {
 
         @Override
         public void onTick(long l) {
-            if(dialog != null){
-                dialog.showCountTime(String.valueOf(l/1000));
-            }
+//            if(dialog != null){
+//                dialog.showCountTime(String.valueOf(l/1000));
+//            }
         }
 
         @Override
@@ -1377,13 +1372,13 @@ public class MainActivity extends BaseActivity {
      * 隐藏dialog
      */
     private void hideDialog(){
-        if(dialog != null && dialog.isShowing()){
-            /**
-             * 隐藏NavigationBar
-             */
-            DataUtils.hideNavigationBar(this);
-            dialog.dismiss();
-        }
+//        if(dialog != null && dialog.isShowing()){
+//            /**
+//             * 隐藏NavigationBar
+//             */
+//            DataUtils.hideNavigationBar(this);
+//            dialog.dismiss();
+//        }
     }
 
     /**

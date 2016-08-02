@@ -1,3 +1,4 @@
+/*
 package com.gochinatv.ad.ui.dialog;
 
 import android.app.Activity;
@@ -36,9 +37,11 @@ import com.gochinatv.ad.tools.WifiAutoConnectManager;
 import java.util.ArrayList;
 
 
+*/
 /**
  * Created by zfy on 2015/11/19.
- */
+ *//*
+
 public class WifiDialog extends Dialog {
     private MainActivity mainActivity;
     private Context context;
@@ -160,9 +163,11 @@ public class WifiDialog extends Dialog {
 
                                 } else {
                                     AlertUtils.alert(getContext(), "正在链接热点!");
-                                    /**
+                                    */
+/**
                                      * 隐藏NavigationBar
-                                     */
+                                     *//*
+
                                     DataUtils.hideNavigationBar((Activity) context);
                                     dismiss();
                                     if(handler == null){
@@ -196,9 +201,11 @@ public class WifiDialog extends Dialog {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /**
+                */
+/**
                  * 隐藏NavigationBar
-                 */
+                 *//*
+
                 DataUtils.hideNavigationBar((Activity) context);
                 dismiss();
             }
@@ -311,9 +318,11 @@ public class WifiDialog extends Dialog {
     }
 
 
-    /**
+    */
+/**
      * 显示30s倒计时
-     */
+     *//*
+
     public void showCountTime(String time){
         if(tvCountTime != null){
             tvCountTime.setText(time+"s");
@@ -330,3 +339,4 @@ public class WifiDialog extends Dialog {
 }
 
 
+*/
