@@ -709,7 +709,7 @@ public class VideoAdUtils {
      */
     private static int playErrorRetry = 0;
     public static void sendPlayVideoError(final Context context, final int what, final int extra, final AdDetailResponse playingVideoInfo){
-        if(context != null){
+        if(context != null && DataUtils.isNetworkConnected(context)){
             playErrorRetry ++;
             VideoPlayError videoPlayError = new VideoPlayError();
             videoPlayError.errorWhat = what;
@@ -755,7 +755,7 @@ public class VideoAdUtils {
      */
     private static int downloadErrorRetry = 0;
     public static void sendVideoDownloadError(final Context context, final int errorCode, final String errorMsg, final AdDetailResponse downloadingVideoResponse){
-        if(context != null){
+        if(context != null && DataUtils.isNetworkConnected(context)){
             downloadErrorRetry ++;
             VideoDownloadError videoDownloadError = new VideoDownloadError();
             videoDownloadError.errorCode = errorCode;

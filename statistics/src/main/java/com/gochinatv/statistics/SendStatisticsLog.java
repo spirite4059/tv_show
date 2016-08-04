@@ -27,8 +27,9 @@ public class SendStatisticsLog {
     /**
      * 上传激活日志
      */
-    public static void sendInitializeLog(Context context){
-        DataUtils.saveToSDCard('\n'+" sendInitializeLog %%%%%%  "+ DataUtils.getFormatTime(System.currentTimeMillis()));
+    private static int initializeRetry = 0;
+    public static void sendInitializeLog(final Context context){
+        initializeRetry++;
         Map<String,String> map = new HashMap<>();
         map.put("mac", MacUtils.getMacAddress(context));
         map.put("versionName", DataUtils.getVersionName(context));
@@ -44,6 +45,9 @@ public class SendStatisticsLog {
             @Override
             public void onError(String url, String errorMsg) {
                 LogCat.e("statistics","提交激活日志失败*********");
+                if(initializeRetry < 4){
+                    sendInitializeLog(context);
+                }
             }
         });
     }
