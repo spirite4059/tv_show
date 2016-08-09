@@ -399,15 +399,23 @@ public class DownloadPrepareThread extends Thread {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void etagCheckSum(File file, String md5, long fileSize, long downloadSize) throws IOException, DigestException {
         Etag etag = null;
+        boolean isVideo = true;
         if(file != null){
             String fileTag = file.getName().split("\\.")[1];
             if("mp4".equals(fileTag)){
+                // 先用5M进行验证,然后再用64M进行验证
                 etag = Etag.computeVideo(Files.asByteSource(file));
             }else {
+                isVideo = false;
                 etag = Etag.computeApk(Files.asByteSource(file));
             }
         }
 
+        checkEtag(file, md5, fileSize, downloadSize, etag, isVideo);
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void checkEtag(File file, String md5, long fileSize, long downloadSize, Etag etag, boolean isVideo) {
         if (etag != null) {
             String fileMd5 = etag.asString();
             LogCat.e("download1", "file md5: " + fileMd5);
@@ -416,8 +424,21 @@ public class DownloadPrepareThread extends Thread {
                 LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
             } else {
-                LogCat.e("video", "文件下载大小出错......");
-                setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+                // 如果是视频的话,先进行64m的验证,如果还是失败,说明文件不成功
+                if(isVideo){
+                    try {
+                        Etag etags = Etag.computeApk(Files.asByteSource(file));
+                        checkEtag(file, md5, fileSize, downloadSize, etags, false);
+                    } catch (DigestException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }else {
+                    LogCat.e("video", "文件下载大小出错......");
+                    setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+                }
             }
         }else {
             fileSizeCheckSum(fileSize, downloadSize);

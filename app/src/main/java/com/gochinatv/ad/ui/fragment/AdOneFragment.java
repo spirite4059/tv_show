@@ -205,6 +205,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         if (!isAdded()) {
             return;
         }
+        if(handler == null){
+            handler = new MyHandler();
+        }
         Message msg = handler.obtainMessage(5);
         Bundle bundle = new Bundle();
         bundle.putBoolean("isStartUpNotNet", isStartUpNotNet);
@@ -541,6 +544,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
     public void showNetSpeed(final boolean isHasNet, final boolean isDownloadingAPK, final long progress) {
+        if(handler == null){
+            handler = new MyHandler();
+        }
         Message msg = handler.obtainMessage(4);
         Bundle bundle = new Bundle();
         bundle.putBoolean("isHasNet", isHasNet);
@@ -553,6 +559,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private void downVideoError() {
         if (isDetached()) {
             return;
+        }
+        if(handler == null){
+            handler = new MyHandler();
         }
         // 出错就放弃当前下载任务，继续下载下一个任务，并将当前任务放到最后一个，如果已经是最后一个，再重试2边
         handler.sendEmptyMessageDelayed(3, TIME_RETRY_DURATION);
@@ -806,6 +815,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 // 显示下载完成信息
                 cachePlayVideoLists.clear();
                 // 更新日志
+                if(handler == null){
+                    handler = new MyHandler();
+                }
                 handler.sendEmptyMessage(2);
 
             } else {
@@ -878,6 +890,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
 
     private void showLogMsg(final long progress, final long fileLength) {
+        if(handler == null){
+            handler = new MyHandler();
+        }
         Message msg = handler.obtainMessage(1);
         Bundle bundle = new Bundle();
         bundle.putLong("progress", progress);
@@ -888,8 +903,15 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     }
 
     private void startDownloading(String url) {
+        if(downloadingVideoResponse == null){
+            downloadLists.remove(0);
+            prepareDownloading();
+            return;
+        }
         // 一个视频一个视频的下载
-        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
+        String downloadName = downloadingVideoResponse.adVideoName;
+
+        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
 
@@ -1233,6 +1255,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         if (!isAdded()) {
             return;
         }
+        if(handler == null){
+            handler = new MyHandler();
+        }
         handler.sendEmptyMessage(0);
 
     }
@@ -1292,6 +1317,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                             startDownloading(videoUrl);
                         }catch (Exception e){
                             e.printStackTrace();
+                            if(handler == null){
+                                handler = new MyHandler();
+                            }
                             handler.sendEmptyMessageDelayed(3, TIME_RETRY_DURATION);
                         }
                     } else {
