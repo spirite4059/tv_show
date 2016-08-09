@@ -46,8 +46,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import retrofit2.http.HEAD;
-
 import static com.gochinatv.ad.tools.VideoAdUtils.getDistinctList;
 import static com.gochinatv.ad.tools.VideoAdUtils.sendDeleteVideo;
 import static com.gochinatv.ad.tools.VideoAdUtils.sendVideoDownloadTime;
@@ -572,9 +570,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
     private void startScreenShot() {
         screenShotService = Executors.newScheduledThreadPool(2);
         if (screenShotResponse != null) {
-            delay = screenShotResponse.screenShotInterval;
+            if(screenShotResponse.screenShotInterval < 900000){
+                delay = 900000;
+            }else {
+                delay = screenShotResponse.screenShotInterval;
+            }
         } else {
-            delay = 1000 * 60 * 15; // 15分钟
+            delay = 900000; // 15分钟
         }
 //        if (Constants.isTest) {
 //            delay = 1000 * 20;
@@ -825,6 +827,13 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
             LogCat.e("video", "获取下载列表第一个视频，并开始下载。。。。。。。。 还剩余下载任务：" + downloadLists.size());
             downloadingVideoResponse = downloadLists.get(0);
+
+            // 当获取到的对象为null 提出当前的下载,继续下载后面的
+            if(downloadingVideoResponse == null){
+                downloadLists.remove(0);
+                prepareDownloading();
+                return;
+            }
             // 添加下载视频的文件路径
             downloadingVideoResponse.videoPath = DataUtils.getVideoDirectory() + downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
             LogCat.e("video", "修改数据库视频地址信息........" + downloadingVideoResponse.adVideoId);
@@ -843,7 +852,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 //记录第一次下载视频的时间
                 startDownloadTime = System.currentTimeMillis();
                 LogCat.e("MainActivity", downloadingVideoResponse.adVideoName + " 开始下载的时间： " + startDownloadTime + " 毫秒");
-                download(videoUrl);
+                startDownloading(videoUrl);
             }
 
         }
@@ -878,9 +887,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     }
 
-    private void download(String url) {
+    private void startDownloading(String url) {
         // 一个视频一个视频的下载
-        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
+        throw new NullPointerException("asdfasdf");
+//        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
 
@@ -1226,7 +1236,6 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         }
         handler.sendEmptyMessage(0);
 
-
     }
 
 
@@ -1236,6 +1245,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
+            if(!isAdded() || getActivity() == null){
+                return;
+            }
             switch (msg.what){
                 case 0:
                     setSpeedInfo("wifi-on:0kb/s");
@@ -1263,14 +1275,19 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     setDownloadInfo(LogMsgUtils.getInstance().showDownloadMsgALLDownloadCompleted(playVideoLists));
                     break;
 
-                case 3:
+                case 3: // 下载出错
                     if (isDetached()) {
                         return;
                     }
                     if (retryTimes < MAX_RETRY_TIMES) {
                         LogCat.e("video", "继续重试3次下载，此时是第" + (retryTimes + 1) + "次尝试。。。。");
-                        download(videoUrl);
                         retryTimes++;
+                        try {
+                            startDownloading(videoUrl);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            handler.sendEmptyMessageDelayed(3, TIME_RETRY_DURATION);
+                        }
                     } else {
                         retryTimes = 0;
                         // 删除下载的记录

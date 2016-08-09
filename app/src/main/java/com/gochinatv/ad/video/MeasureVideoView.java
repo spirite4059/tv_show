@@ -384,7 +384,6 @@ public class MeasureVideoView extends SurfaceView implements MediaPlayerControl 
                 mSeekWhenPrepared = 0;
             }
             if (mStartWhenPrepared) {
-                mMediaPlayer.start();
                 mStartWhenPrepared = false;
             }
         }
@@ -607,7 +606,6 @@ public class MeasureVideoView extends SurfaceView implements MediaPlayerControl 
                     mMediaPlayer.seekTo(mSeekWhenPrepared);
                     mSeekWhenPrepared = 0;
                 }
-                mMediaPlayer.start();
                 if (mMediaController != null) {
                     mMediaController.show();
                 }
