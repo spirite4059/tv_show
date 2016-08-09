@@ -164,7 +164,7 @@ public final class Etag {
         try (final InputStream inputStream = byteSource.openBufferedStream()) {
             while (true) {
                 if (inputStream.available() > 0) {
-                    final byte[] md5 = computeMd5(inputStream, 5242880);
+                    final byte[] md5 = computeMd5(inputStream, 67108864);
                     md5s.add(md5);
                 } else {
                     break;
@@ -191,7 +191,7 @@ public final class Etag {
         try (final InputStream inputStream = byteSource.openBufferedStream()) {
             while (true) {
                 if (inputStream.available() > 0) {
-                    final byte[] md5 = computeMd5(inputStream, 67108864);
+                    final byte[] md5 = computeMd5(inputStream, 5242880);
                     md5s.add(md5);
                 } else {
                     break;

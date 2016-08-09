@@ -889,8 +889,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
 
     private void startDownloading(String url) {
         // 一个视频一个视频的下载
-        throw new NullPointerException("asdfasdf");
-//        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
+        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
 
@@ -1248,6 +1247,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             if(!isAdded() || getActivity() == null){
                 return;
             }
+
+            if(msg == null){
+                return;
+            }
             switch (msg.what){
                 case 0:
                     setSpeedInfo("wifi-on:0kb/s");
@@ -1255,6 +1258,9 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     break;
                 case 1:
                     Bundle bundle = msg.getData();
+                    if(bundle == null){
+                        break;
+                    }
                     long progress = bundle.getLong("progress");
                     long fileSize = bundle.getLong("fileLength");
                     // 显示log日志
@@ -1303,11 +1309,17 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     break;
                 case 4:
                     Bundle bundleNet = msg.getData();
+                    if(bundleNet == null){
+                        break;
+                    }
                     speed = LogMsgUtils.getInstance().getNetSpeed(bundleNet.getBoolean("isHasNet"), bundleNet.getLong("progress"), bundleNet.getBoolean("isDownloadingAPK"));
                     setSpeedInfo(speed);
                     break;
                 case 5:
                     Bundle bundleNoNet = msg.getData();
+                    if(bundleNoNet == null){
+                        break;
+                    }
                     setDownloadInfo(LogMsgUtils.getInstance().getNoNetMsg(bundleNoNet.getBoolean("isStartUpNotNet"), playVideoLists, cachePlayVideoLists));
                     break;
             }
