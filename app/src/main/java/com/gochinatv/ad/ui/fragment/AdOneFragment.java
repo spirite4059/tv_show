@@ -833,6 +833,11 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             }
 
         } else {
+            if(downloadLists == null){
+                // 此时说明出错,继续做http请求
+                doHttpGetVideoList();
+                return;
+            }
             // 如果要下载的文件不是第一个,强制放到第一个下载位置
             changeHasDlInfoPosition();
 
@@ -1304,6 +1309,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     LogCat.e("net", "所有的视频都下载完成了，显示下载完成信息--Completed");
                     setSpeedInfo("wifi-on:0kb/s");
                     setDownloadInfo(LogMsgUtils.getInstance().showDownloadMsgALLDownloadCompleted(playVideoLists));
+                    // 再次请求下接口,做一次确认
+                    doHttpGetVideoList();
                     break;
 
                 case 3: // 下载出错
