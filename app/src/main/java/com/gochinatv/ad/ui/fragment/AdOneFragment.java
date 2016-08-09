@@ -1310,7 +1310,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                     setSpeedInfo("wifi-on:0kb/s");
                     setDownloadInfo(LogMsgUtils.getInstance().showDownloadMsgALLDownloadCompleted(playVideoLists));
                     // 再次请求下接口,做一次确认
-                    doHttpGetVideoList();
+//                    doHttpGetVideoList();
                     break;
 
                 case 3: // 下载出错

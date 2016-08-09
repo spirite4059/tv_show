@@ -15,6 +15,7 @@ import com.download.tools.CacheVideoListThread;
 import com.download.tools.Constants;
 import com.download.tools.Etag;
 import com.download.tools.LogCat;
+import com.download.tools.MD5Utils;
 import com.download.tools.ToolUtils;
 import com.google.common.io.Files;
 import com.okhtttp.response.AdDetailResponse;
@@ -56,7 +57,6 @@ public class DownloadPrepareThread extends Thread {
         this.listener = listener;
         errorCode = 0;
     }
-
 
 
     @Override
@@ -153,9 +153,9 @@ public class DownloadPrepareThread extends Thread {
         if (isCancel) {
             return;
         }
-        String md5 = null;
+        String etag = null;
         try {
-            md5 = getHttpResponseHeader(connection);
+            etag = getHttpResponseHeader(connection);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -298,15 +298,15 @@ public class DownloadPrepareThread extends Thread {
                 }
 
                 downloadSize = downloadedAllSize;
-                if(oldDownloadSize == downloadSize){
-                    if(times < 60){
+                if (oldDownloadSize == downloadSize) {
+                    if (times < 60) {
                         times++;
-                    }else {
+                    } else {
                         times = 0;
                         errorCode = ERROR_DOWNLOAD_NO_INSTREAM;
                         isThreadError = true;
                     }
-                }else {
+                } else {
                     times = 0;
                     oldDownloadSize = downloadSize;
                 }
@@ -353,7 +353,7 @@ public class DownloadPrepareThread extends Thread {
         if (isFinished) {
             LogCat.e("video", "文件下载完成......fileSize: " + fileSize);
             LogCat.e("video", "文件下载完成......downloadSize: " + downloadSize);
-            checksumFile(file, md5, fileSize, downloadSize);
+            checksumFile(file, etag, fileSize, downloadSize);
         } else {
             LogCat.e("video", "文件下载尚未完成......");
             setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
@@ -364,17 +364,18 @@ public class DownloadPrepareThread extends Thread {
 
     /**
      * 验证文件完整性
-     * @param md5
+     *
+     * @param etag
      * @param fileSize
      * @param downloadSize
      */
 
-    private void checksumFile(File file, String md5, long fileSize, long downloadSize) {
-        LogCat.e("download1", "head md5: " + md5);
+    private void checksumFile(File file, String etag, long fileSize, long downloadSize) {
+        LogCat.e("download1", "head md5: " + etag);
         try {
             // 版本大于19,通过Etag验证
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                etagCheckSum(file, md5, fileSize, downloadSize);
+                etagCheckSum(file, etag, fileSize, downloadSize);
             } else { // 小于19.通过文件大小验证
                 fileSizeCheckSum(fileSize, downloadSize);
             }
@@ -397,50 +398,56 @@ public class DownloadPrepareThread extends Thread {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    private void etagCheckSum(File file, String md5, long fileSize, long downloadSize) throws IOException, DigestException {
+    private void etagCheckSum(File file, String etagStr, long fileSize, long downloadSize) throws IOException, DigestException {
         Etag etag = null;
-        boolean isVideo = true;
-        if(file != null){
+        if (file != null) {
             String fileTag = file.getName().split("\\.")[1];
-            if("mp4".equals(fileTag)){
+            if ("mp4".equals(fileTag)) {
                 // 先用5M进行验证,然后再用64M进行验证
                 etag = Etag.computeVideo(Files.asByteSource(file));
-            }else {
-                isVideo = false;
+            } else {
                 etag = Etag.computeApk(Files.asByteSource(file));
             }
         }
-
-        checkEtag(file, md5, fileSize, downloadSize, etag, isVideo);
+        checkEtag(file, etagStr, fileSize, downloadSize, etag);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
-    private void checkEtag(File file, String md5, long fileSize, long downloadSize, Etag etag, boolean isVideo) {
+    private void checkEtag(File file, String etagStr, long fileSize, long downloadSize, Etag etag) {
         if (etag != null) {
-            String fileMd5 = etag.asString();
-            LogCat.e("download1", "file md5: " + fileMd5);
-            boolean isFileSuccess = !TextUtils.isEmpty(fileMd5) && fileMd5.equals(md5);
-            if (isFileSuccess) {
+            String fileEtag = etag.asString();
+            LogCat.e("download1", "file md5: " + fileEtag);
+
+            if (TextUtils.isEmpty(fileEtag)) {
+                LogCat.e("video", "文件下载大小出错......");
+                setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
+                return;
+            }
+            // 包含"-"说明进行了分片处理
+            boolean isFileFullSize = false;
+            if (fileEtag.contains("-")) {
+                // 使用etag值进行匹对
+                isFileFullSize = !TextUtils.isEmpty(fileEtag) && fileEtag.equals(etagStr);
+            }else {
+                // 不分片则使用md5值来进行验证
+                try {
+                    String fileMd5 = MD5Utils.getFileMD5String(file);
+                    isFileFullSize = fileEtag.equals(fileMd5);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (isFileFullSize) {
                 LogCat.e("video", "文件完整下载......");
                 setFinish(file.getAbsolutePath());
             } else {
                 // 如果是视频的话,先进行64m的验证,如果还是失败,说明文件不成功
-                if(isVideo){
-                    try {
-                        Etag etags = Etag.computeApk(Files.asByteSource(file));
-                        checkEtag(file, md5, fileSize, downloadSize, etags, false);
-                    } catch (DigestException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                }else {
-                    LogCat.e("video", "文件下载大小出错......");
-                    setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
-                }
+                LogCat.e("video", "文件下载大小出错......");
+                setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
             }
-        }else {
+
+
+        } else {
             fileSizeCheckSum(fileSize, downloadSize);
         }
     }
@@ -586,12 +593,12 @@ public class DownloadPrepareThread extends Thread {
             if (mine == null)
                 break;
             String headValue = http.getHeaderFieldKey(i);
-            if(!TextUtils.isEmpty(headValue)){
+            if (!TextUtils.isEmpty(headValue)) {
                 headValue = headValue.toLowerCase();
             }
             if ("etag".equals(headValue)) {
 
-                if(!TextUtils.isEmpty(mine) && mine.contains("\"")){
+                if (!TextUtils.isEmpty(mine) && mine.contains("\"")) {
                     mine = mine.replace("\"", "");
                 }
                 return mine;
