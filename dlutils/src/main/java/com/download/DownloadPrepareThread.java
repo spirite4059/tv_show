@@ -405,8 +405,8 @@ public class DownloadPrepareThread extends Thread {
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void etagCheckSum(File file, String eTagStr, long fileSize, long downloadSize) throws IOException, DigestException {
-        Etag etag = null;
         if (file != null) {
+            Etag etag;
             String fileTag = file.getName().split("\\.")[1];
             if ("mp4".equals(fileTag)) {
                 // 先用5M进行验证,然后再用64M进行验证
@@ -414,13 +414,17 @@ public class DownloadPrepareThread extends Thread {
             } else {
                 etag = Etag.computeApk(Files.asByteSource(file));
             }
+            checkEtag(file, eTagStr, fileSize, downloadSize, etag);
+        }else {
+            LogCat.e("video", "下载文件为空......");
+            setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
         }
-        checkEtag(file, eTagStr, fileSize, downloadSize, etag);
+
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void checkEtag(File file, String eTagStr, long fileSize, long downloadSize, Etag etag) {
-        if (etag != null) {
+        if (!TextUtils.isEmpty(eTagStr) && etag != null) {
             String fileEtag = etag.asString();
             if (TextUtils.isEmpty(fileEtag)) {
                 LogCat.e("video", "文件下载大小出错......");
@@ -432,7 +436,7 @@ public class DownloadPrepareThread extends Thread {
             if (eTagStr.contains("-")) {
                 // 使用etag值进行匹对
                 isFileFullSize = !TextUtils.isEmpty(fileEtag) && fileEtag.equals(eTagStr);
-                LogCat.e("download1", "file md5: " + fileEtag);
+                LogCat.e("download1", "file etag: " + fileEtag);
             }else {
                 // 不分片则使用md5值来进行验证
                 try {
@@ -451,8 +455,6 @@ public class DownloadPrepareThread extends Thread {
                 LogCat.e("video", "文件下载大小出错......");
                 setErrorMsg(ERROR_DOWNLOAD_FILE_UNKNOWN);
             }
-
-
         } else {
             fileSizeCheckSum(fileSize, downloadSize);
         }
