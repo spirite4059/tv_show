@@ -446,8 +446,7 @@ public class MainActivity extends BaseActivity {
             String mac = DataUtils.getMacAddress(MainActivity.this);
             SharedPreference sharedPreference = SharedPreference.getSharedPreferenceUtils(MainActivity.this);
             if (!TextUtils.isEmpty(mac)) {
-                final String macAddress = mac.replaceAll(":", "");
-                LogCat.e("mac: " + macAddress);
+                LogCat.e("mac: " + mac);
                 MobclickAgent.startWithConfigure(new MobclickAgent.UMAnalyticsConfig(this, "572c1246e0f55aa6c5001533", mac));
                 MobclickAgent.openActivityDurationTrack(false);
                 MobclickAgent.setCatchUncaughtExceptions(true);
