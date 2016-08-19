@@ -466,7 +466,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
         videoView.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isDetached()) {
+                if (!isAdded()) {
                     return;
                 }
                 doHttpGetVideoList();
