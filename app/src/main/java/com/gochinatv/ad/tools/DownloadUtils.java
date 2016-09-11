@@ -70,8 +70,23 @@ public class DownloadUtils {
                 try {
                     if (!TextUtils.isEmpty(fileName) && fileSize != 0) {
                         String fileRealName = getFileName(fileName);
-                        AdDao.update(context, getTableName(isToday), fileRealName, AdDao.adVideoLength, String.valueOf(fileSize));
-                        com.download.tools.LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, getTableName(isToday), AdDao.adVideoName, fileRealName).adVideoLength);
+                        LogCat.e("video", "要修改的文件修改......." + fileRealName);
+
+                        String tableName = getTableName(isToday);
+//                        AdDetailResponse adDetailResponse = AdDao.queryDetailById(context, tableName, Integer.parseInt(fileRealName));
+//                        if(adDetailResponse == null){
+//                            LogCat.e("video", "找不到当前id视频.......");
+//                        }else {
+//                            LogCat.e("video", "找到当前id视频......." + adDetailResponse.adVideoId);
+//                        }
+                        try {
+                            int vid = Integer.parseInt(fileRealName);
+                            AdDao.update(context, tableName, vid, AdDao.adVideoLength, String.valueOf(fileSize));
+                            LogCat.e("video", "文件修改成功......." + AdDao.queryDetail(context, tableName, AdDao.adVideoId, fileRealName).adVideoLength);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

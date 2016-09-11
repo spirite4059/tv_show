@@ -985,7 +985,7 @@ public class AdOneFragment1 extends BaseFragment implements OnUpgradeStatusListe
             downloadingVideoResponse.videoPath = DataUtils.getVideoDirectory() + downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
             LogCat.e("video", "修改数据库视频地址信息........" + downloadingVideoResponse.adVideoId);
             // 保存下载文件的本地地址
-            VideoAdUtils.updateVideoPath(!isDownloadPrepare, getActivity(), downloadingVideoResponse.adVideoName, downloadingVideoResponse.videoPath);
+            VideoAdUtils.updateVideoPath(!isDownloadPrepare, getActivity(), downloadingVideoResponse.adVideoId, downloadingVideoResponse.videoPath);
             // 开始获取文件地址
             if (TextUtils.isEmpty(downloadingVideoResponse.adVideoUrl)) {
                 LogCat.e("video", "视频的playInfo数据出错，放弃当前视频，进行下一个.......");
@@ -1094,7 +1094,7 @@ public class AdOneFragment1 extends BaseFragment implements OnUpgradeStatusListe
 
     private void download(String url) {
         // 一个视频一个视频的下载
-        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
+        DownloadUtils.download(!isDownloadPrepare, getActivity(),  DataUtils.getVideoDirectory(), downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
 

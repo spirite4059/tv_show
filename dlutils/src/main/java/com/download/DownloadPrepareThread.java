@@ -48,7 +48,6 @@ public class DownloadPrepareThread extends Thread {
     private DownloadThread[] threads;
     private Context context;
 
-
     public DownloadPrepareThread(Context context, String downloadUrl, int threadNum, File file, OnDownloadStatusListener listener) {
         this.downloadUrl = downloadUrl;
         this.context = context;
@@ -221,8 +220,14 @@ public class DownloadPrepareThread extends Thread {
 
         // 检查sql
         int size = threads.length;
+        String fileName = ToolUtils.getFileName(file.getName());
+        LogCat.e("video", "要下载文件的名称......" + fileName);
+        ArrayList<DownloadInfo> downloadInfos1 = DLDao.queryAll(context);
+        for(DownloadInfo downloadInfo : downloadInfos1){
+            LogCat.e("video", "adfasdf......" + downloadInfo.tname);
+        }
 
-        ArrayList<DownloadInfo> downloadInfos = DLDao.queryAll(context, ToolUtils.getFileName(file.getName()));
+        ArrayList<DownloadInfo> downloadInfos = DLDao.queryAll(context, fileName);
         // 线程数变了
         if (downloadInfos != null && downloadInfos.size() > 0) {
             LogCat.e("video", "有当前记录的存储信息......");
@@ -524,6 +529,7 @@ public class DownloadPrepareThread extends Thread {
             downloadInfo.turl = downloadUrl;
             try {
                 downloadInfo.tname = ToolUtils.getFileName(file.getName());
+                LogCat.e("video", "startThreadWithOutSql......tname: " +  downloadInfo.tname);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -539,6 +545,9 @@ public class DownloadPrepareThread extends Thread {
 
             LogCat.e("将当前的下载加入数据表......");
             DLDao.insert(context, downloadInfo);
+
+            boolean isInsertSuccesss = DLDao.queryByName(context, downloadInfo.tname);
+            LogCat.e("将当前的下载加入数据表......" + isInsertSuccesss);
 
             threads[i] = new DownloadThread(context, url, file, threadId, null, fileSize);
             threads[i].start();

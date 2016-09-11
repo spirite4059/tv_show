@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.download.DLUtils;
 import com.download.ErrorCodes;
 import com.download.db.DLDao;
@@ -40,12 +39,10 @@ import com.okhtttp.response.ScreenShotResponse;
 import com.okhtttp.service.VideoHttpService;
 import com.retrofit.download.RetrofitDLUtils;
 import com.umeng.analytics.MobclickAgent;
-
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import static com.gochinatv.ad.tools.VideoAdUtils.getDistinctList;
 import static com.gochinatv.ad.tools.VideoAdUtils.sendDeleteVideo;
 import static com.gochinatv.ad.tools.VideoAdUtils.sendVideoDownloadTime;
@@ -688,7 +685,7 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             if (!TextUtils.isEmpty(adDetailResponse.videoPath)) {
                 playingVideoInfo = adDetailResponse;
                 isHasPlayingVideo = true;
-                LogCat.e("video", "播放缓存播放列表......." + adDetailResponse.adVideoName);
+                LogCat.e("video", "播放缓存播放列表......." + adDetailResponse.adVideoId);
                 break;
             }
         }
@@ -852,10 +849,10 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
                 return;
             }
             // 添加下载视频的文件路径
-            downloadingVideoResponse.videoPath = DataUtils.getVideoDirectory() + downloadingVideoResponse.adVideoName + Constants.FILE_DOWNLOAD_EXTENSION;
+            downloadingVideoResponse.videoPath = DataUtils.getVideoDirectory() + downloadingVideoResponse.adVideoId + Constants.FILE_DOWNLOAD_EXTENSION;
             LogCat.e("video", "修改数据库视频地址信息........" + downloadingVideoResponse.adVideoId);
             // 保存下载文件的本地地址
-            VideoAdUtils.updateVideoPath(!isDownloadPrepare, getActivity(), downloadingVideoResponse.adVideoName, downloadingVideoResponse.videoPath);
+            VideoAdUtils.updateVideoPath(!isDownloadPrepare, getActivity(), downloadingVideoResponse.adVideoId, downloadingVideoResponse.videoPath);
             // 开始获取文件地址
             if (TextUtils.isEmpty(downloadingVideoResponse.adVideoUrl)) {
                 LogCat.e("video", "视频的playInfo数据出错，放弃当前视频，进行下一个.......");
@@ -914,9 +911,8 @@ public class AdOneFragment extends BaseFragment implements OnUpgradeStatusListen
             return;
         }
         // 一个视频一个视频的下载
-        String downloadName = downloadingVideoResponse.adVideoName;
-
-        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), downloadName + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
+        int vid = downloadingVideoResponse.adVideoId;
+        DownloadUtils.download(!isDownloadPrepare, getActivity(), DataUtils.getVideoDirectory(), vid + Constants.FILE_DOWNLOAD_EXTENSION, url, this);
     }
 
 
