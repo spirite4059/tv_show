@@ -7,12 +7,12 @@ def releaseTime() {
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    buildToolsVersion "24.0.2"
 
     defaultConfig {
         applicationId "com.gochinatv.ad"
         minSdkVersion 17
-        targetSdkVersion 24
+        targetSdkVersion 19
         versionCode 17
         versionName "2.3.2"
         // dex突破65535的限制
@@ -79,9 +79,9 @@ dependencies {
     compile project(path: ':library')
     compile project(':jsBridge')
     compile 'com.google.firebase:firebase-messaging:9.2.1'
-    compile 'com.android.support:design:24.0.0'
-    compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.android.support:support-v4:24.0.0'
+    compile 'com.android.support:design:24.2.1'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:support-v4:24.2.1'
     compile project(':retrofitUtils')
 }
 
